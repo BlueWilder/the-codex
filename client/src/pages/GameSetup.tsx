@@ -72,14 +72,14 @@ export default function GameSetup() {
           {/* STEP 1: Script Selection */}
           {step === 1 && (
             <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
-              <h2 className="text-2xl font-display text-amber-100">Select a Grimoire</h2>
-              <div className="grid grid-cols-1 gap-4">
+              <h2 className="text-2xl font-display text-amber-100 text-center">Select a script</h2>
+              <div className="flex flex-col items-center gap-4">
                 {OFFICIAL_SCRIPTS.map(script => (
                   <button
                     key={script.id}
                     onClick={() => setSelectedScriptId(script.id)}
                     className={cn(
-                      "text-left p-4 rounded-xl border transition-all duration-200",
+                      "text-left p-4 rounded-xl border transition-all duration-200 w-full max-w-md",
                       selectedScriptId === script.id
                         ? "bg-amber-900/30 border-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.1)]"
                         : "bg-black/20 border-amber-900/20 hover:border-amber-700/50"
