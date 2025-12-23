@@ -1,9 +1,12 @@
 import { Layout } from "@/components/ui/Layout";
 import { ALL_CHARACTERS, getJinxesForCharacter, type Character, type Jinx } from "@/lib/game-data";
-import { useState } from "react";
-import { Search, Moon, Sun, Settings, AlertTriangle, ChevronDown, Quote, Lightbulb, Sword, Eye } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Search, Moon, Sun, Settings, AlertTriangle, ChevronDown, Quote, Lightbulb, Sword, Eye, RotateCcw, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 function CharacterCard({ char, isExpanded, onToggle }: { 
   char: Character; 
@@ -247,22 +250,196 @@ const SCRIPTS = [
   { id: 'snv', label: 'Sects & Violets' },
 ];
 
+function CustomScriptDialog({ 
+  open, 
+  onOpenChange, 
+  selectedCharacters, 
+  onSave 
+}: { 
+  open: boolean; 
+  onOpenChange: (open: boolean) => void; 
+  selectedCharacters: Set<string>;
+  onSave: (characters: Set<string>) => void;
+}) {
+  const [tempSelected, setTempSelected] = useState<Set<string>>(new Set(selectedCharacters));
+  const [dialogTeamFilter, setDialogTeamFilter] = useState<string>("all");
+
+  useEffect(() => {
+    if (open) {
+      setTempSelected(new Set(selectedCharacters));
+    }
+  }, [open, selectedCharacters]);
+
+  const toggleCharacter = (charId: string) => {
+    const newSet = new Set(tempSelected);
+    if (newSet.has(charId)) {
+      newSet.delete(charId);
+    } else {
+      newSet.add(charId);
+    }
+    setTempSelected(newSet);
+  };
+
+  const handleSave = () => {
+    onSave(tempSelected);
+    onOpenChange(false);
+  };
+
+  const handleSelectAll = () => {
+    const filteredChars = ALL_CHARACTERS.filter(c => 
+      dialogTeamFilter === "all" || c.team === dialogTeamFilter
+    );
+    const newSet = new Set(tempSelected);
+    filteredChars.forEach(c => newSet.add(c.id));
+    setTempSelected(newSet);
+  };
+
+  const handleClearAll = () => {
+    if (dialogTeamFilter === "all") {
+      setTempSelected(new Set());
+    } else {
+      const filteredChars = ALL_CHARACTERS.filter(c => c.team === dialogTeamFilter);
+      const newSet = new Set(tempSelected);
+      filteredChars.forEach(c => newSet.delete(c.id));
+      setTempSelected(newSet);
+    }
+  };
+
+  const filteredChars = ALL_CHARACTERS.filter(c => 
+    dialogTeamFilter === "all" || c.team === dialogTeamFilter
+  );
+
+  const getTeamColor = (team: string) => {
+    switch(team) {
+      case 'townsfolk': return 'border-blue-900/50 bg-blue-950/30';
+      case 'outsider': return 'border-blue-800/50 bg-blue-900/20';
+      case 'minion': return 'border-red-900/50 bg-red-950/30';
+      case 'demon': return 'border-red-800/50 bg-red-950/40';
+      case 'traveler': return 'border-amber-900/50 bg-amber-950/30';
+      default: return 'border-gray-800 bg-gray-900/20';
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-4xl max-h-[80vh] flex flex-col">
+        <DialogHeader>
+          <DialogTitle className="font-display text-xl text-amber-500">
+            Select Characters for Custom Script
+          </DialogTitle>
+        </DialogHeader>
+        
+        <div className="flex flex-wrap gap-2 py-2">
+          {['all', 'townsfolk', 'outsider', 'minion', 'demon', 'traveler'].map((f) => (
+            <button
+              key={f}
+              onClick={() => setDialogTeamFilter(f)}
+              className={cn(
+                "px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider transition-all border",
+                dialogTeamFilter === f 
+                  ? "bg-amber-900/50 text-amber-100 border-amber-600" 
+                  : "bg-transparent text-muted-foreground border-transparent hover:bg-white/5"
+              )}
+              data-testid={`dialog-filter-${f}`}
+            >
+              {f}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex gap-2 pb-2">
+          <Button variant="outline" size="sm" onClick={handleSelectAll} data-testid="button-select-all">
+            Select All
+          </Button>
+          <Button variant="outline" size="sm" onClick={handleClearAll} data-testid="button-clear-all">
+            Clear {dialogTeamFilter !== "all" ? dialogTeamFilter : "All"}
+          </Button>
+          <span className="ml-auto text-sm text-muted-foreground">
+            {tempSelected.size} selected
+          </span>
+        </div>
+
+        <ScrollArea className="flex-1 min-h-0 border border-amber-900/30 rounded-lg p-2">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+            {filteredChars.map((char) => (
+              <button
+                key={char.id}
+                onClick={() => toggleCharacter(char.id)}
+                className={cn(
+                  "p-2 rounded-lg border text-left transition-all",
+                  getTeamColor(char.team),
+                  tempSelected.has(char.id) 
+                    ? "ring-2 ring-amber-500" 
+                    : "opacity-60 hover:opacity-100"
+                )}
+                data-testid={`select-character-${char.id}`}
+              >
+                <div className="flex items-center justify-between gap-1">
+                  <span className="text-xs font-bold truncate">{char.name}</span>
+                  {tempSelected.has(char.id) && (
+                    <Check className="w-3 h-3 text-amber-500 shrink-0" />
+                  )}
+                </div>
+                <span className="text-[10px] uppercase opacity-60">{char.team}</span>
+              </button>
+            ))}
+          </div>
+        </ScrollArea>
+
+        <DialogFooter className="pt-4">
+          <Button variant="outline" onClick={() => onOpenChange(false)} data-testid="button-cancel">
+            Cancel
+          </Button>
+          <Button onClick={handleSave} data-testid="button-save-custom">
+            Save Custom Script
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export default function Reference() {
   const [search, setSearch] = useState("");
   const [teamFilter, setTeamFilter] = useState<string>("all");
   const [scriptFilter, setScriptFilter] = useState<string>("all");
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [customDialogOpen, setCustomDialogOpen] = useState(false);
+  const [customCharacters, setCustomCharacters] = useState<Set<string>>(new Set());
 
   const filtered = ALL_CHARACTERS.filter(char => {
     const matchesSearch = char.name.toLowerCase().includes(search.toLowerCase()) || 
                           char.ability.toLowerCase().includes(search.toLowerCase());
     const matchesTeam = teamFilter === "all" || char.team === teamFilter;
-    const matchesScript = scriptFilter === "all" || char.edition === scriptFilter;
+    
+    let matchesScript = true;
+    if (scriptFilter === "custom") {
+      matchesScript = customCharacters.has(char.id);
+    } else if (scriptFilter !== "all") {
+      matchesScript = char.edition === scriptFilter;
+    }
+    
     return matchesSearch && matchesTeam && matchesScript;
   });
 
   const handleToggle = (charId: string) => {
     setExpandedId(prev => prev === charId ? null : charId);
+  };
+
+  const handleCustomClick = () => {
+    if (scriptFilter === "custom") {
+      setCustomDialogOpen(true);
+    } else {
+      setScriptFilter("custom");
+      if (customCharacters.size === 0) {
+        setCustomDialogOpen(true);
+      }
+    }
+  };
+
+  const handleResetCustom = () => {
+    setCustomCharacters(new Set());
+    setCustomDialogOpen(true);
   };
 
   return (
@@ -284,7 +461,7 @@ export default function Reference() {
         </div>
 
         <div className="space-y-3">
-          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide items-center">
             {SCRIPTS.map((script) => (
               <button
                 key={script.id}
@@ -300,6 +477,30 @@ export default function Reference() {
                 {script.label}
               </button>
             ))}
+            
+            <button
+              onClick={handleCustomClick}
+              className={cn(
+                "px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all border whitespace-nowrap flex items-center gap-1",
+                scriptFilter === "custom" 
+                  ? "bg-purple-900/50 text-purple-100 border-purple-600" 
+                  : "bg-transparent text-muted-foreground border-transparent hover:bg-white/5"
+              )}
+              data-testid="button-script-custom"
+            >
+              Custom {customCharacters.size > 0 && `(${customCharacters.size})`}
+            </button>
+
+            {scriptFilter === "custom" && customCharacters.size > 0 && (
+              <button
+                onClick={handleResetCustom}
+                className="p-1.5 rounded-full text-muted-foreground hover:bg-white/10 transition-colors"
+                title="Reset custom script"
+                data-testid="button-reset-custom"
+              >
+                <RotateCcw className="w-4 h-4" />
+              </button>
+            )}
           </div>
 
           <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
@@ -320,6 +521,13 @@ export default function Reference() {
             ))}
           </div>
         </div>
+
+        <CustomScriptDialog
+          open={customDialogOpen}
+          onOpenChange={setCustomDialogOpen}
+          selectedCharacters={customCharacters}
+          onSave={setCustomCharacters}
+        />
 
         <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.map((char) => (
