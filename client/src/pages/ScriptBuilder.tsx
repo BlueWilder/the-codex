@@ -1,7 +1,7 @@
 import { Layout } from "@/components/ui/Layout";
 import { useState } from "react";
 import { useCreateScript } from "@/hooks/use-scripts";
-import { CHARACTERS } from "@/lib/game-data";
+import { ALL_CHARACTERS } from "@/lib/game-data";
 import { Search, Plus, X, Save } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -33,7 +33,7 @@ export default function ScriptBuilder() {
     setSelectedChars([]);
   };
 
-  const filtered = CHARACTERS.filter(c => 
+  const filtered = ALL_CHARACTERS.filter(c => 
     c.name.toLowerCase().includes(search.toLowerCase())
   );
 
@@ -55,7 +55,7 @@ export default function ScriptBuilder() {
           <div className="flex-1 overflow-y-auto pr-2 space-y-4">
             {['townsfolk', 'outsider', 'minion', 'demon'].map(team => {
               const teamChars = selectedChars
-                .map(id => CHARACTERS.find(c => c.id === id))
+                .map(id => ALL_CHARACTERS.find(c => c.id === id))
                 .filter(c => c && c.team === team);
               
               if (teamChars.length === 0) return null;

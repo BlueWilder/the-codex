@@ -2,7 +2,7 @@ import { Layout } from "@/components/ui/Layout";
 import { useState } from "react";
 import { useGame } from "@/hooks/use-games";
 import { useLocation } from "wouter";
-import { CHARACTERS } from "@/lib/game-data";
+import { ALL_CHARACTERS } from "@/lib/game-data";
 import { Moon, Sun, Skull, Shield, MoreHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
@@ -102,7 +102,7 @@ export default function GameTracker() {
               const left = 50 + radius * Math.cos(angle);
               const top = 50 + radius * Math.sin(angle);
               
-              const character = CHARACTERS.find(c => c.id === player.characterId);
+              const character = ALL_CHARACTERS.find(c => c.id === player.characterId);
               
               return (
                 <motion.div

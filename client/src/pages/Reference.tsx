@@ -1,5 +1,5 @@
 import { Layout } from "@/components/ui/Layout";
-import { CHARACTERS } from "@/lib/game-data";
+import { ALL_CHARACTERS } from "@/lib/game-data";
 import { useState } from "react";
 import { Search, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -8,7 +8,7 @@ export default function Reference() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<string>("all");
 
-  const filtered = CHARACTERS.filter(char => {
+  const filtered = ALL_CHARACTERS.filter(char => {
     const matchesSearch = char.name.toLowerCase().includes(search.toLowerCase()) || 
                           char.ability.toLowerCase().includes(search.toLowerCase());
     const matchesFilter = filter === "all" || char.team === filter;
@@ -44,7 +44,7 @@ export default function Reference() {
         </div>
 
         <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-          {['all', 'townsfolk', 'outsider', 'minion', 'demon'].map((f) => (
+          {['all', 'townsfolk', 'outsider', 'minion', 'demon', 'traveler'].map((f) => (
             <button
               key={f}
               onClick={() => setFilter(f)}
@@ -70,10 +70,10 @@ export default function Reference() {
               <p className="text-sm font-serif leading-relaxed opacity-90">{char.ability}</p>
               
               <div className="mt-4 flex gap-2">
-                {char.firstNight && (
+                {char.firstNightOrder !== null && (
                   <span className="text-[10px] bg-black/40 px-2 py-0.5 rounded text-amber-200/70 border border-amber-900/20">First Night</span>
                 )}
-                {char.otherNight && (
+                {char.otherNightOrder !== null && (
                   <span className="text-[10px] bg-black/40 px-2 py-0.5 rounded text-amber-200/70 border border-amber-900/20">Other Nights</span>
                 )}
               </div>
