@@ -240,16 +240,25 @@ function CharacterCard({ char, isExpanded, onToggle }: {
   );
 }
 
+const SCRIPTS = [
+  { id: 'all', label: 'All Scripts' },
+  { id: 'tb', label: 'Trouble Brewing' },
+  { id: 'bmr', label: 'Bad Moon Rising' },
+  { id: 'snv', label: 'Sects & Violets' },
+];
+
 export default function Reference() {
   const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState<string>("all");
+  const [teamFilter, setTeamFilter] = useState<string>("all");
+  const [scriptFilter, setScriptFilter] = useState<string>("all");
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const filtered = ALL_CHARACTERS.filter(char => {
     const matchesSearch = char.name.toLowerCase().includes(search.toLowerCase()) || 
                           char.ability.toLowerCase().includes(search.toLowerCase());
-    const matchesFilter = filter === "all" || char.team === filter;
-    return matchesSearch && matchesFilter;
+    const matchesTeam = teamFilter === "all" || char.team === teamFilter;
+    const matchesScript = scriptFilter === "all" || char.edition === scriptFilter;
+    return matchesSearch && matchesTeam && matchesScript;
   });
 
   const handleToggle = (charId: string) => {
@@ -274,22 +283,42 @@ export default function Reference() {
           </div>
         </div>
 
-        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-          {['all', 'townsfolk', 'outsider', 'minion', 'demon', 'traveler'].map((f) => (
-            <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className={cn(
-                "px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all border",
-                filter === f 
-                  ? "bg-amber-900/50 text-amber-100 border-amber-600" 
-                  : "bg-transparent text-muted-foreground border-transparent hover:bg-white/5"
-              )}
-              data-testid={`button-filter-${f}`}
-            >
-              {f}
-            </button>
-          ))}
+        <div className="space-y-3">
+          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+            {SCRIPTS.map((script) => (
+              <button
+                key={script.id}
+                onClick={() => setScriptFilter(script.id)}
+                className={cn(
+                  "px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all border whitespace-nowrap",
+                  scriptFilter === script.id 
+                    ? "bg-red-900/50 text-red-100 border-red-600" 
+                    : "bg-transparent text-muted-foreground border-transparent hover:bg-white/5"
+                )}
+                data-testid={`button-script-${script.id}`}
+              >
+                {script.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+            {['all', 'townsfolk', 'outsider', 'minion', 'demon', 'traveler'].map((f) => (
+              <button
+                key={f}
+                onClick={() => setTeamFilter(f)}
+                className={cn(
+                  "px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all border",
+                  teamFilter === f 
+                    ? "bg-amber-900/50 text-amber-100 border-amber-600" 
+                    : "bg-transparent text-muted-foreground border-transparent hover:bg-white/5"
+                )}
+                data-testid={`button-filter-${f}`}
+              >
+                {f}
+              </button>
+            ))}
+          </div>
         </div>
 
         <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

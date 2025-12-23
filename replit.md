@@ -1,8 +1,8 @@
-# Grimoire - Blood on the Clocktower Digital Assistant
+# The Codex - Blood on the Clocktower Character Reference
 
 ## Overview
 
-This is a digital Grimoire application for Blood on the Clocktower, a social deduction tabletop game. The app helps Storytellers (game moderators) manage games by providing script management, character reference, game setup, and game state tracking. It includes a comprehensive character database with abilities, night order information, tips, and jinx interactions.
+The Codex is a character reference application for Blood on the Clocktower, a social deduction tabletop game. The app provides comprehensive character information including abilities, night order, tips and tricks, bluffing strategies, and jinx interactions. Characters can be filtered by script (Trouble Brewing, Bad Moon Rising, Sects & Violets) and team type.
 
 ## User Preferences
 
@@ -32,18 +32,13 @@ Preferred communication style: Simple, everyday language.
 - **Validation**: Zod schemas generated from Drizzle schemas via drizzle-zod
 - **Migrations**: Drizzle Kit for database migrations (`drizzle-kit push`)
 
-### Key Data Models
-1. **Scripts**: Store official and custom character lists (JSON content field contains character IDs)
-2. **Games**: Track active game sessions with full game state stored as JSONB
-
 ### Project Structure
 ```
 client/           # React frontend
   src/
     components/   # UI components (shadcn/ui based)
-    pages/        # Route pages (Home, Scripts, Reference, GameTracker, etc.)
-    hooks/        # Custom hooks for API calls
-    lib/          # Utilities and game data
+    pages/        # Route pages (Home, Reference)
+    lib/          # Utilities and game data (game-data.ts contains all character info)
 server/           # Express backend
   routes.ts       # API route handlers
   storage.ts      # Database abstraction layer

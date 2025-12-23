@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { ScrollText, Home, Skull, BookOpen } from "lucide-react";
+import { Home, Skull, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function Navigation() {
@@ -7,9 +7,7 @@ export function Navigation() {
 
   const navItems = [
     { href: "/", icon: Home, label: "Home" },
-    { href: "/scripts", icon: ScrollText, label: "Scripts" },
     { href: "/reference", icon: BookOpen, label: "Reference" },
-    { href: "/game-tracker", icon: Skull, label: "Grimoire" },
   ];
 
   return (
@@ -18,7 +16,7 @@ export function Navigation() {
         <div className="flex items-center justify-between h-16 md:h-20">
           <div className="hidden md:flex items-center space-x-2">
             <Skull className="w-8 h-8 text-red-700" />
-            <span className="font-display text-2xl text-amber-500 tracking-wider">Grimoire</span>
+            <span className="font-display text-2xl text-amber-500 tracking-wider">The Codex</span>
           </div>
 
           <div className="flex items-center justify-around w-full md:w-auto md:space-x-8">
