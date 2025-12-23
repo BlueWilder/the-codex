@@ -1,7 +1,7 @@
 import { Layout } from "@/components/ui/Layout";
 import { ALL_CHARACTERS, getJinxesForCharacter, type Character, type Jinx } from "@/lib/game-data";
 import { useState } from "react";
-import { Search, Moon, Sun, Settings, AlertTriangle, ChevronDown } from "lucide-react";
+import { Search, Moon, Sun, Settings, AlertTriangle, ChevronDown, Quote, Lightbulb, Sword, Eye } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -153,6 +153,83 @@ function CharacterCard({ char, isExpanded, onToggle }: {
                   <p className="text-xs opacity-80">
                     This character modifies the game setup. Check the ability for details.
                   </p>
+                </div>
+              )}
+
+              {/* Flavor Quote */}
+              {char.flavorQuote && (
+                <div className="space-y-1">
+                  <h4 className="text-xs font-bold uppercase tracking-wider opacity-70 flex items-center gap-1">
+                    <Quote className="w-3 h-3 text-amber-400" /> Flavor
+                  </h4>
+                  <p className="text-sm font-serif italic opacity-80 pl-3 border-l-2 border-amber-700/50">
+                    {char.flavorQuote}
+                  </p>
+                </div>
+              )}
+
+              {/* Extended Summary */}
+              {char.extendedSummary && (
+                <div className="space-y-1">
+                  <h4 className="text-xs font-bold uppercase tracking-wider opacity-70 flex items-center gap-1">
+                    <Eye className="w-3 h-3 text-blue-400" /> How It Works
+                  </h4>
+                  <div className="text-sm font-serif opacity-90 space-y-2">
+                    {char.extendedSummary.split('\n\n').map((paragraph, idx) => (
+                      <p key={idx}>{paragraph}</p>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Tips and Tricks */}
+              {char.tipsAndTricks && char.tipsAndTricks.length > 0 && (
+                <div className="space-y-1">
+                  <h4 className="text-xs font-bold uppercase tracking-wider opacity-70 flex items-center gap-1">
+                    <Lightbulb className="w-3 h-3 text-yellow-400" /> Tips & Tricks
+                  </h4>
+                  <ul className="text-xs space-y-1.5 opacity-90">
+                    {char.tipsAndTricks.map((tip, idx) => (
+                      <li key={idx} className="flex gap-2">
+                        <span className="text-yellow-500/70 shrink-0">-</span>
+                        <span>{tip}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Bluffing As (for good characters to bluff) */}
+              {char.bluffingAs && char.bluffingAs.length > 0 && (
+                <div className="space-y-1">
+                  <h4 className="text-xs font-bold uppercase tracking-wider opacity-70 flex items-center gap-1">
+                    <Sword className="w-3 h-3 text-red-400" /> Bluffing as {char.name}
+                  </h4>
+                  <ul className="text-xs space-y-1.5 opacity-90">
+                    {char.bluffingAs.map((tip, idx) => (
+                      <li key={idx} className="flex gap-2">
+                        <span className="text-red-400/70 shrink-0">-</span>
+                        <span>{tip}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Fighting The (for good characters fighting evil) */}
+              {char.fightingThe && char.fightingThe.length > 0 && (
+                <div className="space-y-1">
+                  <h4 className="text-xs font-bold uppercase tracking-wider opacity-70 flex items-center gap-1">
+                    <Sword className="w-3 h-3 text-green-400" /> Fighting the {char.name}
+                  </h4>
+                  <ul className="text-xs space-y-1.5 opacity-90">
+                    {char.fightingThe.map((tip, idx) => (
+                      <li key={idx} className="flex gap-2">
+                        <span className="text-green-400/70 shrink-0">-</span>
+                        <span>{tip}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               )}
             </div>
