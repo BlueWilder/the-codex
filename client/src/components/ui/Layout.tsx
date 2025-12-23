@@ -1,0 +1,19 @@
+import { ReactNode } from "react";
+import { Navigation } from "../Navigation";
+import { motion } from "framer-motion";
+
+export function Layout({ children }: { children: ReactNode }) {
+  return (
+    <div className="min-h-screen pb-20 md:pt-24 md:pb-8 text-foreground selection:bg-red-900/50 selection:text-white">
+      <Navigation />
+      <motion.main
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+        className="container mx-auto px-4 py-4"
+      >
+        {children}
+      </motion.main>
+    </div>
+  );
+}
