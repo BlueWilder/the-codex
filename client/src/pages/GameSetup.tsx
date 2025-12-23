@@ -1,19 +1,22 @@
 import { Layout } from "@/components/ui/Layout";
 import { useState } from "react";
 import { useCreateGame } from "@/hooks/use-games";
-import { OFFICIAL_SCRIPTS } from "@/lib/game-data";
+import { useScripts } from "@/hooks/use-scripts";
 import { useLocation } from "wouter";
-import { Users, ChevronRight, Play } from "lucide-react";
+import { Users, ChevronRight, Play, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function GameSetup() {
   const [, setLocation] = useLocation();
   const { mutateAsync: createGame, isPending } = useCreateGame();
+  const { data: scripts, isLoading: scriptsLoading } = useScripts();
   
   const [step, setStep] = useState(1);
   const [selectedScriptId, setSelectedScriptId] = useState<number | null>(null);
   const [playerCount, setPlayerCount] = useState(8);
   const [storytellerName, setStorytellerName] = useState("");
+  
+  const selectedScript = scripts?.find(s => s.id === selectedScriptId);
 
   const handleCreate = async () => {
     if (!selectedScriptId) return;
@@ -73,23 +76,29 @@ export default function GameSetup() {
           {step === 1 && (
             <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
               <h2 className="text-2xl font-display text-amber-100 text-center">Select a script</h2>
-              <div className="flex flex-col items-center gap-4">
-                {OFFICIAL_SCRIPTS.map(script => (
-                  <button
-                    key={script.id}
-                    onClick={() => setSelectedScriptId(script.id)}
-                    className={cn(
-                      "text-left p-4 rounded-xl border transition-all duration-200 w-full max-w-md",
-                      selectedScriptId === script.id
-                        ? "bg-amber-900/30 border-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.1)]"
-                        : "bg-black/20 border-amber-900/20 hover:border-amber-700/50"
-                    )}
-                  >
-                    <div className="font-bold text-lg text-amber-100 font-display">{script.name}</div>
-                    <div className="text-sm text-muted-foreground">{script.description}</div>
-                  </button>
-                ))}
-              </div>
+              {scriptsLoading ? (
+                <div className="flex justify-center py-12">
+                  <Loader2 className="w-8 h-8 animate-spin text-amber-500" />
+                </div>
+              ) : (
+                <div className="flex flex-col items-center gap-4">
+                  {scripts?.map(script => (
+                    <button
+                      key={script.id}
+                      onClick={() => setSelectedScriptId(script.id)}
+                      className={cn(
+                        "text-left p-4 rounded-xl border transition-all duration-200 w-full max-w-md",
+                        selectedScriptId === script.id
+                          ? "bg-amber-900/30 border-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.1)]"
+                          : "bg-black/20 border-amber-900/20 hover:border-amber-700/50"
+                      )}
+                    >
+                      <div className="font-bold text-lg text-amber-100 font-display">{script.name}</div>
+                      <div className="text-sm text-muted-foreground">{script.description}</div>
+                    </button>
+                  ))}
+                </div>
+              )}
               <div className="flex justify-end pt-4">
                 <button
                   disabled={!selectedScriptId}
@@ -167,7 +176,7 @@ export default function GameSetup() {
               <div className="bg-black/20 p-4 rounded-lg border border-amber-900/20 space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Script:</span>
-                  <span className="text-amber-500 font-bold">{OFFICIAL_SCRIPTS.find(s => s.id === selectedScriptId)?.name}</span>
+                  <span className="text-amber-500 font-bold">{selectedScript?.name}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Players:</span>
