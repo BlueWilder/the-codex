@@ -105,10 +105,10 @@ export default function GameSetup() {
           {/* STEP 2: Player Count */}
           {step === 2 && (
             <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
-              <h2 className="text-2xl font-display text-amber-100">Gather the Souls</h2>
+              <h2 className="text-2xl font-display text-amber-100 text-center">Gather the Souls</h2>
               
               <div className="space-y-4">
-                <label className="text-muted-foreground block text-sm font-bold uppercase tracking-widest">Number of Players</label>
+                <label className="text-muted-foreground block text-sm font-bold uppercase tracking-widest text-center">Number of Players</label>
                 <div className="flex items-center gap-8 justify-center py-8">
                   <button 
                     onClick={() => setPlayerCount(Math.max(5, playerCount - 1))}
@@ -120,14 +120,14 @@ export default function GameSetup() {
                     {playerCount}
                   </div>
                   <button 
-                    onClick={() => setPlayerCount(Math.min(15, playerCount + 1))}
+                    onClick={() => setPlayerCount(Math.min(20, playerCount + 1))}
                     className="w-12 h-12 rounded-full border border-amber-900/50 hover:bg-amber-900/20 text-2xl text-amber-500 flex items-center justify-center transition-colors"
                   >
                     +
                   </button>
                 </div>
                 <p className="text-center text-sm text-muted-foreground font-serif italic">
-                  Recommended: 8-12 players for optimal chaos.
+                  Recommended: 8-12 players. Up to 20 with Travellers.
                 </p>
               </div>
 
