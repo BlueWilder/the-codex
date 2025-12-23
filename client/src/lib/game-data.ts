@@ -62,28 +62,579 @@ You know that of the two players you are shown, one must be the Townsfolk you ar
       "If you are the Spy or have access to a Spy, they can be invaluable in providing accurate information to back up your story."
     ]
   },
-  { id: 'librarian', name: 'Librarian', edition: 'tb', team: 'townsfolk', ability: 'You start knowing that 1 of 2 players is a particular Outsider. (Or that zero are in play.)', firstNightOrder: 33, otherNightOrder: null, setup: false, reminders: ['Outsider', 'Wrong'], flavorQuote: '"Shhhh! This is a library, not a chatroom."', extendedSummary: 'On the first night, you learn that one of two players is a specific Outsider character, or you learn that zero Outsiders are in play. If there are no Outsiders, you learn this definitively.', tipsAndTricks: ['Zero Outsiders info is very powerful - share it', 'Help identify the Drunk if you see one', 'Outsider info helps narrow down evil players'], bluffingAs: ['Claim zero Outsiders to discredit real Outsider claims', 'Point at confirmed good player as Outsider to sow doubt'] },
-  { id: 'investigator', name: 'Investigator', edition: 'tb', team: 'townsfolk', ability: 'You start knowing that 1 of 2 players is a particular Minion.', firstNightOrder: 34, otherNightOrder: null, setup: false, reminders: ['Minion', 'Wrong'], flavorQuote: '"It was Professor Plum, in the conservatory, with the lead pipe."', extendedSummary: 'On the first night, you learn that one of two players is a specific Minion character. One is the Minion, one is not. Use this to narrow down the evil team.', tipsAndTricks: ['Your info directly identifies an evil player', 'Work with other info roles to triangulate', 'Execute one of your two players if stuck'], bluffingAs: ['Frame a good player as the Minion', 'Claim a Minion not in play to confuse'] },
-  { id: 'chef', name: 'Chef', edition: 'tb', team: 'townsfolk', ability: 'You start knowing how many pairs of evil players there are.', firstNightOrder: 35, otherNightOrder: null, setup: false, reminders: [], flavorQuote: '"I\'ve got a very delicate palate. I can tell when something is off."', extendedSummary: 'You learn how many pairs of evil players are sitting next to each other. A pair is two evil players adjacent in the seating. If Demon sits next to Minion, that is 1 pair.', tipsAndTricks: ['Zero means evil players are spread out', 'High numbers mean evil is clustered', 'Combine with other info to find the cluster'], bluffingAs: ['Claim a number that matches the actual seating', 'Zero is safest if you do not know evil positions'] },
-  { id: 'empath', name: 'Empath', edition: 'tb', team: 'townsfolk', ability: 'Each night, you learn how many of your 2 alive neighbours are evil.', firstNightOrder: 36, otherNightOrder: 53, setup: false, reminders: [], flavorQuote: '"I feel your pain. All of it."', extendedSummary: 'Each night, you learn how many of your two alive neighbors are evil (0, 1, or 2). Dead players are skipped - your neighbors are the closest alive players on each side.', tipsAndTricks: ['Track your number each night as players die', 'Consistent zeros mean your neighbors are good', 'Changing numbers help identify who died'], bluffingAs: ['Claim numbers that match dead/alive status', 'Harder to fake as game progresses'] },
-  { id: 'fortuneteller', name: 'Fortune Teller', edition: 'tb', team: 'townsfolk', ability: 'Each night, choose 2 players: you learn if either is a Demon. There is a good player that registers as a Demon to you.', firstNightOrder: 37, otherNightOrder: 54, setup: false, reminders: ['Red Herring'], flavorQuote: '"I see a strangled man with blood on his chin."', extendedSummary: 'Each night, pick two players. You learn Yes if either is the Demon. But there is one good player (Red Herring) who always registers as Demon to you, creating false positives.', tipsAndTricks: ['Use process of elimination to find the Red Herring', 'A Yes could be Demon OR Red Herring', 'Multiple Yeses on same player is suspicious'], bluffingAs: ['Claim Yes on players you want executed', 'Red Herring excuse covers mistakes'] },
-  { id: 'undertaker', name: 'Undertaker', edition: 'tb', team: 'townsfolk', ability: 'Each night*, you learn which character died by execution today.', firstNightOrder: null, otherNightOrder: 55, setup: false, reminders: ['Executed'], flavorQuote: '"Toe-tags and cold slabs. That\'s the life."', extendedSummary: 'Each night after the first, you learn the character of the player who was executed during the day. If no one was executed, you learn nothing.', tipsAndTricks: ['Verify claimed roles of executed players', 'Helps identify liars retrospectively', 'Drunk/poisoned players show their real role'], bluffingAs: ['Confirm executed evil players as good', 'Hard to fake consistently'] },
-  { id: 'monk', name: 'Monk', edition: 'tb', team: 'townsfolk', ability: 'Each night*, choose a player (not yourself): they are safe from the Demon tonight.', firstNightOrder: null, otherNightOrder: 12, setup: false, reminders: ['Protected'], flavorQuote: '"\'Twas a prayer of St Benedict that kept the beast at bay."', extendedSummary: 'Each night except the first, choose a player other than yourself. They cannot be killed by the Demon tonight. You cannot protect yourself.', tipsAndTricks: ['Protect players who seem most valuable', 'Vary your protection to avoid patterns', 'Coming out risks Demon avoiding your target'], bluffingAs: ['Claim to have protected dead players', 'Explain why Demon did not kill someone'] },
-  { id: 'ravenkeeper', name: 'Ravenkeeper', edition: 'tb', team: 'townsfolk', ability: 'If you die at night, you are woken to choose a player: you learn their character.', firstNightOrder: null, otherNightOrder: 52, setup: false, reminders: [], flavorQuote: '"My birds will find the truth, no matter where it hides."', extendedSummary: 'If you die at night (killed by Demon or other means), you wake immediately and choose any player. You learn their exact character. Does not trigger on execution.', tipsAndTricks: ['Check suspicious players or confirm allies', 'Your info is very reliable if you die', 'Consider who benefits from your death'], bluffingAs: ['Claim to have died and learned info', 'Requires being "dead" to activate'] },
-  { id: 'virgin', name: 'Virgin', edition: 'tb', team: 'townsfolk', ability: 'The 1st time you are nominated, if the nominator is a Townsfolk, they are executed immediately.', firstNightOrder: null, otherNightOrder: null, setup: false, reminders: ['No Ability'], flavorQuote: '"I am pure. I have never sinned."', extendedSummary: 'The first time you are nominated, if the nominating player is a Townsfolk, they die immediately. If they are not Townsfolk (Outsider, Minion, Demon), nothing happens and you lose your ability.', tipsAndTricks: ['Ask trusted Townsfolk NOT to nominate you', 'Evil players nominating you proves they are evil', 'Use your ability to test suspicious players'], bluffingAs: ['Dangerous bluff - real Virgin kills Townsfolk nominators', 'Only bluff if you can avoid nomination'] },
-  { id: 'slayer', name: 'Slayer', edition: 'tb', team: 'townsfolk', ability: 'Once per game, during the day, publicly choose a player: if they are the Demon, they die.', firstNightOrder: null, otherNightOrder: null, setup: false, reminders: ['No Ability'], flavorQuote: '"Die, foul beast!"', extendedSummary: 'Once per game, during the day, publicly declare that you are the Slayer and choose a player. If that player is the Demon, they die immediately and good wins. Otherwise, nothing visible happens.', tipsAndTricks: ['Save your shot for when you are confident', 'A miss does not prove innocence (you could be drunk)', 'Coordinate with info roles before using'], bluffingAs: ['Claim you used it and missed', 'Use to "clear" an evil player'] },
-  { id: 'soldier', name: 'Soldier', edition: 'tb', team: 'townsfolk', ability: 'You are safe from the Demon.', firstNightOrder: null, otherNightOrder: null, setup: false, reminders: [], flavorQuote: '"As long as I have my faith, I am invincible."', extendedSummary: 'The Demon cannot kill you. If the Demon chooses you, you do not die and the Demon does not learn why. You can still die from other causes like execution.', tipsAndTricks: ['Coming out as Soldier is risky - evil may execute you', 'Surviving a night proves nothing (Monk, Soldier, etc)', 'Stay quiet and observe who pushes for your execution'], bluffingAs: ['Explain why you survived the night', 'Safer bluff for evil players'] },
-  { id: 'mayor', name: 'Mayor', edition: 'tb', team: 'townsfolk', ability: 'If only 3 players live & no execution occurs, your team wins. If you die at night, another player might die instead.', firstNightOrder: null, otherNightOrder: null, setup: false, reminders: [], flavorQuote: '"Let me be frank with you..."', extendedSummary: 'If exactly 3 players are alive and no execution occurs that day, good wins. Also, if the Demon tries to kill you at night, another player might die instead (Storyteller decides).', tipsAndTricks: ['Push for no execution at 3 players', 'Your redirect ability is unreliable', 'Coming out late can enable win condition'], bluffingAs: ['Risky - evil cannot win with real Mayor at 3', 'Claim if pushing for executions at 3 players'] },
+  {
+    id: 'librarian',
+    name: 'Librarian',
+    edition: 'tb',
+    team: 'townsfolk',
+    ability: 'You start knowing that 1 of 2 players is a particular Outsider. (Or that zero are in play.)',
+    firstNightOrder: 33,
+    otherNightOrder: null,
+    setup: false,
+    reminders: ['Outsider', 'Wrong'],
+    flavorQuote: "Shhhh! This is a library, not a chatroom. Technically, it's a crypt. But it's my crypt, and I'll organise it however I please.",
+    extendedSummary: `The Librarian learns that a specific Outsider is in play, but not exactly who is playing them.
+
+During the first night, the Librarian is woken, shown two players, and learns the character of one of them. They learn this only once and then learn nothing more.
+
+However, a Librarian may learn that zero Outsiders are in play. This information can be extremely useful - it tells you that there is no Drunk (who thinks they are a Townsfolk), and no other Outsiders either.`,
+    tipsAndTricks: [
+      "If you learn a 'zero', it is a strong indicator that there are no Outsiders at all. Share this with the group, because any player claiming to be an Outsider is probably lying.",
+      "If you learn that a particular Outsider is in play, find out which player that is. Either ask the group if there are any Outsiders, or ask the two players privately. Use this information to build trust - they will know you are good.",
+      "Finding the Drunk is very helpful. Once you find which player is the Drunk, you know that they have been getting false information or their ability doesn't work. This can also help confirm which Townsfolk is NOT the Drunk.",
+      "If you get a reading on one of your neighbors, you can share your information earlier. Even if evil knows who you are, the Demon will often prefer to attack players with more powerful abilities.",
+      "The Spy may register as an Outsider to you. If you learn that one of two players is a particular Outsider and they both deny it, one of them might be the Spy.",
+      "After the first night, you have all the information you're going to get. If you want to, you can bluff as a more powerful character to draw the Demon's attention away from characters with ongoing abilities."
+    ],
+    bluffingAs: [
+      "You would have received your information on night one, and so should have it from that point onward. You will have been shown two players and one Outsider token, OR you will have been told 'zero'.",
+      "A 'zero' claim can be very powerful for the evil team. If there are no Outsiders, any player claiming to be one seems suspicious. You can use this to throw suspicion on good players who come out as Outsiders.",
+      "Alternatively, claim that a particular Outsider is in play and point to an evil player as being that Outsider. This can help legitimize their claim and make them seem trustworthy.",
+      "If the Drunk is in play, you could help find out which player is drunk by claiming to know who the Drunk is, making them distrust their own information."
+    ]
+  },
+  {
+    id: 'investigator',
+    name: 'Investigator',
+    edition: 'tb',
+    team: 'townsfolk',
+    ability: 'You start knowing that 1 of 2 players is a particular Minion.',
+    firstNightOrder: 34,
+    otherNightOrder: null,
+    setup: false,
+    reminders: ['Minion', 'Wrong'],
+    flavorQuote: "It was Professor Plum, in the conservatory, with the lead pipe.",
+    extendedSummary: `The Investigator learns that a specific Minion is in play, but not exactly who is playing them.
+
+During the first night, the Investigator is woken, shown two players, and learns the character of one of them. They learn this only once and then learn nothing more.
+
+One of the two players shown is the Minion you learn about. The other player could be anyone - Townsfolk, Outsider, or even another Minion. It's never the Demon.`,
+    tipsAndTricks: [
+      "Your information directly narrows down the location of an evil player. This is extremely powerful - one of the two players you were shown IS a Minion.",
+      "You can safely tell one of the two players your information. You know that at least one of them is evil, but if you talk to both, you'll get different reactions that might help you figure out which is which.",
+      "If one of your two players is executed and dies, and the game continues, you know they were either not evil or were a Minion. Either way, pay close attention to the other player.",
+      "Knowing which Minion is in play can be very helpful. A Poisoner means someone's information might be wrong. A Spy means your information might have shown the Spy. A Baron means extra Outsiders. A Scarlet Woman means the Demon has a backup.",
+      "Beware of the Spy and the Recluse! The Spy may register as a Townsfolk or Outsider to you, and the Recluse may register as the Minion.",
+      "Since you have all your information after night one, you can bluff as a more powerful character to attract the Demon's attention away from active information roles."
+    ],
+    bluffingAs: [
+      "You would have received your information on night one. You will have been shown two players and one Minion token.",
+      "Claim that one of two players is a Minion and include an evil player as one of your two. If they are clever, they may claim to be a Townsfolk that 'clears' them, making you both look good.",
+      "If you want to frame a good player, claim they are one of the two players you saw. The good team will be suspicious of them.",
+      "Claiming to see a Minion that isn't actually in play will eventually cause problems if the real Minion is discovered. However, it can confuse the good team about what Minions are in play."
+    ]
+  },
+  {
+    id: 'chef',
+    name: 'Chef',
+    edition: 'tb',
+    team: 'townsfolk',
+    ability: 'You start knowing how many pairs of evil players there are.',
+    firstNightOrder: 35,
+    otherNightOrder: null,
+    setup: false,
+    reminders: [],
+    flavorQuote: "I've got a very delicate palate. I can tell when something is off.",
+    extendedSummary: `The Chef knows how many evil players are sitting next to each other.
+
+On the first night, the Chef learns a number. This is the number of pairs of adjacent evil players. A pair is two evil players sitting immediately next to each other in the circle.
+
+For example: If the Imp is sitting next to the Poisoner, that is 1 pair. If all evil players are spread out with good players between them, that is 0 pairs. If the Imp, Baron, and Scarlet Woman are all sitting in a row, that is 2 pairs (Imp-Baron and Baron-Scarlet Woman).`,
+    tipsAndTricks: [
+      "A '0' means that all evil players are spread out around the circle with at least one good player between each of them. This is very useful information.",
+      "A '1' or '2' means evil players are clustered together somewhere. Work with the Empath or other information roles to narrow down where that cluster might be.",
+      "Combine your information with the Empath's - if the Empath is getting evil neighbors and you know evil is clustered, you can triangulate the location of the evil team.",
+      "If you get a high number (2 or more), evil players are sitting in a group. Look for players who seem to be coordinating or defending each other.",
+      "Remember that your number only tells you about seating, not identity. A '1' could mean any two evil players are adjacent.",
+      "Beware of the Recluse! They might register as evil and be counted as part of a pair, throwing off your number."
+    ],
+    bluffingAs: [
+      "You would have received your information on night one - just a single number representing evil pairs.",
+      "Claiming '0' is often safest, as it gives little concrete information for the good team to work with while still sounding believable.",
+      "If you know where evil players are sitting, claim a number that matches the actual seating to look legitimate.",
+      "Claiming a high number when evil is actually spread out can cause the good team to waste time looking for a 'cluster' that doesn't exist."
+    ]
+  },
+  {
+    id: 'empath',
+    name: 'Empath',
+    edition: 'tb',
+    team: 'townsfolk',
+    ability: 'Each night, you learn how many of your 2 alive neighbours are evil.',
+    firstNightOrder: 36,
+    otherNightOrder: 53,
+    setup: false,
+    reminders: [],
+    flavorQuote: "I feel your pain. All of it.",
+    extendedSummary: `The Empath keeps learning how many of their living neighbors are evil.
+
+Each night, including the first, the Empath wakes to learn how many of their two alive neighbors are evil. Dead players are not counted - your neighbors are the closest alive players on either side of you.
+
+As players die, your neighbors change. This means your information updates each night, which can help you deduce who is evil as the seating shifts.`,
+    tipsAndTricks: [
+      "A '0' means both your neighbors are good (or at least registering as good). This is powerful information - you can work closely with your neighbors.",
+      "A '1' means one neighbor is evil. Work with the other neighbor to figure out which one it is.",
+      "Track your number every night. When a neighbor dies and your number changes, that gives you information about whether they were evil.",
+      "If a neighbor dies and your number goes down, they were probably evil. If it stays the same or goes up, look at your new neighbor.",
+      "Share your information with your neighbors. If you're getting '0', they can trust you and each other. If you're getting '1' or '2', work together to figure out who is lying.",
+      "Beware of the Recluse! They may register as evil to you, making your counts unreliable if they're your neighbor.",
+      "The Spy may register as good, so a neighbor who appears innocent via your ability could still be evil."
+    ],
+    bluffingAs: [
+      "You wake every night and get a number (0, 1, or 2) based on your living neighbors.",
+      "This is one of the harder bluffs because your numbers must remain consistent as players die. Track who is alive on either side of you carefully.",
+      "Claiming '0' early can build trust with your neighbors, but be prepared to explain if the numbers need to change.",
+      "Claiming '1' and pointing suspicion at a good neighbor is effective but risky - if they're confirmed good, you look evil."
+    ]
+  },
+  {
+    id: 'fortuneteller',
+    name: 'Fortune Teller',
+    edition: 'tb',
+    team: 'townsfolk',
+    ability: 'Each night, choose 2 players: you learn if either is a Demon. There is a good player that registers as a Demon to you.',
+    firstNightOrder: 37,
+    otherNightOrder: 54,
+    setup: false,
+    reminders: ['Red Herring'],
+    flavorQuote: "I see a strangled man with blood on his chin. He is wearing a... No. Wait. A woman! It's a woman! And she is screaming.",
+    extendedSummary: `The Fortune Teller detects who the Demon is, but sometimes their information is wrong.
+
+Each night, the Fortune Teller chooses two players and learns if either of them is the Demon. However, one good player (the "Red Herring") is selected by the Storyteller at the start of the game. This player always registers as a Demon to the Fortune Teller.
+
+If the Fortune Teller chooses the Demon or the Red Herring, they get a "Yes". If they choose neither, they get a "No". The challenge is figuring out which "Yes" readings are real Demons and which are the Red Herring.`,
+    tipsAndTricks: [
+      "Process of elimination is your friend. By choosing different pairs each night, you can eventually narrow down who the Demon might be - and who the Red Herring is.",
+      "A 'Yes' result could mean you found the Demon OR the Red Herring. Multiple 'Yes' results on the same player across different pairings makes that player more likely to be the Demon.",
+      "If you get a 'No', both players you chose are innocent (unless you're drunk or poisoned). This is useful information too.",
+      "Share your results with trusted players, but be aware that revealing publicly makes it easy for evil to claim they're the Red Herring.",
+      "Coordinate with other information roles. If an Empath says their neighbor is good but you got a 'Yes' on them, one of you might be wrong or they could be the Red Herring.",
+      "The Recluse might register as the Demon to you, but this is fairly rare. The Red Herring is much more likely."
+    ],
+    bluffingAs: [
+      "You wake each night and choose two players. You point at them and the Storyteller nods (Yes) or shakes their head (No).",
+      "Claiming 'Yes' on players you want executed is a classic evil strategy. Be prepared to explain if they turn out to be innocent.",
+      "The Red Herring provides a convenient excuse - if someone you accused turns out to be good, claim they were your Red Herring.",
+      "Be consistent with your claimed results. Keep track of who you claim to have checked each night.",
+      "If you're exposed as lying, claim you were drunk or poisoned on certain nights."
+    ]
+  },
+  {
+    id: 'undertaker',
+    name: 'Undertaker',
+    edition: 'tb',
+    team: 'townsfolk',
+    ability: 'Each night*, you learn which character died by execution today.',
+    firstNightOrder: null,
+    otherNightOrder: 55,
+    setup: false,
+    reminders: ['Executed'],
+    flavorQuote: "Toe-tags and cold slabs. That's the life.",
+    extendedSummary: `The Undertaker learns which characters were executed.
+
+Each night except the first, you learn the character of the player who was executed during the day. If no one was executed, you learn nothing that night.
+
+You learn the actual character, not what the player claimed to be. This is powerful for catching liars - if someone claimed to be the Empath but you learn they were the Poisoner, you've confirmed an evil player.`,
+    tipsAndTricks: [
+      "Your information is extremely reliable when you're not drunk or poisoned. It tells you exactly who the executed player really was.",
+      "If the executed player was lying about their character, you'll know. This is very useful for confirming or denying claims.",
+      "Share your information with the group. If someone claimed to be the Monk but you learn they were actually the Baron, the town knows that player was evil.",
+      "Coordinate with the town on who to execute. You can help verify executions, so executing suspicious players gives you valuable information.",
+      "If your information doesn't match what the executed player claimed, they were either lying OR you are drunk/poisoned. Consider both possibilities.",
+      "The Spy and Recluse can throw off your information - the Spy might register as a Townsfolk, and the Recluse might register as a Minion or Demon."
+    ],
+    bluffingAs: [
+      "You wake each night after the first and are shown the character token of the executed player.",
+      "Claiming the executed player was a different character than they claimed can create confusion and distrust.",
+      "Confirming that an executed evil player was actually the Townsfolk they claimed helps protect remaining evil players.",
+      "This is a harder bluff to maintain because your claims can be checked against what dead players said. Keep your story consistent."
+    ]
+  },
+  {
+    id: 'monk',
+    name: 'Monk',
+    edition: 'tb',
+    team: 'townsfolk',
+    ability: 'Each night*, choose a player (not yourself): they are safe from the Demon tonight.',
+    firstNightOrder: null,
+    otherNightOrder: 12,
+    setup: false,
+    reminders: ['Protected'],
+    flavorQuote: "'Twas a prayer of St Benedict that kept the beast at bay.",
+    extendedSummary: `The Monk protects other players from the Demon.
+
+Each night except the first, you choose a player other than yourself. That player cannot be killed by the Demon tonight. If the Demon tries to kill them, nothing happens - no one dies instead.
+
+You cannot protect yourself. You must always choose another player. Your protection only works if you are alive and sober.`,
+    tipsAndTricks: [
+      "Protect players who have important ongoing abilities - the Empath, Fortune Teller, or Undertaker are great choices.",
+      "Don't reveal who you are too early. If evil knows you're the Monk, they know who NOT to attack, or they might try to get you executed.",
+      "Vary your protection targets. If you always protect the same player, the Demon will just attack someone else.",
+      "If no one dies at night, it could be you! But it could also be a Soldier, or the Demon chose not to kill. Don't assume.",
+      "Consider secretly telling one player that you're protecting them. This builds trust and they can vouch for you.",
+      "Sometimes protecting a suspicious player can help clear them. If they were going to be killed but survived, the Demon isn't interested in them."
+    ],
+    bluffingAs: [
+      "You wake each night (after the first) and point at a player to protect.",
+      "If there's a night with no deaths, claim you protected whoever would have been the obvious target.",
+      "This is a good bluff for a Poisoner - claim to have protected players while you're actually poisoning them.",
+      "Claiming Monk can explain why certain players didn't die, covering for the Demon's actual target choices."
+    ]
+  },
+  {
+    id: 'ravenkeeper',
+    name: 'Ravenkeeper',
+    edition: 'tb',
+    team: 'townsfolk',
+    ability: 'If you die at night, you are woken to choose a player: you learn their character.',
+    firstNightOrder: null,
+    otherNightOrder: 52,
+    setup: false,
+    reminders: [],
+    flavorQuote: "My birds will find the truth, no matter where it hides.",
+    extendedSummary: `The Ravenkeeper learns a player's character when they die at night.
+
+If you are killed at night (by the Demon or any other means), you immediately wake up and choose any player. The Storyteller shows you that player's character token. You learn exactly what character they are.
+
+This only triggers if you die at night. If you are executed during the day, you don't get to use your ability.`,
+    tipsAndTricks: [
+      "Choose someone you're most suspicious of, or someone whose information you want to verify.",
+      "You can choose yourself to confirm your death was real (useful in games with the Zombuul or if you suspect shenanigans).",
+      "Consider checking someone who claims to be a powerful Townsfolk. If they're telling the truth, you've confirmed an ally. If not, you've caught a liar.",
+      "You can also use your ability to confirm a player you trust, giving the town someone to rally around after you're gone.",
+      "The Demon will often avoid killing you if they know you're the Ravenkeeper. You can bluff as something else to get killed.",
+      "Remember that the Spy might register as a Townsfolk and the Recluse might register as a Minion or Demon to your ability."
+    ],
+    bluffingAs: [
+      "If you die at night, claim to have 'activated' as the Ravenkeeper and share fake information.",
+      "You can claim you checked a player and learned they were the Demon or a Minion - very powerful for framing good players.",
+      "Alternatively, confirm an evil player as the good character they claim to be, making them look more trustworthy.",
+      "This bluff only works after you die, so plan ahead for what information you'll share."
+    ]
+  },
+  {
+    id: 'virgin',
+    name: 'Virgin',
+    edition: 'tb',
+    team: 'townsfolk',
+    ability: 'The 1st time you are nominated, if the nominator is a Townsfolk, they are executed immediately.',
+    firstNightOrder: null,
+    otherNightOrder: null,
+    setup: false,
+    reminders: ['No Ability'],
+    flavorQuote: "I am pure. I have never sinned.",
+    extendedSummary: `The Virgin may accidentally execute their accuser.
+
+The first time you are nominated, if the player who nominated you is a Townsfolk, they die immediately. The nomination process ends, and no one else can be nominated that day.
+
+If the nominator is an Outsider, Minion, or Demon, nothing happens. You lose your ability (it was used up) but no one dies. This makes the Virgin a test - if someone nominates the Virgin and nothing happens, they are not a Townsfolk.`,
+    tipsAndTricks: [
+      "Publicly reveal that you are the Virgin early. This way, Townsfolk know not to nominate you, and evil players might reveal themselves by nominating you.",
+      "If someone nominates you and nothing happens, they are NOT a Townsfolk. They must be an Outsider, Minion, or Demon.",
+      "Ask evil-looking players to nominate you. If they refuse, they might be worried about dying. If they do nominate you and nothing happens, you've confirmed they're not Townsfolk.",
+      "Be careful - if a Townsfolk nominates you and dies, that's bad for the good team! Make sure people know you're the Virgin before nominations start.",
+      "The Spy can nominate you and trigger your ability (because they can register as Townsfolk). This is the only way evil can accidentally die to your ability."
+    ],
+    bluffingAs: [
+      "This is a very dangerous bluff! If the real Virgin exists and someone nominates you, your bluff is exposed.",
+      "Only claim Virgin if you're confident the real Virgin isn't in the game or won't come forward.",
+      "If you claim Virgin and are nominated, something needs to happen. Either a Minion dies (if you're the Spy and they're Townsfolk) or nothing happens and you're exposed as not actually being the Virgin.",
+      "A good counter-bluff if exposed: claim you were the Drunk all along and thought you were the Virgin."
+    ]
+  },
+  {
+    id: 'slayer',
+    name: 'Slayer',
+    edition: 'tb',
+    team: 'townsfolk',
+    ability: 'Once per game, during the day, publicly choose a player: if they are the Demon, they die.',
+    firstNightOrder: null,
+    otherNightOrder: null,
+    setup: false,
+    reminders: ['No Ability'],
+    flavorQuote: "Die, foul beast!",
+    extendedSummary: `The Slayer can kill the Demon with a single shot.
+
+Once per game, during the day, you can publicly declare that you are the Slayer and point at a player. If that player is the Demon, they die immediately and good wins.
+
+If the player is not the Demon, nothing visible happens. You cannot try again - your ability is used up whether you hit or miss.`,
+    tipsAndTricks: [
+      "Save your shot until you have good information. Missing doesn't prove the target is innocent - you could be drunk or poisoned.",
+      "Coordinate with information roles before using your ability. The Fortune Teller or Investigator might have leads.",
+      "Remember that a miss doesn't clear the target! You could have been drunk, poisoned, or they could be a Minion rather than the Demon.",
+      "Publicly announce that you're the Slayer to get protection and advice from the town, but this also tips off the Demon.",
+      "Consider slaying early if you have strong information. The Demon might try to kill you before you can use your ability.",
+      "The Recluse might die to your ability (registering as the Demon). Be aware of this possibility."
+    ],
+    bluffingAs: [
+      "Claim to be the Slayer and 'use' your ability on a player you want to seem innocent.",
+      "When nothing happens (because they're not the Demon or you're not really the Slayer), this can clear an evil player.",
+      "Alternatively, claim you used your ability and missed, explaining why you no longer have it.",
+      "Good players also bluff as Slayer to waste Demon attacks, so this is a relatively believable claim."
+    ]
+  },
+  {
+    id: 'soldier',
+    name: 'Soldier',
+    edition: 'tb',
+    team: 'townsfolk',
+    ability: 'You are safe from the Demon.',
+    firstNightOrder: null,
+    otherNightOrder: null,
+    setup: false,
+    reminders: [],
+    flavorQuote: "As long as I have my faith, I am invincible.",
+    extendedSummary: `The Soldier cannot be killed by the Demon.
+
+You are completely immune to the Demon's kill ability. If the Demon chooses you at night, nothing happens - you don't die, and the Demon doesn't learn why their kill failed.
+
+You can still die by execution or by other means (like the Gunslinger or a Gossip). Your protection is only against the Demon's attack.`,
+    tipsAndTricks: [
+      "Be careful about claiming Soldier too publicly. If evil knows who you are, they won't waste attacks on you - but they might push for your execution.",
+      "Surviving a night attack doesn't prove you're the Soldier. It could be a Monk protecting you, or the Demon chose someone else.",
+      "Consider bluffing as a more tempting target to waste Demon attacks. If you claim Fortune Teller, the Demon might try to kill you.",
+      "Work with the Monk if you find them. They don't need to protect you, freeing them to protect other important players.",
+      "If you're fairly certain you're the only reason for no death (no Monk, you didn't die), you might be able to claim and be trusted.",
+      "Watch for players who are pushing hard to execute you - the evil team knows you can't be killed at night."
+    ],
+    bluffingAs: [
+      "The Soldier is a good safe bluff because you never have to produce information.",
+      "If you survive a night when you 'should have' died, claim Soldier to explain it.",
+      "Evil players bluffing as Soldier can survive to the end game, since the 'Demon' won't be attacking them.",
+      "Be prepared for skepticism - anyone can claim Soldier because the ability has no visible effect."
+    ]
+  },
+  {
+    id: 'mayor',
+    name: 'Mayor',
+    edition: 'tb',
+    team: 'townsfolk',
+    ability: 'If only 3 players live & no execution occurs, your team wins. If you die at night, another player might die instead.',
+    firstNightOrder: null,
+    otherNightOrder: null,
+    setup: false,
+    reminders: [],
+    flavorQuote: "Let me be frank with you... I'm the Mayor.",
+    extendedSummary: `The Mayor can win by peaceful means, or redirect death onto others.
+
+If exactly three players are alive (including you) and no execution occurs that day, the good team wins immediately. This gives good an alternate win condition.
+
+Additionally, if you are attacked by the Demon at night, the Storyteller may choose to kill a different player instead. This is not guaranteed but can happen.`,
+    tipsAndTricks: [
+      "On the final day with 3 players, push for no execution. If you can convince the town not to execute, good wins!",
+      "The Demon knows a Mayor win is possible, so they'll want you dead. Stay hidden until you need to reveal.",
+      "Your death-redirect ability is unreliable - it might save you, or it might not. Don't count on it.",
+      "Come out as Mayor when it matters most - usually on the final day when your win condition is relevant.",
+      "Coordinate with trusted players before the final day. They need to believe you're the Mayor and not execute.",
+      "Beware of Minions who will try to get you executed before the final day. The Scarlet Woman especially wants you dead."
+    ],
+    bluffingAs: [
+      "Claiming Mayor is extremely risky for evil. If it gets to 3 players and the town doesn't execute, evil wins anyway if you're really evil.",
+      "As the Demon, claiming Mayor can prevent executions on the final day - the town might spare you hoping for a Mayor victory.",
+      "If you claim Mayor and good doesn't execute at 3 players, evil wins because the real Mayor (if any) isn't in play.",
+      "This bluff works best when there's no real Mayor - but you won't know for sure."
+    ]
+  },
   
   // OUTSIDERS
-  { id: 'butler', name: 'Butler', edition: 'tb', team: 'outsider', ability: 'Each night, choose a player (not yourself): tomorrow, you may only vote if they are voting too.', firstNightOrder: 38, otherNightOrder: 56, setup: false, reminders: ['Master'], flavorQuote: '"Yes, sir."', extendedSummary: 'Each night, you choose a Master. The next day, you may only have your hand raised to vote if your Master also has their hand raised. You can nominate freely.', tipsAndTricks: ['Choose players you trust as Master', 'Evil Master can control your vote', 'Tell good players you are Butler so they understand'], bluffingAs: ['Explain restricted voting behavior', 'Good cover for not voting on certain executions'] },
-  { id: 'drunk', name: 'Drunk', edition: 'tb', team: 'outsider', ability: 'You do not know you are the Drunk. You think you are a Townsfolk character, but you are not.', firstNightOrder: null, otherNightOrder: null, setup: true, reminders: [], flavorQuote: '"I\'m not as think as you drunk I am."', extendedSummary: 'You do not know you are the Drunk. The Storyteller tells you that you are a Townsfolk and gives you false information matching that ability. You register as Drunk, not as that Townsfolk.', tipsAndTricks: ['If your info makes no sense, you might be Drunk', 'Drunk is in play - someone is getting false info', 'Compare info with others to find inconsistencies'], bluffingAs: ['Cannot directly bluff as Drunk (you would not know)', 'Claim Townsfolk and explain bad info as Drunk'] },
-  { id: 'recluse', name: 'Recluse', edition: 'tb', team: 'outsider', ability: 'You might register as evil & as a Minion or Demon, even if dead.', firstNightOrder: null, otherNightOrder: null, setup: false, reminders: [], flavorQuote: '"Do not come near me. I am unclean."', extendedSummary: 'You might register as evil to abilities that detect alignment. You might register as a Minion or Demon to abilities that detect character type. The Storyteller decides each time.', tipsAndTricks: ['Warn info roles you exist', 'You can make good info look wrong', 'Coming out early helps the team adjust'], bluffingAs: ['Great cover for evil - claim you are the Recluse', 'Explains why you appear evil to abilities'] },
-  { id: 'saint', name: 'Saint', edition: 'tb', team: 'outsider', ability: 'If you die by execution, your team loses.', firstNightOrder: null, otherNightOrder: null, setup: false, reminders: [], flavorQuote: '"Forgive them, for they know not what they do."', extendedSummary: 'If you are executed and die, good loses immediately. Even if you are the Imp and die by execution, good loses. Be very careful about nomination patterns.', tipsAndTricks: ['Come out early so town does not execute you', 'Evil will try to frame you as Demon', 'Stay alive at all costs through voting'], bluffingAs: ['Risky - real Saint loses if executed', 'Claim Saint to avoid execution pressure'] },
+  {
+    id: 'butler',
+    name: 'Butler',
+    edition: 'tb',
+    team: 'outsider',
+    ability: 'Each night, choose a player (not yourself): tomorrow, you may only vote if they are voting too.',
+    firstNightOrder: 38,
+    otherNightOrder: 56,
+    setup: false,
+    reminders: ['Master'],
+    flavorQuote: "Yes, sir... No, sir... Certainly, sir.",
+    extendedSummary: `The Butler may only vote when their Master votes.
+
+Each night, you choose a player to be your Master. The next day, you may only raise your hand to vote if your Master also has their hand raised (or their vote has already been counted).
+
+If your Master puts their hand down, you must put yours down too. You are responsible for managing this yourself - the Storyteller won't stop you from voting illegally. You can nominate freely; only voting is restricted.`,
+    tipsAndTricks: [
+      "Choose a Master you believe is good. If your Master is evil, you'll only be voting when it helps evil.",
+      "Tell your Master that you've selected them. They might coordinate with you on votes, and their behavior can help you determine if they're trustworthy.",
+      "You don't HAVE to vote just because your Master votes. Remember to only vote for players you believe are evil.",
+      "Choosing a dead player as Master means you can only vote when they use their dead vote - which might be never or very rarely.",
+      "If people are suspicious of you, offer to make them your Master tomorrow. This builds trust.",
+      "Remember that exiles (voting on Travellers) are not affected by your ability - you can vote freely on those."
+    ],
+    bluffingAs: [
+      "You wake each night (including night one) and choose a Master. The next day you can only vote if they are voting.",
+      "The Butler is a great bluff because nobody can prove you're NOT the Butler - you just claim you can't vote unless your 'Master' votes.",
+      "You can 'choose' a fellow evil player as Master, giving you an excuse to talk to them privately.",
+      "Claim you switched Masters secretly if you need to vote against your stated Master's wishes.",
+      "This bluff explains odd voting patterns - you can't vote because your Master isn't voting!"
+    ]
+  },
+  {
+    id: 'drunk',
+    name: 'Drunk',
+    edition: 'tb',
+    team: 'outsider',
+    ability: 'You do not know you are the Drunk. You think you are a Townsfolk character, but you are not.',
+    firstNightOrder: null,
+    otherNightOrder: null,
+    setup: true,
+    reminders: [],
+    flavorQuote: "I'm only a *hic* social drinker, my dear. Admittedly, I am a heavy *burp* socializer.",
+    extendedSummary: `The Drunk player thinks they are a Townsfolk, but they are not.
+
+During setup, the Drunk token is replaced with a Townsfolk token. The player who draws that token is secretly the Drunk - they don't know this. The Storyteller knows.
+
+The Drunk has no ability. When their 'Townsfolk' ability would work, it doesn't. If it gives information, the Storyteller can give false information. The Drunk registers as an Outsider, not as the Townsfolk they think they are.`,
+    tipsAndTricks: [
+      "You won't know you're the Drunk - you'll start with a Townsfolk token. Your only clue is that your information or ability doesn't work correctly.",
+      "If your information seems obviously wrong or your ability fails when it shouldn't, you might be the Drunk.",
+      "The town should work together to figure out who the Drunk is. If one person's information is consistently wrong, they're likely the Drunk.",
+      "Drunk information is unreliable, not necessarily wrong. Sometimes the Storyteller tells you truth to avoid exposing you.",
+      "Characters like the Slayer or Monk won't work at all if they're the Drunk. A Soldier will die to the Demon.",
+      "The Librarian, Undertaker, and Ravenkeeper can all learn if a player is the Drunk (they see Drunk, not the Townsfolk)."
+    ],
+    bluffingAs: [
+      "You can't directly claim to BE the Drunk - you wouldn't know you are one!",
+      "Instead, bluff as a Townsfolk, give false information, then later 'realize' you might be the Drunk when your info is proven wrong.",
+      "Claiming to be a Drunk Empath or Drunk Fortune Teller explains why your information was false - and gives you cover for lying.",
+      "Insinuating a Drunk is in play makes good players distrust their own information.",
+      "If a good player has damning information about your team, suggest they might be the Drunk."
+    ]
+  },
+  {
+    id: 'recluse',
+    name: 'Recluse',
+    edition: 'tb',
+    team: 'outsider',
+    ability: 'You might register as evil & as a Minion or Demon, even if dead.',
+    firstNightOrder: null,
+    otherNightOrder: null,
+    setup: false,
+    reminders: [],
+    flavorQuote: "Garn git ya darn grub ya mitts ofma lorn yasee. Grr. Natsy pikkins yonder southwise ye begittin afta ya! Git!",
+    extendedSummary: `The Recluse might appear to be evil, but is actually good.
+
+Whenever your alignment or character type would be detected by an ability, the Storyteller may choose to have you register as evil, or as a Minion or Demon. This applies even when you're dead.
+
+A Recluse that registers as a Minion or Demon doesn't gain that character's ability - they just register that way. The Storyteller decides each time, and may give different results to different characters.`,
+    tipsAndTricks: [
+      "Tell everyone you're the Recluse as soon as possible! This helps explain why information roles might see you as evil.",
+      "You will usually register as evil. Be suspicious of anyone who claims you appear good - they might be lying.",
+      "Your existence can throw off the Chef, Empath, Investigator, and other information roles. Help them understand their info might include you.",
+      "Don't get Slayed! The Slayer will probably kill you if they target you. This makes you look like the Demon.",
+      "Being the Recluse is hard - you look evil but you're good. Accept that you might be executed, and try to prove your worth before then.",
+      "If you're alive on the final day, you're a problem - everyone suspects you. Consider letting yourself be executed before then."
+    ],
+    bluffingAs: [
+      "You never wake, learn anything, or act during the day.",
+      "The Recluse is an excellent evil bluff! 'I'm not evil, I just register that way' explains why information roles think you're evil.",
+      "This is especially good for the Spy - you're evil but might appear as Recluse to certain abilities.",
+      "Claiming Recluse early and being 'helpful' can make you look like a confirmed Outsider.",
+      "As the Recluse, you can claim your existence explains the Chef's high number or the Empath's evil neighbor."
+    ]
+  },
+  {
+    id: 'saint',
+    name: 'Saint',
+    edition: 'tb',
+    team: 'outsider',
+    ability: 'If you die by execution, your team loses.',
+    firstNightOrder: null,
+    otherNightOrder: null,
+    setup: false,
+    reminders: [],
+    flavorQuote: "Wisdom begets peace. Patience begets wisdom. Fear not, for the time shall come when fear too shall pass.",
+    extendedSummary: `The Saint ends the game if they are executed.
+
+If you die by execution, the game ends immediately. Good loses and evil wins.
+
+If you die by any other means - the Demon killing you at night, for example - the game continues normally. Only execution triggers your ability. Note: if you're the Drunk and get executed, good still loses because you're actually the Drunk with this ability.`,
+    tipsAndTricks: [
+      "Do NOT get executed. This is your entire purpose. Make sure the good team knows you are the Saint!",
+      "Come out publicly as the Saint as early as possible. Shout it from the rooftops if you have to.",
+      "Find allies who can vouch for you. Get the Empath to confirm you're good, or the Fortune Teller to verify you're not the Demon.",
+      "Evil will try to make you look like the Demon. Watch for players framing you with false information.",
+      "If you're getting nominated and might be executed, beg, plead, and argue - your team loses if you die.",
+      "Alternatively, stay quiet and bluff as a juicy Demon target. If you die at night, your ability doesn't trigger."
+    ],
+    bluffingAs: [
+      "You never wake, learn anything, or act during the day - until you're executed, when the game ends.",
+      "The Saint is one of the best evil bluffs in the game. The town will be terrified to execute you, even with evidence against you.",
+      "Saint is excellent for the Poisoner - even with information pointing at you, they might not execute before the final day.",
+      "Be prepared for Slayers! They can test you without triggering the Saint's ability.",
+      "If you're executed and the game DOESN'T end, you need a backup bluff fast. Claim you were the Drunk all along.",
+      "Two people claiming Saint creates a huge dilemma for good - they can't safely execute either one."
+    ]
+  },
 
   // MINIONS
-  { id: 'poisoner', name: 'Poisoner', edition: 'tb', team: 'minion', ability: 'Each night, choose a player: they are poisoned tonight and tomorrow day.', firstNightOrder: 17, otherNightOrder: 7, setup: false, reminders: ['Poisoned'], flavorQuote: '"A little something for the pain..."', extendedSummary: 'Each night, choose a player. They are poisoned until dusk tomorrow. While poisoned, their ability malfunctions - they get false info or their ability does not work.', tipsAndTricks: ['Poison information roles for maximum chaos', 'Coordinate with Demon on who to poison', 'Poisoning Monk lets Demon kill protected players'], fightingThe: ['Look for inconsistent info patterns', 'Multiple people with wrong info suggests Poisoner', 'Consider who benefits from certain info being wrong'] },
-  { id: 'spy', name: 'Spy', edition: 'tb', team: 'minion', ability: 'Each night, you see the Grimoire. You might register as good & as a Townsfolk or Outsider, even if dead.', firstNightOrder: 49, otherNightOrder: 68, setup: false, reminders: [], flavorQuote: '"Shhhh."', extendedSummary: 'Each night, you see the Storyteller Grimoire showing all characters and their positions. You might register as good to abilities, letting you fake Townsfolk results.', tipsAndTricks: ['Use Grimoire knowledge to coordinate evil team', 'Your registration lets you appear in good info', 'Know exactly what info roles will learn'], fightingThe: ['Spy can appear as good in info - double check', 'Spy knows everything, so bluffs will be good', 'Look for someone with too much knowledge'] },
+  {
+    id: 'poisoner',
+    name: 'Poisoner',
+    edition: 'tb',
+    team: 'minion',
+    ability: 'Each night, choose a player: they are poisoned tonight and tomorrow day.',
+    firstNightOrder: 17,
+    otherNightOrder: 7,
+    setup: false,
+    reminders: ['Poisoned'],
+    flavorQuote: "Add compound Alpha to compound Beta... NOT TOO MUCH!",
+    extendedSummary: `The Poisoner secretly disrupts character abilities.
+
+Each night, you choose a player to poison. They are poisoned for that night and the entire next day, until dusk.
+
+A poisoned player has no ability - it doesn't work. However, the Storyteller pretends it does. If they wake at night, they still wake. If they get information, the Storyteller may give false information. The poisoned player has no idea they're poisoned.`,
+    tipsAndTricks: [
+      "Target information roles for maximum chaos. A poisoned Fortune Teller or Empath will get wrong info and mislead the town.",
+      "Coordinate with your Demon so you're not targeting the same players. Unless they're protected by a Monk - then poisoning them lets the Demon kill them!",
+      "Characters like the Virgin, Slayer, or Mayor can be excellent targets - poison them when they're about to use their ability.",
+      "Poisoning the Scarlet Woman when the Imp kills themselves means a different Minion (maybe you!) becomes the Imp.",
+      "On night one, if you don't know who to poison, poison someone next to the Demon. A poisoned Empath neighbor is devastating.",
+      "Spread your poison around. Poisoning different players makes the source of misinformation harder to identify than sticking to one target."
+    ],
+    fightingThe: [
+      "On the first night, the Poisoner acts blindly, so first-night information is usually reliable.",
+      "Information roles are prime targets. If an Empath or Fortune Teller has revealed, their info might be poisoned.",
+      "Look for inconsistent patterns. If multiple players seem to have wrong information sporadically, a Poisoner is likely.",
+      "Separating Poisoner effects from the Drunk is crucial. If ONLY one player has consistently wrong info, they might be the Drunk.",
+      "Kill the Poisoner as soon as possible. Unlike other Minions, they cause ongoing damage every night.",
+      "Remember that poisoned information is unreliable, not necessarily wrong. The Storyteller CAN give true info to a poisoned player."
+    ]
+  },
+  {
+    id: 'spy',
+    name: 'Spy',
+    edition: 'tb',
+    team: 'minion',
+    ability: 'Each night, you see the Grimoire. You might register as good & as a Townsfolk or Outsider, even if dead.',
+    firstNightOrder: 49,
+    otherNightOrder: 68,
+    setup: false,
+    reminders: [],
+    flavorQuote: "Any brewmaster worth their liquor, knows no concoction pours trouble quicker, than one where spies seem double.",
+    extendedSummary: `The Spy might appear to be a good character, but is actually evil. They also see the Grimoire.
+
+Each night, you see the Storyteller's Grimoire, showing all characters, who is who, and all reminder tokens. You know EVERYTHING about the game state.
+
+Additionally, you might register as good to abilities that detect alignment, and might register as a specific Townsfolk or Outsider to abilities that detect character type. The Storyteller decides each time.`,
+    tipsAndTricks: [
+      "You know everyone's character from night one. Use this to coordinate perfect bluffs for your evil team.",
+      "Memorize who you need to: characters not in play (for bluffs), dangerous targets to avoid (Ravenkeeper, Soldier), and key info roles.",
+      "You can bluff as Washerwoman, Librarian, etc. and give correct information about actual characters - making you look very trustworthy.",
+      "Guide your Poisoner to poison the most dangerous characters. Guide your Demon to avoid the Soldier and Ravenkeeper.",
+      "You often register as good. Use this to appear innocent to the Empath, Virgin, and other detection abilities.",
+      "You can trigger the Virgin's ability (registering as Townsfolk). Getting 'killed' by the Virgin makes you look very trustworthy - use this to spread misinformation.",
+      "The Undertaker and Ravenkeeper might see you as a Townsfolk. Use this if you're executed or killed."
+    ],
+    fightingThe: [
+      "The Spy knows everything, so evil bluffs will be unusually accurate. Be wary of players with too much correct information.",
+      "The Spy can appear as good in information. Double-check results that clear specific players.",
+      "If someone seems to know too much about who is what character, they might be the Spy.",
+      "The Spy can nominate the Virgin and die (appearing as Townsfolk). A 'confirmed' player who later seems evil might have been the Spy.",
+      "Coordinate with your team privately. The Spy sees the Grimoire, not your whispered conversations.",
+      "The Spy will guide evil targeting. If your Monk's protected player survives while other key roles die, the Spy might be directing the kills."
+    ]
+  },
   {
     id: 'scarletwoman',
     name: 'Scarlet Woman',
@@ -121,7 +672,39 @@ If the Scarlet Woman becomes the Demon, they are that Demon in every way. Good w
       "Unlike other Minions, the Scarlet Woman may deliberately try to get their Demon killed to look better. Watch for sudden allegiance changes when it drops below 5 players."
     ]
   },
-  { id: 'baron', name: 'Baron', edition: 'tb', team: 'minion', ability: 'There are extra Outsiders in play. [+2 Outsiders]', firstNightOrder: null, otherNightOrder: null, setup: true, reminders: [], flavorQuote: '"I have many friends."', extendedSummary: 'During setup, 2 extra Outsiders are added to the game. This means 2 fewer Townsfolk. The Baron has no other ability during the game.', tipsAndTricks: ['Extra Outsiders create confusion', 'Librarian will see more Outsiders than expected', 'Your presence changes the setup math'], fightingThe: ['Count Outsider claims - Baron adds 2', 'Too many Outsiders means some are lying', 'No Outsider claims might mean no Baron'] },
+  {
+    id: 'baron',
+    name: 'Baron',
+    edition: 'tb',
+    team: 'minion',
+    ability: 'There are extra Outsiders in play. [+2 Outsiders]',
+    firstNightOrder: null,
+    otherNightOrder: null,
+    setup: true,
+    reminders: [],
+    flavorQuote: "This town has gone to the dogs, what? Cheap foreign labor... that's the ticket. Stuff them in the mine, I say.",
+    extendedSummary: `The Baron changes the number of Outsiders present in the game.
+
+During setup, two Townsfolk tokens are removed and two Outsider tokens are added. This happens before anyone draws their character.
+
+The Baron has no active ability during the game. Your job is to survive, bluff, mislead, and help your Demon win. The extra Outsiders do your work for you by weakening the Townsfolk majority.`,
+    tipsAndTricks: [
+      "Your ability is done before the game starts. You're free to bluff, mislead, and cause chaos without worrying about an active power.",
+      "Claim to be an Outsider! The extra Outsiders make this believable. If you and the real Outsiders all claim, the town doesn't know who's lying.",
+      "Double up with an in-play Townsfolk to make them look suspicious. If you both claim Fortune Teller, the town distrusts both of you.",
+      "Claiming Baron is in play (even when it isn't) makes the town think there's a Drunk, distrusting their own information.",
+      "Be bold! You have nothing to lose. Get the Virgin to nominate you, get yourself executed - as long as the Demon survives, you're doing your job.",
+      "The Imp can pass Demonhood to you if needed. Don't completely neglect your survival."
+    ],
+    fightingThe: [
+      "Count the Outsider claims! If more Outsiders claim than should exist (even with Baron), someone is lying.",
+      "The Baron effect is obvious - you'll notice extra Outsiders quickly. This tells you there's likely no Poisoner, Spy, or Scarlet Woman.",
+      "If you believe a Baron is in play and trust all Outsider claims, know that 2 fewer Townsfolk exist than normal.",
+      "The Librarian, Investigator, Ravenkeeper, and Undertaker can all help identify who the actual Outsiders are.",
+      "Barons tend to be aggressive bluffers since their ability is passive. Look for players causing chaos.",
+      "Remember: the Imp can starpass to the Baron. Don't ignore them just because they seem 'passive'."
+    ]
+  },
 
   // DEMONS
   {
@@ -165,8 +748,68 @@ The Imp is the most straightforward Demon - simple but effective. The starpass a
 
 export const BAD_MOON_RISING: Character[] = [
   // TOWNSFOLK
-  { id: 'grandmother', name: 'Grandmother', edition: 'bmr', team: 'townsfolk', ability: 'You start knowing a good player & their character. If the Demon kills them, you die too.', firstNightOrder: 39, otherNightOrder: null, setup: false, reminders: ['Grandchild'], flavorQuote: '"Come closer, dearie."', extendedSummary: 'On the first night, you learn a good player and their character (your Grandchild). If the Demon kills your Grandchild, you also die that night.', tipsAndTricks: ['Confirm your Grandchild identity early', 'Protect your Grandchild from Demon', 'Your death might indicate Demon kill pattern'], bluffingAs: ['Claim a player as Grandchild to build trust', 'Risky if your "Grandchild" dies and you live'] },
-  { id: 'sailor', name: 'Sailor', edition: 'bmr', team: 'townsfolk', ability: 'Each night, choose an alive player: either you or they are drunk until dusk. You can\'t die.', firstNightOrder: 10, otherNightOrder: 4, setup: false, reminders: ['Drunk'], flavorQuote: '"Shiver me timbers!"', extendedSummary: 'Each night, choose a player. Either you or they become drunk until dusk (Storyteller chooses). You cannot die by any means while sober.', tipsAndTricks: ['You are immortal when sober', 'Choose evil players to potentially drunk them', 'Your survival is guaranteed - use it boldly'], bluffingAs: ['Explain why you survived nights', 'Claim to have made specific players drunk'] },
+  {
+    id: 'grandmother',
+    name: 'Grandmother',
+    edition: 'bmr',
+    team: 'townsfolk',
+    ability: 'You start knowing a good player & their character. If the Demon kills them, you die too.',
+    firstNightOrder: 39,
+    otherNightOrder: null,
+    setup: false,
+    reminders: ['Grandchild'],
+    flavorQuote: "Take a jacket, it's cold outside. Drink some soup, grow up big and strong. Never play with the Ouija board. Always keep a flashlight by your bed. Don't go into the forest after dark, and you'll be just fine.",
+    extendedSummary: `The Grandmother knows a good player, but has bound their fates together.
+
+On the first night, you learn one good player and their character. This is your Grandchild.
+
+If the Demon kills your Grandchild at night, you die too. If your Grandchild dies by any other means (execution, Assassin, etc.), you survive.`,
+    tipsAndTricks: [
+      "Your Grandchild is confirmed good! Work closely with them and share information.",
+      "Revealing publicly makes your Grandchild a Demon target - be strategic about coming out.",
+      "If your Grandchild has a powerful ability (like Exorcist), they might stay hidden while you verify them privately.",
+      "Your death when your Grandchild is killed gives information - the town knows that person was killed by the Demon.",
+      "Consider claiming a different role publicly while coordinating privately with your Grandchild.",
+      "If you're still alive, your Grandchild probably hasn't been killed by the Demon yet."
+    ],
+    bluffingAs: [
+      "You wake night one and are shown a player and their character token.",
+      "Claiming Grandmother is risky - if your claimed Grandchild dies and you don't, you're exposed.",
+      "Pair up with a fellow evil player. Claim them as your Grandchild to make them look trustworthy.",
+      "If you claim a good player as your Grandchild and they die without you dying, claim you were drunk or poisoned."
+    ]
+  },
+  {
+    id: 'sailor',
+    name: 'Sailor',
+    edition: 'bmr',
+    team: 'townsfolk',
+    ability: 'Each night, choose an alive player: either you or they are drunk until dusk. You can\'t die.',
+    firstNightOrder: 10,
+    otherNightOrder: 4,
+    setup: false,
+    reminders: ['Drunk'],
+    flavorQuote: "YO-HO! YO-HO! A pirate's life for me... Drink up me hearties, YO-HO!",
+    extendedSummary: `The Sailor is protected from death but causes drunkenness.
+
+Each night, you choose an alive player. Either you or that player becomes drunk until dusk. The Storyteller decides who gets drunk.
+
+While you are sober, you cannot die - not by Demon attack, execution, or any other means. If you are drunk, you CAN die.`,
+    tipsAndTricks: [
+      "You are incredibly hard to kill! Use this to be bold and aggressive.",
+      "Choose suspicious players - if the Storyteller makes them drunk, it might disrupt evil abilities.",
+      "If you choose yourself, the Storyteller must make you drunk (no one else to choose). Only do this if you want to die.",
+      "Your protection is powerful, but you can be drunk by other effects. If a Sailor is acting drunk, they might be vulnerable.",
+      "Consider staying hidden. If evil knows who you are, they won't waste kills on you.",
+      "You can confirm you're the Sailor by surviving a situation where you should have died."
+    ],
+    bluffingAs: [
+      "You wake each night and point at a player. Then either you or they become drunk.",
+      "Sailor is a great bluff to explain surviving when you shouldn't have.",
+      "Claim you made specific players drunk to explain information discrepancies.",
+      "Be careful - if you claim Sailor and then die, your bluff is exposed."
+    ]
+  },
   { id: 'chambermaid', name: 'Chambermaid', edition: 'bmr', team: 'townsfolk', ability: 'Each night, choose 2 alive players (not yourself): you learn how many woke tonight due to their ability.', firstNightOrder: 50, otherNightOrder: 69, setup: false, reminders: [], flavorQuote: '"I see all that happens in these halls."', extendedSummary: 'Each night, choose 2 players. You learn how many of them woke tonight due to their own ability (0, 1, or 2). Does not count being woken by other abilities.', tipsAndTricks: ['Confirm night-active roles like Monk', 'Zero might mean players are lying about roles', 'Track patterns across multiple nights'], bluffingAs: ['Claim numbers that confirm evil players', 'Complex to fake consistently'] },
   { id: 'exorcist', name: 'Exorcist', edition: 'bmr', team: 'townsfolk', ability: 'Each night*, choose a player (different to last night): the Demon, if chosen, learns who you are then doesn\'t wake tonight.', firstNightOrder: null, otherNightOrder: 21, setup: false, reminders: ['Chosen'], flavorQuote: '"The power of good compels you!"', extendedSummary: 'Each night except the first, choose a player (different from last night). If you choose the Demon, they learn you are the Exorcist and cannot kill tonight.', tipsAndTricks: ['No death means you hit the Demon', 'Demon knows who you are after you hit them', 'Rotate choices to eventually find Demon'], bluffingAs: ['Claim you caused a death-free night', 'Demon can confirm or deny your claims'] },
   { id: 'innkeeper', name: 'Innkeeper', edition: 'bmr', team: 'townsfolk', ability: 'Each night*, choose 2 players: they can\'t die tonight, but 1 is drunk until dusk.', firstNightOrder: null, otherNightOrder: 9, setup: false, reminders: ['Protected', 'Drunk'], flavorQuote: '"Come in, come in! The fire is warm."', extendedSummary: 'Each night except the first, choose 2 players. They cannot die tonight. However, one of them becomes drunk until dusk (Storyteller chooses which).', tipsAndTricks: ['Protect key players from Demon', 'One of your choices gets false info', 'Balance protection with drunking drawback'], bluffingAs: ['Explain why certain players survived', 'Claim responsibility for info discrepancies'] },
@@ -192,10 +835,135 @@ export const BAD_MOON_RISING: Character[] = [
   { id: 'mastermind', name: 'Mastermind', edition: 'bmr', team: 'minion', ability: 'If the Demon dies by execution (ending the game), play for 1 more day. If a player is then executed, their team loses.', firstNightOrder: null, otherNightOrder: null, setup: false, reminders: [], flavorQuote: '"All according to plan."', extendedSummary: 'If the Demon dies by execution (which would end the game), play continues for one more day. Whoever is executed on that day - their team loses.', tipsAndTricks: ['Insurance against Demon execution', 'Extra day creates pressure', 'Evil can win even after Demon dies'], fightingThe: ['Mastermind gives evil extra day', 'Be careful who you execute after Demon', 'No execution on Mastermind day wins for good'] },
 
   // DEMONS
-  { id: 'zombuul', name: 'Zombuul', edition: 'bmr', team: 'demon', ability: 'Each night*, if no-one died today, choose a player: they die. The 1st time you die, you live but register as dead.', firstNightOrder: null, otherNightOrder: 25, setup: false, reminders: ['Dead', 'Died Today'], flavorQuote: '"Braaaaains..."', extendedSummary: 'You only kill at night if no one died during the day. First time you die, you appear dead but continue playing secretly.', tipsAndTricks: ['Execute daily to limit Zombuul kills', 'First death is fake - Zombuul continues', 'No daytime death means night kill'], fightingThe: ['Execute someone every day', 'Zombuul appears dead but is not', 'Watch for continued evil activity after death'] },
-  { id: 'pukka', name: 'Pukka', edition: 'bmr', team: 'demon', ability: 'Each night, choose a player: they are poisoned. The previously poisoned player dies then becomes healthy.', firstNightOrder: 27, otherNightOrder: 26, setup: false, reminders: ['Poisoned', 'Dead'], flavorQuote: '"Ssssleep now..."', extendedSummary: 'Each night (including first), choose a player to poison. The previously poisoned player dies and becomes healthy. Creates delayed deaths.', tipsAndTricks: ['Poison tonight, they die tomorrow night', 'Delayed death creates alibi confusion', 'First night poison, no death yet'], fightingThe: ['Deaths are delayed by one night', 'Player was poisoned before they died', 'Info from dying player may be false'] },
-  { id: 'shabaloth', name: 'Shabaloth', edition: 'bmr', team: 'demon', ability: 'Each night*, choose 2 players: they die. A dead player you chose last night might be regurgitated.', firstNightOrder: null, otherNightOrder: 27, setup: false, reminders: ['Dead', 'Alive'], flavorQuote: '"Nom nom nom."', extendedSummary: 'Each night except the first, choose 2 players to kill. One player you killed the previous night might come back to life.', tipsAndTricks: ['Double kills accelerate game', 'Regurgitation brings back victim', 'High body count Demon'], fightingThe: ['Two deaths per night is Shabaloth', 'Resurrection possible from Shabaloth', 'Fast-paced game requires quick action'] },
-  { id: 'po', name: 'Po', edition: 'bmr', team: 'demon', ability: 'Each night*, you may choose a player: they die. If your last choice was no-one, choose 3 players tonight.', firstNightOrder: null, otherNightOrder: 28, setup: false, reminders: ['Dead', 'Dead', 'Dead', '3 Attacks'], flavorQuote: '"Charge!"', extendedSummary: 'Each night except first, you may choose a player to kill (or no one). If you chose no one last night, you must kill 3 players tonight.', tipsAndTricks: ['Skip a night to enable triple kill', 'Triple kill is devastating', 'Pacing kills strategically'], fightingThe: ['No death might mean Po charging', 'Triple kill follows no-kill night', 'High variance in death count'] },
+  {
+    id: 'zombuul',
+    name: 'Zombuul',
+    edition: 'bmr',
+    team: 'demon',
+    ability: 'Each night*, if no-one died today, choose a player: they die. The 1st time you die, you live but register as dead.',
+    firstNightOrder: null,
+    otherNightOrder: 25,
+    setup: false,
+    reminders: ['Dead', 'Died Today'],
+    flavorQuote: "The undead do not rest. They do not think. They do not plan or wish or dream. But you may rest, and think, and dream... and see what you shall become.",
+    extendedSummary: `The Zombuul secretly survives their first death, and only kills on deathless days.
+
+You only kill at night if no player died during the previous day (by execution, ability, or otherwise).
+
+The first time you die, you don't actually die. You appear dead - you're added to the dead players, you close your eyes during the day - but you're actually alive. You continue to wake at night and kill. You only truly die the SECOND time you die.`,
+    tipsAndTricks: [
+      "If the town executes every day, you can never kill at night. But this puts pressure on them.",
+      "Your first 'death' is fake. You can let yourself be executed early, appearing to be cleared, then continue killing as a 'dead' player.",
+      "Coordinate with Minions. After your fake death, they need to keep suspicion off you.",
+      "You register as dead after your first death - Empath, Fortune Teller, and other abilities see you as dead.",
+      "Consider killing important players on nights after no one died, when you get the chance.",
+      "If you're 'dead' and the game continues, try to blend in with the dead players."
+    ],
+    fightingThe: [
+      "Execute someone every day! This prevents the Zombuul from ever killing at night.",
+      "The Zombuul might already be 'dead'. Track dead players carefully for suspicious behavior.",
+      "If executions happen daily but there are still night deaths, something strange is happening - maybe the Zombuul.",
+      "The game continuing after executing the Zombuul the first time reveals the Zombuul. Execute them again!",
+      "Dead players can still be the Zombuul. Don't ignore suspicious behavior from 'dead' players."
+    ]
+  },
+  {
+    id: 'pukka',
+    name: 'Pukka',
+    edition: 'bmr',
+    team: 'demon',
+    ability: 'Each night, choose a player: they are poisoned. The previously poisoned player dies then becomes healthy.',
+    firstNightOrder: 27,
+    otherNightOrder: 26,
+    setup: false,
+    reminders: ['Poisoned', 'Dead'],
+    flavorQuote: "Ssshhhhhhh... ssshhhhhhh... don't fight it... let it wash through you... ssshhhhhhh...",
+    extendedSummary: `The Pukka poisons its victims, who die later.
+
+Each night (including the first), you choose a player to poison. They are poisoned immediately.
+
+The previously poisoned player (from last night) dies and becomes healthy. This creates a one-night delay between poisoning and death.`,
+    tipsAndTricks: [
+      "Night 1: You poison someone. No one dies. Night 2: You poison someone new. Your first victim dies.",
+      "Players who die were poisoned the PREVIOUS night. Their abilities last night were malfunctioning.",
+      "Poison an Empath or Fortune Teller the night before they claim - their 'confirming' information will be wrong.",
+      "Your delayed death creates alibis. You could be far away from someone when they die.",
+      "Consider poisoning the same person twice - they get poisoned, healed when they'd die, then poisoned again.",
+      "The Innkeeper and Sailor can protect people from death but not from poison. Use this to your advantage."
+    ],
+    fightingThe: [
+      "The player who died was poisoned YESTERDAY. Their information from yesterday might be false.",
+      "Night 1 has no death. The first death is night 2 (from night 1 poisoning).",
+      "Players are poisoned for roughly 24 hours before death. Consider what they claimed during that time.",
+      "The Courtier can drunk the Pukka - the currently poisoned player stays poisoned but won't die.",
+      "Sailors don't die, but if poisoned, they're still poisoned. Kill the Pukka to stop the poisoning."
+    ]
+  },
+  {
+    id: 'shabaloth',
+    name: 'Shabaloth',
+    edition: 'bmr',
+    team: 'demon',
+    ability: 'Each night*, choose 2 players: they die. A dead player you chose last night might be regurgitated.',
+    firstNightOrder: null,
+    otherNightOrder: 27,
+    setup: false,
+    reminders: ['Dead', 'Alive'],
+    flavorQuote: "Feed me, feed me, FEED ME! Puddings and pies and pastries and muffins and jelly and porridge and pork and lamb and BLOOD!",
+    extendedSummary: `The Shabaloth kills twice per night but might bring back a victim.
+
+Each night except the first, you choose two players. They both die.
+
+One player you killed the previous night might be regurgitated - coming back to life. The Storyteller chooses who and whether this happens.`,
+    tipsAndTricks: [
+      "Two kills per night makes for fast, brutal games. Be aggressive!",
+      "Regurgitation is unpredictable. The Storyteller might bring back a victim to keep the game interesting.",
+      "Kill threatening players quickly. With two kills, you can eliminate multiple threats per night.",
+      "Players who come back are useful - they might have information from being dead.",
+      "The double-kill means games last fewer nights. Push hard for evil before good organizes.",
+      "Coordinate kills with Minions to avoid wasting both attacks on protected players."
+    ],
+    fightingThe: [
+      "Two deaths per night means Shabaloth! Identify this early.",
+      "Someone coming back to life is Shabaloth regurgitation. This confirms the Demon type.",
+      "Fast games favor evil. Execute quickly and efficiently.",
+      "Regurgitated players are confirmed good (they were killed by Demon). Trust them.",
+      "The Innkeeper protecting two players might save both from Shabaloth attacks."
+    ]
+  },
+  {
+    id: 'po',
+    name: 'Po',
+    edition: 'bmr',
+    team: 'demon',
+    ability: 'Each night*, you may choose a player: they die. If your last choice was no-one, choose 3 players tonight.',
+    firstNightOrder: null,
+    otherNightOrder: 28,
+    setup: false,
+    reminders: ['Dead', 'Dead', 'Dead', '3 Attacks'],
+    flavorQuote: "I am the monster under the bed. I am the wolf at your door. I am every shadow, every cold night, every unpleasant glance in every crowded room. But I'm not scary. Oh, no. YOU are.",
+    extendedSummary: `The Po can choose to not kill, then kill three players the next night.
+
+Each night except the first, you may choose a player to kill - or choose no one.
+
+If you chose no one last night, tonight you MUST choose three players. They all die. This creates huge swings in body count.`,
+    tipsAndTricks: [
+      "Night 2: Skip. Night 3: Triple kill. This is devastating but predictable.",
+      "Vary your pattern. Sometimes kill normally to throw off suspicion.",
+      "A triple kill on critical night can end the game immediately.",
+      "Don't skip too early - you want enough players that triple kill doesn't immediately end the game.",
+      "Coordinate with Minions. They can protect you during the 'charging' night when you don't kill.",
+      "If you skip and good executes well that day, your triple kill might not be enough. Time it carefully."
+    ],
+    fightingThe: [
+      "No death might mean Po is 'charging' for a triple kill!",
+      "After a no-death night, brace for three deaths the next night.",
+      "Execute aggressively on no-death days. You need to hit the Po before the triple kill.",
+      "The Po might kill 1 normally instead of charging. Don't assume every no-death is Po.",
+      "Protection abilities might save some players, but three attacks is hard to fully block.",
+      "Count deaths carefully. 0-3-1-3 pattern strongly suggests Po."
+    ]
+  },
 ];
 
 // ===================
@@ -231,10 +999,134 @@ export const SECTS_AND_VIOLETS: Character[] = [
   { id: 'pitHag', name: 'Pit-Hag', edition: 'snv', team: 'minion', ability: 'Each night*, choose a player & a character they become (if not-in-play). If a Demon is made, deaths tonight are arbitrary.', firstNightOrder: null, otherNightOrder: 16, setup: false, reminders: [], flavorQuote: '"Let me fix that for you."', extendedSummary: 'Each night except first, change a player into a new character (not already in play). If you create a new Demon, all deaths that night are Storyteller\'s choice.', tipsAndTricks: ['Change characters at will', 'Can create new Demon', 'Disrupts ability expectations'], fightingThe: ['Characters might change overnight', 'Role claims may become outdated', 'Pit-Hag creates chaos'] },
 
   // DEMONS
-  { id: 'fangGu', name: 'Fang Gu', edition: 'snv', team: 'demon', ability: 'Each night*, choose a player: they die. The 1st Outsider this kills becomes an evil Fang Gu & you die instead. [+1 Outsider]', firstNightOrder: null, otherNightOrder: 29, setup: true, reminders: ['Dead', 'Once'], flavorQuote: '"My venom is eternal."', extendedSummary: 'Kill each night. First time you kill an Outsider, they become the new evil Fang Gu and you die instead. Setup adds 1 Outsider.', tipsAndTricks: ['Avoid Outsiders or use them strategically', 'Can pass to Outsider if dying', 'Extra Outsider in setup'], fightingThe: ['Fang Gu can jump to Outsider', 'Newly evil Outsider is new Demon', 'Watch Outsiders carefully'] },
-  { id: 'vigormortis', name: 'Vigormortis', edition: 'snv', team: 'demon', ability: 'Each night*, choose a player: they die. Minions you kill keep their ability & poison 1 Townsfolk neighbour. [-1 Outsider]', firstNightOrder: null, otherNightOrder: 30, setup: true, reminders: ['Dead', 'Has Ability', 'Poisoned'], flavorQuote: '"Death is just the beginning."', extendedSummary: 'Kill each night. Minions you kill keep their ability and poison one Townsfolk neighbor. Setup removes 1 Outsider.', tipsAndTricks: ['Kill your own Minions for benefits', 'Dead Minions still have powers', 'Fewer Outsiders in game'], fightingThe: ['Dead Minions might still function', 'Unexplained poison suggests Vigormortis', 'Minion deaths empower this Demon'] },
-  { id: 'noDashii', name: 'No Dashii', edition: 'snv', team: 'demon', ability: 'Each night*, choose a player: they die. Your 2 Townsfolk neighbours are poisoned.', firstNightOrder: null, otherNightOrder: 31, setup: false, reminders: ['Dead', 'Poisoned'], flavorQuote: '"The corruption spreads."', extendedSummary: 'Kill each night. Your two nearest Townsfolk neighbors (alive or dead) are poisoned permanently while you live.', tipsAndTricks: ['Poison spreads from your position', 'Neighbors get false info', 'Position matters greatly'], fightingThe: ['Two Townsfolk near No Dashii are poisoned', 'Look for clustered bad info', 'Find the poison center'] },
-  { id: 'vortox', name: 'Vortox', edition: 'snv', team: 'demon', ability: 'Each night*, choose a player: they die. Townsfolk abilities yield false info. Each day, if no-one is executed, evil wins.', firstNightOrder: null, otherNightOrder: 32, setup: false, reminders: ['Dead'], flavorQuote: '"Nothing is true."', extendedSummary: 'Kill each night. All Townsfolk abilities give false information. If any day passes without an execution, evil wins immediately.', tipsAndTricks: ['All Townsfolk info is false', 'Must execute every day', 'Use false info in reverse'], fightingThe: ['Vortox = all Townsfolk info inverted', 'Must execute daily or evil wins', 'Info being consistently wrong suggests Vortox'] },
+  {
+    id: 'fangGu',
+    name: 'Fang Gu',
+    edition: 'snv',
+    team: 'demon',
+    ability: 'Each night*, choose a player: they die. The 1st Outsider this kills becomes an evil Fang Gu & you die instead. [+1 Outsider]',
+    firstNightOrder: null,
+    otherNightOrder: 29,
+    setup: true,
+    reminders: ['Dead', 'Once'],
+    flavorQuote: "The soulless eyes of the Fang Gu stare unblinking from the darkness, hunting, patient, eternal. Tonight, the village will know despair.",
+    extendedSummary: `The Fang Gu can jump into an Outsider when it kills them.
+
+Each night except the first, you choose a player to kill. If you kill an Outsider, something special happens: they become the new Fang Gu (evil), and you die.
+
+This jump only happens once. After it triggers, you're dead and the new Fang Gu continues normally. Setup adds +1 Outsider to the game.`,
+    tipsAndTricks: [
+      "Avoid killing Outsiders early - you don't want to jump until you're ready or in danger.",
+      "If you're about to be executed, deliberately target an Outsider to escape death and continue as them.",
+      "The new Fang Gu inherits your knowledge but is now a different player. Coordinate beforehand!",
+      "Extra Outsider in setup means more potential Fang Gu targets - but also makes Outsider claims more believable.",
+      "After the jump, you're dead but can still vote once. The new Fang Gu must continue without drawing suspicion.",
+      "Kill the Outsider you trust most if you need to jump - they'll continue as evil."
+    ],
+    fightingThe: [
+      "The Fang Gu can jump to an Outsider! Watch for a dead Fang Gu followed by suspicious Outsider behavior.",
+      "There's one extra Outsider in setup. This affects Outsider claim counting.",
+      "If you suspect Fang Gu jumped, the new Demon is someone who claimed Outsider.",
+      "A dead Demon but game continuing could be Fang Gu (or Scarlet Woman in other games).",
+      "Executing known Outsiders safely tests if they've become the Fang Gu."
+    ]
+  },
+  {
+    id: 'vigormortis',
+    name: 'Vigormortis',
+    edition: 'snv',
+    team: 'demon',
+    ability: 'Each night*, choose a player: they die. Minions you kill keep their ability & poison 1 Townsfolk neighbour. [-1 Outsider]',
+    firstNightOrder: null,
+    otherNightOrder: 30,
+    setup: true,
+    reminders: ['Dead', 'Has Ability', 'Poisoned'],
+    flavorQuote: "Even in death, they serve. The Vigormortis binds the souls of the damned to its terrible will.",
+    extendedSummary: `The Vigormortis empowers its Minions through death.
+
+Each night except the first, you kill a player. If you kill a Minion, they keep their ability even while dead, AND they poison one of their living Townsfolk neighbors.
+
+Setup removes 1 Outsider from the game.`,
+    tipsAndTricks: [
+      "Killing your own Minions is powerful! They keep their ability AND poison a neighbor.",
+      "A dead Witch can still curse. A dead Evil Twin situation gets very complicated.",
+      "The poison effect spreads - each dead Minion poisons one neighbor, potentially multiple poisoned Townsfolk.",
+      "Kill Minions strategically when their ability would be most useful dead.",
+      "Fewer Outsiders means fewer Outsider claims are valid - use this knowledge.",
+      "Coordinate with Minions about when you'll kill them for maximum chaos."
+    ],
+    fightingThe: [
+      "Dead Minions might still have their abilities! The Witch curse can come from the grave.",
+      "Unexplained poison (bad info from multiple players) might mean Vigormortis.",
+      "One fewer Outsider than expected in setup - adjust your Outsider counting.",
+      "Track dead Minion neighbors - they're likely poisoned.",
+      "Kill the Vigormortis fast before it can empower dead Minions."
+    ]
+  },
+  {
+    id: 'noDashii',
+    name: 'No Dashii',
+    edition: 'snv',
+    team: 'demon',
+    ability: 'Each night*, choose a player: they die. Your 2 Townsfolk neighbours are poisoned.',
+    firstNightOrder: null,
+    otherNightOrder: 31,
+    setup: false,
+    reminders: ['Dead', 'Poisoned'],
+    flavorQuote: "The corruption spreads in whispers, in doubts, in the spaces between certainty. No Dashii feeds on trust itself.",
+    extendedSummary: `The No Dashii poisons its Townsfolk neighbors just by existing.
+
+Each night except the first, you kill a player normally. Additionally, your two nearest Townsfolk neighbors (skipping Outsiders, Minions, and the Demon) are poisoned permanently while you live.
+
+The poison ends when you die.`,
+    tipsAndTricks: [
+      "Your neighbors get false information! This creates a cloud of misinformation around you.",
+      "Sit between information-heavy roles if possible - poisoned Empath or Fortune Teller causes chaos.",
+      "Your poison is positional. If good identifies two adjacent players with bad info, they might find you.",
+      "When one poisoned neighbor dies, a new Townsfolk becomes your neighbor and gets poisoned.",
+      "The poison is invisible - victims don't know they're poisoned.",
+      "Killing your poisoned neighbors clears the evidence, but creates more poisoned neighbors."
+    ],
+    fightingThe: [
+      "Two Townsfolk near the No Dashii are ALWAYS poisoned. Look for clusters of bad info.",
+      "If two adjacent players both seem wrong, the No Dashii might be near them.",
+      "The poison spreads positionally. Find the center of the misinformation.",
+      "Outsiders and evil players between the Demon and Townsfolk create larger poison gaps.",
+      "Kill the No Dashii to end all the positional poison at once."
+    ]
+  },
+  {
+    id: 'vortox',
+    name: 'Vortox',
+    edition: 'snv',
+    team: 'demon',
+    ability: 'Each night*, choose a player: they die. Townsfolk abilities yield false info. Each day, if no-one is executed, evil wins.',
+    firstNightOrder: null,
+    otherNightOrder: 32,
+    setup: false,
+    reminders: ['Dead'],
+    flavorQuote: "In the realm of the Vortox, all truths become lies, all certainties crumble. Nothing is real.",
+    extendedSummary: `The Vortox inverts all Townsfolk information and demands daily executions.
+
+Each night except the first, you kill normally. ALL Townsfolk abilities that provide information give FALSE information instead.
+
+Additionally, if any day ends without an execution, evil wins immediately.`,
+    tipsAndTricks: [
+      "Every Townsfolk is giving false information! Use this to your advantage.",
+      "The 'must execute' rule creates pressure - good can never safely skip a day.",
+      "Give false information matching what Townsfolk might learn - it will seem to 'confirm' you.",
+      "Minions aren't affected - they give true information. This can be suspicious!",
+      "Outsiders give true information too. Watch for this discrepancy.",
+      "The execution pressure helps you - good is forced to kill and might hit each other."
+    ],
+    fightingThe: [
+      "If Vortox, ALL Townsfolk information is inverted. 'No' means 'Yes', evil reads good, etc.",
+      "You MUST execute every day or evil wins instantly. Never skip an execution!",
+      "If information seems consistently wrong across multiple Townsfolk, suspect Vortox.",
+      "Outsider and Minion information is still true - compare against Townsfolk claims.",
+      "Once you suspect Vortox, flip all Townsfolk information and re-evaluate."
+    ]
+  },
 ];
 
 // ===================
