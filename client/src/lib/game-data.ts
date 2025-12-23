@@ -29,7 +29,39 @@ export interface Jinx {
 
 export const TROUBLE_BREWING: Character[] = [
   // TOWNSFOLK
-  { id: 'washerwoman', name: 'Washerwoman', edition: 'tb', team: 'townsfolk', ability: 'You start knowing that 1 of 2 players is a particular Townsfolk.', firstNightOrder: 32, otherNightOrder: null, setup: false, reminders: ['Townsfolk', 'Wrong'], flavorQuote: '"Bloodstains on a dinner jacket? No, this is cooking sherry. How careless."', extendedSummary: 'On the first night, you learn that one of two players is a specific Townsfolk character. One player is that character, the other is not (they could be any character). This information is true unless you are drunk or poisoned.', tipsAndTricks: ['Share your information early to help the good team', 'Consider who nominated who to verify your info', 'Your info is most useful on day 1'], bluffingAs: ['Claim to have seen two suspicious players', 'Use real player names but fake the character', 'Coordinate with evil team on who to frame'] },
+  {
+    id: 'washerwoman',
+    name: 'Washerwoman',
+    edition: 'tb',
+    team: 'townsfolk',
+    ability: 'You start knowing that 1 of 2 players is a particular Townsfolk.',
+    firstNightOrder: 32,
+    otherNightOrder: null,
+    setup: false,
+    reminders: ['Townsfolk', 'Wrong'],
+    flavorQuote: "Bloodstains on a dinner jacket? No, this is cooking sherry. How careless.",
+    extendedSummary: `The Washerwoman learns that a specific Townsfolk is in play, but not exactly who is playing them.
+
+During the first night, the Washerwoman is woken, shown two players, and learns the character of one of them. They learn this only once and then learn nothing more.
+
+You know that of the two players you are shown, one must be the Townsfolk you are shown. Importantly, this means that you know that the person you see is not the Drunk.`,
+    tipsAndTricks: [
+      "The Washerwoman is deceptively powerful. Even though you don't gain information on the evil players, you can confirm the identity of a good player. This player should be your focus for the game.",
+      "When the Washerwoman is poisoned or is actually the Drunk, they will often get information that is easy to figure out is incorrect. If both players the Storyteller pointed at tell you they're a different character, you are likely the Drunk or poisoned.",
+      "To find out which of the two players is the Townsfolk, either ask the group publicly or have a private conversation with each player individually. It is usually best to reveal what you know before the Townsfolk in question says who they are so they trust you more.",
+      "Waiting until the final day to share your information can be very useful. If you can keep the Townsfolk that you know alive until the final day, then you know one player who is not the Demon!",
+      "Talk to the Townsfolk player that you know, and secretly let them know that you know who they are. This way, you can form an alliance and defend each other.",
+      "Beware of the Spy! They may register as a Townsfolk character to you. That player who you think is the Investigator may not be the Investigator after all.",
+      "You can claim to be a more powerful character than you actually are. You start with all the information you're going to get, so if the Demon kills you, they aren't killing the Slayer or the Fortune Teller."
+    ],
+    bluffingAs: [
+      "You would have received your information on night one, and so should have it from that point onward. You will have been shown two players and one Townsfolk token.",
+      "Claim to be the Washerwoman and point to at least one evil player. Then, name a Townsfolk character (preferably one not in play). If that evil player is clever, they may claim to be that Townsfolk, making you both look good.",
+      "If a good player claims to be a particular Townsfolk, you can claim to be the Washerwoman and confirm them. This helps them trust you, allowing you to lead them astray.",
+      "The Washerwoman can be a difficult bluff because sometimes the Townsfolk you say is in play, isn't. If this happens, claim to be the Drunk or poisoned.",
+      "If you are the Spy or have access to a Spy, they can be invaluable in providing accurate information to back up your story."
+    ]
+  },
   { id: 'librarian', name: 'Librarian', edition: 'tb', team: 'townsfolk', ability: 'You start knowing that 1 of 2 players is a particular Outsider. (Or that zero are in play.)', firstNightOrder: 33, otherNightOrder: null, setup: false, reminders: ['Outsider', 'Wrong'], flavorQuote: '"Shhhh! This is a library, not a chatroom."', extendedSummary: 'On the first night, you learn that one of two players is a specific Outsider character, or you learn that zero Outsiders are in play. If there are no Outsiders, you learn this definitively.', tipsAndTricks: ['Zero Outsiders info is very powerful - share it', 'Help identify the Drunk if you see one', 'Outsider info helps narrow down evil players'], bluffingAs: ['Claim zero Outsiders to discredit real Outsider claims', 'Point at confirmed good player as Outsider to sow doubt'] },
   { id: 'investigator', name: 'Investigator', edition: 'tb', team: 'townsfolk', ability: 'You start knowing that 1 of 2 players is a particular Minion.', firstNightOrder: 34, otherNightOrder: null, setup: false, reminders: ['Minion', 'Wrong'], flavorQuote: '"It was Professor Plum, in the conservatory, with the lead pipe."', extendedSummary: 'On the first night, you learn that one of two players is a specific Minion character. One is the Minion, one is not. Use this to narrow down the evil team.', tipsAndTricks: ['Your info directly identifies an evil player', 'Work with other info roles to triangulate', 'Execute one of your two players if stuck'], bluffingAs: ['Frame a good player as the Minion', 'Claim a Minion not in play to confuse'] },
   { id: 'chef', name: 'Chef', edition: 'tb', team: 'townsfolk', ability: 'You start knowing how many pairs of evil players there are.', firstNightOrder: 35, otherNightOrder: null, setup: false, reminders: [], flavorQuote: '"I\'ve got a very delicate palate. I can tell when something is off."', extendedSummary: 'You learn how many pairs of evil players are sitting next to each other. A pair is two evil players adjacent in the seating. If Demon sits next to Minion, that is 1 pair.', tipsAndTricks: ['Zero means evil players are spread out', 'High numbers mean evil is clustered', 'Combine with other info to find the cluster'], bluffingAs: ['Claim a number that matches the actual seating', 'Zero is safest if you do not know evil positions'] },
@@ -52,11 +84,79 @@ export const TROUBLE_BREWING: Character[] = [
   // MINIONS
   { id: 'poisoner', name: 'Poisoner', edition: 'tb', team: 'minion', ability: 'Each night, choose a player: they are poisoned tonight and tomorrow day.', firstNightOrder: 17, otherNightOrder: 7, setup: false, reminders: ['Poisoned'], flavorQuote: '"A little something for the pain..."', extendedSummary: 'Each night, choose a player. They are poisoned until dusk tomorrow. While poisoned, their ability malfunctions - they get false info or their ability does not work.', tipsAndTricks: ['Poison information roles for maximum chaos', 'Coordinate with Demon on who to poison', 'Poisoning Monk lets Demon kill protected players'], fightingThe: ['Look for inconsistent info patterns', 'Multiple people with wrong info suggests Poisoner', 'Consider who benefits from certain info being wrong'] },
   { id: 'spy', name: 'Spy', edition: 'tb', team: 'minion', ability: 'Each night, you see the Grimoire. You might register as good & as a Townsfolk or Outsider, even if dead.', firstNightOrder: 49, otherNightOrder: 68, setup: false, reminders: [], flavorQuote: '"Shhhh."', extendedSummary: 'Each night, you see the Storyteller Grimoire showing all characters and their positions. You might register as good to abilities, letting you fake Townsfolk results.', tipsAndTricks: ['Use Grimoire knowledge to coordinate evil team', 'Your registration lets you appear in good info', 'Know exactly what info roles will learn'], fightingThe: ['Spy can appear as good in info - double check', 'Spy knows everything, so bluffs will be good', 'Look for someone with too much knowledge'] },
-  { id: 'scarletwoman', name: 'Scarlet Woman', edition: 'tb', team: 'minion', ability: 'If there are 5 or more players alive & the Demon dies, you become the Demon. (Conditions vary.)', firstNightOrder: null, otherNightOrder: 19, setup: false, reminders: ['Demon'], flavorQuote: '"You thought you won? How delightful."', extendedSummary: 'If the Demon dies while 5+ players are alive, you become the Imp immediately. The game continues with you as the new Demon. Below 5 players, Demon death ends the game.', tipsAndTricks: ['Stay alive as backup Demon', 'Demon can suicide into you to clear suspicion', 'Let Demon take risks knowing you are backup'], fightingThe: ['At 5+ players, killing Demon might not win', 'Execute suspected Scarlet Woman before Demon', 'Watch for player who benefits from Demon death'] },
+  {
+    id: 'scarletwoman',
+    name: 'Scarlet Woman',
+    edition: 'tb',
+    team: 'minion',
+    ability: "If there are 5 or more players alive & the Demon dies, you become the Demon. (Travellers don't count.)",
+    firstNightOrder: null,
+    otherNightOrder: 19,
+    setup: false,
+    reminders: ['Demon'],
+    flavorQuote: "You have shown me the secrets of the Council of the Purple Flame. We have lain together in fire and in lust and in beastly commune, and I am forever your servant. But tonight, my dear, I am your master.",
+    extendedSummary: `The Scarlet Woman becomes the Demon when the Demon dies.
+
+If there are five or more players just before the Demon dies—that is, four or more players left alive after the Demon dies—then the Scarlet Woman immediately becomes the Demon, and the game continues as if nothing happened.
+
+Travellers do not count as players when seeing if the Scarlet Woman's ability triggers.
+
+If less than five players are alive when the Demon is executed, then the game ends and good wins.
+
+If five or more players are alive when the Imp kills themself at night, the Scarlet Woman must become the new Imp.
+
+If the Scarlet Woman becomes the Demon, they are that Demon in every way. Good wins if they are executed. They attack each night. They register as the Demon.`,
+    tipsAndTricks: [
+      "Stay alive! You are the backup plan. Play conservatively and don't draw too much attention to yourself early.",
+      "Coordinate bluffs with your Demon to confirm each other. For example, claim to be the Washerwoman and 'confirm' the Demon's character claim.",
+      "If the Imp is in danger, they can kill themselves at night to pass the Demonhood to you, making you look innocent.",
+      "You don't register as a Demon, so characters like the Fortune Teller won't detect you. Use this to get 'confirmed' as good.",
+      "Be bold about targeting your own Demon to make yourself look good - you can afford to because you're the backup plan."
+    ],
+    fightingThe: [
+      "When the Scarlet Woman is in play, the Demon can be executed and the game continues. If you definitely killed the Imp but the game continues, suspect a Scarlet Woman.",
+      "If the Imp kills themselves at night, the Demonhood must pass to the Scarlet Woman first before other Minions. Use this to narrow down where the new Demon is.",
+      "The Scarlet Woman does not register as a Demon. The Fortune Teller won't detect them, and the Slayer won't kill them. Be wary of players overeager to be checked.",
+      "If you know a Scarlet Woman is in play, leaving them alive can be strategic. On the final day with 3 players, you only need to decide: did the Demon pass to the Scarlet Woman or not?",
+      "Unlike other Minions, the Scarlet Woman may deliberately try to get their Demon killed to look better. Watch for sudden allegiance changes when it drops below 5 players."
+    ]
+  },
   { id: 'baron', name: 'Baron', edition: 'tb', team: 'minion', ability: 'There are extra Outsiders in play. [+2 Outsiders]', firstNightOrder: null, otherNightOrder: null, setup: true, reminders: [], flavorQuote: '"I have many friends."', extendedSummary: 'During setup, 2 extra Outsiders are added to the game. This means 2 fewer Townsfolk. The Baron has no other ability during the game.', tipsAndTricks: ['Extra Outsiders create confusion', 'Librarian will see more Outsiders than expected', 'Your presence changes the setup math'], fightingThe: ['Count Outsider claims - Baron adds 2', 'Too many Outsiders means some are lying', 'No Outsider claims might mean no Baron'] },
 
   // DEMONS
-  { id: 'imp', name: 'Imp', edition: 'tb', team: 'demon', ability: 'Each night*, choose a player: they die. If you kill yourself this way, a Minion becomes the Imp.', firstNightOrder: null, otherNightOrder: 24, setup: false, reminders: ['Dead'], flavorQuote: '"We must528 eat. We must feed. Tonight, you."', extendedSummary: 'Each night except the first, choose a player to kill. If you choose yourself, you die and a Minion becomes the new Imp. This "starpass" lets you clear suspicion.', tipsAndTricks: ['Starpass to Minion if you are about to be executed', 'Coordinate with Minions on who becomes next Imp', 'Killing yourself creates alibi for that Minion'], fightingThe: ['Imp can pass to Minion - track all evil, not just Demon', 'Sudden Demon death at night means starpass', 'Execute Minions before they can receive starpass'] },
+  {
+    id: 'imp',
+    name: 'Imp',
+    edition: 'tb',
+    team: 'demon',
+    ability: 'Each night*, choose a player: they die. If you kill yourself this way, a Minion becomes the Imp.',
+    firstNightOrder: null,
+    otherNightOrder: 24,
+    setup: false,
+    reminders: ['Dead'],
+    flavorQuote: "I am the needle. You are the doll.",
+    extendedSummary: `The Imp kills a player each night and can pass on the Demonhood by killing themselves.
+
+Each night except the first, the Imp chooses a player to kill. That player dies.
+
+If the Imp kills themselves at night, a Minion becomes the Imp. The Storyteller chooses which Minion, but it's usually the Scarlet Woman if one is alive.
+
+The Imp is the most straightforward Demon - simple but effective. The starpass ability creates interesting gameplay where the Demon can move around the circle.`,
+    tipsAndTricks: [
+      "Kill players who are gathering too much accurate information, like the Empath or Fortune Teller.",
+      "Avoid killing the Ravenkeeper or Soldier if you can identify them - one wastes your kill, the other reveals information.",
+      "Coordinate with your Minions on who to kill and who to keep alive to support their bluffs.",
+      "If you're under heavy suspicion, kill yourself to pass the Demonhood to a Minion. This makes you look innocent.",
+      "Consider not killing sometimes (if you have a Poisoner) to make it look like a Monk or Soldier is in play."
+    ],
+    fightingThe: [
+      "The Imp kills every night (except the first). Track the deaths and look for patterns in who the Demon is avoiding.",
+      "If a player you suspected dies at night, they were probably not the Imp. Use night kills as information.",
+      "Remember the Imp can starpass - if you execute someone and the game continues with 5+ players, either you got the wrong person or a Scarlet Woman caught it.",
+      "The Imp knows their Minions from the first night. Look for players who seem to be coordinating or covering for each other.",
+      "Powerful characters like the Slayer or Virgin can help confirm the Demon's identity. Use them wisely."
+    ]
+  },
 ];
 
 // ===================
