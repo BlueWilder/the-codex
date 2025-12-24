@@ -14,10 +14,10 @@ export function Navigation() {
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-md border-t border-amber-900/50 md:top-0 md:bottom-auto md:border-t-0 md:border-b">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16 md:h-20">
-          <div className="hidden md:flex items-center space-x-2">
+          <Link href="/" className="hidden md:flex items-center space-x-2 hover:opacity-80 transition-opacity" data-testid="link-logo-home">
             <Skull className="w-8 h-8 text-red-700" />
             <span className="font-display text-2xl text-amber-500 tracking-wider">The Codex</span>
-          </div>
+          </Link>
 
           <div className="flex items-center justify-around w-full md:w-auto md:space-x-8">
             {navItems.map((item) => (
