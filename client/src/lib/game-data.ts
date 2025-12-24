@@ -1197,6 +1197,2045 @@ export const JINXES: Jinx[] = [
 ];
 
 // ===================
+// EXPERIMENTAL (THE CAROUSEL)
+// ===================
+
+export const EXPERIMENTAL: Character[] = [
+  // TOWNSFOLK
+  {
+    id: 'acrobat',
+    name: 'Acrobat',
+    edition: 'experimental',
+    team: 'townsfolk',
+    ability: 'Each night*, choose a player: if they are or become drunk or poisoned tonight, you die.',
+    firstNightOrder: null,
+    otherNightOrder: 40,
+    setup: false,
+    reminders: ['Chosen'],
+    flavorQuote: "Ladies and gentlemen, hold fast to your hats, for I shall defy the very laws of gravity and dance upon the air, a marvel of agility and daring, all for your delight and wonder!",
+    extendedSummary: `The Acrobat dies when they find a drunk or poisoned player.
+
+Each night except the first, the Acrobat chooses a player. If the chosen player is sober and healthy, nothing happens. If the player is drunk or poisoned, the Acrobat dies.
+
+If the Acrobat is drunk or poisoned, they cannot die to their own ability. The Acrobat may choose any player, dead or alive, even themselves.`,
+    tipsAndTricks: [
+      "Choose players you trust to be sober and healthy - their survival confirms your read on them.",
+      "Avoid players who might be targeted by a Poisoner or could be the Drunk.",
+      "Your death can confirm that a player was poisoned or drunk, which is useful information for the town.",
+      "If you're confident about which players are likely poisoning targets, avoid them."
+    ],
+    bluffingAs: [
+      "Claim to have chosen a player you want to cast suspicion on, implying they were drunk or poisoned.",
+      "If you survive, you can confirm players as 'sober and healthy' which builds trust.",
+      "Use your survival to support evil players - claim you chose them and they were fine."
+    ]
+  },
+  {
+    id: 'alchemist',
+    name: 'Alchemist',
+    edition: 'experimental',
+    team: 'townsfolk',
+    ability: 'You have a Minion ability.',
+    firstNightOrder: 35,
+    otherNightOrder: null,
+    setup: false,
+    reminders: ['Is the Alchemist'],
+    flavorQuote: "Visit the interior of the Earth. By rectification thou shalt find the hidden stone. Above the gold, lieth the red. Kether in Malkuth.",
+    extendedSummary: `The Alchemist has a Minion ability.
+
+The Alchemist's ability is usually that of a not-in-play Minion, but can duplicate an in-play Minion ability. They learn which ability this is on the first night.
+
+They are still a good Townsfolk - they win when good wins. They register as good and as the Alchemist. The Alchemist does not wake to learn who the other Minions are or who the Demon is.`,
+    tipsAndTricks: [
+      "Figure out which Minion ability you have and use it to help the good team.",
+      "If you have a Poisoner ability, poison players you suspect are evil.",
+      "Your ability is powerful - use it wisely to support the town's goals.",
+      "The Storyteller may ask you to choose differently if your choice would harm good too much."
+    ],
+    bluffingAs: [
+      "Claim to have a Minion ability that isn't actually in play to confuse the good team.",
+      "Use your 'ability' to justify suspicious behavior or night actions.",
+      "Be careful - the real Alchemist knows what ability they have."
+    ]
+  },
+  {
+    id: 'alsaahir',
+    name: 'Alsaahir',
+    edition: 'experimental',
+    team: 'townsfolk',
+    ability: 'Each day, if you publicly guess which players are Minion(s) and which are Demon(s), good wins.',
+    firstNightOrder: null,
+    otherNightOrder: null,
+    setup: false,
+    reminders: [],
+    flavorQuote: "I am here because of you, and you are here because of me.",
+    extendedSummary: `The Alsaahir guesses the entire evil team.
+
+The Alsaahir's guesses need to be public, and during the day. They don't have to guess every day. If the Alsaahir guesses the Demon player as the Demon, and the Minion players as Minions, the game ends immediately and good wins.
+
+The Alsaahir doesn't need to guess specific Minion or Demon characters - just which players are which type.`,
+    tipsAndTricks: [
+      "Make a guess every day to narrow down who the evil team is.",
+      "Wait a few days before your first guess to hide that you are the Alsaahir.",
+      "Use your guesses to rule out pairs or groups of players that worry you.",
+      "Seek out characters that detect evil players to boost your chances of guessing correctly."
+    ],
+    bluffingAs: [
+      "It is easy to bluff as the Alsaahir early, as good players often do it too.",
+      "Be careful with your guesses - put thought into who you guess each day.",
+      "Ask for other players' advice on who to guess to make yourself look good."
+    ]
+  },
+  {
+    id: 'amnesiac',
+    name: 'Amnesiac',
+    edition: 'experimental',
+    team: 'townsfolk',
+    ability: 'You do not know what your ability is. Each day, privately guess what it is: you learn how accurate you are.',
+    firstNightOrder: 32,
+    otherNightOrder: 48,
+    setup: false,
+    reminders: ['?', '?', '?'],
+    flavorQuote: "Wait. What. Who? Oh, ok. Wait. What?",
+    extendedSummary: `The Amnesiac doesn't know their own ability.
+
+The Storyteller decides what the Amnesiac's ability is. It may be the same ability as another character, something similar, or something original.
+
+Each day, the Amnesiac talks to the Storyteller privately and makes a guess. The Storyteller answers "cold" if very wrong, "warm" if on the right track, "hot" if very close, and "bingo" if spot on.`,
+    tipsAndTricks: [
+      "Start with broad questions like 'Does my ability have to do with Outsiders?'",
+      "Pay attention to what happens at night - are you woken? Do you choose players?",
+      "Ask for the town's help in figuring out your ability.",
+      "Remember that your Storyteller made your ability guessable."
+    ],
+    bluffingAs: [
+      "You don't need an ability in mind when you start bluffing, but have one by the end.",
+      "Pretend to guess your ability - this gives limitless room for deception.",
+      "Invite the town to figure out your 'ability' with you to distract from finding the Demon."
+    ]
+  },
+  {
+    id: 'atheist',
+    name: 'Atheist',
+    edition: 'experimental',
+    team: 'townsfolk',
+    ability: 'The Storyteller can break the game rules, and if executed, good wins, even if you are dead. [No evil characters]',
+    firstNightOrder: null,
+    otherNightOrder: null,
+    setup: true,
+    reminders: [],
+    flavorQuote: "Let us disperse with unnecessary conjecture and silly paranoia. There is a perfectly rational explanation for everything.",
+    extendedSummary: `The Atheist knows that all players are good and there is no such thing as Demons.
+
+With the Atheist in play, there are no evil players. Good wins if the Storyteller is executed. Any living player may nominate the Storyteller.
+
+The Storyteller may break any game rules - kill players at night, give false information, change characters, etc.`,
+    tipsAndTricks: [
+      "If you are the Atheist, you know who the Demon is: nobody. Execute the Storyteller to win.",
+      "Reveal your character early - there's no point lying since there are no evil players.",
+      "If there are characters that could make you drunk, figure out if you are drunk first.",
+      "Look for inconsistencies in information as evidence the Storyteller is breaking rules."
+    ],
+    bluffingAs: [
+      "Bluffing as the Atheist can convince good players to execute the Storyteller, causing evil to win.",
+      "Try to make the good team's information seem too consistent or inconsistent.",
+      "Be prepared for the players to execute you - have a backup plan."
+    ]
+  },
+  {
+    id: 'balloonist',
+    name: 'Balloonist',
+    edition: 'experimental',
+    team: 'townsfolk',
+    ability: 'Each night, you learn a player of a different character type than last night. [+0 or +1 Outsider]',
+    firstNightOrder: 44,
+    otherNightOrder: 56,
+    setup: true,
+    reminders: ['Know'],
+    flavorQuote: "More heat! Higher! Higher! Ahhh... it is so beautiful from up here, don't you agree?",
+    extendedSummary: `The Balloonist learns players of different character types.
+
+Each time the Balloonist learns a player, the player must have a different character type to the previously shown player. The Balloonist does not learn the character type.
+
+During setup, the Storyteller may choose to add an Outsider due to the Balloonist's ability.`,
+    tipsAndTricks: [
+      "Pay attention to Outsider claims - you might have added an extra one.",
+      "Talk to the player you learned each day to find out their claimed character.",
+      "Lie about your role to stay alive longer - claim to be a less threatening character.",
+      "If you learn two Townsfolk claims in a row, one of them is likely evil."
+    ],
+    bluffingAs: [
+      "Since you might add an Outsider, have a Minion bluff as one.",
+      "Keep an eye out for good players with information that paints others as evil.",
+      "Wait a few days before sharing - this lets you figure out who is what type."
+    ]
+  },
+  {
+    id: 'banshee',
+    name: 'Banshee',
+    edition: 'experimental',
+    team: 'townsfolk',
+    ability: 'If the Demon kills you, all players learn this. From now on, you may nominate twice per day and vote twice per nomination.',
+    firstNightOrder: null,
+    otherNightOrder: null,
+    setup: false,
+    reminders: ['Has ability'],
+    flavorQuote: "Gorm do shúile, dearg do ghruaig, ní bheidh sé i bhfad, is a mbeidh tú san uaigh.",
+    extendedSummary: `The Banshee becomes more powerful when dead, nominating and voting twice as much.
+
+When dead, they may nominate twice per day and vote for any nomination without needing a vote token. They may vote twice for the same nomination.
+
+The Banshee only gains these powers if killed by the Demon. Dying by execution or other abilities doesn't count.`,
+    tipsAndTricks: [
+      "Get killed by the Demon by any method that works for you!",
+      "You get confirmed when you die - take advantage of this to gather information.",
+      "Your votes become disproportionately powerful as numbers dwindle.",
+      "Use your nominations every day - you can be assured a good player is nominating."
+    ],
+    bluffingAs: [
+      "If you die at night without announcement, your bluff is ruined! Make sure the Demon knows.",
+      "Bluff as something else and back into a Banshee claim if forced.",
+      "Come out as Banshee early and dare evil to kill you - this can build trust."
+    ]
+  },
+  {
+    id: 'bountyhunter',
+    name: 'Bounty Hunter',
+    edition: 'experimental',
+    team: 'townsfolk',
+    ability: 'You start knowing 1 evil player. If the player you know dies, you learn another evil player tonight. [1 Townsfolk is evil]',
+    firstNightOrder: 46,
+    otherNightOrder: 64,
+    setup: true,
+    reminders: ['Know', 'Known'],
+    flavorQuote: "Alone, I walk these streets, paved with the sick stench of corruption.",
+    extendedSummary: `The Bounty Hunter tracks down evil players, one at a time.
+
+The Bounty Hunter starts knowing one evil player. When that player dies, they learn another evil player. If the Bounty Hunter is in the game, one Townsfolk is evil.
+
+The Bounty Hunter only learns the evil player, not their character.`,
+    tipsAndTricks: [
+      "You know who an evil player is right off the bat! Get them executed.",
+      "Watch who your target talks to - this might reveal other evil players.",
+      "Once you're public, you're a target for the Demon, so time your reveal carefully.",
+      "Remember you've created an evil Townsfolk - pay attention to who might be lying."
+    ],
+    bluffingAs: [
+      "Bluffing as the Bounty Hunter throws a lot of shade on other players.",
+      "Create a clique with good players to execute those you set up as evil.",
+      "If you come out publicly, be prepared to die - get the Demon to kill you to build trust."
+    ]
+  },
+  {
+    id: 'cannibal',
+    name: 'Cannibal',
+    edition: 'experimental',
+    team: 'townsfolk',
+    ability: 'You have the ability of the recently killed executee. If they are evil, you are poisoned until a good player dies by execution.',
+    firstNightOrder: null,
+    otherNightOrder: null,
+    setup: false,
+    reminders: ['Poisoned', 'Lunch'],
+    flavorQuote: "I don't like clowns. They taste funny.",
+    extendedSummary: `The Cannibal eats executed characters, gaining their ability.
+
+If a good player dies by execution, the Cannibal gains that player's ability. If an evil player dies by execution, the Cannibal is poisoned.
+
+The Cannibal is not told which ability they gained - they must figure it out.`,
+    tipsAndTricks: [
+      "Execute people! Your ability reduces the sting of executing good players.",
+      "Keep an eye out for Townsfolk with once-per-game abilities.",
+      "Remember you're not told which ability you have - figure it out from night actions.",
+      "Talk to executees before they die to learn what ability you're getting."
+    ],
+    bluffingAs: [
+      "Try to get people executed - it's what a real Cannibal would do!",
+      "Be ready to fake a new ability every time someone is executed.",
+      "If you want to accuse an executee of being evil, act like your power didn't work."
+    ]
+  },
+  {
+    id: 'choirboy',
+    name: 'Choirboy',
+    edition: 'experimental',
+    team: 'townsfolk',
+    ability: 'If the Demon kills the King, you learn which player is the Demon. [+the King]',
+    firstNightOrder: null,
+    otherNightOrder: 40,
+    setup: true,
+    reminders: [],
+    flavorQuote: "I saw it, I did. I was in the pews, tidying the hymn books, when a dreadful tune started from the pipe organ.",
+    extendedSummary: `The Choirboy learns who the Demon is when the King is slain.
+
+If the Choirboy is in play and the King isn't, the King is added during setup.
+
+If the Demon kills the King using their ability, the Choirboy learns which player is the Demon. Nominations, executions, and Minion kills don't count.`,
+    tipsAndTricks: [
+      "The Choirboy is an ambush for the Demon - they must be careful about killing the King.",
+      "If you die, don't reveal this publicly - the threat of you being alive is powerful.",
+      "Try to visit the King discreetly when you can.",
+      "Character swap with another player and let them claim to be the Choirboy."
+    ],
+    bluffingAs: [
+      "The Demon knows if there is a King in play - coordinate your bluffs.",
+      "If the King dies, you'll need to come out with a Demon accusation.",
+      "Be careful if you double up with a real Choirboy."
+    ]
+  },
+  {
+    id: 'cultleader',
+    name: 'Cult Leader',
+    edition: 'experimental',
+    team: 'townsfolk',
+    ability: 'Each night, you become the alignment of an alive neighbor. If all good players choose to join your cult, your team wins.',
+    firstNightOrder: 47,
+    otherNightOrder: 65,
+    setup: false,
+    reminders: [],
+    flavorQuote: "Thinking themselves wise, they became fools.",
+    extendedSummary: `The Cult Leader wins if everyone joins their cult.
+
+At the end of each night, the Cult Leader becomes the alignment of a living neighbor. Once per day, the Cult Leader may publicly form a cult - if all good players vote to join, the game ends and the Cult Leader's team wins.`,
+    tipsAndTricks: [
+      "Come out as the Cult Leader early - your chances of being good are higher early game.",
+      "Get other players to use detection abilities on your neighbors.",
+      "Try to execute players between you and verified good players.",
+      "Ignore your cult ability and just learn if you have evil neighbors like an Empath."
+    ],
+    bluffingAs: [
+      "Keep the good team paranoid by claiming you've been told good is losing.",
+      "Frame a dead good player by stating that after their execution, good started winning.",
+      "You can actually come out as evil, since this throws shade on your neighbors."
+    ]
+  },
+  {
+    id: 'engineer',
+    name: 'Engineer',
+    edition: 'experimental',
+    team: 'townsfolk',
+    ability: 'Once per game, at night, choose which Minions or which Demon is in play.',
+    firstNightOrder: 13,
+    otherNightOrder: 4,
+    setup: false,
+    reminders: ['No ability'],
+    flavorQuote: "If it bends, great. If it breaks, well, it probably needed fixing anyway.",
+    extendedSummary: `The Engineer manufactures the threat that the town faces.
+
+The Engineer can choose which Minion characters are in play, or which Demon is in play, but not both.
+
+When the Engineer creates new characters, the Demon player remains the Demon, and Minion players remain Minions. Only characters from the current script may be chosen.`,
+    tipsAndTricks: [
+      "Choose which Minions or Demon lets you know what you're facing.",
+      "Use your ability on the first night to guarantee you act.",
+      "Wait a few nights to discuss with the group what characters to create.",
+      "Creating an obvious Demon mid-game may confirm your identity."
+    ],
+    bluffingAs: [
+      "Claim you created the character you actually are.",
+      "Make sure you claim characters without obvious tells.",
+      "Have a solid story as to WHY you made your choice."
+    ]
+  },
+  {
+    id: 'farmer',
+    name: 'Farmer',
+    edition: 'experimental',
+    team: 'townsfolk',
+    ability: 'When you die at night, an alive good player becomes a Farmer.',
+    firstNightOrder: null,
+    otherNightOrder: 48,
+    setup: false,
+    reminders: [],
+    flavorQuote: "Even the high and mighty need food on the table. Without us, the city starves.",
+    extendedSummary: `The Farmer creates more Farmers.
+
+If a Farmer dies at night, another good player becomes a Farmer too. If this new Farmer also dies at night, another Farmer is created.
+
+Farmers that die during the day do not create more Farmers.`,
+    tipsAndTricks: [
+      "If you die at night, play it cool and wait for the new Farmer to approach you.",
+      "The Farmer can be a powerful trap - if you turn into a Farmer, you can trust the dead player.",
+      "Claim to be a high priority target to bait the Demon into killing you.",
+      "Avoid execution at all costs - your ability only triggers at night."
+    ],
+    bluffingAs: [
+      "A Farmer bluff can be a good fallback late in the game.",
+      "If a fellow evil player dies at night, you can pick up a Farmer bluff.",
+      "Bluffing as a Farmer might flush out the real Farmer."
+    ]
+  },
+  {
+    id: 'fisherman',
+    name: 'Fisherman',
+    edition: 'experimental',
+    team: 'townsfolk',
+    ability: 'Once per game, during the day, visit the Storyteller for some advice to help your team win.',
+    firstNightOrder: null,
+    otherNightOrder: null,
+    setup: false,
+    reminders: ['No ability'],
+    flavorQuote: "This was my favourite part of the river... see how the sunlight makes a rainbow from the monastery to the market?",
+    extendedSummary: `The Fisherman knows something nobody else can: what should be done.
+
+The Fisherman player chooses when to use their ability. The Storyteller chooses what advice to give.
+
+The advice is a strategy tip that the Storyteller believes will help the Fisherman win, if followed. If drunk or poisoned, bad advice may be given.`,
+    tipsAndTricks: [
+      "Ask yourself why you got the advice you got.",
+      "Follow the advice! It's given in temporal context, so act quickly.",
+      "Use your ability immediately to avoid dying before using it.",
+      "Or hold off for more specific advice later - risky but potentially more powerful."
+    ],
+    bluffingAs: [
+      "The fake advice you pretend to receive will be the centerpiece of your bluff.",
+      "Frame your advice as telling you to DO something, not just information.",
+      "Insist on your fake advice - remind players it may have an expiration date."
+    ]
+  },
+  {
+    id: 'general',
+    name: 'General',
+    edition: 'experimental',
+    team: 'townsfolk',
+    ability: 'Each night, you learn which alignment the Storyteller believes is winning: good, evil, or neither.',
+    firstNightOrder: 62,
+    otherNightOrder: 76,
+    setup: false,
+    reminders: [],
+    flavorQuote: "I don't have time for quotes.",
+    extendedSummary: `The General knows who is winning.
+
+If good is winning, thumbs up. If evil is winning, thumbs down. If neither, thumbs to the side.
+
+The Storyteller judges based on many factors: how many players of each team are alive, how much information good has, how successful evil's bluffs are, etc.`,
+    tipsAndTricks: [
+      "Pay attention to events each day and how they may have altered the balance.",
+      "Take note of how your information changes night to night.",
+      "If consistently told good is winning, let the team know - keep doing what you're doing.",
+      "If evil is consistently winning, take immediate contradictory action."
+    ],
+    bluffingAs: [
+      "Keep good paranoid by claiming they're losing.",
+      "Frame a dead good player by stating good started winning after their death.",
+      "If evil is winning, say good is winning to maintain their overconfidence."
+    ]
+  },
+  {
+    id: 'highpriestess',
+    name: 'High Priestess',
+    edition: 'experimental',
+    team: 'townsfolk',
+    ability: 'Each night, learn which player the Storyteller believes you should talk to most.',
+    firstNightOrder: 63,
+    otherNightOrder: 77,
+    setup: false,
+    reminders: [],
+    flavorQuote: "There is life behind the personality that uses personalities as masks.",
+    extendedSummary: `The High Priestess acts on intuition.
+
+The High Priestess can be shown the same player multiple times or different players each night. The shown player can be alive or dead, good or evil.
+
+There are no official criteria - the Storyteller uses their judgement to show who they think will most benefit the good team.`,
+    tipsAndTricks: [
+      "Talk to the person the Storyteller gives you as soon as possible each day.",
+      "Or observe who they talk to first and see if you can gain clues.",
+      "Tell the person you saw that you're the High Priestess - see if they know why.",
+      "Did you get the same player twice? The conversation probably didn't go as intended."
+    ],
+    bluffingAs: [
+      "Claim to have been shown good players, then support their information to build trust.",
+      "Or claim a good player's conversation went badly, casting suspicion on them.",
+      "Claim to have seen your fellow evil players as an excuse to coordinate on day one."
+    ]
+  },
+  {
+    id: 'huntsman',
+    name: 'Huntsman',
+    edition: 'experimental',
+    team: 'townsfolk',
+    ability: 'Once per game, at night, choose a living player: the Damsel, if chosen, becomes a not-in-play Townsfolk. [+the Damsel]',
+    firstNightOrder: 28,
+    otherNightOrder: 18,
+    setup: true,
+    reminders: ['No ability'],
+    flavorQuote: "My cabin is warm and sturdy. My axe by the door, my boots drying by the fire...",
+    extendedSummary: `The Huntsman saves the Damsel before the Minions find her.
+
+If the Huntsman is in play and the Damsel isn't, the Damsel is added during setup.
+
+If the Huntsman correctly chooses the Damsel, the Damsel becomes a not-in-play Townsfolk immediately. The Huntsman gets one guess at night.`,
+    tipsAndTricks: [
+      "Find the Damsel ASAP - you have one shot and you're racing against death!",
+      "Or wait until you're really sure - you only have one opportunity.",
+      "The Damsel is likely to be flighty and paranoid - look for shifty or quiet players.",
+      "Privately claim to be the Damsel to flush out the real one."
+    ],
+    bluffingAs: [
+      "Another evil player will need to claim Damsel to support your bluff.",
+      "Pretending to be the Huntsman might flush out the real Damsel.",
+      "The Huntsman is a useful fallback bluff if your initial bluff falls apart."
+    ]
+  },
+  {
+    id: 'king',
+    name: 'King',
+    edition: 'experimental',
+    team: 'townsfolk',
+    ability: 'Each night, if the dead equal or outnumber the living, you learn 1 alive character. The Demon knows you are the King.',
+    firstNightOrder: 10,
+    otherNightOrder: 62,
+    setup: false,
+    reminders: [],
+    flavorQuote: "Betwixt the unknown strains of mortal strife and morbid night, sweet with mystery and woe...",
+    extendedSummary: `The King learns which characters are still alive.
+
+The King gains this ability once dead players equal or outnumber living players. The Demon learns who the King is at the start of the game.
+
+The King may learn good or evil characters, and may learn the same character more than once.`,
+    tipsAndTricks: [
+      "The King can come out early and confidently - the Demon knows but fears the Choirboy.",
+      "Or wait secretly and watch for players paying you too much attention.",
+      "Find another player to secretly claim to be the Choirboy as protection.",
+      "Coming out creates a gambit - you're either the King or the Demon."
+    ],
+    bluffingAs: [
+      "Being King gives you an excuse to steer the game narrative.",
+      "Build a circle of trust to verify or deny character claims late game.",
+      "If you're a Minion, come out as King to throw shade on the real one."
+    ]
+  },
+  {
+    id: 'knight',
+    name: 'Knight',
+    edition: 'experimental',
+    team: 'townsfolk',
+    ability: 'You start knowing 2 players that are not the Demon.',
+    firstNightOrder: 45,
+    otherNightOrder: null,
+    setup: false,
+    reminders: ['Know', 'Know'],
+    flavorQuote: "For honour and for glory!",
+    extendedSummary: `The Knight knows two players who are definitely not the Demon.
+
+On the first night, the Knight learns two players. Neither of these players is the Demon. They could be Townsfolk, Outsiders, or even Minions - but not the Demon.
+
+This information is very useful for narrowing down Demon candidates on the final day.`,
+    tipsAndTricks: [
+      "Your information tells you who is NOT the Demon - this is crucial for the final day.",
+      "The players you see could still be Minions, so don't fully trust them.",
+      "Share your information to help narrow down the Demon candidates.",
+      "Your information is fixed from night one, so revealing early has minimal risk."
+    ],
+    bluffingAs: [
+      "Claim to know two good players are not the Demon to gain their trust.",
+      "Include an evil player to make them look less suspicious.",
+      "Be careful - your information can be easily tested if those players are executed."
+    ]
+  },
+  {
+    id: 'lycanthrope',
+    name: 'Lycanthrope',
+    edition: 'experimental',
+    team: 'townsfolk',
+    ability: 'Each night*, choose an alive player. If good, they die, but they are the only player that can die tonight.',
+    firstNightOrder: null,
+    otherNightOrder: 22,
+    setup: false,
+    reminders: ['Dead'],
+    flavorQuote: "Awooooooo!",
+    extendedSummary: `The Lycanthrope kills at night, but protects the town from the Demon.
+
+Each night except the first, the Lycanthrope chooses a player. If that player is good, they die, but no other player can die that night - not even from the Demon.
+
+If the Lycanthrope chooses an evil player, nothing happens and the Demon may kill as normal.`,
+    tipsAndTricks: [
+      "Choose players you suspect are evil - if they're good, at least you've protected the town.",
+      "If no one dies after your choice, you've found an evil player!",
+      "Coordinate with the town about who you're choosing each night.",
+      "Your ability is a double-edged sword - use it wisely."
+    ],
+    bluffingAs: [
+      "Claim to have found evil players when your 'targets' didn't die.",
+      "Use your 'ability' to explain night deaths that were actually the Demon's kills.",
+      "Be careful - if the wrong person dies, your story needs to match."
+    ]
+  },
+  {
+    id: 'magician',
+    name: 'Magician',
+    edition: 'experimental',
+    team: 'townsfolk',
+    ability: 'The Demon thinks you are a Minion. Minions think you are a Demon.',
+    firstNightOrder: 4,
+    otherNightOrder: null,
+    setup: false,
+    reminders: [],
+    flavorQuote: "Pick a card... any card...",
+    extendedSummary: `The Magician appears to be evil when evil players learn who their teammates are.
+
+On the first night, when the Demon learns who their Minions are, they also see the Magician as a Minion. When Minions learn who the Demon is, they also see the Magician as the Demon.
+
+This causes confusion for the evil team about who is actually on their side.`,
+    tipsAndTricks: [
+      "The evil team will be confused about who their real teammates are.",
+      "You might be approached by Minions thinking you're the Demon - play along!",
+      "The Demon might avoid killing you thinking you're their Minion.",
+      "Come out later to prove you're good and expose who approached you."
+    ],
+    bluffingAs: [
+      "Claim Magician to explain why evil players seemed friendly with you.",
+      "Use it as a backup bluff if you're caught coordinating with evil.",
+      "Be careful - the real Magician knows the evil team's behavior toward them."
+    ]
+  },
+  {
+    id: 'nightwatchman',
+    name: 'Nightwatchman',
+    edition: 'experimental',
+    team: 'townsfolk',
+    ability: 'Once per game, at night, choose a player: they learn who you are.',
+    firstNightOrder: 64,
+    otherNightOrder: 78,
+    setup: false,
+    reminders: ['No ability'],
+    flavorQuote: "It's a thankless job, but someone's got to do it.",
+    extendedSummary: `The Nightwatchman reveals themselves to one player of their choice.
+
+Once per game, the Nightwatchman chooses a player at night. That player learns that the Nightwatchman is the Nightwatchman.
+
+This allows the Nightwatchman to form a trusted alliance with one player.`,
+    tipsAndTricks: [
+      "Choose wisely - this is a one-time ability to form a trusted bond.",
+      "Choose a player you believe is good to create an alliance.",
+      "The player you choose can vouch for you - you've proven you're the Nightwatchman.",
+      "Use this strategically when you need to be believed."
+    ],
+    bluffingAs: [
+      "Claim you revealed yourself to a player who can 'confirm' you.",
+      "Coordinate with another evil player to back up each other's claims.",
+      "Be careful if the player you claim to have revealed to denies it."
+    ]
+  },
+  {
+    id: 'noble',
+    name: 'Noble',
+    edition: 'experimental',
+    team: 'townsfolk',
+    ability: 'You start knowing 3 players, 1 and only 1 of which is evil.',
+    firstNightOrder: 43,
+    otherNightOrder: null,
+    setup: false,
+    reminders: ['Know', 'Know', 'Know'],
+    flavorQuote: "Indeed? How gauche.",
+    extendedSummary: `The Noble knows three players, exactly one of whom is evil.
+
+On the first night, the Noble learns three players. Exactly one of these three is evil - not zero, not two, exactly one.
+
+This information helps narrow down evil players while also potentially identifying two good players.`,
+    tipsAndTricks: [
+      "One of your three players is definitely evil - work to figure out which one.",
+      "The other two are definitely good - you can trust them.",
+      "Share your information to get help figuring out which one is evil.",
+      "Watch how all three players behave throughout the game."
+    ],
+    bluffingAs: [
+      "Include an evil player and two good players to make your evil teammate look less suspicious.",
+      "Or include three good players to make them suspicious of each other.",
+      "Be careful - if two of your three are confirmed good, the third looks very evil."
+    ]
+  },
+  {
+    id: 'pixie',
+    name: 'Pixie',
+    edition: 'experimental',
+    team: 'townsfolk',
+    ability: 'You start knowing 1 in-play Townsfolk. If you were mad that you were this character, you gain their ability when they die.',
+    firstNightOrder: 29,
+    otherNightOrder: null,
+    setup: false,
+    reminders: ['Mad', 'Has ability'],
+    flavorQuote: "Tee-hee-hee!",
+    extendedSummary: `The Pixie can gain a Townsfolk ability by pretending to be them.
+
+On the first night, the Pixie learns one in-play Townsfolk character. If the Pixie pretends to be that character (is "mad"), they gain that ability when that player dies.
+
+The Storyteller judges whether the Pixie was sufficiently mad about being that character.`,
+    tipsAndTricks: [
+      "Claim to be the character you were shown to gain their ability when they die.",
+      "Be convincing! The Storyteller needs to believe you were truly 'mad'.",
+      "You might conflict with the real player - that's expected and part of the game.",
+      "Once they die, you get a powerful second ability."
+    ],
+    bluffingAs: [
+      "Claim to have seen a specific Townsfolk and that you've been claiming to be them.",
+      "Use this to explain why you were claiming a specific character earlier.",
+      "Be careful about conflicting with characters that are easily verified."
+    ]
+  },
+  {
+    id: 'poppygrower',
+    name: 'Poppy Grower',
+    edition: 'experimental',
+    team: 'townsfolk',
+    ability: 'Minions & Demons do not know each other. If you die, they learn who each other are that night.',
+    firstNightOrder: 2,
+    otherNightOrder: null,
+    setup: false,
+    reminders: ['Evil wakes'],
+    flavorQuote: "From the poppy fields of golden Persia, a sweetness unlike any other...",
+    extendedSummary: `The Poppy Grower prevents the evil team from knowing each other.
+
+While the Poppy Grower is alive, Minions don't learn who the Demon is, and the Demon doesn't learn who the Minions are. They must find each other through gameplay.
+
+If the Poppy Grower dies, evil players learn who each other are that night.`,
+    tipsAndTricks: [
+      "Stay alive as long as possible! Evil doesn't know their teammates while you live.",
+      "Evil players will be acting confused and trying to find each other.",
+      "Watch for players who seem to be testing whether others are evil.",
+      "Your death will cause evil to suddenly coordinate - plan for this."
+    ],
+    bluffingAs: [
+      "Claim Poppy Grower to make evil seem disorganized.",
+      "Use your 'death' to explain why evil suddenly started coordinating.",
+      "Be careful - the real Poppy Grower knows the evil team's early confusion."
+    ]
+  },
+  {
+    id: 'preacher',
+    name: 'Preacher',
+    edition: 'experimental',
+    team: 'townsfolk',
+    ability: 'Each night, choose a player: a Minion, if chosen, learns this. All chosen Minions have no ability.',
+    firstNightOrder: 13,
+    otherNightOrder: 5,
+    setup: false,
+    reminders: ['At a sermon'],
+    flavorQuote: "Woe unto you, for ye have turned from the path of righteousness!",
+    extendedSummary: `The Preacher can disable Minion abilities.
+
+Each night, the Preacher chooses a player. If that player is a Minion, they learn they were chosen by the Preacher and their ability stops working.
+
+The Preacher can choose the same player multiple times to keep them disabled.`,
+    tipsAndTricks: [
+      "Target players you suspect are Minions to disable their abilities.",
+      "If a Minion stops acting, you've probably hit them!",
+      "Keep targeting the same Minion to keep them disabled.",
+      "Work with information roles to narrow down Minion candidates."
+    ],
+    bluffingAs: [
+      "Claim to have disabled a player who was 'obviously' a Minion.",
+      "Use this to explain why Minion effects seem to have stopped.",
+      "Be careful - the Minion you claim to have disabled knows the truth."
+    ]
+  },
+  {
+    id: 'princess',
+    name: 'Princess',
+    edition: 'experimental',
+    team: 'townsfolk',
+    ability: 'You may nominate as many times as you wish, but if the Demon nominates you, you lose your ability.',
+    firstNightOrder: null,
+    otherNightOrder: null,
+    setup: false,
+    reminders: ['No ability'],
+    flavorQuote: "Off with their heads!",
+    extendedSummary: `The Princess can nominate multiple times per day.
+
+The Princess may nominate as many players as they wish each day, unlike normal rules that limit nominations to once per day.
+
+However, if the Demon nominates the Princess, the Princess loses their ability for the rest of the game.`,
+    tipsAndTricks: [
+      "Use your extra nominations to pressure suspicious players.",
+      "Be careful not to make yourself too obvious to the Demon.",
+      "Your ability is powerful for controlling the day phase.",
+      "If the Demon nominates you, you've identified them (but lost your ability)."
+    ],
+    bluffingAs: [
+      "Claim Princess to justify nominating multiple times.",
+      "Be careful - if the Demon nominates you and you keep nominating, you're caught.",
+      "Use this bluff to aggressively push for executions."
+    ]
+  },
+  {
+    id: 'shugenja',
+    name: 'Shugenja',
+    edition: 'experimental',
+    team: 'townsfolk',
+    ability: 'You start knowing if your closest evil player is clockwise or anti-clockwise. If equidistant, this info is arbitrary.',
+    firstNightOrder: 48,
+    otherNightOrder: null,
+    setup: false,
+    reminders: [],
+    flavorQuote: "The spirits tell me much...",
+    extendedSummary: `The Shugenja knows the direction to the nearest evil player.
+
+On the first night, the Shugenja learns whether the closest evil player to them is clockwise or anti-clockwise around the circle.
+
+If the nearest evil player in both directions is equidistant, the Storyteller chooses which direction to show.`,
+    tipsAndTricks: [
+      "Your information points you toward evil - investigate in that direction.",
+      "Combine with other information to narrow down who is evil.",
+      "The closer the game gets to the end, the more valuable your info becomes.",
+      "If you trust your neighbors, the evil player must be further away."
+    ],
+    bluffingAs: [
+      "Claim a direction that points suspicion at a good player.",
+      "Or claim a direction that clears your evil teammates.",
+      "Be careful about consistency as players die and distances change."
+    ]
+  },
+  {
+    id: 'steward',
+    name: 'Steward',
+    edition: 'experimental',
+    team: 'townsfolk',
+    ability: 'You start knowing 1 good player.',
+    firstNightOrder: 41,
+    otherNightOrder: null,
+    setup: false,
+    reminders: ['Know'],
+    flavorQuote: "Very good, sir. The usual, sir?",
+    extendedSummary: `The Steward knows one player who is definitely good.
+
+On the first night, the Steward learns one good player. This player is definitely on the good team, whether they are Townsfolk or Outsider.
+
+This is simple but valuable information for building trust.`,
+    tipsAndTricks: [
+      "You have one confirmed good player - build an alliance with them.",
+      "Share your information to help the town trust that player.",
+      "Your player could still be drunk or giving wrong information - they're just good.",
+      "Use this confirmed player as a base to build trust networks."
+    ],
+    bluffingAs: [
+      "Claim to know a player is good to gain their trust.",
+      "Include an evil player to make them look trustworthy.",
+      "Be careful - alignment detection abilities can catch your lie."
+    ]
+  },
+  {
+    id: 'villageidiot',
+    name: 'Village Idiot',
+    edition: 'experimental',
+    team: 'townsfolk',
+    ability: 'Each night, choose a player: you learn their alignment. [+0 to +2 Village Idiots. 1 of the extras is drunk]',
+    firstNightOrder: 49,
+    otherNightOrder: 67,
+    setup: true,
+    reminders: ['Drunk'],
+    flavorQuote: "Duhhhhh...",
+    extendedSummary: `The Village Idiot learns alignments, but there may be multiple of them.
+
+Each night, the Village Idiot chooses a player and learns their alignment. However, the game might have 0 to 2 extra Village Idiots, and if there are extras, one is drunk.
+
+This means Village Idiot information needs to be compared between multiple players claiming it.`,
+    tipsAndTricks: [
+      "Find other Village Idiots and compare information.",
+      "If your info conflicts with another Village Idiot, one of you is drunk.",
+      "Your information is powerful but needs verification.",
+      "Check key players to help narrow down the evil team."
+    ],
+    bluffingAs: [
+      "Claim Village Idiot to spread false alignment information.",
+      "If caught, claim you must be the drunk one.",
+      "Coordinate with other evil players claiming Village Idiot."
+    ]
+  },
+  // OUTSIDERS
+  {
+    id: 'damsel',
+    name: 'Damsel',
+    edition: 'experimental',
+    team: 'outsider',
+    ability: 'All Minions know you are in play. If a Minion publicly guesses you (once), your team loses.',
+    firstNightOrder: 30,
+    otherNightOrder: null,
+    setup: false,
+    reminders: ['Guess used'],
+    flavorQuote: "Help! Help! Someone help me!",
+    extendedSummary: `The Damsel is known to all Minions, who can win by guessing them.
+
+All Minions learn that a Damsel is in play on the first night. During the day, if any Minion publicly guesses who the Damsel is, and they're correct, evil wins immediately.
+
+Minions only get one guess total - if they guess wrong, they can't try again.`,
+    tipsAndTricks: [
+      "Stay hidden! If the Minions find you, evil wins instantly.",
+      "You might want to die - execution or Demon kill keeps you safe from Minion guess.",
+      "Trust very few people with your identity.",
+      "The Huntsman can save you by turning you into a Townsfolk."
+    ],
+    bluffingAs: [
+      "Claim Damsel to make Minions waste their guess on you.",
+      "This is a great bluff for evil - it protects the real Damsel if one exists.",
+      "Be careful - claiming Damsel draws a lot of attention."
+    ]
+  },
+  {
+    id: 'golem',
+    name: 'Golem',
+    edition: 'experimental',
+    team: 'outsider',
+    ability: 'You may only nominate once per game. When you do, if the nominee is not the Demon, they die.',
+    firstNightOrder: null,
+    otherNightOrder: null,
+    setup: false,
+    reminders: ['Can not nominate'],
+    flavorQuote: "SMASH!",
+    extendedSummary: `The Golem kills with their nomination.
+
+The Golem may only nominate once in the entire game. When they do nominate, if the nominated player is not the Demon, that player dies immediately.
+
+If the Golem nominates the Demon, nothing special happens - the nomination proceeds normally.`,
+    tipsAndTricks: [
+      "Save your nomination for when you're confident about the Demon.",
+      "If you're wrong, you kill a good player, but at least you've confirmed the Demon.",
+      "Your one nomination is extremely powerful - use it wisely.",
+      "You can claim Golem to explain why you haven't nominated all game."
+    ],
+    bluffingAs: [
+      "Claim Golem to justify not nominating.",
+      "Nominate and kill a good player, then claim you thought they were the Demon.",
+      "Be careful - your 'ability' only works once."
+    ]
+  },
+  {
+    id: 'hatter',
+    name: 'Hatter',
+    edition: 'experimental',
+    team: 'outsider',
+    ability: 'If you died today or tonight, the Minion & Demon players may choose new Minion & Demon characters to be.',
+    firstNightOrder: null,
+    otherNightOrder: 69,
+    setup: false,
+    reminders: [],
+    flavorQuote: "Why is a raven like a writing desk?",
+    extendedSummary: `The Hatter's death allows evil to change their characters.
+
+If the Hatter dies, the Minion and Demon players may each choose to become a different Minion or Demon character (respectively) that night.
+
+They keep their evil alignment but gain new abilities.`,
+    tipsAndTricks: [
+      "Your death lets evil change their abilities - consider staying alive.",
+      "Or die strategically to force evil into worse character choices.",
+      "Evil might want you dead to change into better characters.",
+      "Your death can cause chaos that might help or hurt good."
+    ],
+    bluffingAs: [
+      "Claim Hatter to explain why evil seems to have changed abilities.",
+      "Use this to explain inconsistencies in evil's behavior.",
+      "Be careful - the real Hatter knows when evil changed."
+    ]
+  },
+  {
+    id: 'heretic',
+    name: 'Heretic',
+    edition: 'experimental',
+    team: 'outsider',
+    ability: 'Whoever wins, loses & whoever loses, wins, even if you are dead.',
+    firstNightOrder: null,
+    otherNightOrder: null,
+    setup: false,
+    reminders: [],
+    flavorQuote: "The righteous shall fall, and the wicked shall rise!",
+    extendedSummary: `The Heretic reverses the game's outcome.
+
+With the Heretic in play, the normal win conditions are reversed: if good would win, evil wins instead, and vice versa.
+
+This applies even if the Heretic is dead.`,
+    tipsAndTricks: [
+      "Good must ensure evil 'wins' (by normal standards) for good to actually win.",
+      "You might need to get the Demon executed to prevent evil from 'losing'.",
+      "Or you need to ensure the Demon survives to the end for good to 'win'.",
+      "This completely flips the game - plan accordingly."
+    ],
+    bluffingAs: [
+      "Claim Heretic to confuse the good team about their win condition.",
+      "This can cause good to make catastrophic decisions.",
+      "Be careful - this bluff can backfire if good adjusts correctly."
+    ]
+  },
+  {
+    id: 'hermit',
+    name: 'Hermit',
+    edition: 'experimental',
+    team: 'outsider',
+    ability: 'If the Demon dies before final 3, you become the Demon. You only win if evil wins by execution.',
+    firstNightOrder: null,
+    otherNightOrder: null,
+    setup: false,
+    reminders: [],
+    flavorQuote: "Leave me be. I want nothing of your world.",
+    extendedSummary: `The Hermit becomes the Demon if the original dies too early.
+
+If the Demon dies before the game reaches the final 3 players, the Hermit becomes the Demon.
+
+The Hermit (now Demon) only wins if evil wins by execution - not by other means.`,
+    tipsAndTricks: [
+      "You're a backup Demon for evil, but you only win by execution.",
+      "If you become Demon, you want good to execute the wrong player.",
+      "Evil might try to use you as a failsafe.",
+      "Be careful revealing this - evil might want to kill the Demon early."
+    ],
+    bluffingAs: [
+      "Claim Hermit to explain why the game continued after the Demon died.",
+      "Use this to create confusion about who the Demon is.",
+      "Be careful - the Hermit's win condition is unusual."
+    ]
+  },
+  {
+    id: 'ogre',
+    name: 'Ogre',
+    edition: 'experimental',
+    team: 'outsider',
+    ability: 'On your 1st night, choose a player (not yourself): you become their alignment (you don\'t know which) even if drunk or poisoned.',
+    firstNightOrder: 5,
+    otherNightOrder: null,
+    setup: false,
+    reminders: ['Friend'],
+    flavorQuote: "Me friend now. We play?",
+    extendedSummary: `The Ogre becomes the alignment of a player they choose.
+
+On the first night, the Ogre chooses a player. The Ogre becomes the same alignment as that player - good if they're good, evil if they're evil.
+
+The Ogre doesn't learn their new alignment. This works even if the Ogre is drunk or poisoned.`,
+    tipsAndTricks: [
+      "Choose someone you think is good to ensure you stay good.",
+      "If you choose an evil player, you become evil (but won't know it).",
+      "Your choice is permanent - choose carefully.",
+      "You can claim Ogre to explain suspicious behavior if you chose evil."
+    ],
+    bluffingAs: [
+      "Claim Ogre to justify unusual voting or behavior.",
+      "Say you might have accidentally become evil.",
+      "This explains alignment detection that shows you as evil."
+    ]
+  },
+  {
+    id: 'plaguedoctor',
+    name: 'Plague Doctor',
+    edition: 'experimental',
+    team: 'outsider',
+    ability: 'If you die, the Storyteller gains a Minion ability.',
+    firstNightOrder: null,
+    otherNightOrder: null,
+    setup: false,
+    reminders: ['Storyteller ability'],
+    flavorQuote: "I bring only relief. The suffering ends with me.",
+    extendedSummary: `The Plague Doctor's death gives the Storyteller a Minion ability.
+
+If the Plague Doctor dies, the Storyteller gains a Minion ability of their choice. The Storyteller uses this ability for the rest of the game.
+
+This essentially adds an extra Minion effect to the game.`,
+    tipsAndTricks: [
+      "Try to stay alive to prevent the Storyteller gaining a Minion ability.",
+      "Your death makes the game harder for good.",
+      "The Storyteller will use the ability against the good team.",
+      "Consider which Minion abilities are on the script."
+    ],
+    bluffingAs: [
+      "Claim Plague Doctor to explain new Minion effects appearing.",
+      "Use this to create paranoia about the Storyteller's actions.",
+      "Be careful - the effect should match a Minion ability."
+    ]
+  },
+  {
+    id: 'politician',
+    name: 'Politician',
+    edition: 'experimental',
+    team: 'outsider',
+    ability: 'If you were the player most responsible for your team losing, you change alignment & win, even if dead.',
+    firstNightOrder: null,
+    otherNightOrder: null,
+    setup: false,
+    reminders: [],
+    flavorQuote: "I promise to uphold the values that the townsfolk hold most dear.",
+    extendedSummary: `The Politician can switch teams to win.
+
+If the Politician is deemed most responsible for their team's loss, they change alignment and win instead.
+
+This encourages the Politician to play selfishly and cause their team to lose.`,
+    tipsAndTricks: [
+      "You might want to sabotage your own team to switch sides and win.",
+      "But if your team wins normally, you still win as good.",
+      "Be the most responsible for the loss - but not obviously so.",
+      "This is a selfish character - play accordingly."
+    ],
+    bluffingAs: [
+      "Claim Politician to justify suspicious behavior.",
+      "Say you're trying to switch teams if good looks like losing.",
+      "This can excuse votes against good players."
+    ]
+  },
+  {
+    id: 'puzzlemaster',
+    name: 'Puzzlemaster',
+    edition: 'experimental',
+    team: 'outsider',
+    ability: '1 player is drunk, even if you die. If you guess (once) who it is, you learn the Demon player, but guess wrong & get false info.',
+    firstNightOrder: null,
+    otherNightOrder: null,
+    setup: true,
+    reminders: ['Drunk', 'Guess used'],
+    flavorQuote: "Hmm... interesting.",
+    extendedSummary: `The Puzzlemaster can learn the Demon by finding the drunk player.
+
+One player in the game is drunk because of the Puzzlemaster. If the Puzzlemaster guesses who is drunk correctly, they learn who the Demon is.
+
+If they guess wrong, they get false information about the Demon.`,
+    tipsAndTricks: [
+      "Find the player whose information doesn't match reality - they're drunk.",
+      "Your guess is once per game, so be sure before guessing.",
+      "If you guess right, you learn the Demon's identity.",
+      "If wrong, you get a false Demon - be careful."
+    ],
+    bluffingAs: [
+      "Claim Puzzlemaster and that you've found the Demon.",
+      "Implicate a good player as the Demon.",
+      "Be careful - you need to name someone as 'drunk' too."
+    ]
+  },
+  {
+    id: 'snitch',
+    name: 'Snitch',
+    edition: 'experimental',
+    team: 'outsider',
+    ability: 'Minions start knowing 3 not-in-play characters.',
+    firstNightOrder: 7,
+    otherNightOrder: null,
+    setup: false,
+    reminders: [],
+    flavorQuote: "I ain't sayin' nothin'. But if I was, I'd say check the butcher's shop at midnight.",
+    extendedSummary: `The Snitch gives Minions extra bluff characters.
+
+Because of the Snitch, Minions start the game knowing 3 characters that are not in play.
+
+This gives the evil team more safe characters to claim.`,
+    tipsAndTricks: [
+      "Evil has extra bluffs because of you - watch for characters that seem too convenient.",
+      "There are 3 extra not-in-play characters evil knows about.",
+      "This makes it harder to catch evil by character claims.",
+      "Consider revealing to explain why evil has good bluffs."
+    ],
+    bluffingAs: [
+      "Claim Snitch to explain why evil has convincing character claims.",
+      "This explains how the Demon knew what characters to bluff as.",
+      "Be careful - this reveals there are extra bluffs in play."
+    ]
+  },
+  {
+    id: 'zealot',
+    name: 'Zealot',
+    edition: 'experimental',
+    team: 'outsider',
+    ability: 'If there are 5 or more players alive, you must vote for every nomination.',
+    firstNightOrder: null,
+    otherNightOrder: null,
+    setup: false,
+    reminders: [],
+    flavorQuote: "Guilty! Guilty! GUILTY!",
+    extendedSummary: `The Zealot must vote on every nomination.
+
+If there are 5 or more players alive, the Zealot must raise their hand to vote on every nomination.
+
+This makes the Zealot obvious to the group and affects voting dynamics.`,
+    tipsAndTricks: [
+      "You have to vote for everything - you can't be strategic with votes.",
+      "Evil knows you're the Zealot based on your voting pattern.",
+      "Your votes might swing executions unexpectedly.",
+      "Once players drop below 5, you can vote normally."
+    ],
+    bluffingAs: [
+      "Claim Zealot to explain why you voted for everyone.",
+      "This can excuse voting for evil players to be executed.",
+      "Be careful - your voting pattern is very obvious."
+    ]
+  },
+  // MINIONS
+  {
+    id: 'boffin',
+    name: 'Boffin',
+    edition: 'experimental',
+    team: 'minion',
+    ability: 'The Demon (even if drunk or poisoned) has a not-in-play good character\'s ability. You both know which.',
+    firstNightOrder: 34,
+    otherNightOrder: null,
+    setup: false,
+    reminders: [],
+    flavorQuote: "With this serum, you shall have powers beyond imagination!",
+    extendedSummary: `The Boffin gives the Demon a good character's ability.
+
+The Demon has an additional ability - that of a not-in-play good character. Both the Boffin and Demon know which ability this is.
+
+This ability works even if the Demon is drunk or poisoned.`,
+    tipsAndTricks: [
+      "Your Demon has an extra ability - coordinate to use it well.",
+      "The ability works through drunk/poison - very powerful.",
+      "Consider which ability would be most useful for the Demon.",
+      "The Demon can use the ability to create false information."
+    ],
+    fightingThe: [
+      "Watch for the Demon having information they shouldn't have.",
+      "The Demon might claim a character that isn't in play - that's the Boffin ability.",
+      "Check if the Demon's claims match a not-in-play character."
+    ]
+  },
+  {
+    id: 'boomdandy',
+    name: 'Boomdandy',
+    edition: 'experimental',
+    team: 'minion',
+    ability: 'If you are executed, all but 3 players die. 1 minute later, the player with the most players pointing at them dies.',
+    firstNightOrder: null,
+    otherNightOrder: null,
+    setup: false,
+    reminders: [],
+    flavorQuote: "BOOM!",
+    extendedSummary: `The Boomdandy explodes when executed, killing most players.
+
+If the Boomdandy is executed, all but 3 players die immediately. One minute later, the player with the most fingers pointed at them dies too.
+
+This creates a chaotic endgame with very few players remaining.`,
+    tipsAndTricks: [
+      "Getting executed creates chaos - but be careful about timing.",
+      "After the explosion, the remaining players point at someone to die.",
+      "This can eliminate good players and set up evil for a win.",
+      "Coordinate with the Demon about when to trigger this."
+    ],
+    fightingThe: [
+      "Be very careful about executing the Boomdandy!",
+      "If they're executed, coordinate who to point at carefully.",
+      "Try to keep good players in the final 3 survivors.",
+      "Consider not executing suspected Boomdandys."
+    ]
+  },
+  {
+    id: 'fearmonger',
+    name: 'Fearmonger',
+    edition: 'experimental',
+    team: 'minion',
+    ability: 'Each night, choose a player. If you nominate & execute them, their team loses. All players know if you choose a new player.',
+    firstNightOrder: 24,
+    otherNightOrder: 14,
+    setup: false,
+    reminders: ['Fear'],
+    flavorQuote: "Let your fear be my feast!",
+    extendedSummary: `The Fearmonger can cause a team to lose instantly.
+
+Each night, the Fearmonger chooses a player. If that player is nominated by the Fearmonger and executed, that player's team loses immediately.
+
+All players are told if the Fearmonger changed their target.`,
+    tipsAndTricks: [
+      "Choose a good player you can get executed to win instantly.",
+      "Players know when you change targets - use this to create fear.",
+      "Nominate your target and convince others to execute them.",
+      "Coordinate with evil to support your nomination."
+    ],
+    fightingThe: [
+      "Pay attention to announcements about the Fearmonger changing targets.",
+      "Be careful about executing players the Fearmonger nominates.",
+      "The Fearmonger must nominate their target - watch who nominates whom.",
+      "Don't execute if the Fearmonger's nomination succeeds."
+    ]
+  },
+  {
+    id: 'goblin',
+    name: 'Goblin',
+    edition: 'experimental',
+    team: 'minion',
+    ability: 'If you publicly claim to be the Goblin when nominated & are executed that day, your team wins.',
+    firstNightOrder: null,
+    otherNightOrder: null,
+    setup: false,
+    reminders: ['Claimed'],
+    flavorQuote: "Hehehe!",
+    extendedSummary: `The Goblin wins for evil if they claim Goblin and are executed.
+
+If the Goblin publicly claims to be the Goblin after being nominated, and they are executed that day, evil wins immediately.
+
+This creates a dangerous trap for the good team.`,
+    tipsAndTricks: [
+      "Wait until you're nominated, then claim Goblin.",
+      "Good must decide if you're bluffing or really the Goblin.",
+      "This creates a lose-lose for good - execute you and risk losing, or let you live.",
+      "Coordinate with evil to make your claim believable."
+    ],
+    fightingThe: [
+      "Be very careful about executing someone who claims Goblin after nomination!",
+      "Consider not executing them - let them live rather than risk losing.",
+      "Watch for players who seem to want to be nominated.",
+      "The Goblin claim only works if they're actually the Goblin."
+    ]
+  },
+  {
+    id: 'harpy',
+    name: 'Harpy',
+    edition: 'experimental',
+    team: 'minion',
+    ability: 'Each night, choose 2 players. Tomorrow, the 1st player is mad that the 2nd is evil, or one or both might die.',
+    firstNightOrder: 23,
+    otherNightOrder: 13,
+    setup: false,
+    reminders: ['Mad', 'Mad'],
+    flavorQuote: "SCREEEEE!",
+    extendedSummary: `The Harpy forces players to accuse each other.
+
+Each night, the Harpy chooses two players. The next day, the first player must act "mad" (pretend) that the second player is evil.
+
+If they don't convincingly act mad, the Storyteller may kill one or both of them.`,
+    tipsAndTricks: [
+      "Choose a good player to force them to accuse another good player.",
+      "Or choose a good player to accuse an evil player unconvincingly.",
+      "This creates conflict between good players.",
+      "The threat of death forces compliance."
+    ],
+    fightingThe: [
+      "If you must claim someone is evil, be obviously reluctant.",
+      "Watch for players who suddenly claim others are evil - they might be Harpy'd.",
+      "The Harpy's targets are being forced to act.",
+      "Don't fully trust sudden accusations."
+    ]
+  },
+  {
+    id: 'marionette',
+    name: 'Marionette',
+    edition: 'experimental',
+    team: 'minion',
+    ability: 'You think you are a good character, but you are not. The Demon knows who you are. [You neighbor the Demon]',
+    firstNightOrder: 11,
+    otherNightOrder: null,
+    setup: true,
+    reminders: [],
+    flavorQuote: "I'm a real boy!",
+    extendedSummary: `The Marionette thinks they are good but is actually evil.
+
+The Marionette is a Minion who doesn't know they are evil. They are given a good character token and believe they are that character.
+
+The Demon knows who the Marionette is, and the Marionette always neighbors the Demon.`,
+    tipsAndTricks: [
+      "You don't know you're evil - you think you're the good character you were shown.",
+      "The Demon knows you and will try to guide your actions.",
+      "Your 'ability' doesn't work - you're actually a Minion.",
+      "If you discover you're the Marionette, help evil."
+    ],
+    fightingThe: [
+      "Look for players whose abilities don't seem to work correctly.",
+      "The Marionette neighbors the Demon - check neighbor relationships.",
+      "The Demon might be protecting their Marionette.",
+      "Confused-looking players with wrong info might be Marionettes."
+    ]
+  },
+  {
+    id: 'mezepheles',
+    name: 'Mezepheles',
+    edition: 'experimental',
+    team: 'minion',
+    ability: 'You start knowing a secret word. The 1st good player to say this word becomes evil that night.',
+    firstNightOrder: 25,
+    otherNightOrder: null,
+    setup: false,
+    reminders: ['Turns evil', 'No ability'],
+    flavorQuote: "Speak my name, and I shall set you free.",
+    extendedSummary: `The Mezepheles can turn a good player evil using a secret word.
+
+The Mezepheles starts knowing a secret word. The first good player to say this word during the game becomes evil that night.
+
+The Mezepheles only gets one conversion - once someone says the word, their ability is used.`,
+    tipsAndTricks: [
+      "Work the secret word into conversation naturally.",
+      "Target talkative players who might say the word accidentally.",
+      "Or tell a trusted 'ally' the word to convert them deliberately.",
+      "The word should be uncommon but natural in context."
+    ],
+    fightingThe: [
+      "Be careful about what words you say!",
+      "Watch for players who seem to be prompting specific words.",
+      "If someone suddenly turns against good, they might have been converted.",
+      "The secret word is usually unusual but not impossible to say."
+    ]
+  },
+  {
+    id: 'organgrinder',
+    name: 'Organ Grinder',
+    edition: 'experimental',
+    team: 'minion',
+    ability: 'All players keep their eyes closed when voting & the vote tally is secret. Votes for you only count if you vote.',
+    firstNightOrder: null,
+    otherNightOrder: null,
+    setup: false,
+    reminders: [],
+    flavorQuote: "Dance, monkey, dance!",
+    extendedSummary: `The Organ Grinder makes votes secret.
+
+While the Organ Grinder is alive, all players close their eyes when voting, and the vote tally is kept secret by the Storyteller.
+
+Votes against the Organ Grinder only count if the Organ Grinder also votes.`,
+    tipsAndTricks: [
+      "Voting is now secret - evil can vote freely without suspicion.",
+      "You can protect yourself by not voting when you're nominated.",
+      "Good can't coordinate votes as easily.",
+      "Use the chaos to your advantage."
+    ],
+    fightingThe: [
+      "You can't see who's voting - be careful with your votes.",
+      "The Organ Grinder is protected unless they vote for themselves.",
+      "Try to figure out who the Organ Grinder is.",
+      "Once they're dead, voting returns to normal."
+    ]
+  },
+  {
+    id: 'psychopath',
+    name: 'Psychopath',
+    edition: 'experimental',
+    team: 'minion',
+    ability: 'Each day, before nominations, you may publicly choose a player. Tonight, you wake to learn if they are good or evil. Good dies.',
+    firstNightOrder: null,
+    otherNightOrder: 15,
+    setup: false,
+    reminders: ['Stabbed'],
+    flavorQuote: "I like you. I'll kill you last.",
+    extendedSummary: `The Psychopath can publicly kill players during the day.
+
+Each day, before nominations, the Psychopath may publicly choose a player. That night, the Psychopath learns if their target was good or evil, and if good, that player dies.
+
+This is a public ability - everyone knows who the Psychopath targeted.`,
+    tipsAndTricks: [
+      "You can kill publicly, but everyone knows you're the Psychopath.",
+      "Kill good players to reduce their numbers.",
+      "You can't be stopped once you use your ability.",
+      "Use this aggressively to overwhelm good."
+    ],
+    fightingThe: [
+      "The Psychopath is known - execute them quickly!",
+      "They kill every day they stay alive.",
+      "Prioritize killing the Psychopath over the Demon sometimes.",
+      "Their kills happen at night - the target has one last day."
+    ]
+  },
+  {
+    id: 'summoner',
+    name: 'Summoner',
+    edition: 'experimental',
+    team: 'minion',
+    ability: 'You get 3 bluffs. On the 3rd night, choose a player: they become an evil Demon of your choice. [No Demon]',
+    firstNightOrder: 26,
+    otherNightOrder: 16,
+    setup: true,
+    reminders: ['Night 1', 'Night 2', 'Night 3'],
+    flavorQuote: "Rise, my creation!",
+    extendedSummary: `The Summoner creates the Demon on the third night.
+
+The game starts with no Demon. On the third night, the Summoner chooses a player and a Demon character - that player becomes that evil Demon.
+
+The Summoner gets 3 bluffs to share with their team.`,
+    tipsAndTricks: [
+      "You choose who becomes the Demon - choose wisely.",
+      "The first two nights have no Demon kills - explain this if needed.",
+      "Choose a Demon that suits the script and situation.",
+      "Coordinate your bluffs with other evil players."
+    ],
+    fightingThe: [
+      "No one dies for the first two nights if the Summoner is in play.",
+      "Watch who seems to become 'active' after night 3.",
+      "The Demon was chosen by the Summoner - they know each other.",
+      "The original player might not have expected to become Demon."
+    ]
+  },
+  {
+    id: 'vizier',
+    name: 'Vizier',
+    edition: 'experimental',
+    team: 'minion',
+    ability: 'All players know who you are. You can not die during the day. If a good player publicly guessed you are the Vizier, you might die.',
+    firstNightOrder: null,
+    otherNightOrder: null,
+    setup: false,
+    reminders: [],
+    flavorQuote: "I am but a humble servant of the crown.",
+    extendedSummary: `The Vizier is known to all and cannot be executed.
+
+All players know who the Vizier is from the start. The Vizier cannot die during the day - they can be nominated and voted for, but they won't die.
+
+If a good player publicly guesses the Vizier is evil, the Storyteller may kill the Vizier.`,
+    tipsAndTricks: [
+      "You're known to all but can't be executed - use this power.",
+      "You can dominate day discussions without fear.",
+      "Push for executions of good players.",
+      "Be careful of good players guessing you're evil."
+    ],
+    fightingThe: [
+      "Everyone knows who the Vizier is - don't trust them!",
+      "You can't execute them, but you can ignore them.",
+      "Publicly guess the Vizier is evil to potentially kill them.",
+      "Focus on finding the Demon instead."
+    ]
+  },
+  {
+    id: 'widow',
+    name: 'Widow',
+    edition: 'experimental',
+    team: 'minion',
+    ability: 'On your 1st night, look at the Grimoire and choose a player: they are poisoned. 1 good player knows a Widow is in play.',
+    firstNightOrder: 17,
+    otherNightOrder: null,
+    setup: false,
+    reminders: ['Poisoned', 'Knows'],
+    flavorQuote: "My husband? Oh yes, a terrible accident. Pass the sugar.",
+    extendedSummary: `The Widow sees the Grimoire and poisons a player.
+
+On the first night, the Widow sees all the character tokens in the Grimoire and chooses a player to poison for the entire game.
+
+One good player is told that a Widow is in play.`,
+    tipsAndTricks: [
+      "You see ALL the characters - this is incredibly powerful information.",
+      "Poison the most powerful or information-rich player.",
+      "Share the Grimoire information with your evil team.",
+      "One good player knows a Widow exists - be careful."
+    ],
+    fightingThe: [
+      "One player knows a Widow is in play - believe them.",
+      "Someone is poisoned all game - figure out who.",
+      "The Widow knows everything - expect evil to have good bluffs.",
+      "Check if information doesn't match up - someone might be poisoned."
+    ]
+  },
+  {
+    id: 'wizard',
+    name: 'Wizard',
+    edition: 'experimental',
+    team: 'minion',
+    ability: 'The Demon does not know which players are which Minion. On their 1st night, the Demon may choose a player: they die.',
+    firstNightOrder: 22,
+    otherNightOrder: null,
+    setup: false,
+    reminders: [],
+    flavorQuote: "Abracadabra!",
+    extendedSummary: `The Wizard gives the Demon an extra first-night kill.
+
+The Demon doesn't know specifically which players are which Minion - just that they exist. On the first night, the Demon may choose to kill a player.
+
+This gives evil an early advantage.`,
+    tipsAndTricks: [
+      "Your Demon can kill on night 1 - coordinate who to eliminate.",
+      "Evil doesn't know which Minion is which - find each other carefully.",
+      "Use the extra kill to remove a powerful information character.",
+      "This puts evil ahead early in the game."
+    ],
+    fightingThe: [
+      "There might be a death on night 1 - be prepared.",
+      "Evil doesn't know which Minion is which - they might seem confused.",
+      "The Wizard enables an aggressive evil start.",
+      "Watch for evil players testing who their teammates are."
+    ]
+  },
+  {
+    id: 'wraith',
+    name: 'Wraith',
+    edition: 'experimental',
+    team: 'minion',
+    ability: 'The Demon\'s kills affect their target\'s neighbors instead. Each night, any players that are exactly 1 step away from being killed wake to learn this.',
+    firstNightOrder: 21,
+    otherNightOrder: 11,
+    setup: false,
+    reminders: ['Warning'],
+    flavorQuote: "I am the shadow that haunts your dreams.",
+    extendedSummary: `The Wraith redirects the Demon's kills to neighbors.
+
+When the Demon kills a player, instead of that player dying, one or both of their neighbors die.
+
+Players who are exactly one step away from dying wake and learn they were almost killed.`,
+    tipsAndTricks: [
+      "The Demon kills who they choose, but neighbors die instead.",
+      "This can confuse good about who the Demon targeted.",
+      "Players who 'almost die' learn about it - this creates uncertainty.",
+      "Coordinate with the Demon about actual targets vs apparent targets."
+    ],
+    fightingThe: [
+      "The Demon's target isn't who dies - neighbors die instead.",
+      "If you're warned you 'almost died', the Demon targeted your neighbor.",
+      "Track who the Demon seems to target vs who actually dies.",
+      "This creates confusion about Demon intentions."
+    ]
+  },
+  {
+    id: 'xaan',
+    name: 'Xaan',
+    edition: 'experimental',
+    team: 'minion',
+    ability: 'On night X, all Townsfolk are poisoned until dusk. X is the night equal to the number of players you publicly "touched" yesterday.',
+    firstNightOrder: null,
+    otherNightOrder: 66,
+    setup: false,
+    reminders: ['Touched', 'Touched', 'Touched', 'Night X'],
+    flavorQuote: "Your pain sustains me.",
+    extendedSummary: `Xaan can poison all Townsfolk on a chosen night.
+
+During the day, Xaan publicly "touches" players by announcing it. The number of players touched determines which night all Townsfolk are poisoned.
+
+On night X (where X = number touched yesterday), all Townsfolk are poisoned until dusk.`,
+    tipsAndTricks: [
+      "Choose how many players to touch to control when Townsfolk are poisoned.",
+      "Timing is crucial - poison on a night when it matters most.",
+      "This affects ALL Townsfolk - very powerful.",
+      "Coordinate with the Demon about when to trigger this."
+    ],
+    fightingThe: [
+      "Watch for players publicly 'touching' others - that's Xaan.",
+      "Count the touches to know which night Townsfolk are poisoned.",
+      "On night X, all Townsfolk info might be wrong.",
+      "Once you identify Xaan, their touching becomes less dangerous."
+    ]
+  },
+  // DEMONS
+  {
+    id: 'alhadikhia',
+    name: 'Al-Hadikhia',
+    edition: 'experimental',
+    team: 'demon',
+    ability: 'Each night*, choose 3 players (all players learn who): each silently chooses to live or die, but if all 3 live, all 3 die.',
+    firstNightOrder: null,
+    otherNightOrder: 28,
+    setup: false,
+    reminders: ['Chosen', 'Chosen', 'Chosen'],
+    flavorQuote: "Choose wisely, for your life depends on it.",
+    extendedSummary: `Al-Hadikhia creates a deadly choice for three players.
+
+Each night except the first, Al-Hadikhia chooses 3 players. All players learn who was chosen. Each chosen player secretly decides to live or die.
+
+If all 3 choose to live, all 3 die instead. Otherwise, those who chose to die, die.`,
+    tipsAndTricks: [
+      "Create prisoner's dilemma situations for good players.",
+      "Choose players who trust each other - they might all try to live.",
+      "If even one player chooses death, the others can safely live.",
+      "This creates paranoia and mistrust."
+    ],
+    fightingThe: [
+      "If you're chosen, consider volunteering to die so others can live.",
+      "Coordinate with other chosen players if possible.",
+      "If all 3 try to live, all 3 die - don't all choose life.",
+      "Watch for evil players always choosing to live."
+    ]
+  },
+  {
+    id: 'kazali',
+    name: 'Kazali',
+    edition: 'experimental',
+    team: 'demon',
+    ability: 'Each night*, choose a player: they die. [You choose which players are which Minions. -? to +? Outsiders]',
+    firstNightOrder: 15,
+    otherNightOrder: 29,
+    setup: true,
+    reminders: ['Dead'],
+    flavorQuote: "I choose who serves me.",
+    extendedSummary: `The Kazali chooses which players become Minions during setup.
+
+The Kazali picks which good players become Minions. This happens during setup, replacing normal Minion selection.
+
+Outsiders can be added or removed based on the Kazali's choices.`,
+    tipsAndTricks: [
+      "You pick your own Minion team - choose wisely.",
+      "Turn experienced or influential players into Minions.",
+      "Your Minions were good players who became evil.",
+      "Coordinate carefully since your Minions started good."
+    ],
+    fightingThe: [
+      "The Minions were originally good players turned evil.",
+      "Watch for players who suddenly seem to change behavior.",
+      "The Kazali chose their own team - they know everyone.",
+      "Character claims from 'new' Minions might be real (their old character)."
+    ]
+  },
+  {
+    id: 'legion',
+    name: 'Legion',
+    edition: 'experimental',
+    team: 'demon',
+    ability: 'Each night*, a player might die. Executions fail if only evil voted. You register as a Minion too. [Most players are Legion]',
+    firstNightOrder: null,
+    otherNightOrder: 30,
+    setup: true,
+    reminders: ['Dead', 'About to die'],
+    flavorQuote: "We are many. We are Legion.",
+    extendedSummary: `Legion is a Demon that most players share.
+
+Most players are Legion - they are all the same Demon. Executions fail if only evil players voted.
+
+Legion registers as both Demon and Minion to detection abilities.`,
+    tipsAndTricks: [
+      "Most players are you - coordinate but don't make it obvious.",
+      "Executions fail if only evil voted - good must vote too.",
+      "You register as Minion too - this can confuse detection.",
+      "Pretend to be separate players working together."
+    ],
+    fightingThe: [
+      "If an execution fails, only evil voted - those voters are Legion!",
+      "Most players might be Legion - trust very few.",
+      "Watch voting patterns carefully.",
+      "Detection might show 'Minion' instead of 'Demon'."
+    ]
+  },
+  {
+    id: 'leviathan',
+    name: 'Leviathan',
+    edition: 'experimental',
+    team: 'demon',
+    ability: 'If more than 1 good player is executed, evil wins. All players know you are in play. After day 5, evil wins.',
+    firstNightOrder: 65,
+    otherNightOrder: 79,
+    setup: false,
+    reminders: ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5'],
+    flavorQuote: "Time is on my side.",
+    extendedSummary: `The Leviathan wins through patience and precision.
+
+Everyone knows a Leviathan is in play. If more than one good player is executed, evil wins immediately. After day 5 ends, evil wins.
+
+The Leviathan doesn't kill at night like normal Demons.`,
+    tipsAndTricks: [
+      "Everyone knows you're in play - no hiding it.",
+      "Good can only execute one good player or they lose.",
+      "If good executes no one, you win on day 5.",
+      "Create situations where good must execute."
+    ],
+    fightingThe: [
+      "You know a Leviathan is in play - be very careful with executions!",
+      "You can only execute one good player total.",
+      "You must find and execute the Leviathan before day 5.",
+      "Don't waste executions on suspected good players."
+    ]
+  },
+  {
+    id: 'lilmonsta',
+    name: "Lil' Monsta",
+    edition: 'experimental',
+    team: 'demon',
+    ability: 'Each night, Minions choose who babysits Lil\' Monsta & \"is the Demon\". Each night*, a player might die. [+1 Minion]',
+    firstNightOrder: 16,
+    otherNightOrder: 31,
+    setup: true,
+    reminders: ['Dead', 'Is the Demon'],
+    flavorQuote: "Goo goo!",
+    extendedSummary: `Lil' Monsta is a token passed between Minions.
+
+There is no Demon player - instead, the Lil' Monsta token is held by a Minion each night. That Minion "is the Demon" and dies if the Demon would die.
+
+An extra Minion is added to the game.`,
+    tipsAndTricks: [
+      "Pass the token between Minions to confuse good.",
+      "The holder 'is the Demon' for detection purposes.",
+      "If the holder is executed, they die as the Demon.",
+      "Coordinate who holds the token each night."
+    ],
+    fightingThe: [
+      "There's no traditional Demon - a Minion holds the token.",
+      "The 'Demon' can change each night.",
+      "Execute the token holder to win, but they might pass it.",
+      "There's one extra Minion in play."
+    ]
+  },
+  {
+    id: 'lleech',
+    name: 'Lleech',
+    edition: 'experimental',
+    team: 'demon',
+    ability: 'Each night*, choose a player: they die. You start by choosing a player: they are poisoned. You die if & only if they are dead.',
+    firstNightOrder: 14,
+    otherNightOrder: 32,
+    setup: false,
+    reminders: ['Dead', 'Poisoned'],
+    flavorQuote: "I'll drink your life force!",
+    extendedSummary: `The Lleech is bound to a host who keeps them alive.
+
+On the first night, the Lleech chooses a player who is poisoned for the entire game. The Lleech can only die if this host is dead.
+
+Each subsequent night, the Lleech kills a player.`,
+    tipsAndTricks: [
+      "Your host keeps you alive - choose carefully.",
+      "Your host is poisoned all game - their info is wrong.",
+      "If your host dies, you can be killed.",
+      "Protect your host while killing others."
+    ],
+    fightingThe: [
+      "The Lleech can only die if their host is dead first.",
+      "Someone is poisoned all game because of the Lleech.",
+      "Find and kill the host, then the Lleech.",
+      "Watch for players the Demon seems to protect."
+    ]
+  },
+  {
+    id: 'lordoftyphon',
+    name: 'Lord of Typhon',
+    edition: 'experimental',
+    team: 'demon',
+    ability: 'Each night*, choose a player: they die. [Evil characters are in a line. You are in the middle. +1 Minion. -? to +? Outsiders]',
+    firstNightOrder: null,
+    otherNightOrder: 33,
+    setup: true,
+    reminders: ['Dead'],
+    flavorQuote: "Bow before me, mortal.",
+    extendedSummary: `The Lord of Typhon sits at the center of evil.
+
+Evil players are seated in a line with the Lord of Typhon in the middle. There is one extra Minion in play.
+
+Outsiders may be added or removed based on the setup.`,
+    tipsAndTricks: [
+      "You're in the middle of your evil team - use this for coordination.",
+      "Evil is in a line - this affects neighbor relationships.",
+      "You have an extra Minion to work with.",
+      "Your position is fixed - plan around it."
+    ],
+    fightingThe: [
+      "Evil players are seated in a line around the Lord of Typhon.",
+      "The Demon is in the middle of evil players.",
+      "If you find one evil player, check their neighbors.",
+      "There's one extra Minion in play."
+    ]
+  },
+  {
+    id: 'ojo',
+    name: 'Ojo',
+    edition: 'experimental',
+    team: 'demon',
+    ability: 'Each night*, choose a character: they die. If they are not in play, the Storyteller chooses who dies.',
+    firstNightOrder: null,
+    otherNightOrder: 34,
+    setup: false,
+    reminders: ['Dead'],
+    flavorQuote: "I see all. I know all.",
+    extendedSummary: `The Ojo kills by choosing characters, not players.
+
+Each night except the first, the Ojo names a character. If that character is in play, that player dies. If not, the Storyteller chooses who dies.
+
+This allows targeted killing based on character knowledge.`,
+    tipsAndTricks: [
+      "Kill by character, not by player - very precise.",
+      "Eliminate specific threats like the Slayer or Fortune Teller.",
+      "If you guess wrong, someone still dies.",
+      "Use evil's information to know which characters to target."
+    ],
+    fightingThe: [
+      "The Ojo targets characters, not players.",
+      "Bluffing as a dangerous character might get you killed.",
+      "If a specific character dies, the Ojo knew they were in play.",
+      "Consider hiding or lying about your character."
+    ]
+  },
+  {
+    id: 'riot',
+    name: 'Riot',
+    edition: 'experimental',
+    team: 'demon',
+    ability: 'Nominees die, but may nominate again immediately (on day 3+, a player might not die). After day 3, evil wins. [All Minions are Riot]',
+    firstNightOrder: null,
+    otherNightOrder: null,
+    setup: true,
+    reminders: [],
+    flavorQuote: "CHAOS!",
+    extendedSummary: `Riot creates chaotic chain nominations.
+
+All Minions become Riot. When a player is nominated, they die but may immediately nominate someone else, creating a chain of deaths.
+
+After day 3, if the game hasn't ended, evil wins. On day 3+, a player might survive nomination.`,
+    tipsAndTricks: [
+      "Nominations kill - use this to eliminate good players.",
+      "The chain continues until no one nominates.",
+      "You win after day 3 if the game continues.",
+      "All your Minions are also Riot."
+    ],
+    fightingThe: [
+      "Nominations kill! Be very careful who you nominate.",
+      "You must find and kill all Riots before day 3.",
+      "All Minions are Riot - there are multiple Demons.",
+      "On day 3+, nominated players might survive."
+    ]
+  },
+  {
+    id: 'yaggababble',
+    name: 'Yaggababble',
+    edition: 'experimental',
+    team: 'demon',
+    ability: 'You start knowing a secret phrase. For each time you said it publicly today, a player might die tonight.',
+    firstNightOrder: 27,
+    otherNightOrder: 35,
+    setup: false,
+    reminders: ['Dead', 'Dead', 'Dead'],
+    flavorQuote: "Babble babble babble!",
+    extendedSummary: `The Yaggababble kills based on saying a secret phrase.
+
+The Yaggababble starts knowing a secret phrase. For each time they say this phrase publicly during the day, a player might die that night.
+
+Multiple kills are possible if the phrase is said multiple times.`,
+    tipsAndTricks: [
+      "Say your phrase naturally in conversation.",
+      "More times said = more potential kills.",
+      "The phrase should be unusual but workable in conversation.",
+      "Don't make it too obvious or you'll be caught."
+    ],
+    fightingThe: [
+      "Listen for repeated unusual phrases - that might be the secret phrase.",
+      "If multiple people die, the Yaggababble said their phrase multiple times.",
+      "Watch for players working phrases into conversation awkwardly.",
+      "Once you identify the phrase, watch who keeps saying it."
+    ]
+  },
+  // TRAVELLERS
+  {
+    id: 'cacklejack',
+    name: 'Cacklejack',
+    edition: 'experimental',
+    team: 'traveler',
+    ability: 'Once per night, if you are alive, choose a player: they learn your alignment.',
+    firstNightOrder: 1,
+    otherNightOrder: 1,
+    setup: false,
+    reminders: [],
+    flavorQuote: "Hee hee hee!",
+    extendedSummary: `The Cacklejack reveals their alignment to one player per night.
+
+Each night, the Cacklejack may choose a player to learn the Cacklejack's alignment (good or evil).
+
+This helps players understand who to trust.`,
+    tipsAndTricks: [
+      "Reveal your alignment strategically to build trust or deceive.",
+      "Good Cacklejacks can confirm themselves to key players.",
+      "Evil Cacklejacks can pretend to be good.",
+      "Choose wisely who learns your alignment."
+    ],
+    bluffingAs: [
+      "Claim you told someone you were good.",
+      "Coordinate with that player to back you up.",
+      "Be careful if they reveal you said something different."
+    ]
+  },
+  {
+    id: 'gangster',
+    name: 'Gangster',
+    edition: 'experimental',
+    team: 'traveler',
+    ability: 'Once per day, you may choose to kill an alive neighbor, if your other alive neighbor agrees.',
+    firstNightOrder: null,
+    otherNightOrder: null,
+    setup: false,
+    reminders: ['About to die'],
+    flavorQuote: "Nice place you got here. Be a shame if something happened to it.",
+    extendedSummary: `The Gangster can kill their neighbors with consent.
+
+Once per day, the Gangster may choose to kill one of their alive neighbors, but only if their other alive neighbor agrees.
+
+This creates interesting dynamics with neighboring players.`,
+    tipsAndTricks: [
+      "You need your other neighbor's agreement to kill.",
+      "Use this to eliminate suspected evil players next to you.",
+      "Or work with evil to eliminate good players.",
+      "Your neighbors are very important to your ability."
+    ],
+    bluffingAs: [
+      "Claim Gangster to explain why you're talking to your neighbors a lot.",
+      "Pretend to negotiate kills that never happen.",
+      "Use the threat of killing to influence your neighbors."
+    ]
+  },
+  {
+    id: 'gnome',
+    name: 'Gnome',
+    edition: 'experimental',
+    team: 'traveler',
+    ability: 'If you are exiled, a player is killed, decided by you, the exiled (if evil) or the Storyteller (if good).',
+    firstNightOrder: null,
+    otherNightOrder: null,
+    setup: false,
+    reminders: [],
+    flavorQuote: "I'm watching you...",
+    extendedSummary: `The Gnome causes a death when exiled.
+
+If the Gnome is exiled, a player dies. If the Gnome is evil, they choose who dies. If good, the Storyteller chooses.
+
+This makes exiling the Gnome risky.`,
+    tipsAndTricks: [
+      "Being exiled triggers a death - use this as leverage.",
+      "If evil, you get to choose who dies.",
+      "If good, the Storyteller will help good by choosing the death.",
+      "Threaten exile to influence the game."
+    ],
+    bluffingAs: [
+      "Threaten that your exile will kill someone.",
+      "Claim Gnome to discourage exile attempts.",
+      "Use the threat to survive longer."
+    ]
+  },
+  // FABLED
+  {
+    id: 'deusexfiasco',
+    name: 'Deus ex Fiasco',
+    edition: 'experimental',
+    team: 'traveler',
+    ability: 'Once per game, the Storyteller may choose a player: they die.',
+    firstNightOrder: null,
+    otherNightOrder: null,
+    setup: false,
+    reminders: ['Used'],
+    flavorQuote: "The gods are capricious.",
+    extendedSummary: `Deus ex Fiasco gives the Storyteller a one-time kill.
+
+Once per game, the Storyteller may use this Fabled to kill a player of their choice.
+
+This is typically used to correct game imbalances.`,
+    tipsAndTricks: [
+      "This is a Storyteller tool to fix game problems.",
+      "If things get too unbalanced, this might be used.",
+      "Trust that the Storyteller is using it fairly.",
+      "This death is outside normal rules."
+    ],
+    bluffingAs: []
+  },
+  {
+    id: 'ferryman',
+    name: 'Ferryman',
+    edition: 'experimental',
+    team: 'traveler',
+    ability: 'On the final night, dead players who voted that day will die again. The Storyteller may reveal which dead player is in play.',
+    firstNightOrder: null,
+    otherNightOrder: 80,
+    setup: false,
+    reminders: [],
+    flavorQuote: "Coin for the ferryman?",
+    extendedSummary: `The Ferryman affects dead players who vote.
+
+On the final night, dead players who voted during the day will 'die again' and lose their vote for the final day.
+
+The Storyteller may reveal which dead player this affects.`,
+    tipsAndTricks: [
+      "Dead players must consider whether to vote.",
+      "Voting costs them their final vote.",
+      "This creates strategic voting decisions for the dead.",
+      "The reveal can help good or evil depending on the situation."
+    ],
+    bluffingAs: []
+  },
+  {
+    id: 'stormcatcher',
+    name: 'Storm Catcher',
+    edition: 'experimental',
+    team: 'traveler',
+    ability: 'Name a good character. If in play, they can only die by execution, but evil players learn which player it is.',
+    firstNightOrder: null,
+    otherNightOrder: null,
+    setup: false,
+    reminders: ['Protected'],
+    flavorQuote: "The storm comes for us all.",
+    extendedSummary: `Storm Catcher protects a character but reveals them to evil.
+
+A good character is named. If that character is in play, that player can only die by execution - not by Demon kills or other night deaths.
+
+However, all evil players learn which player is protected.`,
+    tipsAndTricks: [
+      "This protects a powerful good player from night death.",
+      "But evil knows who they are - they become a target for execution.",
+      "The protection lasts as long as Storm Catcher is in play.",
+      "Trade-off between protection and exposure."
+    ],
+    bluffingAs: []
+  }
+];
+
+// ===================
 // OFFICIAL SCRIPTS
 // ===================
 
@@ -1235,6 +3274,7 @@ export const ALL_CHARACTERS: Character[] = [
   ...TROUBLE_BREWING,
   ...BAD_MOON_RISING,
   ...SECTS_AND_VIOLETS,
+  ...EXPERIMENTAL,
   ...TRAVELLERS,
 ];
 
