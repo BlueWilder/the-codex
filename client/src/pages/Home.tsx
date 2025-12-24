@@ -17,7 +17,7 @@ export default function Home() {
             The Codex
           </h1>
           <p className="text-xl text-amber-100/60 font-serif max-w-2xl mx-auto italic">
-            "There is no greater sorrow than to recall happiness in times of misery."
+            "Do not dare to hope, for the demon devours hope before all else."
           </p>
         </motion.div>
 
