@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 
 export function Layout({ children }: { children: ReactNode }) {
   return (
-    <div className="min-h-screen pb-20 md:pt-24 md:pb-8 text-foreground selection:bg-red-900/50 selection:text-white">
+    <div className="min-h-screen pt-16 md:pt-24 pb-8 text-foreground selection:bg-red-900/50 selection:text-white">
       <Navigation />
       <motion.main
         initial={{ opacity: 0, y: 10 }}
