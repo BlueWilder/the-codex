@@ -1163,13 +1163,13 @@ export const TRAVELLERS: Character[] = [
 export const JINXES: Jinx[] = [
   // Spy jinxes
   { character1: 'spy', character2: 'magician', reason: 'When the Spy sees the Grimoire, the Demon and Magician\'s character tokens are swapped.' },
-  { character1: 'spy', character2: 'poppy_grower', reason: 'If the Poppy Grower is in play, the Spy does not see the Grimoire until the Poppy Grower dies.' },
+  { character1: 'spy', character2: 'poppygrower', reason: 'If the Poppy Grower is in play, the Spy does not see the Grimoire until the Poppy Grower dies.' },
   { character1: 'spy', character2: 'damsel', reason: 'Only 1 jinxed character can be in play.' },
   { character1: 'spy', character2: 'heretic', reason: 'Only 1 jinxed character can be in play.' },
   
   // Widow jinxes
   { character1: 'widow', character2: 'magician', reason: 'When the Widow sees the Grimoire, the Demon and Magician\'s character tokens are swapped.' },
-  { character1: 'widow', character2: 'poppy_grower', reason: 'If the Poppy Grower is in play, the Widow does not see the Grimoire until the Poppy Grower dies.' },
+  { character1: 'widow', character2: 'poppygrower', reason: 'If the Poppy Grower is in play, the Widow does not see the Grimoire until the Poppy Grower dies.' },
   { character1: 'widow', character2: 'damsel', reason: 'Only 1 jinxed character can be in play.' },
   { character1: 'widow', character2: 'heretic', reason: 'Only 1 jinxed character can be in play.' },
   
