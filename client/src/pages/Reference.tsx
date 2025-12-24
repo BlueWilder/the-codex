@@ -359,7 +359,7 @@ function CustomScriptDialog({
           </span>
         </div>
 
-        <ScrollArea className="flex-1 min-h-0 border border-amber-900/30 rounded-lg p-2">
+        <div className="flex-1 min-h-0 max-h-[40vh] md:max-h-[50vh] overflow-y-auto border border-amber-900/30 rounded-lg p-2 touch-pan-y">
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
             {filteredChars.map((char) => (
               <button
@@ -384,7 +384,7 @@ function CustomScriptDialog({
               </button>
             ))}
           </div>
-        </ScrollArea>
+        </div>
 
         <DialogFooter className="pt-4">
           <Button variant="outline" onClick={() => onOpenChange(false)} data-testid="button-cancel">
