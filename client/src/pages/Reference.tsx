@@ -322,20 +322,20 @@ function CustomScriptDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[80vh] flex flex-col">
-        <DialogHeader>
-          <DialogTitle className="font-display text-xl text-amber-500">
-            Select Characters for Custom Script
+      <DialogContent className="max-w-4xl max-h-[85vh] flex flex-col p-4 md:p-6">
+        <DialogHeader className="pb-2">
+          <DialogTitle className="font-display text-lg md:text-xl text-amber-500">
+            Select Characters
           </DialogTitle>
         </DialogHeader>
         
-        <div className="flex flex-wrap gap-2 py-2">
+        <div className="flex flex-wrap items-center gap-1 md:gap-2">
           {['all', 'townsfolk', 'outsider', 'minion', 'demon', 'traveler'].map((f) => (
             <button
               key={f}
               onClick={() => setDialogTeamFilter(f)}
               className={cn(
-                "px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider transition-all border",
+                "px-2 py-0.5 md:px-3 md:py-1 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-wider transition-all border",
                 dialogTeamFilter === f 
                   ? "bg-amber-900/50 text-amber-100 border-amber-600" 
                   : "bg-transparent text-muted-foreground border-transparent hover:bg-white/5"
@@ -345,28 +345,28 @@ function CustomScriptDialog({
               {f}
             </button>
           ))}
-        </div>
-
-        <div className="flex gap-2 pb-2">
-          <Button variant="outline" size="sm" onClick={handleSelectAll} data-testid="button-select-all">
-            Select All
-          </Button>
-          <Button variant="outline" size="sm" onClick={handleClearAll} data-testid="button-clear-all">
-            Clear {dialogTeamFilter !== "all" ? dialogTeamFilter : "All"}
-          </Button>
-          <span className="ml-auto text-sm text-muted-foreground">
+          <span className="ml-auto text-xs text-muted-foreground">
             {tempSelected.size} selected
           </span>
         </div>
 
-        <div className="flex-1 min-h-0 max-h-[40vh] md:max-h-[50vh] overflow-y-auto border border-amber-900/30 rounded-lg p-2 touch-pan-y">
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+        <div className="flex gap-1 py-1">
+          <Button variant="outline" size="sm" className="h-7 text-xs px-2" onClick={handleSelectAll} data-testid="button-select-all">
+            Select All
+          </Button>
+          <Button variant="outline" size="sm" className="h-7 text-xs px-2" onClick={handleClearAll} data-testid="button-clear-all">
+            Clear
+          </Button>
+        </div>
+
+        <div className="flex-1 min-h-0 max-h-[50vh] md:max-h-[55vh] overflow-y-auto border border-amber-900/30 rounded-lg p-2 touch-pan-y">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1.5 md:gap-2">
             {filteredChars.map((char) => (
               <button
                 key={char.id}
                 onClick={() => toggleCharacter(char.id)}
                 className={cn(
-                  "p-2 rounded-lg border text-left transition-all",
+                  "p-1.5 md:p-2 rounded-lg border text-left transition-all",
                   getTeamColor(char.team),
                   tempSelected.has(char.id) 
                     ? "ring-2 ring-amber-500" 
@@ -375,23 +375,23 @@ function CustomScriptDialog({
                 data-testid={`select-character-${char.id}`}
               >
                 <div className="flex items-center justify-between gap-1">
-                  <span className="text-xs font-bold truncate">{char.name}</span>
+                  <span className="text-[11px] md:text-xs font-bold truncate">{char.name}</span>
                   {tempSelected.has(char.id) && (
                     <Check className="w-3 h-3 text-amber-500 shrink-0" />
                   )}
                 </div>
-                <span className="text-[10px] uppercase opacity-60">{char.team}</span>
+                <span className="text-[9px] md:text-[10px] uppercase opacity-60">{char.team}</span>
               </button>
             ))}
           </div>
         </div>
 
-        <DialogFooter className="pt-4">
-          <Button variant="outline" onClick={() => onOpenChange(false)} data-testid="button-cancel">
+        <DialogFooter className="pt-2 gap-2">
+          <Button variant="outline" size="sm" onClick={() => onOpenChange(false)} data-testid="button-cancel">
             Cancel
           </Button>
-          <Button onClick={handleSave} data-testid="button-save-custom">
-            Save Custom Script
+          <Button size="sm" onClick={handleSave} data-testid="button-save-custom">
+            Save
           </Button>
         </DialogFooter>
       </DialogContent>
