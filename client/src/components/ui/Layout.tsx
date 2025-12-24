@@ -16,7 +16,7 @@ export function Layout({ children }: { children: ReactNode }) {
       </motion.main>
       <footer className="border-t border-amber-900/30 py-6 mt-8">
         <div className="container mx-auto px-4 text-center">
-          <p className="text-sm text-muted-foreground">Created by Mage Productions</p>
+          <p className="text-sm text-muted-foreground">Created by <span className="font-bold">Mage Productions</span></p>
         </div>
       </footer>
     </div>
