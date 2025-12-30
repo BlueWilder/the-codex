@@ -90,13 +90,13 @@ function CharacterCard({ char, isExpanded, onToggle }: {
             transition={{ duration: 0.2, ease: "easeInOut" }}
             className="overflow-hidden"
           >
-            <div className="mt-4 pt-4 border-t border-current/20 space-y-4">
+            <div className="mt-4 pt-4 border-t border-current/20 space-y-5 md:space-y-4">
               {(char.firstNightOrder !== null || char.otherNightOrder !== null) && (
-                <div className="space-y-1">
-                  <h4 className="text-xs font-bold uppercase tracking-wider opacity-70 flex items-center gap-1">
-                    <Moon className="w-3 h-3" /> Night Order
+                <div className="space-y-2">
+                  <h4 className="text-sm md:text-xs font-bold uppercase tracking-wider opacity-70 flex items-center gap-1.5">
+                    <Moon className="w-4 h-4 md:w-3 md:h-3" /> Night Order
                   </h4>
-                  <div className="flex flex-wrap gap-3 text-sm">
+                  <div className="flex flex-wrap gap-3 text-base md:text-sm">
                     {char.firstNightOrder !== null && (
                       <div className="flex items-center gap-2">
                         <span className="text-muted-foreground">First Night:</span>
@@ -114,13 +114,13 @@ function CharacterCard({ char, isExpanded, onToggle }: {
               )}
 
               {char.reminders.length > 0 && (
-                <div className="space-y-1">
-                  <h4 className="text-xs font-bold uppercase tracking-wider opacity-70">Reminder Tokens</h4>
+                <div className="space-y-2">
+                  <h4 className="text-sm md:text-xs font-bold uppercase tracking-wider opacity-70">Reminder Tokens</h4>
                   <div className="flex flex-wrap gap-2">
                     {char.reminders.map((reminder, idx) => (
                       <span 
                         key={idx}
-                        className="text-xs bg-black/40 px-2 py-1 rounded-full border border-current/20"
+                        className="text-sm md:text-xs bg-black/40 px-3 py-1.5 md:px-2 md:py-1 rounded-full border border-current/20"
                       >
                         {reminder}
                       </span>
@@ -131,14 +131,14 @@ function CharacterCard({ char, isExpanded, onToggle }: {
 
               {jinxes.length > 0 && (
                 <div className="space-y-2">
-                  <h4 className="text-xs font-bold uppercase tracking-wider opacity-70 flex items-center gap-1">
-                    <AlertTriangle className="w-3 h-3 text-orange-400" /> Jinxes
+                  <h4 className="text-sm md:text-xs font-bold uppercase tracking-wider opacity-70 flex items-center gap-1.5">
+                    <AlertTriangle className="w-4 h-4 md:w-3 md:h-3 text-orange-400" /> Jinxes
                   </h4>
                   <div className="space-y-2">
                     {jinxes.map((jinx, idx) => (
                       <div 
                         key={idx}
-                        className="text-xs bg-orange-950/30 border border-orange-900/30 rounded-lg p-2"
+                        className="text-sm md:text-xs bg-orange-950/30 border border-orange-900/30 rounded-lg p-3 md:p-2"
                       >
                         <span className="font-bold text-orange-300">{getJinxedCharacterName(jinx)}:</span>
                         <span className="ml-1 opacity-90">{jinx.reason}</span>
@@ -149,11 +149,11 @@ function CharacterCard({ char, isExpanded, onToggle }: {
               )}
 
               {char.setup && (
-                <div className="space-y-1">
-                  <h4 className="text-xs font-bold uppercase tracking-wider opacity-70 flex items-center gap-1">
-                    <Settings className="w-3 h-3 text-purple-400" /> Setup Effect
+                <div className="space-y-2">
+                  <h4 className="text-sm md:text-xs font-bold uppercase tracking-wider opacity-70 flex items-center gap-1.5">
+                    <Settings className="w-4 h-4 md:w-3 md:h-3 text-purple-400" /> Setup Effect
                   </h4>
-                  <p className="text-xs opacity-80">
+                  <p className="text-sm md:text-xs opacity-80">
                     This character modifies the game setup. Check the ability for details.
                   </p>
                 </div>
@@ -161,11 +161,11 @@ function CharacterCard({ char, isExpanded, onToggle }: {
 
               {/* Flavor Quote */}
               {char.flavorQuote && (
-                <div className="space-y-1">
-                  <h4 className="text-xs font-bold uppercase tracking-wider opacity-70 flex items-center gap-1">
-                    <Quote className="w-3 h-3 text-amber-400" /> Flavor
+                <div className="space-y-2">
+                  <h4 className="text-sm md:text-xs font-bold uppercase tracking-wider opacity-70 flex items-center gap-1.5">
+                    <Quote className="w-4 h-4 md:w-3 md:h-3 text-amber-400" /> Flavor
                   </h4>
-                  <p className="text-sm font-serif italic opacity-80 pl-3 border-l-2 border-amber-700/50">
+                  <p className="text-base md:text-sm font-serif italic opacity-80 pl-4 md:pl-3 border-l-2 border-amber-700/50">
                     {char.flavorQuote}
                   </p>
                 </div>
@@ -173,11 +173,11 @@ function CharacterCard({ char, isExpanded, onToggle }: {
 
               {/* Extended Summary */}
               {char.extendedSummary && (
-                <div className="space-y-1">
-                  <h4 className="text-xs font-bold uppercase tracking-wider opacity-70 flex items-center gap-1">
-                    <Eye className="w-3 h-3 text-blue-400" /> How It Works
+                <div className="space-y-2">
+                  <h4 className="text-sm md:text-xs font-bold uppercase tracking-wider opacity-70 flex items-center gap-1.5">
+                    <Eye className="w-4 h-4 md:w-3 md:h-3 text-blue-400" /> How It Works
                   </h4>
-                  <div className="text-sm font-serif opacity-90 space-y-2">
+                  <div className="text-base md:text-sm font-serif opacity-90 space-y-3 md:space-y-2 leading-relaxed">
                     {char.extendedSummary.split('\n\n').map((paragraph, idx) => (
                       <p key={idx}>{paragraph}</p>
                     ))}
@@ -187,15 +187,15 @@ function CharacterCard({ char, isExpanded, onToggle }: {
 
               {/* Tips and Tricks */}
               {char.tipsAndTricks && char.tipsAndTricks.length > 0 && (
-                <div className="space-y-1">
-                  <h4 className="text-xs font-bold uppercase tracking-wider opacity-70 flex items-center gap-1">
-                    <Lightbulb className="w-3 h-3 text-yellow-400" /> Tips & Tricks
+                <div className="space-y-2">
+                  <h4 className="text-sm md:text-xs font-bold uppercase tracking-wider opacity-70 flex items-center gap-1.5">
+                    <Lightbulb className="w-4 h-4 md:w-3 md:h-3 text-yellow-400" /> Tips & Tricks
                   </h4>
-                  <ul className="text-xs space-y-1.5 opacity-90">
+                  <ul className="text-sm md:text-xs space-y-2.5 md:space-y-1.5 opacity-90">
                     {char.tipsAndTricks.map((tip, idx) => (
                       <li key={idx} className="flex gap-2">
                         <span className="text-yellow-500/70 shrink-0">-</span>
-                        <span>{tip}</span>
+                        <span className="leading-relaxed">{tip}</span>
                       </li>
                     ))}
                   </ul>
@@ -204,15 +204,15 @@ function CharacterCard({ char, isExpanded, onToggle }: {
 
               {/* Bluffing As (for good characters to bluff) */}
               {char.bluffingAs && char.bluffingAs.length > 0 && (
-                <div className="space-y-1">
-                  <h4 className="text-xs font-bold uppercase tracking-wider opacity-70 flex items-center gap-1">
-                    <Sword className="w-3 h-3 text-red-400" /> Bluffing as {char.name}
+                <div className="space-y-2">
+                  <h4 className="text-sm md:text-xs font-bold uppercase tracking-wider opacity-70 flex items-center gap-1.5">
+                    <Sword className="w-4 h-4 md:w-3 md:h-3 text-red-400" /> Bluffing as {char.name}
                   </h4>
-                  <ul className="text-xs space-y-1.5 opacity-90">
+                  <ul className="text-sm md:text-xs space-y-2.5 md:space-y-1.5 opacity-90">
                     {char.bluffingAs.map((tip, idx) => (
                       <li key={idx} className="flex gap-2">
                         <span className="text-red-400/70 shrink-0">-</span>
-                        <span>{tip}</span>
+                        <span className="leading-relaxed">{tip}</span>
                       </li>
                     ))}
                   </ul>
@@ -221,15 +221,15 @@ function CharacterCard({ char, isExpanded, onToggle }: {
 
               {/* Fighting The (for good characters fighting evil) */}
               {char.fightingThe && char.fightingThe.length > 0 && (
-                <div className="space-y-1">
-                  <h4 className="text-xs font-bold uppercase tracking-wider opacity-70 flex items-center gap-1">
-                    <Sword className="w-3 h-3 text-green-400" /> Fighting the {char.name}
+                <div className="space-y-2">
+                  <h4 className="text-sm md:text-xs font-bold uppercase tracking-wider opacity-70 flex items-center gap-1.5">
+                    <Sword className="w-4 h-4 md:w-3 md:h-3 text-green-400" /> Fighting the {char.name}
                   </h4>
-                  <ul className="text-xs space-y-1.5 opacity-90">
+                  <ul className="text-sm md:text-xs space-y-2.5 md:space-y-1.5 opacity-90">
                     {char.fightingThe.map((tip, idx) => (
                       <li key={idx} className="flex gap-2">
                         <span className="text-green-400/70 shrink-0">-</span>
-                        <span>{tip}</span>
+                        <span className="leading-relaxed">{tip}</span>
                       </li>
                     ))}
                   </ul>
