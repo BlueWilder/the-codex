@@ -1261,7 +1261,8 @@ If the Acrobat is drunk or poisoned, they cannot die to their own ability. The A
       "Claim to have chosen a player you want to cast suspicion on, implying they were drunk or poisoned.",
       "If you survive, you can confirm players as 'sober and healthy' which builds trust.",
       "Use your survival to support evil players - claim you chose them and they were fine."
-    ]
+    ],
+    howToRun: "Each night except the first, wake the Acrobat. They point to a player. Put the Acrobat to sleep.\n\nIf the player the Acrobat pointed to is drunk or poisoned, or becomes drunk or poisoned at any time tonight, the Acrobat dies."
   },
   {
     id: 'alchemist',
@@ -1289,7 +1290,8 @@ They are still a good Townsfolk - they win when good wins. They register as good
       "Claim to have a Minion ability that isn't actually in play to confuse the good team.",
       "Use your 'ability' to justify suspicious behavior or night actions.",
       "Be careful - the real Alchemist knows what ability they have."
-    ]
+    ],
+    howToRun: "During the first night, wake the Alchemist. Show the YOU ARE info token then the character token of a Minion. Put the Alchemist to sleep. If the Alchemist has a not-in-play Minion ability, mark the Alchemist with the IS THE ALCHEMIST reminder and swap the Alchemist token with this Minion token and turn it upside down. (This shows they are still good.)\n\nThe Alchemist has this Minion ability. They use it as if they were a Minion, and wake at night when that Minion would normally wake to use their ability.\n\nIf the Alchemist makes a choice using their ability, you may ask them to choose differently. If this is during the day, ask verbally. If this is during the night, shake your head, point at the Alchemist ability text on the character sheet, and wait for the Alchemist to choose again."
   },
   {
     id: 'alsaahir',
@@ -1317,7 +1319,8 @@ The Alsaahir doesn't need to guess specific Minion or Demon characters - just wh
       "It is easy to bluff as the Alsaahir early, as good players often do it too.",
       "Be careful with your guesses - put thought into who you guess each day.",
       "Ask for other players' advice on who to guess to make yourself look good."
-    ]
+    ],
+    howToRun: "Each day, if the Alsaahir declares that they wish to guess, listen to their guess. If the Alsaahir guesses correctly which players are Minions and which player is the Demon (they do not need to guess specific characters), declare that good wins.\n\nIf the Alsaahir is drunk or poisoned, their guess does not count, even if correct."
   },
   {
     id: 'amnesiac',
@@ -1345,7 +1348,8 @@ Each day, the Amnesiac talks to the Storyteller privately and makes a guess. The
       "You don't need an ability in mind when you start bluffing, but have one by the end.",
       "Pretend to guess your ability - this gives limitless room for deception.",
       "Invite the town to figure out your 'ability' with you to distract from finding the Demon."
-    ]
+    ],
+    howToRun: "During setup, decide what ability the Amnesiac player has. During the game, treat that player as if they had that ability, waking them when needed, prompting them to choose players when needed, or whatever else is appropriate. Use the Amnesiac's ? reminders if you need to.\n\nEach day, the Amnesiac makes a guess about their ability in private. Answer \"Cold\", \"Warm\", \"Hot\", or \"Bingo\".\n\nMake the Amnesiac's ability guessable, so that the Amnesiac can figure out what their ability is over time. Learning a piece of information each night, or a power that affects the game in a way that the Amnesiac notices, are both good ideas."
   },
   {
     id: 'atheist',
@@ -1373,7 +1377,8 @@ The Storyteller may break any game rules - kill players at night, give false inf
       "Bluffing as the Atheist can convince good players to execute the Storyteller, causing evil to win.",
       "Try to make the good team's information seem too consistent or inconsistent.",
       "Be prepared for the players to execute you - have a backup plan."
-    ]
+    ],
+    howToRun: "During setup, before giving the bag to the players, remove all evil character tokens and add Townsfolk or Outsider character tokens to match the player count.\n\nBreak any game rules, as you see fit. Use evil reminder tokens if you need them.\n\nThe Atheist is a complex character, and is recommended for experienced Storytellers. Only break the game rules to give false information or simulate the actions of evil characters that could be in play, but aren't. If you can convince the players that there is no Atheist in play, or at least get them discussing the possibility, you've done well."
   },
   {
     id: 'balloonist',
@@ -1401,7 +1406,8 @@ During setup, the Storyteller may choose to add an Outsider due to the Balloonis
       "Since you might add an Outsider, have a Minion bluff as one.",
       "Keep an eye out for good players with information that paints others as evil.",
       "Wait a few days before sharing - this lets you figure out who is what type."
-    ]
+    ],
+    howToRun: "During setup, you may add an Outsider.\n\nWhen preparing the first night, mark any player with the KNOW reminder. When preparing each night afterwards, mark a character of a different type than the current with the KNOW reminder.\n\nEach night, wake the Balloonist. Point to the player marked KNOW. Put the Balloonist to sleep."
   },
   {
     id: 'banshee',
@@ -1429,7 +1435,8 @@ The Banshee only gains these powers if killed by the Demon. Dying by execution o
       "If you die at night without announcement, your bluff is ruined! Make sure the Demon knows.",
       "Bluff as something else and back into a Banshee claim if forced.",
       "Come out as Banshee early and dare evil to kill you - this can build trust."
-    ]
+    ],
+    howToRun: "If the Banshee is killed by the Demon, place the HAS ABILITY reminder token next to the Banshee and say \"The Banshee has awoken\" or something similarly dramatic. The Banshee may nominate twice per day, but it is the player's responsibility to remember how many times they have nominated. The Banshee may raise two hands when voting. When counting the votes, count each hand as a vote.\n\nIf the Banshee is killed by the Demon but does not have their ability at that time or is killed by a non-Demon ability, then do not tell the group that the Banshee ability has been triggered. The Banshee may not nominate, and needs a vote token to vote, like a regular dead player.\n\nIf all good players are dead, the game continues. Good can still win due to the Banshee being able to nominate."
   },
   {
     id: 'bountyhunter',
@@ -1457,7 +1464,8 @@ The Bounty Hunter only learns the evil player, not their character.`,
       "Bluffing as the Bounty Hunter throws a lot of shade on other players.",
       "Create a clique with good players to execute those you set up as evil.",
       "If you come out publicly, be prepared to die - get the Demon to kill you to build trust."
-    ]
+    ],
+    howToRun: "During setup, turn one Townsfolk character token upside down, to represent that they are evil. Mark one evil player with the KNOW reminder.\n\nDuring the first night, wake the Bounty Hunter. Point to the player marked KNOW. Put the Bounty Hunter to sleep.\n\nEach time the player marked KNOW dies, mark a new evil player with the KNOW reminder. That night, wake the Bounty Hunter, point to the player marked KNOW, then put the Bounty Hunter to sleep."
   },
   {
     id: 'cannibal',
@@ -1485,7 +1493,8 @@ The Cannibal is not told which ability they gained - they must figure it out.`,
       "Try to get people executed - it's what a real Cannibal would do!",
       "Be ready to fake a new ability every time someone is executed.",
       "If you want to accuse an executee of being evil, act like your power didn't work."
-    ]
+    ],
+    howToRun: "If a good player dies by execution, mark them with the LUNCH reminder, and remove the Cannibal's POISONED reminder if necessary. The Cannibal now has this good player's ability (do not say which), and will wake at night when this good character would normally wake.\n\nIf an evil player dies by execution, mark them with the LUNCH reminder and mark the Cannibal with the POISONED reminder. The Cannibal is poisoned. You may wake them when this evil character would normally wake, and pretend that they have a new ability.\n\nPay attention to which character each evil player is bluffing as. If they are executed, then their bluffed ability is the best one to pretend that the Cannibal has gained."
   },
   {
     id: 'choirboy',
@@ -1513,7 +1522,8 @@ If the Demon kills the King using their ability, the Choirboy learns which playe
       "The Demon knows if there is a King in play - coordinate your bluffs.",
       "If the King dies, you'll need to come out with a Demon accusation.",
       "Be careful if you double up with a real Choirboy."
-    ]
+    ],
+    howToRun: "While setting up the game, if the Choirboy is in play but the King isn't, add the King token.\n\nIf the Demon kills the King, wake the Choirboy. Point to the Demon player. Put the Choirboy to sleep."
   },
   {
     id: 'cultleader',
@@ -1539,7 +1549,8 @@ At the end of each night, the Cult Leader becomes the alignment of a living neig
       "Keep the good team paranoid by claiming you've been told good is losing.",
       "Frame a dead good player by stating that after their execution, good started winning.",
       "You can actually come out as evil, since this throws shade on your neighbors."
-    ]
+    ],
+    howToRun: "Each night, determine which alignment the Cult Leader should become—choose one of their alive neighbors' alignments. Wake the Cult Leader. Give a thumbs-up for good or a thumbs-down for evil. Put the Cult Leader to sleep.\n\nOnce per day, if the Cult Leader declares they wish to form a cult, ask all players (without revealing alignments) if they wish to join. Count the players who raise their hands. If all good players chose to join, declare the game over and which team wins (the Cult Leader's current team). Players do not know if they won or lost until you announce the result."
   },
   {
     id: 'engineer',
@@ -1567,7 +1578,8 @@ When the Engineer creates new characters, the Demon player remains the Demon, an
       "Claim you created the character you actually are.",
       "Make sure you claim characters without obvious tells.",
       "Have a solid story as to WHY you made your choice."
-    ]
+    ],
+    howToRun: "Each night, wake the Engineer. They either shake their head no or point to a set of Minion character icons or a Demon character icon on their character sheet.\n\nIf they shake their head no, put the Engineer to sleep.\n\nIf they point to Minion icons, swap each Minion token with one of the chosen Minion tokens. Wake each Minion and show them the YOU ARE info token and their new character token.\n\nIf they point to a Demon icon, swap the Demon token with the chosen Demon token. Wake the Demon and show them the YOU ARE info token and their new character token.\n\nMark the Engineer with the NO ABILITY reminder."
   },
   {
     id: 'farmer',
@@ -1595,7 +1607,8 @@ Farmers that die during the day do not create more Farmers.`,
       "A Farmer bluff can be a good fallback late in the game.",
       "If a fellow evil player dies at night, you can pick up a Farmer bluff.",
       "Bluffing as a Farmer might flush out the real Farmer."
-    ]
+    ],
+    howToRun: "If the Farmer dies at night, wake a living good player and show them the YOU ARE info token then the Farmer token."
   },
   {
     id: 'fisherman',
@@ -1623,7 +1636,8 @@ The advice is a strategy tip that the Storyteller believes will help the Fisherm
       "The fake advice you pretend to receive will be the centerpiece of your bluff.",
       "Frame your advice as telling you to DO something, not just information.",
       "Insist on your fake advice - remind players it may have an expiration date."
-    ]
+    ],
+    howToRun: "Once per game, during the day, the Fisherman may request a private conversation with you. Take them away from the group. Give them advice that you think will help their team win. Mark them with the NO ABILITY reminder.\n\nMake the advice clear and actionable. For example, 'Execute the person in the blue shirt' or 'Trust the person who sits next to you on your left.'"
   },
   {
     id: 'general',
@@ -1651,7 +1665,8 @@ The Storyteller judges based on many factors: how many players of each team are 
       "Keep good paranoid by claiming they're losing.",
       "Frame a dead good player by stating good started winning after their death.",
       "If evil is winning, say good is winning to maintain their overconfidence."
-    ]
+    ],
+    howToRun: "Each night, wake the General. Give a thumbs-up if you believe good is winning, a thumbs-down if evil is winning, or a thumbs-sideways if it's unclear or too close to call. Put the General to sleep.\n\nBase your judgement on many factors: players alive, information revealed, evil bluffs, voting patterns, social trust, and game flow."
   },
   {
     id: 'highpriestess',
@@ -1679,7 +1694,8 @@ There are no official criteria - the Storyteller uses their judgement to show wh
       "Claim to have been shown good players, then support their information to build trust.",
       "Or claim a good player's conversation went badly, casting suspicion on them.",
       "Claim to have seen your fellow evil players as an excuse to coordinate on day one."
-    ]
+    ],
+    howToRun: "Each night, wake the High Priestess. Point to a player that you believe they should talk to. Put the High Priestess to sleep.\n\nThere are no official criteria for who to show—use your judgement to show who you think will most benefit the good team if the High Priestess talks to them."
   },
   {
     id: 'huntsman',
