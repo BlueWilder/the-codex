@@ -1,7 +1,7 @@
 import { Layout } from "@/components/ui/Layout";
 import { ALL_CHARACTERS, getJinxesForCharacter, type Character, type Jinx } from "@/lib/game-data";
 import { useState, useEffect } from "react";
-import { Search, Moon, Sun, Settings, AlertTriangle, ChevronDown, Quote, Lightbulb, Sword, Eye, RotateCcw, Check, BookOpen } from "lucide-react";
+import { Search, Moon, Sun, Settings, AlertTriangle, ChevronDown, Quote, Lightbulb, Sword, Eye, RotateCcw, Check, BookOpen, Plus, Minus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -239,14 +239,16 @@ function CharacterCard({ char, isExpanded, onToggle }: {
 
               {/* How to Run (Storyteller instructions) - Collapsible Accordion */}
               {char.howToRun && (
-                <Accordion type="single" collapsible className="w-full">
+                <Accordion type="single" collapsible className="w-full" onClick={(e) => e.stopPropagation()}>
                   <AccordionItem value="how-to-run" className="border-none">
                     <AccordionTrigger 
-                      className="py-2 hover:no-underline"
+                      className="py-2 hover:no-underline [&>svg]:hidden"
                       data-testid={`accordion-how-to-run-${char.id}`}
                     >
                       <h4 className="text-sm md:text-xs font-bold uppercase tracking-wider opacity-70 flex items-center gap-1.5">
                         <BookOpen className="w-4 h-4 md:w-3 md:h-3 text-purple-400" /> How to Run
+                        <Plus className="w-4 h-4 md:w-3 md:h-3 text-purple-400 transition-transform [[data-state=open]_&]:hidden" />
+                        <Minus className="w-4 h-4 md:w-3 md:h-3 text-purple-400 transition-transform [[data-state=closed]_&]:hidden" />
                       </h4>
                     </AccordionTrigger>
                     <AccordionContent>
