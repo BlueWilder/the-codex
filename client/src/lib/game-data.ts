@@ -15,6 +15,7 @@ export interface Character {
   tipsAndTricks: string[];  // Array of tips for playing this role
   bluffingAs?: string[];    // For good characters - tips for evil players bluffing as this role
   fightingThe?: string[];   // For evil characters - tips for good players fighting this role
+  howToRun?: string;        // Storyteller instructions for running this character
 }
 
 export interface Jinx {
