@@ -1723,7 +1723,8 @@ If the Huntsman correctly chooses the Damsel, the Damsel becomes a not-in-play T
       "Another evil player will need to claim Damsel to support your bluff.",
       "Pretending to be the Huntsman might flush out the real Damsel.",
       "The Huntsman is a useful fallback bluff if your initial bluff falls apart."
-    ]
+    ],
+    howToRun: "While setting up the game, if the Huntsman is in play but the Damsel isn't, add the Damsel token.\n\nEach night, if the Huntsman has not yet used their ability, wake the Huntsman. They either shake their head no or point to a player. Put the Huntsman to sleep. If they chose a player, mark the Huntsman with the NO ABILITY reminder (do not wake them on future nights).\n\nIf the chosen player was the Damsel: wake the Damsel, show them the YOU ARE info token and a not-in-play Townsfolk token. Replace the Damsel token with this Townsfolk. The Damsel is now this Townsfolk and may use that ability starting the following night. If the chosen player was not the Damsel, nothing happens."
   },
   {
     id: 'king',
@@ -1751,7 +1752,8 @@ The King may learn good or evil characters, and may learn the same character mor
       "Being King gives you an excuse to steer the game narrative.",
       "Build a circle of trust to verify or deny character claims late game.",
       "If you're a Minion, come out as King to throw shade on the real one."
-    ]
+    ],
+    howToRun: "During the first night, wake the Demon. Show the THIS IS THE KING info token and point to the King player. Put the Demon to sleep.\n\nEach night, if the dead players equal or outnumber the living players, wake the King. Show them an alive character token. Put the King to sleep."
   },
   {
     id: 'knight',
@@ -1779,7 +1781,8 @@ This information is very useful for narrowing down Demon candidates on the final
       "Claim to know two good players are not the Demon to gain their trust.",
       "Include an evil player to make them look less suspicious.",
       "Be careful - your information can be easily tested if those players are executed."
-    ]
+    ],
+    howToRun: "During the first night, wake the Knight. Point to two players that are not the Demon. Put the Knight to sleep."
   },
   {
     id: 'lycanthrope',
@@ -1807,7 +1810,8 @@ If the Lycanthrope chooses an evil player, nothing happens and the Demon may kil
       "Claim to have found evil players when your 'targets' didn't die.",
       "Use your 'ability' to explain night deaths that were actually the Demon's kills.",
       "Be careful - if the wrong person dies, your story needs to match."
-    ]
+    ],
+    howToRun: "Each night except the first, wake the Lycanthrope. They point to a player. Put the Lycanthrope to sleep.\n\nIf the chosen player is good, that player dies tonight. Tonight, other characters cannot kill. If the chosen player is evil, the Lycanthrope's ability does not work tonight and other characters may kill as normal."
   },
   {
     id: 'magician',
@@ -1835,7 +1839,8 @@ This causes confusion for the evil team about who is actually on their side.`,
       "Claim Magician to explain why evil players seemed friendly with you.",
       "Use it as a backup bluff if you're caught coordinating with evil.",
       "Be careful - the real Magician knows the evil team's behavior toward them."
-    ]
+    ],
+    howToRun: "During the first night, when the Demon and Minions wake to learn each other, point to the Magician as though they were a Minion (if waking the Demon) or the Demon (if waking Minions)."
   },
   {
     id: 'nightwatchman',
@@ -1863,7 +1868,8 @@ This allows the Nightwatchman to form a trusted alliance with one player.`,
       "Claim you revealed yourself to a player who can 'confirm' you.",
       "Coordinate with another evil player to back up each other's claims.",
       "Be careful if the player you claim to have revealed to denies it."
-    ]
+    ],
+    howToRun: "Each night, wake the Nightwatchman. They either shake their head no or point to a player. Put the Nightwatchman to sleep.\n\nIf they pointed to a player, wake that player. Show them the THIS PLAYER IS info token and the Nightwatchman token, then point to the Nightwatchman player. Put that player to sleep. Mark the Nightwatchman with the NO ABILITY reminder."
   },
   {
     id: 'noble',
@@ -1891,7 +1897,8 @@ This information helps narrow down evil players while also potentially identifyi
       "Include an evil player and two good players to make your evil teammate look less suspicious.",
       "Or include three good players to make them suspicious of each other.",
       "Be careful - if two of your three are confirmed good, the third looks very evil."
-    ]
+    ],
+    howToRun: "During the first night, wake the Noble. Point to three players, exactly one of which is evil. Put the Noble to sleep."
   },
   {
     id: 'pixie',
@@ -1919,7 +1926,8 @@ The Storyteller judges whether the Pixie was sufficiently mad about being that c
       "Claim to have seen a specific Townsfolk and that you've been claiming to be them.",
       "Use this to explain why you were claiming a specific character earlier.",
       "Be careful about conflicting with characters that are easily verified."
-    ]
+    ],
+    howToRun: "During the first night, wake the Pixie. Show them an in-play Townsfolk character token. Mark the Pixie with the MAD reminder. Put the Pixie to sleep.\n\nIf you judge that the Pixie was convincingly mad that they were the shown Townsfolk when that Townsfolk dies, mark the Pixie with the HAS ABILITY reminder. The Pixie now has the dead Townsfolk's ability and wakes when that Townsfolk would normally wake."
   },
   {
     id: 'poppygrower',
@@ -1947,7 +1955,8 @@ If the Poppy Grower dies, evil players learn who each other are that night.`,
       "Claim Poppy Grower to make evil seem disorganized.",
       "Use your 'death' to explain why evil suddenly started coordinating.",
       "Be careful - the real Poppy Grower knows the evil team's early confusion."
-    ]
+    ],
+    howToRun: "During the first night, do not wake the Minions to learn each other or the Demon. Do not wake the Demon to learn who the Minions are or to give bluffs.\n\nIf the Poppy Grower dies, mark them with the EVIL WAKES reminder. That night, wake each Minion. Show them the YOU ARE info token, a thumbs-down, then point to the Demon and the other Minions. Put each Minion to sleep. Wake the Demon. Show them the YOU ARE info token, a thumbs-down, then point to each Minion. Show them 3 not-in-play character tokens as bluffs. Put the Demon to sleep."
   },
   {
     id: 'preacher',
@@ -1975,7 +1984,8 @@ The Preacher can choose the same player multiple times to keep them disabled.`,
       "Claim to have disabled a player who was 'obviously' a Minion.",
       "Use this to explain why Minion effects seem to have stopped.",
       "Be careful - the Minion you claim to have disabled knows the truth."
-    ]
+    ],
+    howToRun: "Each night, wake the Preacher. They point to a player. Put the Preacher to sleep.\n\nIf the chosen player is a Minion, mark them with the AT A SERMON reminder. Wake that Minion. Show them the THIS PLAYER IS info token and the Preacher token. Put that Minion to sleep.\n\nMinions marked AT A SERMON have no ability and do not wake at night for their ability."
   },
   {
     id: 'princess',
@@ -2003,7 +2013,8 @@ However, if the Demon nominates the Princess, the Princess loses their ability f
       "Claim Princess to justify nominating multiple times.",
       "Be careful - if the Demon nominates you and you keep nominating, you're caught.",
       "Use this bluff to aggressively push for executions."
-    ]
+    ],
+    howToRun: "The Princess may nominate as many times as they wish each day.\n\nIf the Demon nominates the Princess, mark the Princess with the NO ABILITY reminder. The Princess may only nominate once per day from now on, like other players."
   },
   {
     id: 'shugenja',
@@ -2031,7 +2042,8 @@ If the nearest evil player in both directions is equidistant, the Storyteller ch
       "Claim a direction that points suspicion at a good player.",
       "Or claim a direction that clears your evil teammates.",
       "Be careful about consistency as players die and distances change."
-    ]
+    ],
+    howToRun: "During the first night, wake the Shugenja. Point your finger horizontally (clockwise or anti-clockwise) to the closest evil player. If the closest evil player is exactly equidistant in both directions, point in either direction. Put the Shugenja to sleep."
   },
   {
     id: 'steward',
@@ -2059,7 +2071,8 @@ This is simple but valuable information for building trust.`,
       "Claim to know a player is good to gain their trust.",
       "Include an evil player to make them look trustworthy.",
       "Be careful - alignment detection abilities can catch your lie."
-    ]
+    ],
+    howToRun: "During the first night, wake the Steward. Point to one good player. Put the Steward to sleep."
   },
   {
     id: 'villageidiot',
@@ -2087,7 +2100,8 @@ This means Village Idiot information needs to be compared between multiple playe
       "Claim Village Idiot to spread false alignment information.",
       "If caught, claim you must be the drunk one.",
       "Coordinate with other evil players claiming Village Idiot."
-    ]
+    ],
+    howToRun: "During setup, you may add 0, 1, or 2 extra Village Idiots. If you add any, choose one Village Idiot to be drunk and mark them with the DRUNK reminder.\n\nEach night, wake each Village Idiot one at a time. They point to a player. Give a thumbs-up (good) or thumbs-down (evil) to show the alignment of the chosen player. Put the Village Idiot to sleep."
   },
   // OUTSIDERS
   {
@@ -2116,7 +2130,8 @@ Minions only get one guess total - if they guess wrong, they can't try again.`,
       "Claim Damsel to make Minions waste their guess on you.",
       "This is a great bluff for evil - it protects the real Damsel if one exists.",
       "Be careful - claiming Damsel draws a lot of attention."
-    ]
+    ],
+    howToRun: "During the first night, wake each Minion. Show them the THESE CHARACTERS ARE IN PLAY info token and the Damsel character token. Put each Minion to sleep.\n\nDuring the day, if a Minion publicly guesses who the Damsel is and is correct, declare that evil wins. Mark the Damsel with the GUESS USED reminder. If the guess is wrong, mark the Damsel anyway - Minions only get one guess total."
   },
   {
     id: 'golem',
@@ -2144,7 +2159,8 @@ If the Golem nominates the Demon, nothing special happens - the nomination proce
       "Claim Golem to justify not nominating.",
       "Nominate and kill a good player, then claim you thought they were the Demon.",
       "Be careful - your 'ability' only works once."
-    ]
+    ],
+    howToRun: "If the Golem nominates a player who is not the Demon, that player dies immediately. Mark the Golem with the CAN NOT NOMINATE reminder.\n\nIf the Golem nominates the Demon, nothing special happens - proceed with the nomination as normal."
   },
   {
     id: 'hatter',
@@ -2172,7 +2188,8 @@ They keep their evil alignment but gain new abilities.`,
       "Claim Hatter to explain why evil seems to have changed abilities.",
       "Use this to explain inconsistencies in evil's behavior.",
       "Be careful - the real Hatter knows when evil changed."
-    ]
+    ],
+    howToRun: "If the Hatter died today or tonight, wake each Minion and Demon. Show them the YOU MAY CHOOSE TO BE info token and a selection of Minion tokens (for Minions) or Demon tokens (for the Demon) from the script. They either shake their head no or point to one token. Change their token to the chosen token. Put each evil player to sleep."
   },
   {
     id: 'heretic',
@@ -2200,7 +2217,8 @@ This applies even if the Heretic is dead.`,
       "Claim Heretic to confuse the good team about their win condition.",
       "This can cause good to make catastrophic decisions.",
       "Be careful - this bluff can backfire if good adjusts correctly."
-    ]
+    ],
+    howToRun: "If the game ends and the Heretic is in play (dead or alive), the team that would normally win, loses instead, and the team that would normally lose, wins instead."
   },
   {
     id: 'hermit',
@@ -2228,7 +2246,8 @@ The Hermit (now Demon) only wins if evil wins by execution - not by other means.
       "Claim Hermit to explain why the game continued after the Demon died.",
       "Use this to create confusion about who the Demon is.",
       "Be careful - the Hermit's win condition is unusual."
-    ]
+    ],
+    howToRun: "If the Demon dies before the final 3 players remain, the Hermit becomes the Demon. Change the Hermit token to a Demon token (their choice or yours). Wake the Hermit and show them the YOU ARE info token and their new Demon token.\n\nIf the Hermit (now Demon) wins, it must be due to a good player being executed when only 3 players remain."
   },
   {
     id: 'ogre',
@@ -2256,7 +2275,8 @@ The Ogre doesn't learn their new alignment. This works even if the Ogre is drunk
       "Claim Ogre to justify unusual voting or behavior.",
       "Say you might have accidentally become evil.",
       "This explains alignment detection that shows you as evil."
-    ]
+    ],
+    howToRun: "During the first night, wake the Ogre. They point to a player (not themselves). Mark that player with the FRIEND reminder. The Ogre becomes the same alignment as the player they chose. Put the Ogre to sleep.\n\nThe Ogre's new alignment persists even if the chosen player changes alignment later."
   },
   {
     id: 'plaguedoctor',
@@ -2284,7 +2304,8 @@ This essentially adds an extra Minion effect to the game.`,
       "Claim Plague Doctor to explain new Minion effects appearing.",
       "Use this to create paranoia about the Storyteller's actions.",
       "Be careful - the effect should match a Minion ability."
-    ]
+    ],
+    howToRun: "If the Plague Doctor dies, mark them with the STORYTELLER ABILITY reminder. Choose a Minion ability from the script. For the rest of the game, you have this ability and use it as a Minion would."
   },
   {
     id: 'politician',
@@ -2312,7 +2333,8 @@ This encourages the Politician to play selfishly and cause their team to lose.`,
       "Claim Politician to justify suspicious behavior.",
       "Say you're trying to switch teams if good looks like losing.",
       "This can excuse votes against good players."
-    ]
+    ],
+    howToRun: "When the game ends, if you judge that the Politician was the player most responsible for their team's loss, the Politician changes alignment and wins with the other team. The Politician's original team still loses."
   },
   {
     id: 'puzzlemaster',
@@ -2340,7 +2362,8 @@ If they guess wrong, they get false information about the Demon.`,
       "Claim Puzzlemaster and that you've found the Demon.",
       "Implicate a good player as the Demon.",
       "Be careful - you need to name someone as 'drunk' too."
-    ]
+    ],
+    howToRun: "During setup, choose any player and mark them with the DRUNK reminder. They are drunk for the whole game (even if the Puzzlemaster dies).\n\nOnce per game, during the day, the Puzzlemaster may publicly guess which player is drunk. After their guess, take them aside privately. If they guessed correctly, tell them who the Demon is. If they guessed incorrectly, tell them a player who is not the Demon. Mark the Puzzlemaster with the GUESS USED reminder."
   },
   {
     id: 'snitch',
@@ -2368,7 +2391,8 @@ This gives the evil team more safe characters to claim.`,
       "Claim Snitch to explain why evil has convincing character claims.",
       "This explains how the Demon knew what characters to bluff as.",
       "Be careful - this reveals there are extra bluffs in play."
-    ]
+    ],
+    howToRun: "During the first night, before waking Minions, prepare 3 not-in-play character tokens.\n\nWhen you wake each Minion to show them the Demon, also show them the THESE CHARACTERS ARE NOT IN PLAY info token and the 3 character tokens."
   },
   {
     id: 'zealot',
@@ -2396,7 +2420,8 @@ This makes the Zealot obvious to the group and affects voting dynamics.`,
       "Claim Zealot to explain why you voted for everyone.",
       "This can excuse voting for evil players to be executed.",
       "Be careful - your voting pattern is very obvious."
-    ]
+    ],
+    howToRun: "If there are 5 or more alive players, the Zealot must vote for every nomination. Remind them if they forget to raise their hand."
   },
   // MINIONS
   {
@@ -2425,7 +2450,8 @@ This ability works even if the Demon is drunk or poisoned.`,
       "Watch for the Demon having information they shouldn't have.",
       "The Demon might claim a character that isn't in play - that's the Boffin ability.",
       "Check if the Demon's claims match a not-in-play character."
-    ]
+    ],
+    howToRun: "During the first night, wake the Boffin and Demon together (or separately). Show them the THESE CHARACTERS ARE NOT IN PLAY info token and a not-in-play good character token.\n\nThe Demon has this good character's ability. Wake them when that character would normally wake to use the ability. This ability works even if the Demon is drunk or poisoned."
   },
   {
     id: 'boomdandy',
@@ -2454,7 +2480,8 @@ This creates a chaotic endgame with very few players remaining.`,
       "If they're executed, coordinate who to point at carefully.",
       "Try to keep good players in the final 3 survivors.",
       "Consider not executing suspected Boomdandys."
-    ]
+    ],
+    howToRun: "If the Boomdandy is executed, declare that the Boomdandy has exploded. All players except 3 (Storyteller's choice, usually the Demon and 2 others) die immediately.\n\nSet a 1-minute timer. When it expires, all living players point at another player. The player with the most fingers pointed at them dies."
   },
   {
     id: 'fearmonger',
@@ -2483,7 +2510,8 @@ All players are told if the Fearmonger changed their target.`,
       "Be careful about executing players the Fearmonger nominates.",
       "The Fearmonger must nominate their target - watch who nominates whom.",
       "Don't execute if the Fearmonger's nomination succeeds."
-    ]
+    ],
+    howToRun: "Each night, wake the Fearmonger. They point to a player. Mark that player with the FEAR reminder. Put the Fearmonger to sleep.\n\nIf the Fearmonger chose a different player than the previous night, announce at dawn that the Fearmonger has chosen a new player.\n\nIf the Fearmonger nominates the player marked FEAR and that player is executed, declare that the executed player's team loses."
   },
   {
     id: 'goblin',
@@ -2512,7 +2540,8 @@ This creates a dangerous trap for the good team.`,
       "Consider not executing them - let them live rather than risk losing.",
       "Watch for players who seem to want to be nominated.",
       "The Goblin claim only works if they're actually the Goblin."
-    ]
+    ],
+    howToRun: "If a player is nominated and publicly claims to be the Goblin, mark them with the CLAIMED reminder.\n\nIf a player marked CLAIMED is executed and they are actually the Goblin, declare that evil wins."
   },
   {
     id: 'harpy',
@@ -2541,7 +2570,8 @@ If they don't convincingly act mad, the Storyteller may kill one or both of them
       "Watch for players who suddenly claim others are evil - they might be Harpy'd.",
       "The Harpy's targets are being forced to act.",
       "Don't fully trust sudden accusations."
-    ]
+    ],
+    howToRun: "Each night, wake the Harpy. They point to two players. Mark the first with the MAD reminder and the second with the 2ND reminder. Put the Harpy to sleep.\n\nTomorrow, the first player must act convincingly mad that the second player is evil. If you judge they did not try hard enough, you may kill one or both of them at any time during the day."
   },
   {
     id: 'marionette',
@@ -2570,7 +2600,8 @@ The Demon knows who the Marionette is, and the Marionette always neighbors the D
       "The Marionette neighbors the Demon - check neighbor relationships.",
       "The Demon might be protecting their Marionette.",
       "Confused-looking players with wrong info might be Marionettes."
-    ]
+    ],
+    howToRun: "During setup, choose one player to be the Marionette. Swap the Marionette token with a Townsfolk token. The Marionette must neighbor the Demon.\n\nDuring the first night, wake the Marionette. Show them the YOU ARE info token and the Townsfolk token (not the Marionette token). Put the Marionette to sleep.\n\nWake the Demon. Point to the Marionette. The Marionette does not wake to learn the Demon or other Minions."
   },
   {
     id: 'mezepheles',
@@ -2599,7 +2630,8 @@ The Mezepheles only gets one conversion - once someone says the word, their abil
       "Watch for players who seem to be prompting specific words.",
       "If someone suddenly turns against good, they might have been converted.",
       "The secret word is usually unusual but not impossible to say."
-    ]
+    ],
+    howToRun: "During the first night, wake the Mezepheles. Show them a piece of paper with a secret word written on it. Put the Mezepheles to sleep.\n\nDuring the game, if a good player says the secret word, mark them with the TURNS EVIL reminder. That night, wake them. Show them the YOU ARE info token and a thumbs-down. Put them to sleep. They are now evil and win with evil. Mark the Mezepheles with the NO ABILITY reminder."
   },
   {
     id: 'organgrinder',
@@ -2628,7 +2660,8 @@ Votes against the Organ Grinder only count if the Organ Grinder also votes.`,
       "The Organ Grinder is protected unless they vote for themselves.",
       "Try to figure out who the Organ Grinder is.",
       "Once they're dead, voting returns to normal."
-    ]
+    ],
+    howToRun: "When a nomination occurs, instruct all players to close their eyes before voting. Count the votes silently. Do not reveal the vote count to the players.\n\nWhen the Organ Grinder is nominated, their votes only count if they also voted for themselves."
   },
   {
     id: 'psychopath',
@@ -2657,7 +2690,8 @@ This is a public ability - everyone knows who the Psychopath targeted.`,
       "They kill every day they stay alive.",
       "Prioritize killing the Psychopath over the Demon sometimes.",
       "Their kills happen at night - the target has one last day."
-    ]
+    ],
+    howToRun: "Each day, before nominations, the Psychopath may publicly choose a player. Mark that player with the STABBED reminder.\n\nThat night, wake the Psychopath. If the stabbed player is good, show a thumbs-down and they die tonight. If the stabbed player is evil, show a thumbs-up (they don't die). Put the Psychopath to sleep."
   },
   {
     id: 'summoner',
@@ -2686,7 +2720,8 @@ The Summoner gets 3 bluffs to share with their team.`,
       "Watch who seems to become 'active' after night 3.",
       "The Demon was chosen by the Summoner - they know each other.",
       "The original player might not have expected to become Demon."
-    ]
+    ],
+    howToRun: "During setup, do not add a Demon. Adjust Outsiders as indicated.\n\nDuring the first night, wake the Summoner and show them 3 not-in-play character tokens as bluffs.\n\nOn the third night, wake the Summoner. They point to a player and a Demon character on their sheet. That player becomes that evil Demon. Wake the new Demon and show them the YOU ARE info token, a thumbs-down, and their Demon character token. Point to all Minions."
   },
   {
     id: 'vizier',
@@ -2715,7 +2750,8 @@ If a good player publicly guesses the Vizier is evil, the Storyteller may kill t
       "You can't execute them, but you can ignore them.",
       "Publicly guess the Vizier is evil to potentially kill them.",
       "Focus on finding the Demon instead."
-    ]
+    ],
+    howToRun: "During the first day, announce to all players who the Vizier is. The Vizier cannot die during the day.\n\nIf a good player publicly guesses that the Vizier is the Vizier (or evil), you may choose to kill the Vizier that night."
   },
   {
     id: 'widow',
@@ -2744,7 +2780,8 @@ One good player is told that a Widow is in play.`,
       "Someone is poisoned all game - figure out who.",
       "The Widow knows everything - expect evil to have good bluffs.",
       "Check if information doesn't match up - someone might be poisoned."
-    ]
+    ],
+    howToRun: "During the first night, wake the Widow. Show them the Grimoire. They point to a player. Mark that player with the POISONED reminder (they are poisoned for the whole game). Put the Widow to sleep.\n\nWake one good player. Show them the THESE CHARACTERS ARE IN PLAY info token and the Widow character token. Put them to sleep."
   },
   {
     id: 'wizard',
@@ -2773,7 +2810,8 @@ This gives evil an early advantage.`,
       "Evil doesn't know which Minion is which - they might seem confused.",
       "The Wizard enables an aggressive evil start.",
       "Watch for evil players testing who their teammates are."
-    ]
+    ],
+    howToRun: "During the first night, when waking the Demon, do not show them specifically which players are which Minions - just that Minions exist.\n\nDuring the first night, after waking the Demon normally, wake them again. They may point to a player. That player dies tonight."
   },
   {
     id: 'wraith',
@@ -2802,7 +2840,8 @@ Players who are exactly one step away from dying wake and learn they were almost
       "If you're warned you 'almost died', the Demon targeted your neighbor.",
       "Track who the Demon seems to target vs who actually dies.",
       "This creates confusion about Demon intentions."
-    ]
+    ],
+    howToRun: "When the Demon kills a player, instead of that player dying, one or both of their alive neighbors die.\n\nMark players who are exactly 1 step away from being killed (i.e., would have been killed if the Wraith effect shifted differently) with the WARNING reminder. Wake each warned player and show them a thumbs-down to indicate they almost died. Put them to sleep."
   },
   {
     id: 'xaan',
@@ -2831,7 +2870,8 @@ On night X (where X = number touched yesterday), all Townsfolk are poisoned unti
       "Count the touches to know which night Townsfolk are poisoned.",
       "On night X, all Townsfolk info might be wrong.",
       "Once you identify Xaan, their touching becomes less dangerous."
-    ]
+    ],
+    howToRun: "During the day, Xaan may publicly 'touch' players by announcing it. Count the number of players touched.\n\nOn night X (where X = the number of players touched yesterday), all Townsfolk are poisoned until dusk tomorrow. Mark each Townsfolk with a POISONED reminder, and remove these reminders at dusk."
   },
   // DEMONS
   {
@@ -2861,7 +2901,8 @@ If all 3 choose to live, all 3 die instead. Otherwise, those who chose to die, d
       "Coordinate with other chosen players if possible.",
       "If all 3 try to live, all 3 die - don't all choose life.",
       "Watch for evil players always choosing to live."
-    ]
+    ],
+    howToRun: "Each night except the first, wake Al-Hadikhia. They point to 3 players. Announce to all players who was chosen.\n\nWake each chosen player one at a time. They give a thumbs-up (live) or thumbs-down (die). Put each player to sleep.\n\nIf all 3 chose to live, all 3 die tonight. Otherwise, players who chose to die, die tonight."
   },
   {
     id: 'kazali',
@@ -2890,7 +2931,8 @@ Outsiders can be added or removed based on the Kazali's choices.`,
       "Watch for players who suddenly seem to change behavior.",
       "The Kazali chose their own team - they know everyone.",
       "Character claims from 'new' Minions might be real (their old character)."
-    ]
+    ],
+    howToRun: "During setup, do not add Minions. The Kazali will choose them.\n\nDuring the first night, wake the Kazali. For each Minion the game should have, the Kazali points to a player and a Minion character. That player becomes that evil Minion. Wake each new Minion and show them the YOU ARE info token, a thumbs-down, and their Minion token. Point to the Kazali as the Demon.\n\nEach night except the first, wake the Kazali. They point to a player. That player dies tonight."
   },
   {
     id: 'legion',
@@ -2919,7 +2961,8 @@ Legion registers as both Demon and Minion to detection abilities.`,
       "Most players might be Legion - trust very few.",
       "Watch voting patterns carefully.",
       "Detection might show 'Minion' instead of 'Demon'."
-    ]
+    ],
+    howToRun: "During setup, most players become Legion (typically all but 2-3). There are no Minions.\n\nLegion registers as both Demon and Minion. Each night except the first, choose a player who might die.\n\nIf a vote succeeds and only evil players voted, that execution fails. The nominated player does not die."
   },
   {
     id: 'leviathan',
@@ -2948,7 +2991,8 @@ The Leviathan doesn't kill at night like normal Demons.`,
       "You can only execute one good player total.",
       "You must find and execute the Leviathan before day 5.",
       "Don't waste executions on suspected good players."
-    ]
+    ],
+    howToRun: "At the start of the game, announce that Leviathan is in play. Place the Leviathan's day markers to track the current day.\n\nIf a second good player is executed (whether or not they die), declare that evil wins.\n\nAt the end of day 5, if the game has not ended, declare that evil wins."
   },
   {
     id: 'lilmonsta',
@@ -2977,7 +3021,8 @@ An extra Minion is added to the game.`,
       "The 'Demon' can change each night.",
       "Execute the token holder to win, but they might pass it.",
       "There's one extra Minion in play."
-    ]
+    ],
+    howToRun: "During setup, add one extra Minion token. There is no Demon player.\n\nEach night, wake all Minions together. They choose which Minion will babysit Lil' Monsta. Mark that player with the IS THE DEMON reminder. Put them to sleep.\n\nThe player marked IS THE DEMON registers as the Demon. If that player would die, the game ends (good wins) unless they pass the token first. Each night except the first, choose a player who might die."
   },
   {
     id: 'lleech',
@@ -3006,7 +3051,8 @@ Each subsequent night, the Lleech kills a player.`,
       "Someone is poisoned all game because of the Lleech.",
       "Find and kill the host, then the Lleech.",
       "Watch for players the Demon seems to protect."
-    ]
+    ],
+    howToRun: "During the first night, wake the Lleech. They point to a player. Mark that player with the POISONED reminder (they are poisoned for the whole game). Put the Lleech to sleep.\n\nThe Lleech cannot die while their poisoned player is alive. If the Lleech would die while the poisoned player lives, they remain alive.\n\nEach night except the first, wake the Lleech. They point to a player. That player dies tonight."
   },
   {
     id: 'lordoftyphon',
@@ -3035,7 +3081,8 @@ Outsiders may be added or removed based on the setup.`,
       "The Demon is in the middle of evil players.",
       "If you find one evil player, check their neighbors.",
       "There's one extra Minion in play."
-    ]
+    ],
+    howToRun: "During setup, add an extra Minion. Seat evil players in a line with the Lord of Typhon in the middle. Adjust Outsiders as needed.\n\nEach night except the first, wake the Lord of Typhon. They point to a player. That player dies tonight."
   },
   {
     id: 'ojo',
@@ -3064,7 +3111,8 @@ This allows targeted killing based on character knowledge.`,
       "Bluffing as a dangerous character might get you killed.",
       "If a specific character dies, the Ojo knew they were in play.",
       "Consider hiding or lying about your character."
-    ]
+    ],
+    howToRun: "Each night except the first, wake the Ojo. They name a character (not point to a player).\n\nIf that character is in play, that player dies tonight. If that character is not in play, you choose which player dies tonight."
   },
   {
     id: 'riot',
@@ -3093,7 +3141,8 @@ After day 3, if the game hasn't ended, evil wins. On day 3+, a player might surv
       "You must find and kill all Riots before day 3.",
       "All Minions are Riot - there are multiple Demons.",
       "On day 3+, nominated players might survive."
-    ]
+    ],
+    howToRun: "During setup, all Minions become Riot. There is no normal Demon - all Riots are Demons.\n\nWhen a player is nominated, that player dies immediately (on day 3+, you may choose to save them). That player may immediately nominate another player. This chain continues until no one nominates.\n\nAt the end of day 3, if any Riot is alive, evil wins."
   },
   {
     id: 'yaggababble',
@@ -3122,7 +3171,8 @@ Multiple kills are possible if the phrase is said multiple times.`,
       "If multiple people die, the Yaggababble said their phrase multiple times.",
       "Watch for players working phrases into conversation awkwardly.",
       "Once you identify the phrase, watch who keeps saying it."
-    ]
+    ],
+    howToRun: "During the first night, wake the Yaggababble. Show them a piece of paper with a secret phrase written on it. Put the Yaggababble to sleep.\n\nEach night except the first, count how many times the Yaggababble said the secret phrase publicly that day. For each time, you may choose a player to die tonight."
   },
   // TRAVELLERS
   {
@@ -3151,7 +3201,8 @@ This helps players understand who to trust.`,
       "Claim you told someone you were good.",
       "Coordinate with that player to back you up.",
       "Be careful if they reveal you said something different."
-    ]
+    ],
+    howToRun: "Each night, wake the Cacklejack. They either shake their head no or point to a player. Put the Cacklejack to sleep.\n\nIf they pointed to a player, wake that player. Show them a thumbs-up if the Cacklejack is good, or a thumbs-down if the Cacklejack is evil. Put that player to sleep."
   },
   {
     id: 'gangster',
@@ -3179,7 +3230,8 @@ This creates interesting dynamics with neighboring players.`,
       "Claim Gangster to explain why you're talking to your neighbors a lot.",
       "Pretend to negotiate kills that never happen.",
       "Use the threat of killing to influence your neighbors."
-    ]
+    ],
+    howToRun: "Once per day, the Gangster may publicly declare they want to kill one of their alive neighbors. Ask the Gangster's other alive neighbor if they agree.\n\nIf they agree, the target neighbor dies immediately."
   },
   {
     id: 'gnome',
@@ -3207,7 +3259,8 @@ This makes exiling the Gnome risky.`,
       "Threaten that your exile will kill someone.",
       "Claim Gnome to discourage exile attempts.",
       "Use the threat to survive longer."
-    ]
+    ],
+    howToRun: "If the Gnome is exiled, a player dies. If the Gnome is evil, they choose who dies. If the Gnome is good, you choose who dies."
   },
   // FABLED
   {
@@ -3232,7 +3285,8 @@ This is typically used to correct game imbalances.`,
       "Trust that the Storyteller is using it fairly.",
       "This death is outside normal rules."
     ],
-    bluffingAs: []
+    bluffingAs: [],
+    howToRun: "This is a Fabled (Storyteller tool). Once per game, you may choose a player to die. Use this to fix game imbalances or problematic situations."
   },
   {
     id: 'ferryman',
@@ -3256,7 +3310,8 @@ The Storyteller may reveal which dead player this affects.`,
       "This creates strategic voting decisions for the dead.",
       "The reveal can help good or evil depending on the situation."
     ],
-    bluffingAs: []
+    bluffingAs: [],
+    howToRun: "This is a Fabled (Storyteller tool). On the final night, note which dead players voted that day. Those players lose their ghost vote for the final day."
   },
   {
     id: 'stormcatcher',
@@ -3280,7 +3335,8 @@ However, all evil players learn which player is protected.`,
       "The protection lasts as long as Storm Catcher is in play.",
       "Trade-off between protection and exposure."
     ],
-    bluffingAs: []
+    bluffingAs: [],
+    howToRun: "This is a Fabled (Storyteller tool). Name a good character. If that character is in play, mark that player with the PROTECTED reminder - they can only die by execution.\n\nDuring the first night (or when Storm Catcher enters play), wake each evil player. Point to the protected player."
   }
 ];
 
