@@ -1,7 +1,7 @@
 import { Layout } from "@/components/ui/Layout";
 import { ALL_CHARACTERS, getJinxesForCharacter, type Character, type Jinx } from "@/lib/game-data";
 import { useState, useEffect } from "react";
-import { Search, Moon, Sun, Settings, AlertTriangle, ChevronDown, Quote, Lightbulb, Sword, Eye, RotateCcw, Check } from "lucide-react";
+import { Search, Moon, Sun, Settings, AlertTriangle, ChevronDown, Quote, Lightbulb, Sword, Eye, RotateCcw, Check, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -233,6 +233,22 @@ function CharacterCard({ char, isExpanded, onToggle }: {
                       </li>
                     ))}
                   </ul>
+                </div>
+              )}
+
+              {/* How to Run (Storyteller instructions) */}
+              {char.howToRun && (
+                <div className="space-y-2">
+                  <h4 className="text-sm md:text-xs font-bold uppercase tracking-wider opacity-70 flex items-center gap-1.5">
+                    <BookOpen className="w-4 h-4 md:w-3 md:h-3 text-purple-400" /> How to Run
+                  </h4>
+                  <div className="text-sm md:text-xs bg-purple-950/30 border border-purple-900/30 rounded-lg p-3 md:p-2">
+                    <div className="space-y-2 opacity-90 leading-relaxed">
+                      {char.howToRun.split('\n\n').map((paragraph, idx) => (
+                        <p key={idx}>{paragraph.replace(/\n/g, ' ')}</p>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
