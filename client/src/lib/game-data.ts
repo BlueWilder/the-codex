@@ -61,7 +61,8 @@ You know that of the two players you are shown, one must be the Townsfolk you ar
       "If a good player claims to be a particular Townsfolk, you can claim to be the Washerwoman and confirm them. This helps them trust you, allowing you to lead them astray.",
       "The Washerwoman can be a difficult bluff because sometimes the Townsfolk you say is in play, isn't. If this happens, claim to be the Drunk or poisoned.",
       "If you are the Spy or have access to a Spy, they can be invaluable in providing accurate information to back up your story."
-    ]
+    ],
+    howToRun: "While preparing the first night, put the Washerwoman's TOWNSFOLK reminder token by any Townsfolk character token, and put the Washerwoman's WRONG reminder token by any other character token.\n\nDuring the first night, wake the Washerwoman and point to the players marked TOWNSFOLK and WRONG. Show the character token marked TOWNSFOLK to the Washerwoman. Put the Washerwoman to sleep. Remove the Washerwoman's reminder tokens when convenient."
   },
   {
     id: 'librarian',
@@ -92,7 +93,8 @@ However, a Librarian may learn that zero Outsiders are in play. This information
       "A 'zero' claim can be very powerful for the evil team. If there are no Outsiders, any player claiming to be one seems suspicious. You can use this to throw suspicion on good players who come out as Outsiders.",
       "Alternatively, claim that a particular Outsider is in play and point to an evil player as being that Outsider. This can help legitimize their claim and make them seem trustworthy.",
       "If the Drunk is in play, you could help find out which player is drunk by claiming to know who the Drunk is, making them distrust their own information."
-    ]
+    ],
+    howToRun: "While preparing the first night, put the Librarian's OUTSIDER reminder token by any Outsider character token, and put the Librarian's WRONG reminder token by any other character token.\n\nDuring the first night, wake the Librarian and point to the players marked OUTSIDER and WRONG. Show the character token marked OUTSIDER to the Librarian. Put the Librarian to sleep. Remove the Librarian's reminder tokens when convenient."
   },
   {
     id: 'investigator',
@@ -123,7 +125,8 @@ One of the two players shown is the Minion you learn about. The other player cou
       "Claim that one of two players is a Minion and include an evil player as one of your two. If they are clever, they may claim to be a Townsfolk that 'clears' them, making you both look good.",
       "If you want to frame a good player, claim they are one of the two players you saw. The good team will be suspicious of them.",
       "Claiming to see a Minion that isn't actually in play will eventually cause problems if the real Minion is discovered. However, it can confuse the good team about what Minions are in play."
-    ]
+    ],
+    howToRun: "While preparing the first night, put the Investigator's MINION reminder token by any Minion character token, and put the Investigator's WRONG reminder token by any other character token.\n\nDuring the first night, wake the Investigator and point to the players marked MINION and WRONG. Show the character token marked MINION to the Investigator. Put the Investigator to sleep. Remove the Investigator's reminder tokens when convenient."
   },
   {
     id: 'chef',
@@ -154,7 +157,8 @@ For example: If the Imp is sitting next to the Poisoner, that is 1 pair. If all 
       "Claiming '0' is often safest, as it gives little concrete information for the good team to work with while still sounding believable.",
       "If you know where evil players are sitting, claim a number that matches the actual seating to look legitimate.",
       "Claiming a high number when evil is actually spread out can cause the good team to waste time looking for a 'cluster' that doesn't exist."
-    ]
+    ],
+    howToRun: "During the first night, wake the Chef. Show the Chef fingers (0, 1, 2, etc.) equaling the number of pairs of neighboring evil players. Put the Chef to sleep."
   },
   {
     id: 'empath',
@@ -186,7 +190,8 @@ As players die, your neighbors change. This means your information updates each 
       "This is one of the harder bluffs because your numbers must remain consistent as players die. Track who is alive on either side of you carefully.",
       "Claiming '0' early can build trust with your neighbors, but be prepared to explain if the numbers need to change.",
       "Claiming '1' and pointing suspicion at a good neighbor is effective but risky - if they're confirmed good, you look evil."
-    ]
+    ],
+    howToRun: "Each night, wake the Empath. Show them fingers (0, 1, or 2) equaling the number of evil players neighbouring the Empath. Put the Empath to sleep."
   },
   {
     id: 'fortuneteller',
@@ -218,7 +223,8 @@ If the Fortune Teller chooses the Demon or the Red Herring, they get a "Yes". If
       "The Red Herring provides a convenient excuse - if someone you accused turns out to be good, claim they were your Red Herring.",
       "Be consistent with your claimed results. Keep track of who you claim to have checked each night.",
       "If you're exposed as lying, claim you were drunk or poisoned on certain nights."
-    ]
+    ],
+    howToRun: "While preparing the first night, put the Fortune Teller's RED HERRING reminder token by any good character token, marking that player as the Red Herring.\n\nEach night, wake the Fortune Teller. The Fortune Teller points at any two players. If either chosen player is a Demon or the Red Herring, nod your head yes. Otherwise, shake your head no. Put the Fortune Teller to sleep.\n\nIn smaller games, making the Fortune Teller their own Red Herring is sometimes advised, as the Fortune Teller gets more information that way."
   },
   {
     id: 'undertaker',
@@ -249,7 +255,8 @@ You learn the actual character, not what the player claimed to be. This is power
       "Claiming the executed player was a different character than they claimed can create confusion and distrust.",
       "Confirming that an executed evil player was actually the Townsfolk they claimed helps protect remaining evil players.",
       "This is a harder bluff to maintain because your claims can be checked against what dead players said. Keep your story consistent."
-    ]
+    ],
+    howToRun: "If a player dies by execution, put the Undertaker's DIED TODAY reminder token by the dead player's character token.\n\nEach night except the first, if any player died by execution today, wake the Undertaker. Show the character token marked DIED TODAY to the Undertaker. Put the Undertaker to sleep. Remove the Undertaker's reminder token when convenient.\n\nIn Trouble Brewing, there can only be one execution per day, and every execution causes a player to die. In other editions, there may be more than one execution per day (in which case the Storyteller chooses which character to show the Undertaker) or the execution does not cause a death (in which case the Undertaker learns nothing)."
   },
   {
     id: 'monk',
@@ -280,7 +287,8 @@ You cannot protect yourself. You must always choose another player. Your protect
       "If there's a night with no deaths, claim you protected whoever would have been the obvious target.",
       "This is a good bluff for a Poisoner - claim to have protected players while you're actually poisoning them.",
       "Claiming Monk can explain why certain players didn't die, covering for the Demon's actual target choices."
-    ]
+    ],
+    howToRun: "Each night except the first, wake the Monk. The Monk points at any player except themself. (If the Monk points at themself, shake your head no and prompt them to point at another player.) Put the Monk to sleep. Put the Monk's SAFE reminder token by the chosen player's character token.\n\nIf the Demon attacks the player marked SAFE, the player remains alive. At dawn, declare that no one died at night. (Do not say why.)\n\nAt dawn, remove the SAFE reminder token.\n\nIn other editions, Demons may have abilities other than killing. The Monk's protection also prevents all other harmful effects of the Demon's ability, such as poisoning or turning the protected player evil."
   },
   {
     id: 'ravenkeeper',
@@ -311,7 +319,8 @@ This only triggers if you die at night. If you are executed during the day, you 
       "You can claim you checked a player and learned they were the Demon or a Minion - very powerful for framing good players.",
       "Alternatively, confirm an evil player as the good character they claim to be, making them look more trustworthy.",
       "This bluff only works after you die, so plan ahead for what information you'll share."
-    ]
+    ],
+    howToRun: "If the Ravenkeeper died tonight, wake them. They point at any player. Show the chosen player's character token to the Ravenkeeper. Put the Ravenkeeper to sleep.\n\nWe advise you to discourage or even ban players from talking about what they are doing at night as they are doing it."
   },
   {
     id: 'virgin',
@@ -341,7 +350,8 @@ If the nominator is an Outsider, Minion, or Demon, nothing happens. You lose you
       "Only claim Virgin if you're confident the real Virgin isn't in the game or won't come forward.",
       "If you claim Virgin and are nominated, something needs to happen. Either a Minion dies (if you're the Spy and they're Townsfolk) or nothing happens and you're exposed as not actually being the Virgin.",
       "A good counter-bluff if exposed: claim you were the Drunk all along and thought you were the Virgin."
-    ]
+    ],
+    howToRun: "If the first player to ever nominate the Virgin is a Townsfolk, immediately declare that the nominating player is executed. That player dies—put a shroud on their character token in the Grimoire. The Virgin loses their ability—put the Virgin's NO ABILITY reminder token by the Virgin token. End the nomination process and proceed to the night phase. (No one else can be executed today.)\n\nIf the first player to ever nominate the Virgin is not a Townsfolk, continue the vote as normal. The Virgin loses their ability—put the Virgin's NO ABILITY reminder token by the Virgin token."
   },
   {
     id: 'slayer',
@@ -372,7 +382,8 @@ If the player is not the Demon, nothing visible happens. You cannot try again - 
       "When nothing happens (because they're not the Demon or you're not really the Slayer), this can clear an evil player.",
       "Alternatively, claim you used your ability and missed, explaining why you no longer have it.",
       "Good players also bluff as Slayer to waste Demon attacks, so this is a relatively believable claim."
-    ]
+    ],
+    howToRun: "During the day, the Slayer can declare that they wish to use their ability. If so, the Slayer points at any player. If the chosen player is an alive Demon, declare that the chosen player dies—put a shroud on their character token in the Grimoire. If the chosen player is not an alive Demon, say \"Nothing happens.\" Either way, the Slayer loses their ability—put the Slayer's NO ABILITY reminder token by the Slayer token.\n\nIf a player is bluffing as the Slayer and declares they wish to use their ability, act as if they were indeed the Slayer—allow time for discussion, let them make the decision, and act like you're fiddling with tokens in your Grimoire, then say \"Nothing happens.\"\n\nWhen the Slayer declares that they wish to use their ability, give the group a minute or two to discuss who the Slayer should choose. This allows the group to feel responsible for the win (or the loss!), but the Slayer always makes the final choice."
   },
   {
     id: 'soldier',
@@ -403,7 +414,8 @@ You can still die by execution or by other means (like the Gunslinger or a Gossi
       "If you survive a night when you 'should have' died, claim Soldier to explain it.",
       "Evil players bluffing as Soldier can survive to the end game, since the 'Demon' won't be attacking them.",
       "Be prepared for skepticism - anyone can claim Soldier because the ability has no visible effect."
-    ]
+    ],
+    howToRun: "During the night, if the Demon attacks the Soldier, the Soldier remains alive. (At dawn, declare that no one died at night.)\n\nIn other editions, Demons may have abilities other than killing. The Soldier is also protected from all other harmful effects of the Demon's ability, such as poisoning or turning the Soldier evil."
   },
   {
     id: 'mayor',
@@ -434,7 +446,8 @@ Additionally, if you are attacked by the Demon at night, the Storyteller may cho
       "As the Demon, claiming Mayor can prevent executions on the final day - the town might spare you hoping for a Mayor victory.",
       "If you claim Mayor and good doesn't execute at 3 players, evil wins because the real Mayor (if any) isn't in play.",
       "This bluff works best when there's no real Mayor - but you won't know for sure."
-    ]
+    ],
+    howToRun: "During the night, if the Mayor would die, you choose if the Mayor actually dies, or if the Mayor remains alive and another character dies instead—put the Demon's DEAD reminder token by that character token instead of the Mayor, and put a shroud on that character token instead of the Mayor.\n\nAt dawn, declare that the player marked DEAD died at night. (Do not say how they died.)\n\nAt dusk, if exactly three players are alive and no player was executed today, declare that the game ends and good wins.\n\nWe recommend you keep the Mayor alive until the final day, since it is most fun for the players that way. On rare occasions, if the group is overwhelmingly convinced early in the game that the Mayor is the Mayor, let the Mayor die so that evil has a chance to win."
   },
   
   // OUTSIDERS
@@ -468,7 +481,8 @@ If your Master puts their hand down, you must put yours down too. You are respon
       "You can 'choose' a fellow evil player as Master, giving you an excuse to talk to them privately.",
       "Claim you switched Masters secretly if you need to vote against your stated Master's wishes.",
       "This bluff explains odd voting patterns - you can't vote because your Master isn't voting!"
-    ]
+    ],
+    howToRun: "Each night, wake the Butler. The Butler points at any player. Put the Butler to sleep. Put the Butler's MASTER reminder token by the chosen player's character token.\n\nDuring the day, if the Butler raises their hand to vote, count their vote only if the player marked MASTER has their hand raised to vote too. (If the Master has their hand down, the Butler's vote doesn't count.)"
   },
   {
     id: 'drunk',
@@ -500,7 +514,8 @@ The Drunk has no ability. When their 'Townsfolk' ability would work, it doesn't.
       "Claiming to be a Drunk Empath or Drunk Fortune Teller explains why your information was false - and gives you cover for lying.",
       "Insinuating a Drunk is in play makes good players distrust their own information.",
       "If a good player has damning information about your team, suggest they might be the Drunk."
-    ]
+    ],
+    howToRun: "During setup, put the Drunk's IS THE DRUNK reminder token by any Townsfolk character token. Swap that character token with the Drunk token. Put the swapped-out character token in the bag, instead of a Townsfolk character that would normally be in the bag.\n\nThe Drunk player thinks they are the Townsfolk that was swapped out. Wake them when that Townsfolk would normally wake to act. Wake them to give them false information, or let them act but have their ability do nothing or something else."
   },
   {
     id: 'recluse',
@@ -532,7 +547,8 @@ A Recluse that registers as a Minion or Demon doesn't gain that character's abil
       "This is especially good for the Spy - you're evil but might appear as Recluse to certain abilities.",
       "Claiming Recluse early and being 'helpful' can make you look like a confirmed Outsider.",
       "As the Recluse, you can claim your existence explains the Chef's high number or the Empath's evil neighbor."
-    ]
+    ],
+    howToRun: "The Recluse might register as evil, or as a Minion or Demon, to abilities that detect or affect evil, Minions, or Demons. You choose whether to do this on a case by case basis. The Recluse should usually register as evil, a Minion, or a Demon about half the time."
   },
   {
     id: 'saint',
@@ -565,7 +581,8 @@ If you die by any other means - the Demon killing you at night, for example - th
       "Be prepared for Slayers! They can test you without triggering the Saint's ability.",
       "If you're executed and the game DOESN'T end, you need a backup bluff fast. Claim you were the Drunk all along.",
       "Two people claiming Saint creates a huge dilemma for good - they can't safely execute either one."
-    ]
+    ],
+    howToRun: "If the Saint dies by execution, declare that the game ends and evil wins."
   },
 
   // MINIONS
@@ -600,7 +617,8 @@ A poisoned player has no ability - it doesn't work. However, the Storyteller pre
       "Separating Poisoner effects from the Drunk is crucial. If ONLY one player has consistently wrong info, they might be the Drunk.",
       "Kill the Poisoner as soon as possible. Unlike other Minions, they cause ongoing damage every night.",
       "Remember that poisoned information is unreliable, not necessarily wrong. The Storyteller CAN give true info to a poisoned player."
-    ]
+    ],
+    howToRun: "Each night, wake the Poisoner. The Poisoner points at any player. Put the Poisoner to sleep. Put the Poisoner's POISONED reminder token by the chosen player's character token. The chosen player is poisoned.\n\nAt the start of each night, remove the POISONED reminder token."
   },
   {
     id: 'spy',
@@ -634,7 +652,8 @@ Additionally, you might register as good to abilities that detect alignment, and
       "The Spy can nominate the Virgin and die (appearing as Townsfolk). A 'confirmed' player who later seems evil might have been the Spy.",
       "Coordinate with your team privately. The Spy sees the Grimoire, not your whispered conversations.",
       "The Spy will guide evil targeting. If your Monk's protected player survives while other key roles die, the Spy might be directing the kills."
-    ]
+    ],
+    howToRun: "While preparing the first night, you may show any good character token to the players who have abilities that detect or affect Outsiders or Townsfolk.\n\nWhenever a Spy is in play, you may show the Spy's grimoire to the Spy during the night.\n\nThe Spy may register as good and as a Townsfolk or Outsider, even if dead. You may show good tokens for them to abilities that detect good or Townsfolk or Outsiders."
   },
   {
     id: 'scarletwoman',
@@ -671,7 +690,8 @@ If the Scarlet Woman becomes the Demon, they are that Demon in every way. Good w
       "The Scarlet Woman does not register as a Demon. The Fortune Teller won't detect them, and the Slayer won't kill them. Be wary of players overeager to be checked.",
       "If you know a Scarlet Woman is in play, leaving them alive can be strategic. On the final day with 3 players, you only need to decide: did the Demon pass to the Scarlet Woman or not?",
       "Unlike other Minions, the Scarlet Woman may deliberately try to get their Demon killed to look better. Watch for sudden allegiance changes when it drops below 5 players."
-    ]
+    ],
+    howToRun: "If the Demon dies and there are five or more players alive (including Travellers), declare that the Scarlet Woman becomes the Demon. Replace the Scarlet Woman token with the Imp token. Wake the new Imp and show them the YOU ARE token, then the Imp token."
   },
   {
     id: 'baron',
@@ -704,7 +724,8 @@ The Baron has no active ability during the game. Your job is to survive, bluff, 
       "The Librarian, Investigator, Ravenkeeper, and Undertaker can all help identify who the actual Outsiders are.",
       "Barons tend to be aggressive bluffers since their ability is passive. Look for players causing chaos.",
       "Remember: the Imp can starpass to the Baron. Don't ignore them just because they seem 'passive'."
-    ]
+    ],
+    howToRun: "While setting up the game, before putting character tokens in the bag, remove two Townsfolk tokens and add two Outsider tokens."
   },
 
   // DEMONS
@@ -739,7 +760,8 @@ The Imp is the most straightforward Demon - simple but effective. The starpass a
       "Remember the Imp can starpass - if you execute someone and the game continues with 5+ players, either you got the wrong person or a Scarlet Woman caught it.",
       "The Imp knows their Minions from the first night. Look for players who seem to be coordinating or covering for each other.",
       "Powerful characters like the Slayer or Virgin can help confirm the Demon's identity. Use them wisely."
-    ]
+    ],
+    howToRun: "Each night except the first, wake the Imp. The Imp points at any player. Put the Imp to sleep. The chosen player dies—put the Imp's DEAD reminder token by their character token and put a shroud on it.\n\nIf the Imp chose themselves: The Imp dies. Put a shroud on the Imp. Wake each other Minion. Show them the YOU ARE token, then the Imp token, then point at the chosen Minion. Put the new Imp to sleep."
   },
 ];
 
