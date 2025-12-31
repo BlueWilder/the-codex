@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 function CharacterCard({ char, isExpanded, onToggle }: { 
   char: Character; 
@@ -236,20 +237,29 @@ function CharacterCard({ char, isExpanded, onToggle }: {
                 </div>
               )}
 
-              {/* How to Run (Storyteller instructions) */}
+              {/* How to Run (Storyteller instructions) - Collapsible Accordion */}
               {char.howToRun && (
-                <div className="space-y-2">
-                  <h4 className="text-sm md:text-xs font-bold uppercase tracking-wider opacity-70 flex items-center gap-1.5">
-                    <BookOpen className="w-4 h-4 md:w-3 md:h-3 text-purple-400" /> How to Run
-                  </h4>
-                  <div className="text-sm md:text-xs bg-purple-950/30 border border-purple-900/30 rounded-lg p-3 md:p-2">
-                    <div className="space-y-2 opacity-90 leading-relaxed">
-                      {char.howToRun.split('\n\n').map((paragraph, idx) => (
-                        <p key={idx}>{paragraph.replace(/\n/g, ' ')}</p>
-                      ))}
-                    </div>
-                  </div>
-                </div>
+                <Accordion type="single" collapsible className="w-full">
+                  <AccordionItem value="how-to-run" className="border-none">
+                    <AccordionTrigger 
+                      className="py-2 hover:no-underline"
+                      data-testid={`accordion-how-to-run-${char.id}`}
+                    >
+                      <h4 className="text-sm md:text-xs font-bold uppercase tracking-wider opacity-70 flex items-center gap-1.5">
+                        <BookOpen className="w-4 h-4 md:w-3 md:h-3 text-purple-400" /> How to Run
+                      </h4>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <div className="text-sm md:text-xs bg-purple-950/30 border border-purple-900/30 rounded-lg p-3 md:p-2">
+                        <div className="space-y-2 opacity-90 leading-relaxed">
+                          {char.howToRun.split('\n\n').map((paragraph, idx) => (
+                            <p key={idx}>{paragraph.replace(/\n/g, ' ')}</p>
+                          ))}
+                        </div>
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
               )}
             </div>
           </motion.div>
