@@ -349,8 +349,8 @@ function PlayerDetailDrawer({
   return (
     <>
       <Drawer open={!!player} onOpenChange={(open) => !open && onClose()}>
-        <DrawerContent className="max-h-[85vh]">
-          <DrawerHeader className="border-b border-border pb-4">
+        <DrawerContent className="max-h-[85vh] flex flex-col">
+          <DrawerHeader className="border-b border-border pb-4 shrink-0">
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-3">
                 {!player.isAlive && <Skull className="w-5 h-5 text-muted-foreground" />}
@@ -367,7 +367,8 @@ function PlayerDetailDrawer({
             </div>
           </DrawerHeader>
 
-          <ScrollArea className="flex-1 p-4">
+          <ScrollArea className="flex-1 overflow-auto">
+            <div className="p-4">
             <div className="space-y-6">
               <div className="flex gap-2">
                 <Button
@@ -481,6 +482,7 @@ function PlayerDetailDrawer({
                   <p className="text-sm text-muted-foreground italic">No votes recorded</p>
                 )}
               </div>
+            </div>
             </div>
           </ScrollArea>
         </DrawerContent>
