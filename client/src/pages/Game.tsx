@@ -534,6 +534,7 @@ function GameTrackerView({
 
   const selectedPlayer = game.players.find(p => p.id === selectedPlayerId) || null;
   const aliveCount = game.players.filter(p => p.isAlive).length;
+  const totalVotesAvailable = game.players.filter(p => p.isAlive || (!p.isAlive && p.hasGhostVote)).length;
 
   return (
     <div className="space-y-4">
@@ -551,8 +552,11 @@ function GameTrackerView({
               <ChevronUp className="w-4 h-4" />
             </Button>
           </div>
-          <Badge variant="outline" className="text-muted-foreground">
+          <Badge variant="outline" className="text-muted-foreground" data-testid="badge-alive-count">
             {aliveCount} alive
+          </Badge>
+          <Badge variant="outline" className="text-purple-400 border-purple-400/50" data-testid="badge-votes-available">
+            {totalVotesAvailable} votes
           </Badge>
         </div>
         <div className="flex gap-2">
