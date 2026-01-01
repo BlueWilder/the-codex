@@ -180,42 +180,44 @@ function CharacterPicker({
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-md max-h-[80vh] flex flex-col">
-        <DialogHeader>
-          <DialogTitle className="font-display text-amber-500">Select Character</DialogTitle>
-        </DialogHeader>
-        <div className="relative mb-4">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search characters..."
-            className="pl-10"
-            data-testid="input-search-character"
-          />
-        </div>
-        <ScrollArea className="flex-1 min-h-[200px] max-h-[50vh] -mx-6 px-6">
-          <div className="space-y-1 pb-4">
-            {filteredCharacters.map(char => (
-              <button
-                key={char.id}
-                onClick={() => { onSelect(char.id); onClose(); setSearch(""); }}
-                className={cn(
-                  "w-full text-left p-3 rounded-lg border transition-colors flex items-center gap-3",
-                  "hover-elevate active-elevate-2",
-                  TEAM_COLORS[char.team]
-                )}
-                data-testid={`button-select-character-${char.id}`}
-              >
-                <span className="font-medium">{char.name}</span>
-                <span className="text-xs opacity-70 capitalize ml-auto">{char.team}</span>
-              </button>
-            ))}
-            {filteredCharacters.length === 0 && (
-              <p className="text-center text-muted-foreground py-8">No characters found</p>
-            )}
+      <DialogContent className="max-w-md p-0">
+        <div className="flex flex-col max-h-[70vh] overflow-hidden p-6">
+          <DialogHeader className="mb-4">
+            <DialogTitle className="font-display text-amber-500">Select Character</DialogTitle>
+          </DialogHeader>
+          <div className="relative mb-4 flex-shrink-0">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search characters..."
+              className="pl-10"
+              data-testid="input-search-character"
+            />
           </div>
-        </ScrollArea>
+          <div className="flex-1 overflow-y-auto -mx-2 px-2">
+            <div className="space-y-1 pb-4">
+              {filteredCharacters.map(char => (
+                <button
+                  key={char.id}
+                  onClick={() => { onSelect(char.id); onClose(); setSearch(""); }}
+                  className={cn(
+                    "w-full text-left p-3 rounded-lg border transition-colors flex items-center gap-3",
+                    "hover-elevate active-elevate-2",
+                    TEAM_COLORS[char.team]
+                  )}
+                  data-testid={`button-select-character-${char.id}`}
+                >
+                  <span className="font-medium">{char.name}</span>
+                  <span className="text-xs opacity-70 capitalize ml-auto">{char.team}</span>
+                </button>
+              ))}
+              {filteredCharacters.length === 0 && (
+                <p className="text-center text-muted-foreground py-8">No characters found</p>
+              )}
+            </div>
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   );
