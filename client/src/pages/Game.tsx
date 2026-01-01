@@ -194,7 +194,7 @@ function CharacterPicker({
             data-testid="input-search-character"
           />
         </div>
-        <ScrollArea className="flex-1 -mx-6 px-6">
+        <ScrollArea className="flex-1 min-h-[200px] max-h-[50vh] -mx-6 px-6">
           <div className="space-y-1 pb-4">
             {filteredCharacters.map(char => (
               <button
