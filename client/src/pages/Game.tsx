@@ -534,42 +534,48 @@ function GameTrackerView({
 
   const selectedPlayer = game.players.find(p => p.id === selectedPlayerId) || null;
   const aliveCount = game.players.filter(p => p.isAlive).length;
+  const votesNeeded = Math.ceil(aliveCount / 2);
   const totalVotesAvailable = game.players.filter(p => p.isAlive || (!p.isAlive && p.hasGhostVote)).length;
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-4 flex-wrap">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 bg-card border border-border rounded-lg px-3 py-2">
-            <Button size="icon" variant="ghost" onClick={onPrevDay} disabled={game.currentDay <= 1} className="h-7 w-7" data-testid="button-prev-day">
-              <ChevronDown className="w-4 h-4" />
-            </Button>
-            <div className="flex items-center gap-2 min-w-[80px] justify-center">
-              <Sun className="w-4 h-4 text-amber-500" />
-              <span className="font-display text-amber-500">Day {game.currentDay}</span>
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 bg-card border border-border rounded-lg px-2 py-1.5">
+              <Button size="icon" variant="ghost" onClick={onPrevDay} disabled={game.currentDay <= 1} className="h-6 w-6" data-testid="button-prev-day">
+                <ChevronDown className="w-3 h-3" />
+              </Button>
+              <div className="flex items-center gap-1.5 min-w-[60px] justify-center">
+                <Sun className="w-3.5 h-3.5 text-amber-500" />
+                <span className="font-display text-amber-500 text-sm">Day {game.currentDay}</span>
+              </div>
+              <Button size="icon" variant="ghost" onClick={onNextDay} className="h-6 w-6" data-testid="button-next-day">
+                <ChevronUp className="w-3 h-3" />
+              </Button>
             </div>
-            <Button size="icon" variant="ghost" onClick={onNextDay} className="h-7 w-7" data-testid="button-next-day">
-              <ChevronUp className="w-4 h-4" />
-            </Button>
+            <Badge variant="outline" className="text-muted-foreground text-xs" data-testid="badge-alive-count">
+              {aliveCount} alive
+            </Badge>
+            <Badge variant="outline" className="text-amber-400 border-amber-400/50 text-xs" data-testid="badge-votes-needed">
+              {votesNeeded} to exile
+            </Badge>
+            <Badge variant="outline" className="text-purple-400 border-purple-400/50 text-xs" data-testid="badge-votes-available">
+              {totalVotesAvailable} possible
+            </Badge>
           </div>
-          <Badge variant="outline" className="text-muted-foreground" data-testid="badge-alive-count">
-            {aliveCount} alive
-          </Badge>
-          <Badge variant="outline" className="text-purple-400 border-purple-400/50" data-testid="badge-votes-available">
-            {totalVotesAvailable} votes
-          </Badge>
-        </div>
-        <div className="flex gap-2">
-          {confirmEnd ? (
-            <>
-              <Button variant="ghost" size="sm" onClick={() => setConfirmEnd(false)} data-testid="button-cancel-end">Cancel</Button>
-              <Button variant="destructive" size="sm" onClick={onEndGame} data-testid="button-confirm-end">End Game</Button>
-            </>
-          ) : (
-            <Button variant="ghost" size="sm" onClick={() => setConfirmEnd(true)} data-testid="button-end-game">
-              End Game
-            </Button>
-          )}
+          <div className="flex gap-2">
+            {confirmEnd ? (
+              <>
+                <Button variant="ghost" size="sm" onClick={() => setConfirmEnd(false)} data-testid="button-cancel-end">Cancel</Button>
+                <Button variant="destructive" size="sm" onClick={onEndGame} data-testid="button-confirm-end">End Game</Button>
+              </>
+            ) : (
+              <Button variant="ghost" size="sm" onClick={() => setConfirmEnd(true)} data-testid="button-end-game">
+                End Game
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 
