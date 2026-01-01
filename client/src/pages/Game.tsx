@@ -567,26 +567,18 @@ function GameTrackerView({
             )}
           </div>
         </div>
-        <div className="flex items-center gap-3 flex-wrap">
-          <div className="flex items-center gap-2 text-sm">
-            <span className="text-muted-foreground">Players:</span>
-            <span className="font-semibold text-foreground">{playerCount}</span>
-          </div>
-          <div className="w-px h-4 bg-border" />
-          <div className="flex items-center gap-2 text-sm">
-            <span className="text-muted-foreground">Alive:</span>
-            <span className="font-semibold text-foreground">{aliveCount}</span>
-          </div>
-          <div className="w-px h-4 bg-border" />
-          <div className="flex items-center gap-2 text-sm">
-            <span className="text-muted-foreground">To Execute:</span>
-            <span className="font-semibold text-amber-400">{votesNeeded}</span>
-          </div>
-          <div className="w-px h-4 bg-border" />
-          <div className="flex items-center gap-2 text-sm">
-            <span className="text-muted-foreground">Possible:</span>
-            <span className="font-semibold text-purple-400">{totalVotesAvailable}</span>
-          </div>
+        <div className="flex items-center gap-2 text-xs">
+          <span className="text-muted-foreground">Players:</span>
+          <span className="font-semibold text-foreground">{playerCount}</span>
+          <span className="text-muted-foreground/50">|</span>
+          <span className="text-muted-foreground">Alive:</span>
+          <span className="font-semibold text-foreground">{aliveCount}</span>
+          <span className="text-muted-foreground/50">|</span>
+          <span className="text-muted-foreground">Exec:</span>
+          <span className="font-semibold text-amber-400">{votesNeeded}</span>
+          <span className="text-muted-foreground/50">|</span>
+          <span className="text-muted-foreground">Poss:</span>
+          <span className="font-semibold text-purple-400">{totalVotesAvailable}</span>
         </div>
       </div>
 
