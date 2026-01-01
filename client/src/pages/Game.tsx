@@ -539,30 +539,19 @@ function GameTrackerView({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center justify-between gap-2 flex-wrap">
+      <div className="bg-card border border-border rounded-lg p-3 space-y-3">
+        <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1 bg-card border border-border rounded-lg px-2 py-1.5">
-              <Button size="icon" variant="ghost" onClick={onPrevDay} disabled={game.currentDay <= 1} className="h-6 w-6" data-testid="button-prev-day">
-                <ChevronDown className="w-3 h-3" />
-              </Button>
-              <div className="flex items-center gap-1.5 min-w-[60px] justify-center">
-                <Sun className="w-3.5 h-3.5 text-amber-500" />
-                <span className="font-display text-amber-500 text-sm">Day {game.currentDay}</span>
-              </div>
-              <Button size="icon" variant="ghost" onClick={onNextDay} className="h-6 w-6" data-testid="button-next-day">
-                <ChevronUp className="w-3 h-3" />
-              </Button>
+            <Button size="icon" variant="ghost" onClick={onPrevDay} disabled={game.currentDay <= 1} data-testid="button-prev-day">
+              <ChevronDown className="w-4 h-4" />
+            </Button>
+            <div className="flex items-center gap-2">
+              <Sun className="w-5 h-5 text-amber-500" />
+              <span className="font-display text-amber-500 text-xl">Day {game.currentDay}</span>
             </div>
-            <Badge variant="outline" className="text-muted-foreground text-xs" data-testid="badge-alive-count">
-              {aliveCount} alive
-            </Badge>
-            <Badge variant="outline" className="text-amber-400 border-amber-400/50 text-xs" data-testid="badge-votes-needed">
-              {votesNeeded} execute
-            </Badge>
-            <Badge variant="outline" className="text-purple-400 border-purple-400/50 text-xs" data-testid="badge-votes-available">
-              {totalVotesAvailable} possible
-            </Badge>
+            <Button size="icon" variant="ghost" onClick={onNextDay} data-testid="button-next-day">
+              <ChevronUp className="w-4 h-4" />
+            </Button>
           </div>
           <div className="flex gap-2">
             {confirmEnd ? (
@@ -575,6 +564,22 @@ function GameTrackerView({
                 End Game
               </Button>
             )}
+          </div>
+        </div>
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-center gap-2 text-sm">
+            <span className="text-muted-foreground">Alive:</span>
+            <span className="font-semibold text-foreground">{aliveCount}</span>
+          </div>
+          <div className="w-px h-4 bg-border" />
+          <div className="flex items-center gap-2 text-sm">
+            <span className="text-muted-foreground">Execute:</span>
+            <span className="font-semibold text-amber-400">{votesNeeded}</span>
+          </div>
+          <div className="w-px h-4 bg-border" />
+          <div className="flex items-center gap-2 text-sm">
+            <span className="text-muted-foreground">Possible:</span>
+            <span className="font-semibold text-purple-400">{totalVotesAvailable}</span>
           </div>
         </div>
       </div>
