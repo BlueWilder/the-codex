@@ -55,6 +55,16 @@ Character data is stored client-side in `client/src/lib/game-data.ts` with full 
 - Reminder tokens
 - Extended summaries, tips, and bluffing advice
 - Jinx interactions between characters
+- Storyteller "How to Run" instructions for all characters
+
+### Game Mode (Player Tracker)
+A localStorage-based player tracking tool at `/game` for note-taking during games:
+- **Setup wizard**: Player count selection (5-20) with character breakdown display, player name inputs
+- **Player cards**: Grid display showing name, alive/dead status, claim badges, indicator icons
+- **Player detail drawer**: Notes, claims (searchable character picker), voting record by day
+- **Day tracker**: Increment/decrement current game day
+- **Persistence**: Game state saved to localStorage, survives page refresh
+- **Hook**: `client/src/hooks/use-player-game.ts` manages all game state with types for GamePlayer, VoteRecord, PlayerGame
 
 ## External Dependencies
 
