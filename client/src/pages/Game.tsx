@@ -558,7 +558,7 @@ function GameTrackerView({
               {aliveCount} alive
             </Badge>
             <Badge variant="outline" className="text-amber-400 border-amber-400/50 text-xs" data-testid="badge-votes-needed">
-              {votesNeeded} to exile
+              {votesNeeded} execute
             </Badge>
             <Badge variant="outline" className="text-purple-400 border-purple-400/50 text-xs" data-testid="badge-votes-available">
               {totalVotesAvailable} possible
