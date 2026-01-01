@@ -10,6 +10,7 @@ export interface GamePlayer {
   id: string;
   name: string;
   isAlive: boolean;
+  hasGhostVote: boolean;
   notes: string;
   claims: string[];
   votes: VoteRecord[];
@@ -82,6 +83,7 @@ export function usePlayerGame() {
         id: `player-${i}`,
         name,
         isAlive: true,
+        hasGhostVote: true,
         notes: "",
         claims: [],
         votes: [],
@@ -135,6 +137,13 @@ export function usePlayerGame() {
     updatePlayer(playerId, { isAlive: !player.isAlive });
   }, [game, updatePlayer]);
 
+  const toggleGhostVote = useCallback((playerId: string) => {
+    if (!game) return;
+    const player = game.players.find(p => p.id === playerId);
+    if (!player) return;
+    updatePlayer(playerId, { hasGhostVote: !player.hasGhostVote });
+  }, [game, updatePlayer]);
+
   const setNotes = useCallback((playerId: string, notes: string) => {
     updatePlayer(playerId, { notes });
   }, [updatePlayer]);
@@ -159,6 +168,7 @@ export function usePlayerGame() {
     removeClaim,
     addVote,
     toggleAlive,
+    toggleGhostVote,
     setNotes,
     nextDay,
     prevDay,

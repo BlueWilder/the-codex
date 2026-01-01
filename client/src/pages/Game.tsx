@@ -2,7 +2,7 @@ import { Layout } from "@/components/ui/Layout";
 import { useState, useMemo } from "react";
 import { usePlayerGame, getBreakdown, type GamePlayer } from "@/hooks/use-player-game";
 import { ALL_CHARACTERS } from "@/lib/game-data";
-import { Users, ChevronRight, Play, Skull, X, Plus, Check, Hand, Search, Sun, Moon, ChevronUp, ChevronDown, FileText, Theater, Vote, Loader2 } from "lucide-react";
+import { Users, ChevronRight, Play, Skull, X, Plus, Check, Hand, Search, Sun, Moon, ChevronUp, ChevronDown, FileText, Theater, Vote, Loader2, Ghost } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -317,6 +317,7 @@ function PlayerDetailDrawer({
   currentDay,
   onClose,
   onToggleAlive,
+  onToggleGhostVote,
   onAddClaim,
   onRemoveClaim,
   onSetNotes,
@@ -327,6 +328,7 @@ function PlayerDetailDrawer({
   currentDay: number;
   onClose: () => void;
   onToggleAlive: () => void;
+  onToggleGhostVote: () => void;
   onAddClaim: (characterId: string) => void;
   onRemoveClaim: (characterId: string) => void;
   onSetNotes: (notes: string) => void;
@@ -367,20 +369,37 @@ function PlayerDetailDrawer({
 
           <ScrollArea className="flex-1 p-4">
             <div className="space-y-6">
-              <Button
-                variant="outline"
-                className={cn(
-                  "w-full",
-                  player.isAlive
-                    ? "border-red-800 text-red-400 hover:bg-red-950/30"
-                    : "border-emerald-800 text-emerald-400 hover:bg-emerald-950/30"
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "flex-1",
+                    player.isAlive
+                      ? "border-red-800 text-red-400 hover:bg-red-950/30"
+                      : "border-emerald-800 text-emerald-400 hover:bg-emerald-950/30"
+                  )}
+                  onClick={onToggleAlive}
+                  data-testid="button-toggle-alive"
+                >
+                  <Skull className="w-4 h-4 mr-2" />
+                  {player.isAlive ? "Mark as Dead" : "Mark as Alive"}
+                </Button>
+                {!player.isAlive && (
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      player.hasGhostVote
+                        ? "border-purple-800 text-purple-400 hover:bg-purple-950/30"
+                        : "border-muted text-muted-foreground"
+                    )}
+                    onClick={onToggleGhostVote}
+                    data-testid="button-toggle-ghost-vote"
+                  >
+                    <Ghost className="w-4 h-4 mr-2" />
+                    {player.hasGhostVote ? "Has Ghost Vote" : "Ghost Vote Used"}
+                  </Button>
                 )}
-                onClick={onToggleAlive}
-                data-testid="button-toggle-alive"
-              >
-                <Skull className="w-4 h-4 mr-2" />
-                {player.isAlive ? "Mark as Dead" : "Mark as Alive"}
-              </Button>
+              </div>
 
               <div className="space-y-3">
                 <div className="flex items-center justify-between gap-2">
@@ -489,6 +508,7 @@ function GameTrackerView({
   game,
   onEndGame,
   onToggleAlive,
+  onToggleGhostVote,
   onAddClaim,
   onRemoveClaim,
   onSetNotes,
@@ -499,6 +519,7 @@ function GameTrackerView({
   game: NonNullable<ReturnType<typeof usePlayerGame>["game"]>;
   onEndGame: () => void;
   onToggleAlive: (playerId: string) => void;
+  onToggleGhostVote: (playerId: string) => void;
   onAddClaim: (playerId: string, characterId: string) => void;
   onRemoveClaim: (playerId: string, characterId: string) => void;
   onSetNotes: (playerId: string, notes: string) => void;
@@ -573,6 +594,9 @@ function GameTrackerView({
                   </span>
                 </div>
                 <div className="flex items-center gap-1 text-muted-foreground">
+                  {!player.isAlive && player.hasGhostVote && (
+                    <Ghost className="w-4 h-4 text-purple-400" data-testid={`icon-ghost-vote-${player.id}`} />
+                  )}
                   {hasNotes && <FileText className="w-4 h-4" />}
                   {claimedChars.length > 0 && <Theater className="w-4 h-4" />}
                   {hasVotes && <Vote className="w-4 h-4" />}
@@ -603,6 +627,7 @@ function GameTrackerView({
         currentDay={game.currentDay}
         onClose={() => setSelectedPlayerId(null)}
         onToggleAlive={() => selectedPlayerId && onToggleAlive(selectedPlayerId)}
+        onToggleGhostVote={() => selectedPlayerId && onToggleGhostVote(selectedPlayerId)}
         onAddClaim={(charId) => selectedPlayerId && onAddClaim(selectedPlayerId, charId)}
         onRemoveClaim={(charId) => selectedPlayerId && onRemoveClaim(selectedPlayerId, charId)}
         onSetNotes={(notes) => selectedPlayerId && onSetNotes(selectedPlayerId, notes)}
@@ -621,6 +646,7 @@ export default function Game() {
     addClaim,
     removeClaim,
     toggleAlive,
+    toggleGhostVote,
     setNotes,
     addVote,
     nextDay,
@@ -646,6 +672,7 @@ export default function Game() {
           game={game}
           onEndGame={endGame}
           onToggleAlive={toggleAlive}
+          onToggleGhostVote={toggleGhostVote}
           onAddClaim={addClaim}
           onRemoveClaim={removeClaim}
           onSetNotes={setNotes}
