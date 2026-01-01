@@ -571,7 +571,10 @@ function GameTrackerView({
         {game.players.map((player) => {
           const claimedChars = player.claims.map(id => ALL_CHARACTERS.find(c => c.id === id)).filter(Boolean);
           const hasNotes = player.notes.trim().length > 0;
-          const hasVotes = player.votes.length > 0;
+          const voteCount = player.votes.length;
+          const nominatedCount = game.players.reduce((count, p) => 
+            count + p.votes.filter(v => v.nomineeId === player.id).length, 0
+          );
 
           return (
             <Card
@@ -593,29 +596,45 @@ function GameTrackerView({
                     {player.name}
                   </span>
                 </div>
-                <div className="flex items-center gap-1 text-muted-foreground">
+                <div className="flex items-center gap-2 text-muted-foreground">
                   {!player.isAlive && player.hasGhostVote && (
-                    <Ghost className="w-4 h-4 text-purple-400" data-testid={`icon-ghost-vote-${player.id}`} />
+                    <Ghost className="w-5 h-5 text-purple-400" data-testid={`icon-ghost-vote-${player.id}`} />
                   )}
                   {hasNotes && <FileText className="w-4 h-4" />}
-                  {claimedChars.length > 0 && <Theater className="w-4 h-4" />}
-                  {hasVotes && <Vote className="w-4 h-4" />}
                 </div>
               </div>
-              {claimedChars.length > 0 && (
-                <div className="flex flex-wrap gap-1">
-                  {claimedChars.slice(0, 3).map(char => char && (
-                    <Badge key={char.id} variant="secondary" className={cn("text-xs", TEAM_COLORS[char.team])}>
-                      {char.name}
-                    </Badge>
-                  ))}
-                  {claimedChars.length > 3 && (
-                    <Badge variant="secondary" className="text-xs">
-                      +{claimedChars.length - 3}
-                    </Badge>
+              <div className="flex items-center justify-between gap-2">
+                {claimedChars.length > 0 ? (
+                  <div className="flex flex-wrap gap-1 flex-1">
+                    {claimedChars.slice(0, 3).map(char => char && (
+                      <Badge key={char.id} variant="secondary" className={cn("text-xs", TEAM_COLORS[char.team])}>
+                        {char.name}
+                      </Badge>
+                    ))}
+                    {claimedChars.length > 3 && (
+                      <Badge variant="secondary" className="text-xs">
+                        +{claimedChars.length - 3}
+                      </Badge>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex-1" />
+                )}
+                <div className="flex items-center gap-3 text-xs text-muted-foreground shrink-0">
+                  {nominatedCount > 0 && (
+                    <span className="flex items-center gap-1" data-testid={`text-nominated-${player.id}`}>
+                      <Theater className="w-3.5 h-3.5" />
+                      {nominatedCount}
+                    </span>
+                  )}
+                  {voteCount > 0 && (
+                    <span className="flex items-center gap-1" data-testid={`text-votes-${player.id}`}>
+                      <Hand className="w-3.5 h-3.5" />
+                      {voteCount}
+                    </span>
                   )}
                 </div>
-              )}
+              </div>
             </Card>
           );
         })}
