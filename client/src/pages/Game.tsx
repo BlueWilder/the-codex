@@ -533,6 +533,7 @@ function GameTrackerView({
   const [confirmEnd, setConfirmEnd] = useState(false);
 
   const selectedPlayer = game.players.find(p => p.id === selectedPlayerId) || null;
+  const playerCount = game.players.length;
   const aliveCount = game.players.filter(p => p.isAlive).length;
   const votesNeeded = Math.ceil(aliveCount / 2);
   const totalVotesAvailable = game.players.filter(p => p.isAlive || (!p.isAlive && p.hasGhostVote)).length;
@@ -568,12 +569,17 @@ function GameTrackerView({
         </div>
         <div className="flex items-center gap-3 flex-wrap">
           <div className="flex items-center gap-2 text-sm">
+            <span className="text-muted-foreground">Players:</span>
+            <span className="font-semibold text-foreground">{playerCount}</span>
+          </div>
+          <div className="w-px h-4 bg-border" />
+          <div className="flex items-center gap-2 text-sm">
             <span className="text-muted-foreground">Alive:</span>
             <span className="font-semibold text-foreground">{aliveCount}</span>
           </div>
           <div className="w-px h-4 bg-border" />
           <div className="flex items-center gap-2 text-sm">
-            <span className="text-muted-foreground">Execute:</span>
+            <span className="text-muted-foreground">To Execute:</span>
             <span className="font-semibold text-amber-400">{votesNeeded}</span>
           </div>
           <div className="w-px h-4 bg-border" />
