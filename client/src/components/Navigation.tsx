@@ -1,12 +1,11 @@
 import { Link, useLocation } from "wouter";
-import { Home, Skull, BookOpen, Gamepad2 } from "lucide-react";
+import { Skull, BookOpen, Gamepad2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function Navigation() {
   const [location] = useLocation();
 
   const navItems = [
-    { href: "/", icon: Home, label: "Home" },
     { href: "/reference", icon: BookOpen, label: "Reference" },
     { href: "/game", icon: Gamepad2, label: "Game" },
   ];
