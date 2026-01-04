@@ -54,7 +54,11 @@ function PointingFingerIcon({ className }: { className?: string }) {
       fill="currentColor"
       className={className}
     >
-      <path d="M2 11c0-1.5 1-2.5 2-3v-1c0-1 .5-2 2-2h1l2-2h4v3h7c1.5 0 2.5 1 2.5 2.5s-1 2.5-2.5 2.5h-7v1h-1v2h-1v2H9v-2H7v-2H5c-1.5 0-3-1-3-2.5z" />
+      <rect x="10" y="9" width="12" height="4" rx="2" />
+      <rect x="2" y="7" width="10" height="8" rx="2" />
+      <rect x="3" y="15" width="3" height="4" rx="1" />
+      <rect x="6" y="15" width="3" height="4" rx="1" />
+      <rect x="9" y="15" width="3" height="3" rx="1" />
     </svg>
   );
 }
