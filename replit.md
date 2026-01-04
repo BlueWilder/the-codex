@@ -64,9 +64,19 @@ A localStorage-based player tracking tool at `/game` for note-taking during game
 - **Player cards**: Grid display showing name, alive/dead status, claim badges, indicator icons
 - **Player detail drawer**: Notes, claims (filtered by selected script), voting record by day
 - **Day tracker**: Scoreboard-style header with alive/dead counts, votes to execute, available votes, and script name badge
+- **View modes**: List view and Circle seating chart view (toggle in header)
 - **Persistence**: Game state saved to localStorage, survives page refresh
 - **Hook**: `client/src/hooks/use-player-game.ts` manages all game state with types for GamePlayer, VoteRecord, PlayerGame, GameScriptRef
 - **Script sync**: `client/src/hooks/use-local-scripts.ts` provides reactive script storage shared across all pages with cross-tab sync via storage events
+
+### Game Log
+A chronological event viewer accessible via "Log" button in game header:
+- **Event types tracked**: Claims (with timestamp/day), nominations (with outcomes), deaths (execution/night/exile), ghost votes used, traveler joins/leaves/exiles
+- **Organization**: Events grouped by day, with day/night sections within each day
+- **Filtering**: Filter by event type (All, Claims, Votes, Deaths, Travelers)
+- **Data structures**: ClaimRecord, DeathRecord, TravelerEvent, GhostVoteEvent interfaces in use-player-game.ts
+- **Historical accuracy**: Nomination outcomes (passed/failed, vote counts) are stored at creation time to ensure accuracy regardless of future game state changes
+- **Component**: `client/src/components/GameLogDialog.tsx`
 
 ## External Dependencies
 
