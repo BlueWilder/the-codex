@@ -1,7 +1,7 @@
 import { Layout } from "@/components/ui/Layout";
 import { ALL_CHARACTERS, getJinxesForCharacter, type Character, type Jinx } from "@/lib/game-data";
 import { useState, useEffect } from "react";
-import { Search, Moon, Sun, Settings, AlertTriangle, ChevronDown, Quote, Lightbulb, Sword, Eye, RotateCcw, Check, BookOpen, Plus, Minus, Save, Trash2 } from "lucide-react";
+import { Search, Moon, Sun, Settings, AlertTriangle, ChevronDown, Quote, Lightbulb, Sword, Eye, Check, BookOpen, Plus, Minus, Trash2, Pencil } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -10,6 +10,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Input } from "@/components/ui/input";
 import { useLocalScripts, type LocalScript } from "@/hooks/use-local-scripts";
+import { ScriptBuilderDialog } from "@/components/ScriptBuilderDialog";
 
 function CharacterCard({ char, isExpanded, onToggle }: { 
   char: Character; 
@@ -280,165 +281,19 @@ const SCRIPTS = [
   { id: 'snv', label: 'Sects & Violets' },
 ];
 
-function CustomScriptDialog({ 
-  open, 
-  onOpenChange, 
-  selectedCharacters, 
-  onSave 
-}: { 
-  open: boolean; 
-  onOpenChange: (open: boolean) => void; 
-  selectedCharacters: Set<string>;
-  onSave: (characters: Set<string>) => void;
-}) {
-  const [tempSelected, setTempSelected] = useState<Set<string>>(new Set(selectedCharacters));
-  const [dialogTeamFilter, setDialogTeamFilter] = useState<string>("all");
-
-  useEffect(() => {
-    if (open) {
-      setTempSelected(new Set(selectedCharacters));
-    }
-  }, [open, selectedCharacters]);
-
-  const toggleCharacter = (charId: string) => {
-    const newSet = new Set(tempSelected);
-    if (newSet.has(charId)) {
-      newSet.delete(charId);
-    } else {
-      newSet.add(charId);
-    }
-    setTempSelected(newSet);
-  };
-
-  const handleSave = () => {
-    onSave(tempSelected);
-    onOpenChange(false);
-  };
-
-  const handleSelectAll = () => {
-    const filteredChars = ALL_CHARACTERS.filter(c => 
-      dialogTeamFilter === "all" || c.team === dialogTeamFilter
-    );
-    const newSet = new Set(tempSelected);
-    filteredChars.forEach(c => newSet.add(c.id));
-    setTempSelected(newSet);
-  };
-
-  const handleClearAll = () => {
-    if (dialogTeamFilter === "all") {
-      setTempSelected(new Set());
-    } else {
-      const filteredChars = ALL_CHARACTERS.filter(c => c.team === dialogTeamFilter);
-      const newSet = new Set(tempSelected);
-      filteredChars.forEach(c => newSet.delete(c.id));
-      setTempSelected(newSet);
-    }
-  };
-
-  const filteredChars = ALL_CHARACTERS.filter(c => 
-    dialogTeamFilter === "all" || c.team === dialogTeamFilter
-  );
-
-  const getTeamColor = (team: string) => {
-    switch(team) {
-      case 'townsfolk': return 'border-blue-900/50 bg-blue-950/30';
-      case 'outsider': return 'border-blue-800/50 bg-blue-900/20';
-      case 'minion': return 'border-red-900/50 bg-red-950/30';
-      case 'demon': return 'border-red-800/50 bg-red-950/40';
-      case 'traveler': return 'border-amber-900/50 bg-amber-950/30';
-      default: return 'border-gray-800 bg-gray-900/20';
-    }
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[85vh] flex flex-col p-4 md:p-6">
-        <DialogHeader className="pb-2">
-          <DialogTitle className="font-display text-lg md:text-xl text-amber-500">
-            Select Characters
-          </DialogTitle>
-        </DialogHeader>
-        
-        <div className="flex flex-wrap items-center gap-1 md:gap-2">
-          {['all', 'townsfolk', 'outsider', 'minion', 'demon', 'traveler'].map((f) => (
-            <button
-              key={f}
-              onClick={() => setDialogTeamFilter(f)}
-              className={cn(
-                "px-2 py-0.5 md:px-3 md:py-1 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-wider transition-all border",
-                dialogTeamFilter === f 
-                  ? "bg-amber-900/50 text-amber-100 border-amber-600" 
-                  : "bg-transparent text-muted-foreground border-transparent hover:bg-white/5"
-              )}
-              data-testid={`dialog-filter-${f}`}
-            >
-              {f}
-            </button>
-          ))}
-          <span className="ml-auto text-xs text-muted-foreground">
-            {tempSelected.size} selected
-          </span>
-        </div>
-
-        <div className="flex gap-1 py-1">
-          <Button variant="outline" size="sm" className="h-7 text-xs px-2" onClick={handleSelectAll} data-testid="button-select-all">
-            Select All
-          </Button>
-          <Button variant="outline" size="sm" className="h-7 text-xs px-2" onClick={handleClearAll} data-testid="button-clear-all">
-            Clear
-          </Button>
-        </div>
-
-        <div className="flex-1 min-h-0 max-h-[50vh] md:max-h-[55vh] overflow-y-auto border border-amber-900/30 rounded-lg p-2 touch-pan-y">
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1.5 md:gap-2">
-            {filteredChars.map((char) => (
-              <button
-                key={char.id}
-                onClick={() => toggleCharacter(char.id)}
-                className={cn(
-                  "p-1.5 md:p-2 rounded-lg border text-left transition-all",
-                  getTeamColor(char.team),
-                  tempSelected.has(char.id) 
-                    ? "ring-2 ring-amber-500" 
-                    : "opacity-60 hover:opacity-100"
-                )}
-                data-testid={`select-character-${char.id}`}
-              >
-                <div className="flex items-center justify-between gap-1">
-                  <span className="text-[11px] md:text-xs font-bold truncate">{char.name}</span>
-                  {tempSelected.has(char.id) && (
-                    <Check className="w-3 h-3 text-amber-500 shrink-0" />
-                  )}
-                </div>
-                <span className="text-[9px] md:text-[10px] uppercase opacity-60">{char.team}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <DialogFooter className="pt-2 gap-2">
-          <Button variant="outline" size="sm" onClick={() => onOpenChange(false)} data-testid="button-cancel">
-            Cancel
-          </Button>
-          <Button size="sm" onClick={handleSave} data-testid="button-save-custom">
-            Save
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
 
 export default function Reference() {
   const [search, setSearch] = useState("");
   const [teamFilter, setTeamFilter] = useState<string>("all");
   const [scriptFilter, setScriptFilter] = useState<string>("all");
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [customDialogOpen, setCustomDialogOpen] = useState(false);
-  const [customCharacters, setCustomCharacters] = useState<Set<string>>(new Set());
-  const [saveScriptDialogOpen, setSaveScriptDialogOpen] = useState(false);
-  const [newScriptName, setNewScriptName] = useState("");
-  const { customScripts, addCustomScript, deleteCustomScript } = useLocalScripts();
+  const [showScriptBuilder, setShowScriptBuilder] = useState(false);
+  const [editingScript, setEditingScript] = useState<LocalScript | null>(null);
+  const { customScripts, addCustomScript, updateCustomScript, deleteCustomScript } = useLocalScripts();
+
+  const activeCustomScript = scriptFilter.startsWith('custom:') 
+    ? customScripts.find(s => s.id === scriptFilter.replace('custom:', ''))
+    : null;
 
   const filtered = ALL_CHARACTERS.filter(char => {
     const matchesSearch = char.name.toLowerCase().includes(search.toLowerCase()) || 
@@ -448,8 +303,8 @@ export default function Reference() {
     // Travelers are always available regardless of script selection
     const isTraveler = char.team === "traveler";
     let matchesScript = true;
-    if (scriptFilter === "custom") {
-      matchesScript = customCharacters.has(char.id) || isTraveler;
+    if (activeCustomScript) {
+      matchesScript = activeCustomScript.characterIds.includes(char.id) || isTraveler;
     } else if (scriptFilter !== "all") {
       matchesScript = char.edition === scriptFilter || isTraveler;
     }
@@ -459,22 +314,6 @@ export default function Reference() {
 
   const handleToggle = (charId: string) => {
     setExpandedId(prev => prev === charId ? null : charId);
-  };
-
-  const handleCustomClick = () => {
-    if (scriptFilter === "custom") {
-      setCustomDialogOpen(true);
-    } else {
-      setScriptFilter("custom");
-      if (customCharacters.size === 0) {
-        setCustomDialogOpen(true);
-      }
-    }
-  };
-
-  const handleResetCustom = () => {
-    setCustomCharacters(new Set());
-    setCustomDialogOpen(true);
   };
 
   return (
@@ -513,53 +352,16 @@ export default function Reference() {
               </button>
             ))}
             
-            <button
-              onClick={handleCustomClick}
-              className={cn(
-                "px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all border whitespace-nowrap flex items-center gap-1",
-                scriptFilter === "custom" 
-                  ? "bg-purple-900/50 text-purple-100 border-purple-600" 
-                  : "bg-transparent text-muted-foreground border-transparent hover:bg-white/5"
-              )}
-              data-testid="button-script-custom"
-            >
-              Custom {customCharacters.size > 0 && `(${customCharacters.size})`}
-            </button>
-
-            {scriptFilter === "custom" && customCharacters.size > 0 && (
-              <>
-                <button
-                  onClick={() => setSaveScriptDialogOpen(true)}
-                  className="p-1.5 rounded-full text-muted-foreground hover:bg-white/10 transition-colors"
-                  title="Save as custom script"
-                  data-testid="button-save-script"
-                >
-                  <Save className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={handleResetCustom}
-                  className="p-1.5 rounded-full text-muted-foreground hover:bg-white/10 transition-colors"
-                  title="Reset custom script"
-                  data-testid="button-reset-custom"
-                >
-                  <RotateCcw className="w-4 h-4" />
-                </button>
-              </>
-            )}
-
             {customScripts.length > 0 && (
               <>
                 <div className="w-px h-6 bg-border mx-1" />
                 {customScripts.map((script) => (
-                  <div key={script.id} className="flex items-center gap-0.5">
+                  <div key={script.id} className="flex items-center">
                     <button
-                      onClick={() => {
-                        setCustomCharacters(new Set(script.characterIds));
-                        setScriptFilter("custom");
-                      }}
+                      onClick={() => setScriptFilter(`custom:${script.id}`)}
                       className={cn(
-                        "px-3 py-1.5 rounded-l-full text-xs font-bold tracking-wider transition-all border-y border-l whitespace-nowrap",
-                        scriptFilter === "custom" && Array.from(customCharacters).sort().join(',') === Array.from(script.characterIds).sort().join(',')
+                        "px-3 py-1.5 rounded-l-full text-xs font-bold tracking-wider transition-all border whitespace-nowrap",
+                        scriptFilter === `custom:${script.id}`
                           ? "bg-purple-900/50 text-purple-100 border-purple-600"
                           : "bg-transparent text-muted-foreground border-transparent hover:bg-white/5"
                       )}
@@ -568,7 +370,23 @@ export default function Reference() {
                       {script.name}
                     </button>
                     <button
-                      onClick={() => deleteCustomScript(script.id)}
+                      onClick={() => {
+                        setEditingScript(script);
+                        setShowScriptBuilder(true);
+                      }}
+                      className="px-1.5 py-1.5 text-xs text-muted-foreground border-y border-transparent hover:bg-white/10 transition-colors"
+                      title="Edit script"
+                      data-testid={`button-edit-script-${script.id}`}
+                    >
+                      <Pencil className="w-3 h-3" />
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (scriptFilter === `custom:${script.id}`) {
+                          setScriptFilter("all");
+                        }
+                        deleteCustomScript(script.id);
+                      }}
                       className="px-1.5 py-1.5 rounded-r-full text-xs text-muted-foreground border-y border-r border-transparent hover:bg-red-900/30 hover:text-red-400 transition-colors"
                       title="Delete script"
                       data-testid={`button-delete-script-${script.id}`}
@@ -579,6 +397,18 @@ export default function Reference() {
                 ))}
               </>
             )}
+
+            <button
+              onClick={() => {
+                setEditingScript(null);
+                setShowScriptBuilder(true);
+              }}
+              className="px-3 py-1.5 rounded-full text-xs font-bold tracking-wider transition-all border border-dashed border-purple-700/50 whitespace-nowrap flex items-center gap-1 text-purple-400 hover:bg-purple-900/20"
+              data-testid="button-create-custom-script"
+            >
+              <Plus className="w-3 h-3" />
+              New Script
+            </button>
           </div>
 
           <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
@@ -600,53 +430,22 @@ export default function Reference() {
           </div>
         </div>
 
-        <CustomScriptDialog
-          open={customDialogOpen}
-          onOpenChange={setCustomDialogOpen}
-          selectedCharacters={customCharacters}
-          onSave={setCustomCharacters}
+        <ScriptBuilderDialog
+          open={showScriptBuilder}
+          onOpenChange={setShowScriptBuilder}
+          initialCharacters={editingScript ? new Set(editingScript.characterIds) : new Set()}
+          initialName={editingScript?.name || ""}
+          title={editingScript ? "Edit Custom Script" : "Create Custom Script"}
+          editMode={!!editingScript}
+          onSave={(name, characterIds) => {
+            if (editingScript) {
+              updateCustomScript(editingScript.id, name, characterIds);
+            } else {
+              const newScript = addCustomScript(name, characterIds);
+              setScriptFilter(`custom:${newScript.id}`);
+            }
+          }}
         />
-
-        <Dialog open={saveScriptDialogOpen} onOpenChange={setSaveScriptDialogOpen}>
-          <DialogContent className="max-w-sm">
-            <DialogHeader>
-              <DialogTitle className="font-display text-amber-500">Save Custom Script</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 py-2">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Script Name</label>
-                <Input
-                  value={newScriptName}
-                  onChange={(e) => setNewScriptName(e.target.value)}
-                  placeholder="e.g., My Custom Script"
-                  data-testid="input-script-name"
-                />
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {customCharacters.size} characters selected
-              </p>
-            </div>
-            <DialogFooter className="gap-2">
-              <Button variant="outline" size="sm" onClick={() => setSaveScriptDialogOpen(false)} data-testid="button-cancel-save">
-                Cancel
-              </Button>
-              <Button 
-                size="sm" 
-                onClick={() => {
-                  if (newScriptName.trim()) {
-                    addCustomScript(newScriptName.trim(), Array.from(customCharacters));
-                    setNewScriptName("");
-                    setSaveScriptDialogOpen(false);
-                  }
-                }}
-                disabled={!newScriptName.trim()}
-                data-testid="button-confirm-save"
-              >
-                Save Script
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
 
         <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.map((char) => (
