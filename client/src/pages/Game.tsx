@@ -4,8 +4,8 @@ import { usePlayerGame, getBreakdown, isPlayerActive, canPlayerVote, canPlayerVo
 import { ALL_CHARACTERS, OFFICIAL_SCRIPTS } from "@/lib/game-data";
 import { useLocalScripts, type LocalScript } from "@/hooks/use-local-scripts";
 import { ScriptBuilderDialog } from "@/components/ScriptBuilderDialog";
-import { GameLogDialog } from "@/components/GameLogDialog";
-import { Users, ChevronRight, Play, Skull, X, Plus, Check, Hand, Search, Sun, Moon, ChevronUp, ChevronDown, FileText, Theater, Vote, Loader2, Ghost, GripVertical, UserPlus, ArrowRight, Target, Scale, Scroll, BookOpen, HandMetal, Ban, LogOut, Trash2, List, Circle, Pencil } from "lucide-react";
+import { InlineGameLog } from "@/components/InlineGameLog";
+import { Users, ChevronRight, Play, Skull, X, Plus, Check, Hand, Search, Sun, Moon, ChevronUp, ChevronDown, FileText, Theater, Vote, Loader2, Ghost, GripVertical, UserPlus, ArrowRight, Target, Scale, Scroll, BookOpen, HandMetal, Ban, LogOut, Trash2, List, Circle, Pencil, MoreVertical } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,8 @@ import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerClose } from "@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, TouchSensor, useSensor, useSensors, DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, sortableKeyboardCoordinates, useSortable, rectSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -1512,8 +1514,7 @@ function GameTrackerView({
   const [showAddTravelerDialog, setShowAddTravelerDialog] = useState(false);
   const [showExileDialog, setShowExileDialog] = useState(false);
   const [scriptPopoverOpen, setScriptPopoverOpen] = useState(false);
-  const [viewMode, setViewMode] = useState<'list' | 'circle'>('list');
-  const [showGameLog, setShowGameLog] = useState(false);
+  const [activeTab, setActiveTab] = useState<'list' | 'circle' | 'log'>('list');
   const [showScriptBuilder, setShowScriptBuilder] = useState(false);
   const [editingScript, setEditingScript] = useState<LocalScript | null>(null);
   const { getScriptById, isLoading: scriptsLoading, allScripts, addCustomScript, updateCustomScript, customScripts } = useLocalScripts();
@@ -1557,24 +1558,24 @@ function GameTrackerView({
 
   return (
     <div className="space-y-4">
-      {/* Scoreboard Header */}
+      {/* Header Row - Script + Day + Overflow Menu */}
       <div className="bg-card border border-border rounded-lg overflow-hidden">
-        {/* Script Badge Row + View Toggle */}
-        <div className="flex items-center justify-between px-3 py-1.5 border-b border-border bg-amber-950/20">
+        <div className="flex items-center justify-between gap-2 px-3 py-2">
+          {/* Script Selector */}
           <Popover open={scriptPopoverOpen} onOpenChange={setScriptPopoverOpen}>
             <PopoverTrigger asChild>
               <button
-                className="flex items-center gap-2 px-2 py-1 rounded-md hover-elevate active-elevate-2"
+                className="flex items-center gap-2 px-2 py-1.5 rounded-md hover-elevate active-elevate-2"
                 data-testid="button-change-script"
               >
-                <Scroll className="w-3.5 h-3.5 text-amber-500/70" />
-                <span className="text-xs font-medium text-amber-400">
+                <Scroll className="w-4 h-4 text-amber-500/70" />
+                <span className="text-sm font-medium text-amber-400 truncate max-w-[120px] sm:max-w-none">
                   {resolvedScript ? resolvedScript.name : "No Script"}
                 </span>
-                <ChevronDown className="w-3 h-3 text-amber-500/50" />
+                <ChevronDown className="w-3.5 h-3.5 text-amber-500/50" />
               </button>
             </PopoverTrigger>
-            <PopoverContent className="w-64 p-2" align="center">
+            <PopoverContent className="w-64 p-2" align="start">
               <div className="space-y-1">
                 <div className="px-2 py-1 text-xs text-muted-foreground font-medium">Select Script</div>
                 <button
@@ -1645,165 +1646,200 @@ function GameTrackerView({
               </div>
             </PopoverContent>
           </Popover>
-          
-          {/* View Toggle */}
-          <div className="flex items-center gap-0.5">
-            <button
-              className={cn(
-                "flex items-center gap-1 px-2 py-1 rounded-md text-xs",
-                viewMode === 'list' ? "bg-accent text-accent-foreground" : "text-muted-foreground hover-elevate"
-              )}
-              onClick={() => setViewMode('list')}
-              data-testid="button-view-list"
-            >
-              <List className="w-3 h-3" />
-              <span>List</span>
-            </button>
-            <button
-              className={cn(
-                "flex items-center gap-1 px-2 py-1 rounded-md text-xs",
-                viewMode === 'circle' ? "bg-accent text-accent-foreground" : "text-muted-foreground hover-elevate"
-              )}
-              onClick={() => setViewMode('circle')}
-              data-testid="button-view-circle"
-            >
-              <Circle className="w-3 h-3" />
-              <span>Circle</span>
-            </button>
-          </div>
-          
-          {/* Game Log Button */}
-          <button
-            className="flex items-center gap-1 px-2 py-1 rounded-md text-xs text-muted-foreground hover-elevate"
-            onClick={() => setShowGameLog(true)}
-            data-testid="button-game-log"
-          >
-            <Scroll className="w-3 h-3" />
-            <span>Log</span>
-          </button>
-        </div>
 
-        {/* Day Header Row */}
-        <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 border-b border-border bg-muted/30">
-          <div className="flex items-center gap-1 flex-wrap">
-            <Button size="icon" variant="ghost" onClick={onPrevDay} disabled={game.currentDay <= 1} data-testid="button-prev-day">
-              <ChevronDown className="w-4 h-4" />
-            </Button>
-            <div className="flex items-center gap-2">
-              <Sun className="w-5 h-5 text-amber-500" />
-              <span className="font-display text-amber-500 text-lg">DAY {game.currentDay}</span>
+          {/* Day Tracker - centered */}
+          <div className="flex items-center gap-1">
+            <button
+              onClick={onPrevDay}
+              disabled={game.currentDay <= 1}
+              className="p-1 rounded hover-elevate disabled:opacity-30 disabled:cursor-not-allowed"
+              data-testid="button-prev-day"
+            >
+              <ChevronDown className="w-4 h-4 text-muted-foreground" />
+            </button>
+            <div className="flex items-center gap-1.5 px-2">
+              <Sun className="w-4 h-4 text-amber-500" />
+              <span className="font-display text-amber-500">Day {game.currentDay}</span>
             </div>
-            <Button size="icon" variant="ghost" onClick={onNextDay} data-testid="button-next-day">
-              <ChevronUp className="w-4 h-4" />
-            </Button>
+            <button
+              onClick={onNextDay}
+              className="p-1 rounded hover-elevate"
+              data-testid="button-next-day"
+            >
+              <ChevronUp className="w-4 h-4 text-muted-foreground" />
+            </button>
           </div>
-          <div className="flex gap-2">
-            {confirmEnd ? (
-              <>
-                <Button variant="ghost" size="sm" onClick={() => setConfirmEnd(false)} data-testid="button-cancel-end">Cancel</Button>
-                <Button variant="destructive" size="sm" onClick={onEndGame} data-testid="button-confirm-end">End</Button>
-              </>
-            ) : (
-              <Button variant="ghost" size="sm" onClick={() => setConfirmEnd(true)} data-testid="button-end-game">
-                End Game
+
+          {/* Overflow Menu */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" data-testid="button-overflow-menu">
+                <MoreVertical className="w-4 h-4" />
               </Button>
-            )}
-          </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {confirmEnd ? (
+                <>
+                  <DropdownMenuItem onClick={() => setConfirmEnd(false)} data-testid="button-cancel-end">
+                    <X className="w-4 h-4 mr-2" />
+                    Cancel
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={onEndGame} 
+                    className="text-destructive focus:text-destructive"
+                    data-testid="button-confirm-end"
+                  >
+                    <Check className="w-4 h-4 mr-2" />
+                    Confirm End Game
+                  </DropdownMenuItem>
+                </>
+              ) : (
+                <DropdownMenuItem 
+                  onClick={() => setConfirmEnd(true)}
+                  className="text-destructive focus:text-destructive"
+                  data-testid="button-end-game"
+                >
+                  <Skull className="w-4 h-4 mr-2" />
+                  End Game
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-4">
+        {/* 2x2 Stats Grid */}
+        <div className="grid grid-cols-2 border-t border-border">
           {/* Alive */}
-          <div className="p-3 text-center border-r border-b sm:border-b-0 border-border">
-            <div className="flex items-center justify-center gap-1 text-emerald-500 mb-1">
-              <Users className="w-4 h-4" />
+          <div className="p-4 text-center border-r border-b border-border">
+            <div className="flex items-center justify-center gap-2">
+              <Users className="w-5 h-5 text-emerald-500/70" />
+              <span className="text-2xl font-bold text-emerald-400 tabular-nums">{aliveCount}</span>
             </div>
-            <div className="text-xl sm:text-2xl font-bold text-emerald-400 tabular-nums">{aliveCount}</div>
-            <div className="text-xs text-muted-foreground">Alive</div>
+            <div className="text-xs text-muted-foreground mt-1">Alive</div>
           </div>
 
-          {/* Dead */}
-          <div className="p-3 text-center border-b sm:border-b-0 sm:border-r border-border">
-            <div className="flex items-center justify-center gap-1 text-red-500/70 mb-1">
-              <Skull className="w-4 h-4" />
+          {/* Dead with Ghost Votes */}
+          <div className="p-4 text-center border-b border-border">
+            <div className="flex items-center justify-center gap-2">
+              <Skull className="w-5 h-5 text-red-500/70" />
+              <span className="text-2xl font-bold text-red-400/80 tabular-nums">
+                {deadCount}
+                {deadCount > 0 && (
+                  <span className="text-sm font-normal text-purple-400 ml-1">
+                    ({ghostVotesAvailable}<Ghost className="w-3 h-3 inline ml-0.5" />)
+                  </span>
+                )}
+              </span>
             </div>
-            <div className="text-xl sm:text-2xl font-bold text-red-400/80 tabular-nums">{deadCount}</div>
-            <div className="text-xs text-muted-foreground">Dead</div>
+            <div className="text-xs text-muted-foreground mt-1">Dead</div>
           </div>
 
           {/* Votes to Execute */}
-          <div className="p-3 text-center border-r border-border">
-            <div className="flex items-center justify-center gap-1 text-amber-500 mb-1">
-              <Target className="w-4 h-4" />
+          <div className="p-4 text-center border-r border-border">
+            <div className="flex items-center justify-center gap-2">
+              <Scale className="w-5 h-5 text-amber-500/70" />
+              <span className="text-2xl font-bold text-amber-400 tabular-nums">{votesNeeded}</span>
             </div>
-            <div className="text-xl sm:text-2xl font-bold text-amber-400 tabular-nums">{votesNeeded}</div>
-            <div className="text-xs text-muted-foreground">To Exec</div>
+            <div className="text-xs text-muted-foreground mt-1">To Exec</div>
           </div>
 
           {/* Available Votes */}
-          <div className="p-3 text-center">
-            <div className="flex items-center justify-center gap-1 text-purple-500 mb-1">
-              <Hand className="w-4 h-4" />
+          <div className="p-4 text-center">
+            <div className="flex items-center justify-center gap-2">
+              <Hand className="w-5 h-5 text-purple-500/70" />
+              <span className={cn(
+                "text-2xl font-bold tabular-nums",
+                canExecute ? "text-purple-400" : "text-red-400"
+              )}>{totalVotesAvailable}</span>
             </div>
-            <div className={cn(
-              "text-xl sm:text-2xl font-bold tabular-nums",
-              canExecute ? "text-purple-400" : "text-red-400"
-            )}>{totalVotesAvailable}</div>
-            <div className="text-xs text-muted-foreground">Can Vote</div>
+            <div className="text-xs text-muted-foreground mt-1">Can Vote</div>
           </div>
         </div>
 
-        {/* Travelers Row (if any) */}
+        {/* Traveler Row - Conditional */}
         {travelers.length > 0 && (
-          <div className="flex items-center justify-center gap-3 px-3 py-1.5 border-t border-border bg-purple-950/20">
-            <div className="flex items-center gap-1.5 text-xs">
-              <Badge variant="secondary" className="bg-purple-900/40 text-purple-300 border-purple-700">
-                {aliveTravelers.length} / {travelers.length} Travelers
-              </Badge>
-              {exiledCount > 0 && (
-                <span className="text-purple-400/70">{exiledCount} exiled</span>
+          <div className="flex items-center justify-center gap-2 px-3 py-2 border-t border-border bg-purple-950/20">
+            <Theater className="w-4 h-4 text-purple-400/70" />
+            <span className="text-sm text-purple-300">
+              {aliveTravelers.length}/{travelers.length} Travelers
+              {(exiledCount > 0 || leftCount > 0) && (
+                <span className="text-purple-400/60 ml-1">
+                  ({exiledCount > 0 && `${exiledCount} exiled`}{exiledCount > 0 && leftCount > 0 && ', '}{leftCount > 0 && `${leftCount} left`})
+                </span>
               )}
-              {leftCount > 0 && (
-                <span className="text-muted-foreground">{leftCount} left</span>
-              )}
-            </div>
+            </span>
           </div>
         )}
 
-        {/* Today's Activity & Action Buttons */}
-        <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 border-t border-border bg-muted/20">
-          <div className="flex items-center gap-2 sm:gap-3 text-sm">
-            <div className="flex items-center gap-1.5">
-              <Scale className="w-4 h-4 text-amber-500/70" />
-              <span className="font-semibold text-amber-400">{todayNominations.length}</span>
-              <span className="text-muted-foreground">nom</span>
-            </div>
-            {ghostVotesAvailable > 0 && (
-              <div className="flex items-center gap-1 text-muted-foreground">
-                <Ghost className="w-3 h-3" />
-                <span className="text-xs">{ghostVotesAvailable} ghost</span>
-              </div>
-            )}
+        {/* Tab Navigation */}
+        <div className="border-t border-border">
+          <div className="grid grid-cols-3">
+            <button
+              onClick={() => setActiveTab('list')}
+              className={cn(
+                "py-2.5 text-sm font-medium text-center border-b-2 transition-colors",
+                activeTab === 'list' 
+                  ? "border-amber-500 text-amber-400 bg-amber-950/20" 
+                  : "border-transparent text-muted-foreground hover-elevate"
+              )}
+              data-testid="tab-list"
+            >
+              <List className="w-4 h-4 inline mr-1.5" />
+              List
+            </button>
+            <button
+              onClick={() => setActiveTab('circle')}
+              className={cn(
+                "py-2.5 text-sm font-medium text-center border-b-2 transition-colors",
+                activeTab === 'circle' 
+                  ? "border-amber-500 text-amber-400 bg-amber-950/20" 
+                  : "border-transparent text-muted-foreground hover-elevate"
+              )}
+              data-testid="tab-circle"
+            >
+              <Circle className="w-4 h-4 inline mr-1.5" />
+              Circle
+            </button>
+            <button
+              onClick={() => setActiveTab('log')}
+              className={cn(
+                "py-2.5 text-sm font-medium text-center border-b-2 transition-colors",
+                activeTab === 'log' 
+                  ? "border-amber-500 text-amber-400 bg-amber-950/20" 
+                  : "border-transparent text-muted-foreground hover-elevate"
+              )}
+              data-testid="tab-log"
+            >
+              <Scroll className="w-4 h-4 inline mr-1.5" />
+              Log
+            </button>
           </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={() => setShowAddTravelerDialog(true)} data-testid="button-add-traveler">
-              <Plus className="w-4 h-4 mr-1" />
-              Traveler
+        </div>
+
+        {/* Action Bar */}
+        <div className="flex items-center justify-end gap-2 px-3 py-2 border-t border-border bg-muted/20">
+          <Button variant="outline" size="sm" onClick={() => setShowAddTravelerDialog(true)} data-testid="button-add-traveler">
+            <Plus className="w-4 h-4 mr-1" />
+            Traveler
+          </Button>
+          {aliveTravelers.length > 0 && (
+            <Button variant="outline" size="sm" onClick={() => setShowExileDialog(true)} data-testid="button-exile">
+              Exile
             </Button>
-            {aliveTravelers.length > 0 && (
-              <Button variant="outline" size="sm" onClick={() => setShowExileDialog(true)} data-testid="button-exile">
-                Exile
-              </Button>
-            )}
-            <Button onClick={() => setShowNominationDialog(true)} data-testid="button-nominate">
-              <UserPlus className="w-4 h-4 mr-2" />
-              Nominate
-            </Button>
-          </div>
+          )}
+          <Button 
+            variant="destructive"
+            onClick={() => setShowNominationDialog(true)} 
+            data-testid="button-nominate"
+          >
+            <Target className="w-4 h-4 mr-2" />
+            Nominate
+          </Button>
         </div>
       </div>
 
-      {viewMode === 'list' ? (
+      {/* Tab Content */}
+      {activeTab === 'list' && (
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={game.players.map(p => p.id)} strategy={rectSortingStrategy}>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -1818,13 +1854,19 @@ function GameTrackerView({
             </div>
           </SortableContext>
         </DndContext>
-      ) : (
+      )}
+      
+      {activeTab === 'circle' && (
         <CircleSeatingChart
           players={game.players}
           nominations={game.nominations}
           currentDay={game.currentDay}
           onSelectPlayer={(playerId) => setSelectedPlayerId(playerId)}
         />
+      )}
+      
+      {activeTab === 'log' && (
+        <InlineGameLog game={game} />
       )}
 
       <PlayerDetailDrawer
@@ -1883,11 +1925,6 @@ function GameTrackerView({
         }}
       />
 
-      <GameLogDialog
-        open={showGameLog}
-        onOpenChange={setShowGameLog}
-        game={game}
-      />
     </div>
   );
 }
