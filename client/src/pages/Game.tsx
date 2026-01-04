@@ -2,7 +2,7 @@ import { Layout } from "@/components/ui/Layout";
 import { useState, useMemo } from "react";
 import { usePlayerGame, getBreakdown, type GamePlayer, type Nomination, type PlayerVote } from "@/hooks/use-player-game";
 import { ALL_CHARACTERS } from "@/lib/game-data";
-import { Users, ChevronRight, Play, Skull, X, Plus, Check, Hand, Search, Sun, Moon, ChevronUp, ChevronDown, FileText, Theater, Vote, Loader2, Ghost, GripVertical, UserPlus, ArrowRight } from "lucide-react";
+import { Users, ChevronRight, Play, Skull, X, Plus, Check, Hand, Search, Sun, Moon, ChevronUp, ChevronDown, FileText, Theater, Vote, Loader2, Ghost, GripVertical, UserPlus, ArrowRight, Target, Scale } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -781,20 +781,26 @@ function GameTrackerView({
   const selectedPlayer = game.players.find(p => p.id === selectedPlayerId) || null;
   const playerCount = game.players.length;
   const aliveCount = game.players.filter(p => p.isAlive).length;
+  const deadCount = playerCount - aliveCount;
   const votesNeeded = Math.ceil(aliveCount / 2);
-  const totalVotesAvailable = game.players.filter(p => p.isAlive || (!p.isAlive && p.hasGhostVote)).length;
+  const ghostVotesAvailable = game.players.filter(p => !p.isAlive && p.hasGhostVote).length;
+  const totalVotesAvailable = aliveCount + ghostVotesAvailable;
+  const todayNominations = game.nominations.filter(n => n.day === game.currentDay);
+  const canExecute = totalVotesAvailable >= votesNeeded;
 
   return (
     <div className="space-y-4">
-      <div className="bg-card border border-border rounded-lg p-3 space-y-3">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
+      {/* Scoreboard Header */}
+      <div className="bg-card border border-border rounded-lg overflow-hidden">
+        {/* Day Header Row */}
+        <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 border-b border-border bg-muted/30">
+          <div className="flex items-center gap-1 flex-wrap">
             <Button size="icon" variant="ghost" onClick={onPrevDay} disabled={game.currentDay <= 1} data-testid="button-prev-day">
               <ChevronDown className="w-4 h-4" />
             </Button>
             <div className="flex items-center gap-2">
               <Sun className="w-5 h-5 text-amber-500" />
-              <span className="font-display text-amber-500 text-xl">Day {game.currentDay}</span>
+              <span className="font-display text-amber-500 text-lg">DAY {game.currentDay}</span>
             </div>
             <Button size="icon" variant="ghost" onClick={onNextDay} data-testid="button-next-day">
               <ChevronUp className="w-4 h-4" />
@@ -804,7 +810,7 @@ function GameTrackerView({
             {confirmEnd ? (
               <>
                 <Button variant="ghost" size="sm" onClick={() => setConfirmEnd(false)} data-testid="button-cancel-end">Cancel</Button>
-                <Button variant="destructive" size="sm" onClick={onEndGame} data-testid="button-confirm-end">End Game</Button>
+                <Button variant="destructive" size="sm" onClick={onEndGame} data-testid="button-confirm-end">End</Button>
               </>
             ) : (
               <Button variant="ghost" size="sm" onClick={() => setConfirmEnd(true)} data-testid="button-end-game">
@@ -813,19 +819,63 @@ function GameTrackerView({
             )}
           </div>
         </div>
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2 text-xs">
-            <span className="text-muted-foreground">Players:</span>
-            <span className="font-semibold text-foreground">{playerCount}</span>
-            <span className="text-muted-foreground/50">|</span>
-            <span className="text-muted-foreground">Alive:</span>
-            <span className="font-semibold text-foreground">{aliveCount}</span>
-            <span className="text-muted-foreground/50">|</span>
-            <span className="text-muted-foreground">Exec:</span>
-            <span className="font-semibold text-amber-400">{votesNeeded}</span>
-            <span className="text-muted-foreground/50">|</span>
-            <span className="text-muted-foreground">Poss:</span>
-            <span className="font-semibold text-purple-400">{totalVotesAvailable}</span>
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-4">
+          {/* Alive */}
+          <div className="p-3 text-center border-r border-b sm:border-b-0 border-border">
+            <div className="flex items-center justify-center gap-1 text-emerald-500 mb-1">
+              <Users className="w-4 h-4" />
+            </div>
+            <div className="text-xl sm:text-2xl font-bold text-emerald-400 tabular-nums">{aliveCount}</div>
+            <div className="text-xs text-muted-foreground">Alive</div>
+          </div>
+
+          {/* Dead */}
+          <div className="p-3 text-center border-b sm:border-b-0 sm:border-r border-border">
+            <div className="flex items-center justify-center gap-1 text-red-500/70 mb-1">
+              <Skull className="w-4 h-4" />
+            </div>
+            <div className="text-xl sm:text-2xl font-bold text-red-400/80 tabular-nums">{deadCount}</div>
+            <div className="text-xs text-muted-foreground">Dead</div>
+          </div>
+
+          {/* Votes to Execute */}
+          <div className="p-3 text-center border-r border-border">
+            <div className="flex items-center justify-center gap-1 text-amber-500 mb-1">
+              <Target className="w-4 h-4" />
+            </div>
+            <div className="text-xl sm:text-2xl font-bold text-amber-400 tabular-nums">{votesNeeded}</div>
+            <div className="text-xs text-muted-foreground">To Exec</div>
+          </div>
+
+          {/* Available Votes */}
+          <div className="p-3 text-center">
+            <div className="flex items-center justify-center gap-1 text-purple-500 mb-1">
+              <Hand className="w-4 h-4" />
+            </div>
+            <div className={cn(
+              "text-xl sm:text-2xl font-bold tabular-nums",
+              canExecute ? "text-purple-400" : "text-red-400"
+            )}>{totalVotesAvailable}</div>
+            <div className="text-xs text-muted-foreground">Can Vote</div>
+          </div>
+        </div>
+
+        {/* Today's Activity & Nominate Button */}
+        <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 border-t border-border bg-muted/20">
+          <div className="flex items-center gap-2 sm:gap-3 text-sm">
+            <div className="flex items-center gap-1.5">
+              <Scale className="w-4 h-4 text-amber-500/70" />
+              <span className="font-semibold text-amber-400">{todayNominations.length}</span>
+              <span className="text-muted-foreground">nom</span>
+            </div>
+            {ghostVotesAvailable > 0 && (
+              <div className="flex items-center gap-1 text-muted-foreground">
+                <Ghost className="w-3 h-3" />
+                <span className="text-xs">{ghostVotesAvailable} ghost</span>
+              </div>
+            )}
           </div>
           <Button onClick={() => setShowNominationDialog(true)} data-testid="button-nominate">
             <UserPlus className="w-4 h-4 mr-2" />
