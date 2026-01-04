@@ -531,7 +531,9 @@ function SortablePlayerCard({
 
   const style = {
     transform: CSS.Transform.toString(transform),
-    transition,
+    transition: isDragging 
+      ? 'transform 150ms cubic-bezier(0.22, 1, 0.36, 1)' 
+      : transition || 'transform 200ms cubic-bezier(0.22, 1, 0.36, 1)',
   };
 
   const claimedChars = player.claims.map(id => ALL_CHARACTERS.find(c => c.id === id)).filter(Boolean);
@@ -546,9 +548,9 @@ function SortablePlayerCard({
       ref={setNodeRef}
       style={style}
       className={cn(
-        "p-4 transition-all",
+        "p-4",
         !player.isAlive && "opacity-60",
-        isDragging && "opacity-50 z-50"
+        isDragging && "opacity-80 shadow-lg z-50 scale-[1.02]"
       )}
       data-testid={`card-player-${player.id}`}
     >
@@ -557,10 +559,10 @@ function SortablePlayerCard({
           <button
             {...attributes}
             {...listeners}
-            className="touch-none cursor-grab active:cursor-grabbing p-1 -ml-1 text-muted-foreground hover:text-foreground"
+            className="touch-none cursor-grab active:cursor-grabbing flex items-center justify-center w-9 h-9 -ml-2 -my-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 active:bg-muted"
             data-testid={`button-drag-${player.id}`}
           >
-            <GripVertical className="w-4 h-4" />
+            <GripVertical className="w-5 h-5" />
           </button>
           {!player.isAlive && <Skull className="w-4 h-4 text-muted-foreground" />}
           <button
@@ -645,8 +647,8 @@ function GameTrackerView({
   const [confirmEnd, setConfirmEnd] = useState(false);
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } }),
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 100, tolerance: 8 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
