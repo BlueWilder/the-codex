@@ -212,6 +212,41 @@ export function usePlayerGame() {
     saveGame(null);
   }, [saveGame]);
 
+  const playAgain = useCallback(() => {
+    if (!game) return;
+    
+    // Keep non-traveler players, reset their game state
+    const resetPlayers = game.players
+      .filter(p => !p.isTraveler)
+      .map(p => ({
+        ...p,
+        isAlive: true,
+        status: 'alive' as PlayerStatus,
+        hasGhostVote: true,
+        notes: '',
+        claims: [],
+        claimRecords: [],
+      }));
+    
+    const newGame: PlayerGame = {
+      id: crypto.randomUUID(),
+      createdAt: new Date().toISOString(),
+      playerCount: resetPlayers.length,
+      breakdown: getBreakdown(resetPlayers.length),
+      players: resetPlayers,
+      currentDay: 1,
+      nominations: [],
+      exileVotes: [],
+      deathRecords: [],
+      travelerEvents: [],
+      ghostVoteEvents: [],
+      script: game.script, // Keep script selection
+      gameNotes: '',
+    };
+    
+    saveGame(newGame);
+  }, [game, saveGame]);
+
   const updatePlayer = useCallback((playerId: string, updates: Partial<GamePlayer>) => {
     if (!game) return;
     const newGame = {
@@ -578,6 +613,7 @@ export function usePlayerGame() {
     isLoading,
     createGame,
     endGame,
+    playAgain,
     updatePlayer,
     addClaim,
     removeClaim,

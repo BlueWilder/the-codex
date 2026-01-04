@@ -5,7 +5,7 @@ import { ALL_CHARACTERS, OFFICIAL_SCRIPTS } from "@/lib/game-data";
 import { useLocalScripts, type LocalScript } from "@/hooks/use-local-scripts";
 import { ScriptBuilderDialog } from "@/components/ScriptBuilderDialog";
 import { InlineGameLog } from "@/components/InlineGameLog";
-import { Users, ChevronRight, ChevronLeft, Play, Skull, X, Plus, Check, Hand, Search, Sun, Moon, ChevronUp, ChevronDown, FileText, Theater, Vote, Loader2, Ghost, GripVertical, UserPlus, ArrowRight, Target, Scale, Scroll, BookOpen, HandMetal, Ban, LogOut, Trash2, List, Circle, Pencil, MoreVertical } from "lucide-react";
+import { Users, ChevronRight, ChevronLeft, Play, Skull, X, Plus, Check, Hand, Search, Sun, Moon, ChevronUp, ChevronDown, FileText, Theater, Vote, Loader2, Ghost, GripVertical, UserPlus, ArrowRight, Target, Scale, Scroll, BookOpen, HandMetal, Ban, LogOut, Trash2, List, Circle, Pencil, MoreVertical, RotateCcw } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ import { Card } from "@/components/ui/card";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerClose } from "@/components/ui/drawer";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -1468,6 +1469,7 @@ function CircleSeatingChart({
 function GameTrackerView({
   game,
   onEndGame,
+  onPlayAgain,
   onToggleAlive,
   onSetPlayerStatus,
   onToggleGhostVote,
@@ -1490,6 +1492,7 @@ function GameTrackerView({
 }: {
   game: NonNullable<ReturnType<typeof usePlayerGame>["game"]>;
   onEndGame: () => void;
+  onPlayAgain: () => void;
   onToggleAlive: (playerId: string) => void;
   onSetPlayerStatus: (playerId: string, status: PlayerStatus) => void;
   onToggleGhostVote: (playerId: string) => void;
@@ -1512,6 +1515,7 @@ function GameTrackerView({
 }) {
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
   const [confirmEnd, setConfirmEnd] = useState(false);
+  const [showPlayAgainConfirm, setShowPlayAgainConfirm] = useState(false);
   const [showNominationDialog, setShowNominationDialog] = useState(false);
   const [showAddTravelerDialog, setShowAddTravelerDialog] = useState(false);
   const [showExileDialog, setShowExileDialog] = useState(false);
@@ -1673,14 +1677,24 @@ function GameTrackerView({
                   </DropdownMenuItem>
                 </>
               ) : (
-                <DropdownMenuItem 
-                  onClick={() => setConfirmEnd(true)}
-                  className="text-destructive focus:text-destructive"
-                  data-testid="button-end-game"
-                >
-                  <Skull className="w-4 h-4 mr-2" />
-                  End Game
-                </DropdownMenuItem>
+                <>
+                  <DropdownMenuItem 
+                    onClick={() => setShowPlayAgainConfirm(true)}
+                    data-testid="button-play-again"
+                  >
+                    <RotateCcw className="w-4 h-4 mr-2" />
+                    Play Again
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem 
+                    onClick={() => setConfirmEnd(true)}
+                    className="text-destructive focus:text-destructive"
+                    data-testid="button-end-game"
+                  >
+                    <Skull className="w-4 h-4 mr-2" />
+                    End Game
+                  </DropdownMenuItem>
+                </>
               )}
             </DropdownMenuContent>
           </DropdownMenu>
@@ -1929,6 +1943,37 @@ function GameTrackerView({
         }}
       />
 
+      <AlertDialog open={showPlayAgainConfirm} onOpenChange={setShowPlayAgainConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Start a new game with the same players?</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-3">
+                <p>This will reset:</p>
+                <ul className="list-disc list-inside text-sm space-y-1 text-muted-foreground">
+                  <li>All nominations and votes</li>
+                  <li>All claims</li>
+                  <li>All deaths</li>
+                  <li>Day counter</li>
+                  <li>Game notes</li>
+                  <li>All travelers will be removed</li>
+                </ul>
+                <p className="text-sm">Player names and script selection will be kept.</p>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="button-cancel-play-again">Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={onPlayAgain}
+              data-testid="button-confirm-play-again"
+            >
+              Play Again
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
     </div>
   );
 }
@@ -1939,6 +1984,7 @@ export default function Game() {
     isLoading,
     createGame,
     endGame,
+    playAgain,
     addClaim,
     removeClaim,
     toggleAlive,
@@ -1978,6 +2024,7 @@ export default function Game() {
         <GameTrackerView
           game={game}
           onEndGame={endGame}
+          onPlayAgain={playAgain}
           onToggleAlive={toggleAlive}
           onSetPlayerStatus={setPlayerStatus}
           onToggleGhostVote={toggleGhostVote}
