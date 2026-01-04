@@ -158,6 +158,18 @@ export function usePlayerGame() {
     saveGame({ ...game, currentDay: game.currentDay - 1 });
   }, [game, saveGame]);
 
+  const reorderPlayers = useCallback((activeId: string, overId: string) => {
+    if (!game || activeId === overId) return;
+    const oldIndex = game.players.findIndex(p => p.id === activeId);
+    const newIndex = game.players.findIndex(p => p.id === overId);
+    if (oldIndex === -1 || newIndex === -1) return;
+    
+    const newPlayers = [...game.players];
+    const [removed] = newPlayers.splice(oldIndex, 1);
+    newPlayers.splice(newIndex, 0, removed);
+    saveGame({ ...game, players: newPlayers });
+  }, [game, saveGame]);
+
   return {
     game,
     isLoading,
@@ -172,5 +184,6 @@ export function usePlayerGame() {
     setNotes,
     nextDay,
     prevDay,
+    reorderPlayers,
   };
 }

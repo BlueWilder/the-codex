@@ -2,7 +2,7 @@ import { Layout } from "@/components/ui/Layout";
 import { useState, useMemo } from "react";
 import { usePlayerGame, getBreakdown, type GamePlayer } from "@/hooks/use-player-game";
 import { ALL_CHARACTERS } from "@/lib/game-data";
-import { Users, ChevronRight, Play, Skull, X, Plus, Check, Hand, Search, Sun, Moon, ChevronUp, ChevronDown, FileText, Theater, Vote, Loader2, Ghost } from "lucide-react";
+import { Users, ChevronRight, Play, Skull, X, Plus, Check, Hand, Search, Sun, Moon, ChevronUp, ChevronDown, FileText, Theater, Vote, Loader2, Ghost, GripVertical } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,9 @@ import { Card } from "@/components/ui/card";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerClose } from "@/components/ui/drawer";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, TouchSensor, useSensor, useSensors, DragEndEvent } from "@dnd-kit/core";
+import { SortableContext, sortableKeyboardCoordinates, useSortable, rectSortingStrategy } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 const TEAM_COLORS: Record<string, string> = {
   townsfolk: "bg-blue-900/60 text-blue-200 border-blue-700",
@@ -508,6 +511,111 @@ function PlayerDetailDrawer({
   );
 }
 
+function SortablePlayerCard({
+  player,
+  game,
+  onSelect,
+}: {
+  player: GamePlayer;
+  game: NonNullable<ReturnType<typeof usePlayerGame>["game"]>;
+  onSelect: () => void;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: player.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  const claimedChars = player.claims.map(id => ALL_CHARACTERS.find(c => c.id === id)).filter(Boolean);
+  const hasNotes = player.notes.trim().length > 0;
+  const voteCount = player.votes.length;
+  const nominatedCount = game.players.reduce((count, p) => 
+    count + p.votes.filter(v => v.nomineeId === player.id).length, 0
+  );
+
+  return (
+    <Card
+      ref={setNodeRef}
+      style={style}
+      className={cn(
+        "p-4 transition-all",
+        !player.isAlive && "opacity-60",
+        isDragging && "opacity-50 z-50"
+      )}
+      data-testid={`card-player-${player.id}`}
+    >
+      <div className="flex items-start justify-between gap-2 mb-2">
+        <div className="flex items-center gap-2">
+          <button
+            {...attributes}
+            {...listeners}
+            className="touch-none cursor-grab active:cursor-grabbing p-1 -ml-1 text-muted-foreground hover:text-foreground"
+            data-testid={`button-drag-${player.id}`}
+          >
+            <GripVertical className="w-4 h-4" />
+          </button>
+          {!player.isAlive && <Skull className="w-4 h-4 text-muted-foreground" />}
+          <button
+            onClick={onSelect}
+            className={cn(
+              "font-bold text-lg text-left hover:underline",
+              player.isAlive ? "text-amber-100" : "text-muted-foreground line-through"
+            )}
+          >
+            {player.name}
+          </button>
+        </div>
+        <div className="flex items-center gap-2 text-muted-foreground">
+          {!player.isAlive && player.hasGhostVote && (
+            <Ghost className="w-5 h-5 text-purple-400" data-testid={`icon-ghost-vote-${player.id}`} />
+          )}
+          {hasNotes && <FileText className="w-4 h-4" />}
+        </div>
+      </div>
+      <div className="flex items-center justify-between gap-2">
+        {claimedChars.length > 0 ? (
+          <div className="flex flex-wrap gap-1 flex-1">
+            {claimedChars.slice(0, 3).map(char => char && (
+              <Badge key={char.id} variant="secondary" className={cn("text-xs", TEAM_COLORS[char.team])}>
+                {char.name}
+              </Badge>
+            ))}
+            {claimedChars.length > 3 && (
+              <Badge variant="secondary" className="text-xs">
+                +{claimedChars.length - 3}
+              </Badge>
+            )}
+          </div>
+        ) : (
+          <div className="flex-1" />
+        )}
+        <div className="flex items-center gap-3 text-xs text-muted-foreground shrink-0">
+          {nominatedCount > 0 && (
+            <span className="flex items-center gap-1" data-testid={`text-nominated-${player.id}`}>
+              <Theater className="w-3.5 h-3.5" />
+              {nominatedCount}
+            </span>
+          )}
+          {voteCount > 0 && (
+            <span className="flex items-center gap-1" data-testid={`text-votes-${player.id}`}>
+              <Hand className="w-3.5 h-3.5" />
+              {voteCount}
+            </span>
+          )}
+        </div>
+      </div>
+    </Card>
+  );
+}
+
 function GameTrackerView({
   game,
   onEndGame,
@@ -519,6 +627,7 @@ function GameTrackerView({
   onAddVote,
   onNextDay,
   onPrevDay,
+  onReorderPlayers,
 }: {
   game: NonNullable<ReturnType<typeof usePlayerGame>["game"]>;
   onEndGame: () => void;
@@ -530,9 +639,23 @@ function GameTrackerView({
   onAddVote: (playerId: string, nomineeId: string, voted: boolean) => void;
   onNextDay: () => void;
   onPrevDay: () => void;
+  onReorderPlayers: (activeId: string, overId: string) => void;
 }) {
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
   const [confirmEnd, setConfirmEnd] = useState(false);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      onReorderPlayers(active.id as string, over.id as string);
+    }
+  };
 
   const selectedPlayer = game.players.find(p => p.id === selectedPlayerId) || null;
   const playerCount = game.players.length;
@@ -584,78 +707,20 @@ function GameTrackerView({
         </div>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {game.players.map((player) => {
-          const claimedChars = player.claims.map(id => ALL_CHARACTERS.find(c => c.id === id)).filter(Boolean);
-          const hasNotes = player.notes.trim().length > 0;
-          const voteCount = player.votes.length;
-          const nominatedCount = game.players.reduce((count, p) => 
-            count + p.votes.filter(v => v.nomineeId === player.id).length, 0
-          );
-
-          return (
-            <Card
-              key={player.id}
-              onClick={() => setSelectedPlayerId(player.id)}
-              className={cn(
-                "p-4 cursor-pointer transition-all hover-elevate",
-                !player.isAlive && "opacity-60"
-              )}
-              data-testid={`card-player-${player.id}`}
-            >
-              <div className="flex items-start justify-between gap-2 mb-2">
-                <div className="flex items-center gap-2">
-                  {!player.isAlive && <Skull className="w-4 h-4 text-muted-foreground" />}
-                  <span className={cn(
-                    "font-bold text-lg",
-                    player.isAlive ? "text-amber-100" : "text-muted-foreground line-through"
-                  )}>
-                    {player.name}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  {!player.isAlive && player.hasGhostVote && (
-                    <Ghost className="w-5 h-5 text-purple-400" data-testid={`icon-ghost-vote-${player.id}`} />
-                  )}
-                  {hasNotes && <FileText className="w-4 h-4" />}
-                </div>
-              </div>
-              <div className="flex items-center justify-between gap-2">
-                {claimedChars.length > 0 ? (
-                  <div className="flex flex-wrap gap-1 flex-1">
-                    {claimedChars.slice(0, 3).map(char => char && (
-                      <Badge key={char.id} variant="secondary" className={cn("text-xs", TEAM_COLORS[char.team])}>
-                        {char.name}
-                      </Badge>
-                    ))}
-                    {claimedChars.length > 3 && (
-                      <Badge variant="secondary" className="text-xs">
-                        +{claimedChars.length - 3}
-                      </Badge>
-                    )}
-                  </div>
-                ) : (
-                  <div className="flex-1" />
-                )}
-                <div className="flex items-center gap-3 text-xs text-muted-foreground shrink-0">
-                  {nominatedCount > 0 && (
-                    <span className="flex items-center gap-1" data-testid={`text-nominated-${player.id}`}>
-                      <Theater className="w-3.5 h-3.5" />
-                      {nominatedCount}
-                    </span>
-                  )}
-                  {voteCount > 0 && (
-                    <span className="flex items-center gap-1" data-testid={`text-votes-${player.id}`}>
-                      <Hand className="w-3.5 h-3.5" />
-                      {voteCount}
-                    </span>
-                  )}
-                </div>
-              </div>
-            </Card>
-          );
-        })}
-      </div>
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <SortableContext items={game.players.map(p => p.id)} strategy={rectSortingStrategy}>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {game.players.map((player) => (
+              <SortablePlayerCard
+                key={player.id}
+                player={player}
+                game={game}
+                onSelect={() => setSelectedPlayerId(player.id)}
+              />
+            ))}
+          </div>
+        </SortableContext>
+      </DndContext>
 
       <PlayerDetailDrawer
         player={selectedPlayer}
@@ -687,6 +752,7 @@ export default function Game() {
     addVote,
     nextDay,
     prevDay,
+    reorderPlayers,
   } = usePlayerGame();
 
   if (isLoading) {
@@ -715,6 +781,7 @@ export default function Game() {
           onAddVote={addVote}
           onNextDay={nextDay}
           onPrevDay={prevDay}
+          onReorderPlayers={reorderPlayers}
         />
       )}
     </Layout>
