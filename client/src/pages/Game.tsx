@@ -27,6 +27,26 @@ const TEAM_COLORS: Record<string, string> = {
   traveler: "bg-purple-900/60 text-purple-200 border-purple-700",
 };
 
+function GallowsIcon({ className }: { className?: string }) {
+  return (
+    <svg 
+      viewBox="0 0 24 24" 
+      fill="none" 
+      stroke="currentColor" 
+      strokeWidth="2" 
+      strokeLinecap="round" 
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M4 22V4" />
+      <path d="M4 4h10" />
+      <path d="M4 8l3-4" />
+      <path d="M14 4v3" />
+      <circle cx="14" cy="10" r="3" />
+    </svg>
+  );
+}
+
 function SetupWizard({ onStart }: { onStart: (count: number, names: string[], script?: GameScriptRef | null) => void }) {
   const [step, setStep] = useState(1);
   const [playerCount, setPlayerCount] = useState(8);
@@ -500,7 +520,7 @@ function PlayerDetailDrawer({
                               </div>
                               {nom.nomineeId === player.id && (
                                 <div className="flex items-center gap-1 text-amber-400">
-                                  <Theater className="w-3 h-3" /> Was nominated
+                                  <GallowsIcon className="w-3 h-3" /> Was nominated
                                 </div>
                               )}
                               {nom.nominatorId === player.id && (
@@ -640,7 +660,7 @@ function SortablePlayerCard({
         <div className="flex items-center gap-3 text-xs text-muted-foreground shrink-0">
           {nominationsReceived > 0 && (
             <span className="flex items-center gap-1 text-amber-400" data-testid={`text-nominated-${player.id}`}>
-              <Theater className="w-3.5 h-3.5" />
+              <GallowsIcon className="w-3.5 h-3.5" />
               {nominationsReceived}
             </span>
           )}
