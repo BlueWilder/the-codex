@@ -608,6 +608,93 @@ export function usePlayerGame() {
     saveGame({ ...game, gameNotes: notes });
   }, [game, saveGame]);
 
+  const addPlayer = useCallback((name: string, insertAfterPlayerId: string | null) => {
+    if (!game) return;
+    
+    const newPlayer: GamePlayer = {
+      id: `player-${Date.now()}`,
+      name: name || `Player ${game.players.length + 1}`,
+      isAlive: true,
+      status: 'alive',
+      hasGhostVote: true, // New players start with ghost vote available (used when they die)
+      notes: "",
+      claims: [],
+      claimRecords: [],
+      isTraveler: false,
+    };
+    
+    let newPlayers: GamePlayer[];
+    if (insertAfterPlayerId === null) {
+      newPlayers = [newPlayer, ...game.players];
+    } else if (insertAfterPlayerId === '__end__') {
+      newPlayers = [...game.players, newPlayer];
+    } else {
+      const insertIndex = game.players.findIndex(p => p.id === insertAfterPlayerId);
+      if (insertIndex === -1) {
+        newPlayers = [...game.players, newPlayer];
+      } else {
+        newPlayers = [
+          ...game.players.slice(0, insertIndex + 1),
+          newPlayer,
+          ...game.players.slice(insertIndex + 1),
+        ];
+      }
+    }
+    
+    saveGame({ 
+      ...game, 
+      players: newPlayers,
+      playerCount: newPlayers.filter(p => !p.isTraveler).length,
+    });
+  }, [game, saveGame]);
+
+  const removePlayer = useCallback((playerId: string) => {
+    if (!game) return;
+    if (game.players.length <= 1) return;
+    
+    const player = game.players.find(p => p.id === playerId);
+    if (!player) return;
+    
+    const newPlayers = game.players.filter(p => p.id !== playerId);
+    
+    // Clean up nominations: remove the player's votes and recalculate yesVotes
+    const cleanedNominations = game.nominations.map(nom => {
+      const filteredVotes = nom.votes.filter(v => v.playerId !== playerId);
+      const newYesVotes = filteredVotes.filter(v => v.voted).length;
+      // Keep the original votesNeeded/passed as historical record (reflects state at time of nomination)
+      return {
+        ...nom,
+        votes: filteredVotes,
+        yesVotes: newYesVotes,
+      };
+    });
+    
+    // Clean up exile votes: remove the player's votes
+    const cleanedExileVotes = game.exileVotes.map(ev => {
+      const filteredVotes = ev.votes.filter(v => v.playerId !== playerId);
+      return {
+        ...ev,
+        votes: filteredVotes,
+      };
+    });
+    
+    // Clean up death records that reference the removed player
+    const cleanedDeathRecords = (game.deathRecords || []).filter(dr => dr.playerId !== playerId);
+    
+    // Clean up ghost vote events for the removed player
+    const cleanedGhostVoteEvents = (game.ghostVoteEvents || []).filter(gv => gv.playerId !== playerId);
+    
+    saveGame({ 
+      ...game, 
+      players: newPlayers,
+      playerCount: newPlayers.filter(p => !p.isTraveler).length,
+      nominations: cleanedNominations,
+      exileVotes: cleanedExileVotes,
+      deathRecords: cleanedDeathRecords,
+      ghostVoteEvents: cleanedGhostVoteEvents,
+    });
+  }, [game, saveGame]);
+
   return {
     game,
     isLoading,
@@ -636,5 +723,7 @@ export function usePlayerGame() {
     createExileVote,
     getPlayerExileVotes,
     setGameNotes,
+    addPlayer,
+    removePlayer,
   };
 }

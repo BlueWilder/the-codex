@@ -510,6 +510,8 @@ function PlayerDetailDrawer({
   onSetNotes,
   onSetPlayerName,
   onRemoveTraveler,
+  onRemovePlayer,
+  canRemovePlayer,
   scriptCharacterIds,
 }: {
   player: GamePlayer | null;
@@ -525,11 +527,14 @@ function PlayerDetailDrawer({
   onSetNotes: (notes: string) => void;
   onSetPlayerName: (name: string) => void;
   onRemoveTraveler?: () => void;
+  onRemovePlayer?: () => void;
+  canRemovePlayer?: boolean;
   scriptCharacterIds?: string[] | null;
 }) {
   const [showCharacterPicker, setShowCharacterPicker] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
   const [editedName, setEditedName] = useState("");
+  const [showRemoveConfirm, setShowRemoveConfirm] = useState(false);
 
   if (!player) return null;
 
@@ -784,9 +789,9 @@ function PlayerDetailDrawer({
                           return (
                             <div key={nom.id} className="text-sm pl-2 space-y-1">
                               <div className="flex items-center gap-2">
-                                <span className="text-amber-400">{nominee?.name}</span>
+                                <span className="text-amber-400">{nominee?.name || '[Removed]'}</span>
                                 <span className="text-muted-foreground">nominated by</span>
-                                <span className="text-purple-400">{nominator?.name}</span>
+                                <span className="text-purple-400">{nominator?.name || '[Removed]'}</span>
                                 <Badge variant="secondary" className="text-xs">{votesFor} votes</Badge>
                               </div>
                               {nom.nomineeId === player.id && (
@@ -824,11 +829,54 @@ function PlayerDetailDrawer({
                   <p className="text-sm text-muted-foreground italic">No nomination activity</p>
                 )}
               </div>
+
+              {/* Remove Player - subtle styling at bottom */}
+              {onRemovePlayer && !player.isTraveler && (
+                <div className="pt-6 mt-6 border-t border-border/50">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full text-muted-foreground hover:text-destructive"
+                    onClick={() => setShowRemoveConfirm(true)}
+                    disabled={!canRemovePlayer}
+                    data-testid="button-remove-player"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    {canRemovePlayer ? "Remove Player" : "Cannot remove last player"}
+                  </Button>
+                </div>
+              )}
             </div>
             </div>
           </ScrollArea>
         </DrawerContent>
       </Drawer>
+
+      {/* Remove Player Confirmation */}
+      <AlertDialog open={showRemoveConfirm} onOpenChange={setShowRemoveConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove Player?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Remove "{player?.name}" from the game? This will delete all their notes, claims, and history.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="button-cancel-remove">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                onRemovePlayer?.();
+                setShowRemoveConfirm(false);
+                onClose();
+              }}
+              data-testid="button-confirm-remove"
+            >
+              Remove Player
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <CharacterPicker
         open={showCharacterPicker}
@@ -1276,6 +1324,90 @@ function AddTravelerDialog({
   );
 }
 
+function AddPlayerDialog({
+  open,
+  onClose,
+  onAddPlayer,
+  players,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onAddPlayer: (name: string, insertAfterPlayerId: string | null) => void;
+  players: GamePlayer[];
+}) {
+  const [name, setName] = useState(`Player ${players.length + 1}`);
+  const [insertAfter, setInsertAfter] = useState<string>("__end__");
+
+  const resetState = () => {
+    setName(`Player ${players.length + 1}`);
+    setInsertAfter("__end__");
+  };
+
+  const handleAdd = () => {
+    if (!name.trim()) return;
+    onAddPlayer(name.trim(), insertAfter === "__beginning__" ? null : insertAfter);
+    resetState();
+    onClose();
+  };
+
+  const handleAddAsTraveler = () => {
+    onClose();
+  };
+
+  const handleClose = () => {
+    resetState();
+    onClose();
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={(open) => !open && handleClose()}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle className="text-amber-500 font-display">Add Player</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div>
+            <label className="text-sm text-muted-foreground mb-1 block">Player Name</label>
+            <Input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Player name"
+              data-testid="input-new-player-name"
+            />
+          </div>
+          <div>
+            <label className="text-sm text-muted-foreground mb-1 block">Insert After</label>
+            <select
+              value={insertAfter}
+              onChange={(e) => setInsertAfter(e.target.value)}
+              className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm"
+              data-testid="select-insert-position"
+            >
+              <option value="__beginning__">At beginning</option>
+              {players.map(p => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+              <option value="__end__">At end</option>
+            </select>
+          </div>
+          <p className="text-xs text-amber-600 flex items-center gap-1">
+            <span className="text-amber-500">Warning:</span> Adding players mid-game may affect balance. Consider Traveler instead.
+          </p>
+          <div className="flex gap-2">
+            <Button variant="ghost" className="flex-1" onClick={handleClose} data-testid="button-cancel-add-player">
+              Cancel
+            </Button>
+            <Button className="flex-1" onClick={handleAdd} disabled={!name.trim()} data-testid="button-confirm-add-player">
+              <Plus className="w-4 h-4 mr-2" />
+              Add Player
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function ExileDialog({
   open,
   onClose,
@@ -1579,6 +1711,8 @@ function GameTrackerView({
   onCreateExileVote,
   getPlayerExileVotes,
   onSetGameNotes,
+  onAddPlayer,
+  onRemovePlayer,
 }: {
   game: NonNullable<ReturnType<typeof usePlayerGame>["game"]>;
   onEndGame: () => void;
@@ -1603,12 +1737,15 @@ function GameTrackerView({
   onCreateExileVote: (travelerId: string, votes: PlayerVote[]) => void;
   getPlayerExileVotes: (playerId: string) => ExileVote[];
   onSetGameNotes: (notes: string) => void;
+  onAddPlayer: (name: string, insertAfterPlayerId: string | null) => void;
+  onRemovePlayer: (playerId: string) => void;
 }) {
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
   const [confirmEnd, setConfirmEnd] = useState(false);
   const [showPlayAgainConfirm, setShowPlayAgainConfirm] = useState(false);
   const [showNominationDialog, setShowNominationDialog] = useState(false);
   const [showAddTravelerDialog, setShowAddTravelerDialog] = useState(false);
+  const [showAddPlayerDialog, setShowAddPlayerDialog] = useState(false);
   const [showExileDialog, setShowExileDialog] = useState(false);
   const [scriptPopoverOpen, setScriptPopoverOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'list' | 'circle' | 'log'>('list');
@@ -1769,6 +1906,13 @@ function GameTrackerView({
                 </>
               ) : (
                 <>
+                  <DropdownMenuItem 
+                    onClick={() => setShowAddPlayerDialog(true)}
+                    data-testid="button-add-player-menu"
+                  >
+                    <UserPlus className="w-4 h-4 mr-2" />
+                    Add Player
+                  </DropdownMenuItem>
                   <DropdownMenuItem 
                     onClick={() => setShowPlayAgainConfirm(true)}
                     data-testid="button-play-again"
@@ -1992,6 +2136,8 @@ function GameTrackerView({
         onSetNotes={(notes) => selectedPlayerId && onSetNotes(selectedPlayerId, notes)}
         onSetPlayerName={(name) => selectedPlayerId && onUpdatePlayerName(selectedPlayerId, name)}
         onRemoveTraveler={selectedPlayer?.isTraveler ? () => selectedPlayerId && onRemoveTraveler(selectedPlayerId) : undefined}
+        onRemovePlayer={() => selectedPlayerId && onRemovePlayer(selectedPlayerId)}
+        canRemovePlayer={game.players.length > 1}
         scriptCharacterIds={scriptCharacterIds}
       />
 
@@ -2009,6 +2155,13 @@ function GameTrackerView({
         onClose={() => setShowAddTravelerDialog(false)}
         onAddTraveler={onAddTraveler}
         scriptCharacterIds={scriptCharacterIds}
+      />
+
+      <AddPlayerDialog
+        open={showAddPlayerDialog}
+        onClose={() => setShowAddPlayerDialog(false)}
+        onAddPlayer={onAddPlayer}
+        players={game.players}
       />
 
       <ExileDialog
@@ -2097,6 +2250,8 @@ export default function Game() {
     createExileVote,
     getPlayerExileVotes,
     setGameNotes,
+    addPlayer,
+    removePlayer,
   } = usePlayerGame();
 
   const updatePlayerName = (playerId: string, name: string) => {
@@ -2142,6 +2297,8 @@ export default function Game() {
           onCreateExileVote={createExileVote}
           getPlayerExileVotes={getPlayerExileVotes}
           onSetGameNotes={setGameNotes}
+          onAddPlayer={addPlayer}
+          onRemovePlayer={removePlayer}
         />
       )}
     </Layout>
