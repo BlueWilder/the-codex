@@ -376,14 +376,25 @@ function CharacterPicker({
 
   const filteredCharacters = useMemo(() => {
     const term = search.toLowerCase();
+    const getTeamOrder = (team: string) => {
+      switch (team) {
+        case 'townsfolk': return 0;
+        case 'outsider': return 1;
+        case 'minion': return 2;
+        case 'demon': return 3;
+        case 'traveler': return 4;
+        default: return 5;
+      }
+    };
     return ALL_CHARACTERS.filter(c => {
       if (excludeIds.includes(c.id)) return false;
       // Always include Travelers regardless of script selection
       if (scriptCharacterIds && scriptCharacterIds.length > 0 && !scriptCharacterIds.includes(c.id) && c.team !== 'traveler') return false;
       return c.name.toLowerCase().includes(term) || c.team.toLowerCase().includes(term);
     }).sort((a, b) => {
-      const teamOrder = { townsfolk: 0, outsider: 1, minion: 2, demon: 3, traveler: 4 };
-      return (teamOrder[a.team] || 5) - (teamOrder[b.team] || 5) || a.name.localeCompare(b.name);
+      const orderDiff = getTeamOrder(a.team) - getTeamOrder(b.team);
+      if (orderDiff !== 0) return orderDiff;
+      return a.name.localeCompare(b.name);
     });
   }, [search, excludeIds, scriptCharacterIds]);
 
