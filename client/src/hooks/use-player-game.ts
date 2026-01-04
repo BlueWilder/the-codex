@@ -20,6 +20,7 @@ export interface GamePlayer {
   hasGhostVote: boolean;
   notes: string;
   claims: string[];
+  isTraveler?: boolean;
 }
 
 export interface GameScriptRef {
@@ -30,7 +31,7 @@ export interface PlayerGame {
   id: string;
   createdAt: string;
   playerCount: number;
-  breakdown: { townsfolk: number; outsiders: number; minions: number; demons: number };
+  breakdown: { townsfolk: number; outsiders: number; minions: number; demons: number; travelers?: number };
   players: GamePlayer[];
   nominations: Nomination[];
   currentDay: number;
@@ -54,6 +55,9 @@ export const PLAYER_BREAKDOWN: Record<number, { townsfolk: number; outsiders: nu
 };
 
 export function getBreakdown(count: number) {
+  if (count > 15) {
+    return { ...PLAYER_BREAKDOWN[15], travelers: count - 15 };
+  }
   if (count >= 15) return PLAYER_BREAKDOWN[15];
   if (count < 5) return PLAYER_BREAKDOWN[5];
   return PLAYER_BREAKDOWN[count];
@@ -99,6 +103,7 @@ export function usePlayerGame() {
   }, []);
 
   const createGame = useCallback((playerCount: number, playerNames: string[], script?: GameScriptRef | null) => {
+    const travelerStartIndex = playerCount > 15 ? 15 : playerCount;
     const newGame: PlayerGame = {
       id: crypto.randomUUID(),
       createdAt: new Date().toISOString(),
@@ -112,6 +117,7 @@ export function usePlayerGame() {
         hasGhostVote: true,
         notes: "",
         claims: [],
+        isTraveler: i >= travelerStartIndex,
       })),
       nominations: [],
       script: script || null,

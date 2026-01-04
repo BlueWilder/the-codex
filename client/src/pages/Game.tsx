@@ -73,7 +73,12 @@ function SetupWizard({ onStart }: { onStart: (count: number, names: string[], sc
   const breakdown = getBreakdown(playerCount);
 
   const handleCountConfirm = () => {
-    setPlayerNames(Array(playerCount).fill("").map((_, i) => `Player ${i + 1}`));
+    setPlayerNames(Array(playerCount).fill("").map((_, i) => {
+      if (playerCount > 15 && i >= 15) {
+        return `Traveler ${i - 14}`;
+      }
+      return `Player ${i + 1}`;
+    }));
     setStep(2);
   };
 
@@ -158,6 +163,11 @@ function SetupWizard({ onStart }: { onStart: (count: number, names: string[], sc
                 <Badge variant="secondary" className="bg-red-900/40 text-red-300 border-red-700">
                   {breakdown.demons} Demon
                 </Badge>
+                {'travelers' in breakdown && breakdown.travelers > 0 && (
+                  <Badge variant="secondary" className="bg-purple-900/40 text-purple-300 border-purple-700">
+                    + {breakdown.travelers} {breakdown.travelers === 1 ? 'Traveler' : 'Travelers'}
+                  </Badge>
+                )}
               </div>
             </div>
 
@@ -183,9 +193,15 @@ function SetupWizard({ onStart }: { onStart: (count: number, names: string[], sc
                   <Input
                     value={name}
                     onChange={(e) => handleNameChange(i, e.target.value)}
-                    placeholder={`Player ${i + 1}`}
+                    placeholder={playerCount > 15 && i >= 15 ? `Traveler ${i - 14}` : `Player ${i + 1}`}
                     data-testid={`input-player-name-${i}`}
+                    className={playerCount > 15 && i >= 15 ? "border-purple-700/50" : ""}
                   />
+                  {playerCount > 15 && i >= 15 && (
+                    <Badge variant="secondary" className="bg-purple-900/40 text-purple-300 border-purple-700 shrink-0">
+                      Traveler
+                    </Badge>
+                  )}
                 </div>
               ))}
             </div>
@@ -624,7 +640,8 @@ function SortablePlayerCard({
       className={cn(
         "p-4",
         !player.isAlive && "opacity-60",
-        isDragging && "opacity-80 shadow-lg z-50 scale-[1.02]"
+        isDragging && "opacity-80 shadow-lg z-50 scale-[1.02]",
+        player.isTraveler && "border-purple-700/50"
       )}
       data-testid={`card-player-${player.id}`}
     >
@@ -639,6 +656,11 @@ function SortablePlayerCard({
             <GripVertical className="w-5 h-5" />
           </button>
           {!player.isAlive && <Skull className="w-4 h-4 text-muted-foreground" />}
+          {player.isTraveler && (
+            <Badge variant="secondary" className="bg-purple-900/40 text-purple-300 border-purple-700 text-xs">
+              T
+            </Badge>
+          )}
           <button
             onClick={onSelect}
             className={cn(
