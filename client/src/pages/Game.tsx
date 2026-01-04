@@ -508,6 +508,7 @@ function PlayerDetailDrawer({
   onAddClaim,
   onRemoveClaim,
   onSetNotes,
+  onSetPlayerName,
   onRemoveTraveler,
   scriptCharacterIds,
 }: {
@@ -522,10 +523,13 @@ function PlayerDetailDrawer({
   onAddClaim: (characterId: string) => void;
   onRemoveClaim: (characterId: string) => void;
   onSetNotes: (notes: string) => void;
+  onSetPlayerName: (name: string) => void;
   onRemoveTraveler?: () => void;
   scriptCharacterIds?: string[] | null;
 }) {
   const [showCharacterPicker, setShowCharacterPicker] = useState(false);
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [editedName, setEditedName] = useState("");
 
   if (!player) return null;
 
@@ -550,7 +554,43 @@ function PlayerDetailDrawer({
                 {player.status === 'dead' && <Skull className="w-5 h-5 text-muted-foreground" />}
                 {player.status === 'exiled' && <Ban className="w-5 h-5 text-purple-400" />}
                 {player.status === 'left' && <LogOut className="w-5 h-5 text-muted-foreground" />}
-                <DrawerTitle className="font-display text-xl text-amber-500">{player.name}</DrawerTitle>
+                {isEditingName ? (
+                  <Input
+                    value={editedName}
+                    onChange={(e) => setEditedName(e.target.value)}
+                    onBlur={() => {
+                      if (editedName.trim() && editedName.trim() !== player.name) {
+                        onSetPlayerName(editedName.trim());
+                      }
+                      setIsEditingName(false);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        if (editedName.trim() && editedName.trim() !== player.name) {
+                          onSetPlayerName(editedName.trim());
+                        }
+                        setIsEditingName(false);
+                      } else if (e.key === 'Escape') {
+                        setIsEditingName(false);
+                      }
+                    }}
+                    autoFocus
+                    className="font-display text-xl text-amber-500 h-8 w-40"
+                    data-testid="input-edit-player-name"
+                  />
+                ) : (
+                  <button
+                    onClick={() => {
+                      setEditedName(player.name);
+                      setIsEditingName(true);
+                    }}
+                    className="font-display text-xl text-amber-500 hover:underline hover:underline-offset-2 text-left"
+                    data-testid="button-edit-player-name"
+                  >
+                    {player.name}
+                    <Pencil className="w-3 h-3 inline ml-1.5 opacity-50" />
+                  </button>
+                )}
                 {player.isTraveler && (
                   <Badge variant="secondary" className="bg-purple-900/40 text-purple-300 border-purple-700">
                     Traveler
@@ -1525,6 +1565,7 @@ function GameTrackerView({
   onAddClaim,
   onRemoveClaim,
   onSetNotes,
+  onUpdatePlayerName,
   onNextDay,
   onPrevDay,
   onReorderPlayers,
@@ -1548,6 +1589,7 @@ function GameTrackerView({
   onAddClaim: (playerId: string, characterId: string) => void;
   onRemoveClaim: (playerId: string, characterId: string) => void;
   onSetNotes: (playerId: string, notes: string) => void;
+  onUpdatePlayerName: (playerId: string, name: string) => void;
   onNextDay: () => void;
   onPrevDay: () => void;
   onReorderPlayers: (activeId: string, overId: string) => void;
@@ -1948,6 +1990,7 @@ function GameTrackerView({
         onAddClaim={(charId) => selectedPlayerId && onAddClaim(selectedPlayerId, charId)}
         onRemoveClaim={(charId) => selectedPlayerId && onRemoveClaim(selectedPlayerId, charId)}
         onSetNotes={(notes) => selectedPlayerId && onSetNotes(selectedPlayerId, notes)}
+        onSetPlayerName={(name) => selectedPlayerId && onUpdatePlayerName(selectedPlayerId, name)}
         onRemoveTraveler={selectedPlayer?.isTraveler ? () => selectedPlayerId && onRemoveTraveler(selectedPlayerId) : undefined}
         scriptCharacterIds={scriptCharacterIds}
       />
@@ -2034,6 +2077,7 @@ export default function Game() {
     createGame,
     endGame,
     playAgain,
+    updatePlayer,
     addClaim,
     removeClaim,
     toggleAlive,
@@ -2054,6 +2098,10 @@ export default function Game() {
     getPlayerExileVotes,
     setGameNotes,
   } = usePlayerGame();
+
+  const updatePlayerName = (playerId: string, name: string) => {
+    updatePlayer(playerId, { name });
+  };
 
   if (isLoading) {
     return (
@@ -2080,6 +2128,7 @@ export default function Game() {
           onAddClaim={addClaim}
           onRemoveClaim={removeClaim}
           onSetNotes={setNotes}
+          onUpdatePlayerName={updatePlayerName}
           onNextDay={nextDay}
           onPrevDay={prevDay}
           onReorderPlayers={reorderPlayers}
