@@ -3,7 +3,8 @@ import { useState, useMemo, useEffect } from "react";
 import { usePlayerGame, getBreakdown, isPlayerActive, canPlayerVote, canPlayerVoteOnExile, type GamePlayer, type Nomination, type PlayerVote, type GameScriptRef, type ExileVote, type PlayerStatus } from "@/hooks/use-player-game";
 import { ALL_CHARACTERS, OFFICIAL_SCRIPTS } from "@/lib/game-data";
 import { useLocalScripts, type LocalScript } from "@/hooks/use-local-scripts";
-import { Users, ChevronRight, Play, Skull, X, Plus, Check, Hand, Search, Sun, Moon, ChevronUp, ChevronDown, FileText, Theater, Vote, Loader2, Ghost, GripVertical, UserPlus, ArrowRight, Target, Scale, Scroll, BookOpen, HandMetal, Ban, LogOut, Trash2, List, Circle } from "lucide-react";
+import { ScriptBuilderDialog } from "@/components/ScriptBuilderDialog";
+import { Users, ChevronRight, Play, Skull, X, Plus, Check, Hand, Search, Sun, Moon, ChevronUp, ChevronDown, FileText, Theater, Vote, Loader2, Ghost, GripVertical, UserPlus, ArrowRight, Target, Scale, Scroll, BookOpen, HandMetal, Ban, LogOut, Trash2, List, Circle, Pencil } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -68,7 +69,9 @@ function SetupWizard({ onStart }: { onStart: (count: number, names: string[], sc
   const [playerCount, setPlayerCount] = useState(8);
   const [playerNames, setPlayerNames] = useState<string[]>([]);
   const [selectedScript, setSelectedScript] = useState<LocalScript | null>(null);
-  const { allScripts, customScripts } = useLocalScripts();
+  const [showScriptBuilder, setShowScriptBuilder] = useState(false);
+  const [editingScript, setEditingScript] = useState<LocalScript | null>(null);
+  const { allScripts, customScripts, addCustomScript, updateCustomScript, getScriptById } = useLocalScripts();
 
   const breakdown = getBreakdown(playerCount);
 
@@ -271,34 +274,55 @@ function SetupWizard({ onStart }: { onStart: (count: number, names: string[], sc
                 </button>
               ))}
 
-              {customScripts.length > 0 && (
-                <>
-                  <div className="pt-2 pb-1">
-                    <span className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Custom Scripts</span>
-                  </div>
-                  {customScripts.map(script => (
-                    <button
-                      key={script.id}
-                      onClick={() => setSelectedScript(script)}
-                      className={cn(
-                        "w-full text-left p-4 rounded-lg border transition-colors",
-                        selectedScript?.id === script.id
-                          ? "bg-purple-900/30 border-purple-600 ring-1 ring-purple-500/50" 
-                          : "bg-card border-border hover-elevate"
-                      )}
-                      data-testid={`button-script-${script.id}`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <Scroll className="w-5 h-5 text-purple-500/70" />
-                        <div>
-                          <div className="font-medium">{script.name}</div>
-                          <div className="text-sm text-muted-foreground">{script.characterIds.length} characters</div>
-                        </div>
-                      </div>
-                    </button>
-                  ))}
-                </>
-              )}
+              <div className="pt-2 pb-1">
+                <span className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Custom Scripts</span>
+              </div>
+              {customScripts.map(script => (
+                <div
+                  key={script.id}
+                  className={cn(
+                    "w-full text-left p-4 rounded-lg border transition-colors flex items-center gap-2",
+                    selectedScript?.id === script.id
+                      ? "bg-purple-900/30 border-purple-600 ring-1 ring-purple-500/50" 
+                      : "bg-card border-border"
+                  )}
+                >
+                  <button
+                    onClick={() => setSelectedScript(script)}
+                    className="flex-1 flex items-center gap-3 hover-elevate rounded-lg -m-2 p-2"
+                    data-testid={`button-script-${script.id}`}
+                  >
+                    <Scroll className="w-5 h-5 text-purple-500/70" />
+                    <div>
+                      <div className="font-medium">{script.name}</div>
+                      <div className="text-sm text-muted-foreground">{script.characterIds.length} characters</div>
+                    </div>
+                  </button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEditingScript(script);
+                      setShowScriptBuilder(true);
+                    }}
+                    data-testid={`button-edit-script-${script.id}`}
+                  >
+                    <Pencil className="w-4 h-4 text-muted-foreground" />
+                  </Button>
+                </div>
+              ))}
+              <button
+                onClick={() => {
+                  setEditingScript(null);
+                  setShowScriptBuilder(true);
+                }}
+                className="w-full text-left p-4 rounded-lg border border-dashed border-purple-700/50 hover-elevate transition-colors flex items-center gap-3"
+                data-testid="button-create-custom-script"
+              >
+                <Plus className="w-5 h-5 text-purple-500/70" />
+                <div className="font-medium text-purple-400">Create Custom Script</div>
+              </button>
             </div>
 
             <div className="flex justify-between pt-4">
@@ -312,6 +336,25 @@ function SetupWizard({ onStart }: { onStart: (count: number, names: string[], sc
           </div>
         )}
       </Card>
+
+      <ScriptBuilderDialog
+        open={showScriptBuilder}
+        onOpenChange={setShowScriptBuilder}
+        initialCharacters={editingScript ? new Set(editingScript.characterIds) : new Set()}
+        initialName={editingScript?.name || ""}
+        title={editingScript ? "Edit Custom Script" : "Create Custom Script"}
+        editMode={!!editingScript}
+        onSave={(name, characterIds) => {
+          if (editingScript) {
+            updateCustomScript(editingScript.id, name, characterIds);
+            const updated = getScriptById(editingScript.id);
+            if (updated) setSelectedScript(updated);
+          } else {
+            const newScript = addCustomScript(name, characterIds);
+            setSelectedScript(newScript);
+          }
+        }}
+      />
     </div>
   );
 }
@@ -1458,7 +1501,9 @@ function GameTrackerView({
   const [showExileDialog, setShowExileDialog] = useState(false);
   const [scriptPopoverOpen, setScriptPopoverOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'list' | 'circle'>('list');
-  const { getScriptById, isLoading: scriptsLoading, allScripts } = useLocalScripts();
+  const [showScriptBuilder, setShowScriptBuilder] = useState(false);
+  const [editingScript, setEditingScript] = useState<LocalScript | null>(null);
+  const { getScriptById, isLoading: scriptsLoading, allScripts, addCustomScript, updateCustomScript, customScripts } = useLocalScripts();
   
   const resolvedScript = game.script ? getScriptById(game.script.id) : null;
   const scriptCharacterIds = resolvedScript?.characterIds;
@@ -1534,26 +1579,56 @@ function GameTrackerView({
                   <span>No Script (All Characters)</span>
                 </button>
                 {allScripts.map((script) => (
-                  <button
+                  <div
                     key={script.id}
                     className={cn(
-                      "w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-sm text-left hover-elevate",
+                      "w-full flex items-center gap-1 px-2 py-1.5 rounded-md text-sm",
                       game.script?.id === script.id && "bg-accent"
                     )}
-                    onClick={() => {
-                      onSetScript({ id: script.id });
-                      setScriptPopoverOpen(false);
-                    }}
-                    data-testid={`button-script-${script.id}`}
                   >
-                    {script.isOfficial ? (
-                      <BookOpen className="w-3.5 h-3.5 text-amber-500/70" />
-                    ) : (
-                      <FileText className="w-3.5 h-3.5 text-purple-500/70" />
+                    <button
+                      className="flex-1 flex items-center gap-2 text-left hover-elevate rounded-md -m-1 p-1"
+                      onClick={() => {
+                        onSetScript({ id: script.id });
+                        setScriptPopoverOpen(false);
+                      }}
+                      data-testid={`button-script-${script.id}`}
+                    >
+                      {script.isOfficial ? (
+                        <BookOpen className="w-3.5 h-3.5 text-amber-500/70" />
+                      ) : (
+                        <FileText className="w-3.5 h-3.5 text-purple-500/70" />
+                      )}
+                      <span className="truncate">{script.name}</span>
+                    </button>
+                    {!script.isOfficial && (
+                      <button
+                        className="p-1 rounded hover-elevate"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditingScript(script);
+                          setShowScriptBuilder(true);
+                          setScriptPopoverOpen(false);
+                        }}
+                        data-testid={`button-edit-active-script-${script.id}`}
+                      >
+                        <Pencil className="w-3 h-3 text-muted-foreground" />
+                      </button>
                     )}
-                    <span className="truncate">{script.name}</span>
-                  </button>
+                  </div>
                 ))}
+                <button
+                  className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-sm text-left hover-elevate text-purple-400 border-t border-border mt-1 pt-2"
+                  onClick={() => {
+                    setEditingScript(null);
+                    setShowScriptBuilder(true);
+                    setScriptPopoverOpen(false);
+                  }}
+                  data-testid="button-create-custom-script-active"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Create Custom Script</span>
+                </button>
               </div>
             </PopoverContent>
           </Popover>
@@ -1766,6 +1841,23 @@ function GameTrackerView({
         onClose={() => setShowExileDialog(false)}
         players={game.players}
         onCreateExileVote={onCreateExileVote}
+      />
+
+      <ScriptBuilderDialog
+        open={showScriptBuilder}
+        onOpenChange={setShowScriptBuilder}
+        initialCharacters={editingScript ? new Set(editingScript.characterIds) : new Set()}
+        initialName={editingScript?.name || ""}
+        title={editingScript ? "Edit Custom Script" : "Create Custom Script"}
+        editMode={!!editingScript}
+        onSave={(name, characterIds) => {
+          if (editingScript) {
+            updateCustomScript(editingScript.id, name, characterIds);
+          } else {
+            const newScript = addCustomScript(name, characterIds);
+            onSetScript({ id: newScript.id });
+          }
+        }}
       />
     </div>
   );
