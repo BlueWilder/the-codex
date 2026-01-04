@@ -1565,11 +1565,11 @@ function GameTrackerView({
           <Popover open={scriptPopoverOpen} onOpenChange={setScriptPopoverOpen}>
             <PopoverTrigger asChild>
               <button
-                className="flex items-center gap-2 px-2 py-1.5 rounded-md hover-elevate active-elevate-2"
+                className="flex items-center gap-1.5 px-2 py-1.5 rounded-md hover-elevate active-elevate-2"
                 data-testid="button-change-script"
               >
-                <Scroll className="w-4 h-4 text-amber-500/70" />
-                <span className="text-sm font-medium text-amber-400 truncate max-w-[120px] sm:max-w-none">
+                <Scroll className="w-4 h-4 text-amber-500" />
+                <span className="font-display text-amber-500 truncate max-w-[100px] sm:max-w-none">
                   {resolvedScript ? resolvedScript.name : "No Script"}
                 </span>
                 <ChevronDown className="w-3.5 h-3.5 text-amber-500/50" />
@@ -1817,13 +1817,13 @@ function GameTrackerView({
         </div>
 
         {/* Action Bar */}
-        <div className="flex items-center justify-end gap-2 px-3 py-2 border-t border-border bg-muted/20">
-          <Button variant="outline" size="sm" onClick={() => setShowAddTravelerDialog(true)} data-testid="button-add-traveler">
-            <Plus className="w-4 h-4 mr-1" />
+        <div className="flex items-center justify-end gap-2 px-3 py-2.5 border-t border-border bg-muted/20">
+          <Button variant="outline" onClick={() => setShowAddTravelerDialog(true)} data-testid="button-add-traveler">
+            <Plus className="w-4 h-4 mr-1.5" />
             Traveler
           </Button>
           {aliveTravelers.length > 0 && (
-            <Button variant="outline" size="sm" onClick={() => setShowExileDialog(true)} data-testid="button-exile">
+            <Button variant="outline" onClick={() => setShowExileDialog(true)} data-testid="button-exile">
               Exile
             </Button>
           )}
@@ -1832,7 +1832,7 @@ function GameTrackerView({
             onClick={() => setShowNominationDialog(true)} 
             data-testid="button-nominate"
           >
-            <Target className="w-4 h-4 mr-2" />
+            <Target className="w-4 h-4 mr-1.5" />
             Nominate
           </Button>
         </div>
