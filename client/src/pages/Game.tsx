@@ -4,6 +4,7 @@ import { usePlayerGame, getBreakdown, isPlayerActive, canPlayerVote, canPlayerVo
 import { ALL_CHARACTERS, OFFICIAL_SCRIPTS } from "@/lib/game-data";
 import { useLocalScripts, type LocalScript } from "@/hooks/use-local-scripts";
 import { ScriptBuilderDialog } from "@/components/ScriptBuilderDialog";
+import { GameLogDialog } from "@/components/GameLogDialog";
 import { Users, ChevronRight, Play, Skull, X, Plus, Check, Hand, Search, Sun, Moon, ChevronUp, ChevronDown, FileText, Theater, Vote, Loader2, Ghost, GripVertical, UserPlus, ArrowRight, Target, Scale, Scroll, BookOpen, HandMetal, Ban, LogOut, Trash2, List, Circle, Pencil } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
@@ -1512,6 +1513,7 @@ function GameTrackerView({
   const [showExileDialog, setShowExileDialog] = useState(false);
   const [scriptPopoverOpen, setScriptPopoverOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'list' | 'circle'>('list');
+  const [showGameLog, setShowGameLog] = useState(false);
   const [showScriptBuilder, setShowScriptBuilder] = useState(false);
   const [editingScript, setEditingScript] = useState<LocalScript | null>(null);
   const { getScriptById, isLoading: scriptsLoading, allScripts, addCustomScript, updateCustomScript, customScripts } = useLocalScripts();
@@ -1669,6 +1671,16 @@ function GameTrackerView({
               <span>Circle</span>
             </button>
           </div>
+          
+          {/* Game Log Button */}
+          <button
+            className="flex items-center gap-1 px-2 py-1 rounded-md text-xs text-muted-foreground hover-elevate"
+            onClick={() => setShowGameLog(true)}
+            data-testid="button-game-log"
+          >
+            <Scroll className="w-3 h-3" />
+            <span>Log</span>
+          </button>
         </div>
 
         {/* Day Header Row */}
@@ -1869,6 +1881,12 @@ function GameTrackerView({
             onSetScript({ id: newScript.id });
           }
         }}
+      />
+
+      <GameLogDialog
+        open={showGameLog}
+        onOpenChange={setShowGameLog}
+        game={game}
       />
     </div>
   );
