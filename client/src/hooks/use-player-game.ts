@@ -102,6 +102,8 @@ export interface PlayerGame {
   deathRecords?: DeathRecord[];
   travelerEvents?: TravelerEvent[];
   ghostVoteEvents?: GhostVoteEvent[];
+  // Free-form game notes
+  gameNotes?: string;
 }
 
 const STORAGE_KEY = "clocktower_player_game";
@@ -566,6 +568,11 @@ export function usePlayerGame() {
     return game.exileVotes.filter(e => e.travelerId === playerId);
   }, [game]);
 
+  const setGameNotes = useCallback((notes: string) => {
+    if (!game) return;
+    saveGame({ ...game, gameNotes: notes });
+  }, [game, saveGame]);
+
   return {
     game,
     isLoading,
@@ -592,5 +599,6 @@ export function usePlayerGame() {
     removeTraveler,
     createExileVote,
     getPlayerExileVotes,
+    setGameNotes,
   };
 }

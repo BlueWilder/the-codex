@@ -1,6 +1,6 @@
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
 import { 
   type PlayerGame, 
   type GamePlayer,
@@ -16,6 +16,7 @@ import {
   Sun, 
   Moon,
   Filter,
+  FileText,
 } from "lucide-react";
 import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
@@ -38,6 +39,7 @@ interface GameEvent {
 
 interface InlineGameLogProps {
   game: PlayerGame;
+  onUpdateGameNotes: (notes: string) => void;
 }
 
 function getCharacterName(characterId: string): string {
@@ -45,7 +47,7 @@ function getCharacterName(characterId: string): string {
   return char?.name || characterId;
 }
 
-export function InlineGameLog({ game }: InlineGameLogProps) {
+export function InlineGameLog({ game, onUpdateGameNotes }: InlineGameLogProps) {
   const [filter, setFilter] = useState<EventType | 'all'>('all');
   
   const events = useMemo(() => {
@@ -325,6 +327,23 @@ export function InlineGameLog({ game }: InlineGameLogProps) {
           })}
         </div>
       )}
+      
+      {/* Game Notes Section - Always visible regardless of filter */}
+      <div className="mt-6 pt-4 border-t border-border">
+        <div className="flex items-center gap-2 mb-3">
+          <FileText className="w-4 h-4 text-muted-foreground" />
+          <span className="text-sm font-display text-muted-foreground">
+            Notes
+          </span>
+        </div>
+        <Textarea
+          value={game.gameNotes || ''}
+          onChange={(e) => onUpdateGameNotes(e.target.value)}
+          placeholder="Add game notes... (demon bluffs, theories, whisper tracking)"
+          className="min-h-[100px] bg-muted/30 border-border resize-none"
+          data-testid="input-game-notes"
+        />
+      </div>
     </Card>
   );
 }

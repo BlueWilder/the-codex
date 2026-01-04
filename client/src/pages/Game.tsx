@@ -1486,6 +1486,7 @@ function GameTrackerView({
   onRemoveTraveler,
   onCreateExileVote,
   getPlayerExileVotes,
+  onSetGameNotes,
 }: {
   game: NonNullable<ReturnType<typeof usePlayerGame>["game"]>;
   onEndGame: () => void;
@@ -1507,6 +1508,7 @@ function GameTrackerView({
   onRemoveTraveler: (playerId: string) => void;
   onCreateExileVote: (travelerId: string, votes: PlayerVote[]) => void;
   getPlayerExileVotes: (playerId: string) => ExileVote[];
+  onSetGameNotes: (notes: string) => void;
 }) {
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
   const [confirmEnd, setConfirmEnd] = useState(false);
@@ -1868,7 +1870,7 @@ function GameTrackerView({
       )}
       
       {activeTab === 'log' && (
-        <InlineGameLog game={game} />
+        <InlineGameLog game={game} onUpdateGameNotes={onSetGameNotes} />
       )}
 
       <PlayerDetailDrawer
@@ -1955,6 +1957,7 @@ export default function Game() {
     removeTraveler,
     createExileVote,
     getPlayerExileVotes,
+    setGameNotes,
   } = usePlayerGame();
 
   if (isLoading) {
@@ -1993,6 +1996,7 @@ export default function Game() {
           onRemoveTraveler={removeTraveler}
           onCreateExileVote={createExileVote}
           getPlayerExileVotes={getPlayerExileVotes}
+          onSetGameNotes={setGameNotes}
         />
       )}
     </Layout>
