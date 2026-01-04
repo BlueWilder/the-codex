@@ -59,12 +59,14 @@ Character data is stored client-side in `client/src/lib/game-data.ts` with full 
 
 ### Game Mode (Player Tracker)
 A localStorage-based player tracking tool at `/game` for note-taking during games:
-- **Setup wizard**: Player count selection (5-20) with character breakdown display, player name inputs
+- **Setup wizard**: 3-step flow with player count selection (5-20), player name inputs, and optional script selection
+- **Script selection**: Choose from official scripts or custom scripts saved from Reference page
 - **Player cards**: Grid display showing name, alive/dead status, claim badges, indicator icons
-- **Player detail drawer**: Notes, claims (searchable character picker), voting record by day
-- **Day tracker**: Increment/decrement current game day
+- **Player detail drawer**: Notes, claims (filtered by selected script), voting record by day
+- **Day tracker**: Scoreboard-style header with alive/dead counts, votes to execute, available votes, and script name badge
 - **Persistence**: Game state saved to localStorage, survives page refresh
-- **Hook**: `client/src/hooks/use-player-game.ts` manages all game state with types for GamePlayer, VoteRecord, PlayerGame
+- **Hook**: `client/src/hooks/use-player-game.ts` manages all game state with types for GamePlayer, VoteRecord, PlayerGame, GameScriptRef
+- **Script sync**: `client/src/hooks/use-local-scripts.ts` provides reactive script storage shared across all pages with cross-tab sync via storage events
 
 ## External Dependencies
 
