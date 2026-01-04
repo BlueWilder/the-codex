@@ -175,7 +175,30 @@ export function usePlayerGame() {
       nominatorId,
       votes,
     };
-    saveGame({ ...game, nominations: [...game.nominations, newNomination] });
+    
+    // Calculate votes needed and check for automatic execution
+    const aliveCount = game.players.filter(p => p.isAlive).length;
+    const votesNeeded = Math.ceil(aliveCount / 2);
+    const yesVotes = votes.filter(v => v.voted).length;
+    
+    let updatedPlayers = game.players;
+    if (yesVotes >= votesNeeded) {
+      // Auto-execute: mark nominee as dead but keep their ghost vote
+      const nominee = game.players.find(p => p.id === nomineeId);
+      if (nominee && nominee.isAlive) {
+        updatedPlayers = game.players.map(p => 
+          p.id === nomineeId 
+            ? { ...p, isAlive: false, hasGhostVote: true }
+            : p
+        );
+      }
+    }
+    
+    saveGame({ 
+      ...game, 
+      players: updatedPlayers,
+      nominations: [...game.nominations, newNomination] 
+    });
   }, [game, saveGame, hasBeenNominatedToday, hasNominatedToday]);
 
   const deleteNomination = useCallback((nominationId: string) => {
