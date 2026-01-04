@@ -768,8 +768,15 @@ function SortablePlayerCard({
           </button>
         </div>
         <div className="flex items-center gap-2 text-muted-foreground">
-          {player.status === 'dead' && player.hasGhostVote && !player.isTraveler && (
-            <Ghost className="w-5 h-5 text-purple-400" data-testid={`icon-ghost-vote-${player.id}`} />
+          {player.status === 'dead' && !player.isTraveler && (
+            player.hasGhostVote ? (
+              <Ghost className="w-5 h-5 text-purple-400" data-testid={`icon-ghost-vote-${player.id}`} />
+            ) : (
+              <span className="relative" data-testid={`icon-ghost-spent-${player.id}`}>
+                <Ghost className="w-5 h-5 text-muted-foreground/40" />
+                <X className="w-3 h-3 text-red-500 absolute -bottom-0.5 -right-0.5" />
+              </span>
+            )
           )}
           {hasNotes && <FileText className="w-4 h-4" />}
         </div>
@@ -878,9 +885,12 @@ function NominationDialog({
     handleClose();
   };
 
-  const eligibleNominees = players.filter(p => p.isAlive && !hasBeenNominatedToday(p.id));
-  const eligibleNominators = players.filter(p => p.isAlive && !hasNominatedToday(p.id) && p.id !== nomineeId);
-  const eligibleVoters = players.filter(p => p.isAlive || p.hasGhostVote);
+  const eligibleNominees = players.filter(p => p.status === 'alive' && !hasBeenNominatedToday(p.id));
+  const eligibleNominators = players.filter(p => p.status === 'alive' && !hasNominatedToday(p.id) && p.id !== nomineeId);
+  // Show all alive players and dead non-travelers (travelers can't vote on nominations)
+  const allVoters = players.filter(p => p.status === 'alive' || (p.status === 'dead' && !p.isTraveler));
+  // Helper to check if a player can actually vote
+  const canVote = (player: GamePlayer) => player.status === 'alive' || (player.status === 'dead' && player.hasGhostVote && !player.isTraveler);
   const nominee = players.find(p => p.id === nomineeId);
   const nominator = players.find(p => p.id === nominatorId);
 
@@ -951,36 +961,48 @@ function NominationDialog({
               <p>Check all players who voted for execution:</p>
             </div>
             <div className="space-y-2">
-              {eligibleVoters.map(player => (
-                <label
-                  key={player.id}
-                  className={cn(
-                    "flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors",
-                    selectedVoters.has(player.id)
-                      ? "bg-emerald-950/30 border-emerald-800"
-                      : "bg-card border-border hover:bg-muted/50"
-                  )}
-                  data-testid={`label-voter-${player.id}`}
-                >
-                  <Checkbox
-                    checked={selectedVoters.has(player.id)}
-                    onCheckedChange={() => handleToggleVoter(player.id)}
-                    data-testid={`checkbox-voter-${player.id}`}
-                  />
-                  <span className={cn(
-                    "flex-1",
-                    player.status !== 'alive' && "text-muted-foreground"
-                  )}>
-                    {player.name}
-                    {player.status === 'dead' && player.hasGhostVote && !player.isTraveler && (
-                      <Ghost className="w-4 h-4 inline ml-2 text-purple-400" />
+              {allVoters.map(player => {
+                const playerCanVote = canVote(player);
+                const isSpentGhost = player.status === 'dead' && !player.hasGhostVote && !player.isTraveler;
+                
+                return (
+                  <label
+                    key={player.id}
+                    className={cn(
+                      "flex items-center gap-3 p-3 rounded-lg border transition-colors",
+                      !playerCanVote && "opacity-50 cursor-not-allowed",
+                      playerCanVote && "cursor-pointer",
+                      selectedVoters.has(player.id)
+                        ? "bg-emerald-950/30 border-emerald-800"
+                        : playerCanVote ? "bg-card border-border hover:bg-muted/50" : "bg-muted/30 border-border"
                     )}
-                  </span>
-                  {selectedVoters.has(player.id) && (
-                    <Hand className="w-4 h-4 text-emerald-500" />
-                  )}
-                </label>
-              ))}
+                    data-testid={`label-voter-${player.id}`}
+                  >
+                    <Checkbox
+                      checked={selectedVoters.has(player.id)}
+                      onCheckedChange={() => playerCanVote && handleToggleVoter(player.id)}
+                      disabled={!playerCanVote}
+                      data-testid={`checkbox-voter-${player.id}`}
+                    />
+                    <span className={cn(
+                      "flex-1",
+                      player.status !== 'alive' && "text-muted-foreground",
+                      isSpentGhost && "line-through"
+                    )}>
+                      {player.name}
+                      {player.status === 'dead' && player.hasGhostVote && !player.isTraveler && (
+                        <Ghost className="w-4 h-4 inline ml-2 text-purple-400" />
+                      )}
+                      {isSpentGhost && (
+                        <span className="ml-2 text-xs text-muted-foreground">(vote spent)</span>
+                      )}
+                    </span>
+                    {selectedVoters.has(player.id) && (
+                      <Hand className="w-4 h-4 text-emerald-500" />
+                    )}
+                  </label>
+                );
+              })}
             </div>
             <div className="flex gap-2 pt-2">
               <Button variant="ghost" className="flex-1" onClick={() => setStep(2)}>

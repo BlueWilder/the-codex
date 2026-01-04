@@ -1,0 +1,67 @@
+Implement automatic ghost vote tracking in Game Mode. When a dead player votes on a nomination, their ghost vote should be marked as spent and they can no longer vote for the rest of the game.
+
+## CURRENT APP CONTEXT
+- Dead players show 👻 icon indicating ghost vote available
+- Stats panel shows "2 ghost" count for available ghost votes
+- Vote recording screen shows checkboxes for all players, with 👻 next to dead players
+- Player detail drawer shows Nomination History with vote records
+
+## 1. UPDATE PLAYER DATA STRUCTURE
+
+Add to GamePlayer interface:
+  ghostVoteSpent: boolean;  // NEW FIELD - only relevant when player is dead
+
+Initialize as false. Only becomes true when:
+- Player is dead AND
+- Player is checked as voting in the Record Votes flow
+
+## 2. UPDATE VOTE RECORDING FLOW
+
+In the "Record Votes" screen (where you check all players who voted):
+
+When saving the vote record:
+- For each DEAD player who is checked as voting:
+  - Set their ghostVoteSpent = true
+  - This is permanent for the rest of the game
+
+Visual feedback on save:
+- Brief toast/notification: "Ghost vote spent: [Player Name]" (optional but helpful)
+
+## 3. UPDATE VOTE RECORDING UI
+
+In the Record Votes checkbox list:
+
+For dead players with ghost vote AVAILABLE (ghostVoteSpent: false):
+- Show: ☐ Player 3 👻
+- Checkbox is enabled
+- Tapping adds them to voters
+
+For dead players with ghost vote SPENT (ghostVoteSpent: true):
+- Show: Player 3 👻✗ (or grayed out ghost, or "Vote spent" label)
+- Checkbox is DISABLED or hidden
+- Cannot be selected as a voter
+- Visual: grayed out row, strikethrough, or muted styling
+
+## 4. UPDATE PLAYER CARDS (Main Game View)
+
+Current: Dead players show 👻 icon
+
+Update logic:
+- Dead + ghostVoteSpent: false → Show 👻 (vote available)
+- Dead + ghostVoteSpent: true → Show 👻 with strikethrough, or no ghost icon, or grayed ghost
+- Suggestion: Use 👻✗ or a grayed/faded 👻 to indicate "spent"
+
+## 5. UPDATE STATS PANEL
+
+Current: "2 ghost" shows total ghost votes available
+
+Update calculation:
+- Count dead players WHERE ghostVoteSpent === false
+- As ghost votes are spent, this number decrements
+- "2 ghost" → player votes → "1 ghost"
+
+## 6. UPDATE PLAYER DETAIL DRAWER
+
+In the player's Nomination History section, indicate when they spent their ghost vote:
+
+Example:

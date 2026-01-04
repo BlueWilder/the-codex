@@ -223,12 +223,21 @@ export function usePlayerGame() {
     const votesNeeded = Math.ceil(aliveCount / 2);
     const yesVotes = votes.filter(v => v.voted).length;
     
-    let updatedPlayers = game.players;
+    // First, mark ghost votes as spent for dead non-Traveler players who voted yes
+    let updatedPlayers = game.players.map(p => {
+      const playerVote = votes.find(v => v.playerId === p.id);
+      // If dead, non-Traveler, has ghost vote, and voted yes - spend it
+      if (p.status === 'dead' && !p.isTraveler && p.hasGhostVote && playerVote?.voted) {
+        return { ...p, hasGhostVote: false };
+      }
+      return p;
+    });
+    
     if (yesVotes >= votesNeeded) {
       // Auto-execute: mark nominee as dead, Travelers don't get ghost votes
-      const nominee = game.players.find(p => p.id === nomineeId);
+      const nominee = updatedPlayers.find(p => p.id === nomineeId);
       if (nominee && nominee.status === 'alive') {
-        updatedPlayers = game.players.map(p => 
+        updatedPlayers = updatedPlayers.map(p => 
           p.id === nomineeId 
             ? { ...p, isAlive: false, status: 'dead' as PlayerStatus, hasGhostVote: !nominee.isTraveler }
             : p
