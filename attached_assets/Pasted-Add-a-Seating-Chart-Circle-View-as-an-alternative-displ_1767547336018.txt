@@ -1,0 +1,127 @@
+Add a Seating Chart (Circle View) as an alternative display to the current player list. Phase 1 is display-only - reordering still happens in list view.
+
+## 1. VIEW TOGGLE
+
+Add a toggle control in the game view, near the stats panel or above the player list:
+
+Two buttons or segmented control:
+  [☰ List]  [◯ Circle]
+
+- "List" is the current default view (what exists now)
+- "Circle" switches to the new seating chart view
+- Toggle state persists during the session
+- Both views share the same underlying player data
+
+## 2. CIRCLE VIEW LAYOUT
+
+When Circle view is active, display players arranged in a circle/oval shape.
+
+### Layout Logic:
+- Players are positioned evenly around a circle
+- Order matches the current list order (index 0 at top, proceeding clockwise)
+- Use CSS or canvas to position nodes
+
+### Positioning Formula (CSS approach):
+For N players, each player i is positioned at:
+  - angle = (i / N) * 360 - 90 (starting from top, going clockwise)
+  - x = centerX + radius * cos(angle)
+  - y = centerY + radius * sin(angle)
+
+### Container:
+- Circle container should be roughly square, responsive to screen width
+- On mobile: use most of the screen width with some padding
+- Center the circle horizontally
+
+## 3. PLAYER NODES
+
+Each player is displayed as a compact circular or rounded node showing:
+
+### Content (prioritized for space):
+1. **Player name** (truncate with ellipsis if too long, ~10 chars max)
+2. **Dead indicator**: Skull icon + dimmed/grayed styling if dead
+3. **Ghost vote**: Small 👻 or 👻✗ badge if dead
+4. **Claim badge**: Show first claim as small badge below name (if exists)
+5. **Nomination flag**: Small 🚩 + count if nominated
+
+### Styling:
+- Living players: Normal background (match current card style)
+- Dead players: Grayed/dimmed background, skull icon
+- Travelers: Gold/amber border (consistent with list view)
+- Size: Large enough to tap easily on mobile (~60-70px diameter)
+
+### Node Example:
+  ┌─────────┐
+  │  Sarah  │
+  │ Empath  │
+  │   🚩1   │
+  └─────────┘
+
+Dead player example:
+  ┌─────────┐
+  │ 💀 Mike │
+  │  👻✗    │
+  └─────────┘
+
+## 4. INTERACTIONS
+
+### Tap Player Node:
+- Opens the same player detail drawer/modal used in list view
+- All functionality (notes, claims, nomination history) accessible
+
+### No Drag in Phase 1:
+- Circle positions are determined by list order
+- To reorder, user switches to List view, drags to reorder, switches back to Circle
+- We'll add drag-to-reorder in circle view in a future phase
+
+## 5. RESPONSIVE SIZING
+
+### Mobile (< 500px width):
+- Circle radius sized to fit screen with padding
+- Player nodes may need to be smaller (~50-60px)
+- For 15+ players, nodes will be tighter - ensure tappable
+
+### Tablet/Desktop:
+- Larger circle, more comfortable spacing
+- Nodes can be larger with more visible text
+
+### Large Player Counts (15+):
+- For Phase 1: Just make the circle smaller/tighter
+- Future: Consider inner/outer rings or zoom
+
+## 6. MAINTAIN STATS PANEL
+
+The stats panel (Alive/Dead/To Exec/Can Vote, nom count, ghost count, action buttons) should remain visible above the circle view, same as it appears above the list view.
+
+Layout:
+  ┌─────────────────────────────┐
+  │ Stats Panel                 │
+  │ [+ Traveler] [Exile] [Nom]  │
+  ├─────────────────────────────┤
+  │ [☰ List] [◯ Circle]         │  ← Toggle here
+  ├─────────────────────────────┤
+  │                             │
+  │      ○ ── ○ ── ○           │
+  │    ○             ○          │
+  │      ○ ── ○ ── ○           │
+  │                             │
+  └─────────────────────────────┘
+
+## 7. EMPTY STATE
+
+If no game is active, the toggle shouldn't appear (same as current - show setup wizard).
+
+## 8. TECHNICAL NOTES
+
+### CSS Approach (recommended):
+- Use absolute positioning within a relative container
+- Calculate x/y positions with JavaScript
+- Apply via inline styles or CSS custom properties
+
+### Alternative - Flexbox/Grid with rotation:
+- Harder to get true circle, but possible with transforms
+
+### SVG/Canvas:
+- More complex but allows drawing lines between neighbors (future feature)
+- Overkill for Phase 1
+
+Start with CSS absolute positioning for simplicity.

@@ -3,7 +3,7 @@ import { useState, useMemo, useEffect } from "react";
 import { usePlayerGame, getBreakdown, isPlayerActive, canPlayerVote, canPlayerVoteOnExile, type GamePlayer, type Nomination, type PlayerVote, type GameScriptRef, type ExileVote, type PlayerStatus } from "@/hooks/use-player-game";
 import { ALL_CHARACTERS, OFFICIAL_SCRIPTS } from "@/lib/game-data";
 import { useLocalScripts, type LocalScript } from "@/hooks/use-local-scripts";
-import { Users, ChevronRight, Play, Skull, X, Plus, Check, Hand, Search, Sun, Moon, ChevronUp, ChevronDown, FileText, Theater, Vote, Loader2, Ghost, GripVertical, UserPlus, ArrowRight, Target, Scale, Scroll, BookOpen, HandMetal, Ban, LogOut, Trash2 } from "lucide-react";
+import { Users, ChevronRight, Play, Skull, X, Plus, Check, Hand, Search, Sun, Moon, ChevronUp, ChevronDown, FileText, Theater, Vote, Loader2, Ghost, GripVertical, UserPlus, ArrowRight, Target, Scale, Scroll, BookOpen, HandMetal, Ban, LogOut, Trash2, List, Circle } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -1285,6 +1285,130 @@ function ExileDialog({
   );
 }
 
+function CircleSeatingChart({
+  players,
+  nominations,
+  currentDay,
+  onSelectPlayer,
+}: {
+  players: GamePlayer[];
+  nominations: Nomination[];
+  currentDay: number;
+  onSelectPlayer: (playerId: string) => void;
+}) {
+  const containerRef = useMemo(() => ({ current: null as HTMLDivElement | null }), []);
+  const [dimensions, setDimensions] = useState({ width: 300, height: 300 });
+
+  useEffect(() => {
+    const updateDimensions = () => {
+      const width = Math.min(window.innerWidth - 32, 500);
+      setDimensions({ width, height: width });
+    };
+    updateDimensions();
+    window.addEventListener('resize', updateDimensions);
+    return () => window.removeEventListener('resize', updateDimensions);
+  }, []);
+
+  const playerCount = players.length;
+  const centerX = dimensions.width / 2;
+  const centerY = dimensions.height / 2;
+  const nodeSize = playerCount <= 8 ? 70 : playerCount <= 12 ? 60 : 50;
+  const radius = Math.min(centerX, centerY) - nodeSize / 2 - 10;
+
+  const getPlayerPosition = (index: number) => {
+    const angle = ((index / playerCount) * 360 - 90) * (Math.PI / 180);
+    return {
+      x: centerX + radius * Math.cos(angle) - nodeSize / 2,
+      y: centerY + radius * Math.sin(angle) - nodeSize / 2,
+    };
+  };
+
+  const getNominationCount = (playerId: string) => {
+    return nominations.filter(n => n.nomineeId === playerId).length;
+  };
+
+  return (
+    <div 
+      className="flex justify-center py-4"
+      ref={(el) => { containerRef.current = el; }}
+    >
+      <div 
+        className="relative"
+        style={{ width: dimensions.width, height: dimensions.height }}
+      >
+        {players.map((player, index) => {
+          const pos = getPlayerPosition(index);
+          const nomCount = getNominationCount(player.id);
+          const firstClaim = player.claims[0];
+          const claimChar = firstClaim ? ALL_CHARACTERS.find(c => c.id === firstClaim) : null;
+          const isActive = player.status === 'alive';
+          const isDead = player.status === 'dead';
+          const isSpentGhost = isDead && !player.hasGhostVote && !player.isTraveler;
+
+          return (
+            <button
+              key={player.id}
+              onClick={() => onSelectPlayer(player.id)}
+              className={cn(
+                "absolute flex flex-col items-center justify-center rounded-full border-2 text-center transition-all",
+                "hover-elevate active-elevate-2",
+                isActive ? "bg-card border-border" : "bg-muted/50 border-muted",
+                player.isTraveler && "border-purple-700",
+                !isActive && "opacity-70"
+              )}
+              style={{
+                left: pos.x,
+                top: pos.y,
+                width: nodeSize,
+                height: nodeSize,
+              }}
+              data-testid={`circle-node-${player.id}`}
+            >
+              <div className="flex items-center gap-0.5 px-1">
+                {isDead && <Skull className="w-3 h-3 text-muted-foreground shrink-0" />}
+                <span className={cn(
+                  "text-xs font-medium truncate max-w-[50px]",
+                  !isActive && "text-muted-foreground"
+                )}>
+                  {player.name.length > 8 ? player.name.slice(0, 7) + '...' : player.name}
+                </span>
+              </div>
+              
+              {claimChar && (
+                <span className={cn(
+                  "text-[9px] truncate max-w-[55px] px-1",
+                  TEAM_COLORS[claimChar.team]
+                )}>
+                  {claimChar.name.length > 8 ? claimChar.name.slice(0, 7) + '...' : claimChar.name}
+                </span>
+              )}
+              
+              <div className="flex items-center gap-1 mt-0.5">
+                {isDead && !player.isTraveler && (
+                  player.hasGhostVote ? (
+                    <Ghost className="w-3 h-3 text-purple-400" />
+                  ) : (
+                    <span className="relative">
+                      <Ghost className="w-3 h-3 text-muted-foreground/40" />
+                      <X className="w-2 h-2 text-red-500 absolute -bottom-0.5 -right-0.5" />
+                    </span>
+                  )
+                )}
+                {nomCount > 0 && (
+                  <span className="flex items-center text-[10px] text-amber-400">
+                    <GallowsIcon className="w-2.5 h-2.5" />
+                    {nomCount}
+                  </span>
+                )}
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function GameTrackerView({
   game,
   onEndGame,
@@ -1334,6 +1458,7 @@ function GameTrackerView({
   const [showAddTravelerDialog, setShowAddTravelerDialog] = useState(false);
   const [showExileDialog, setShowExileDialog] = useState(false);
   const [scriptPopoverOpen, setScriptPopoverOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<'list' | 'circle'>('list');
   const { getScriptById, isLoading: scriptsLoading, allScripts } = useLocalScripts();
   
   const resolvedScript = game.script ? getScriptById(game.script.id) : null;
@@ -1555,20 +1680,51 @@ function GameTrackerView({
         </div>
       </div>
 
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-        <SortableContext items={game.players.map(p => p.id)} strategy={rectSortingStrategy}>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {game.players.map((player) => (
-              <SortablePlayerCard
-                key={player.id}
-                player={player}
-                game={game}
-                onSelect={() => setSelectedPlayerId(player.id)}
-              />
-            ))}
-          </div>
-        </SortableContext>
-      </DndContext>
+      {/* View Toggle */}
+      <div className="flex items-center justify-center gap-1 py-2">
+        <Button
+          variant={viewMode === 'list' ? 'default' : 'ghost'}
+          size="sm"
+          onClick={() => setViewMode('list')}
+          data-testid="button-view-list"
+        >
+          <List className="w-4 h-4 mr-1" />
+          List
+        </Button>
+        <Button
+          variant={viewMode === 'circle' ? 'default' : 'ghost'}
+          size="sm"
+          onClick={() => setViewMode('circle')}
+          data-testid="button-view-circle"
+        >
+          <Circle className="w-4 h-4 mr-1" />
+          Circle
+        </Button>
+      </div>
+
+      {viewMode === 'list' ? (
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <SortableContext items={game.players.map(p => p.id)} strategy={rectSortingStrategy}>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {game.players.map((player) => (
+                <SortablePlayerCard
+                  key={player.id}
+                  player={player}
+                  game={game}
+                  onSelect={() => setSelectedPlayerId(player.id)}
+                />
+              ))}
+            </div>
+          </SortableContext>
+        </DndContext>
+      ) : (
+        <CircleSeatingChart
+          players={game.players}
+          nominations={game.nominations}
+          currentDay={game.currentDay}
+          onSelectPlayer={(playerId) => setSelectedPlayerId(playerId)}
+        />
+      )}
 
       <PlayerDetailDrawer
         player={selectedPlayer}
