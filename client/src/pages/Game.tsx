@@ -1502,12 +1502,12 @@ function GameTrackerView({
     <div className="space-y-4">
       {/* Scoreboard Header */}
       <div className="bg-card border border-border rounded-lg overflow-hidden">
-        {/* Script Badge Row - always clickable */}
-        <div className="flex items-center justify-center px-3 py-1.5 border-b border-border bg-amber-950/20">
+        {/* Script Badge Row + View Toggle */}
+        <div className="flex items-center justify-between px-3 py-1.5 border-b border-border bg-amber-950/20">
           <Popover open={scriptPopoverOpen} onOpenChange={setScriptPopoverOpen}>
             <PopoverTrigger asChild>
               <button
-                className="flex items-center gap-2 px-3 py-1 rounded-md hover-elevate active-elevate-2"
+                className="flex items-center gap-2 px-2 py-1 rounded-md hover-elevate active-elevate-2"
                 data-testid="button-change-script"
               >
                 <Scroll className="w-3.5 h-3.5 text-amber-500/70" />
@@ -1558,6 +1558,32 @@ function GameTrackerView({
               </div>
             </PopoverContent>
           </Popover>
+          
+          {/* View Toggle */}
+          <div className="flex items-center gap-0.5">
+            <button
+              className={cn(
+                "flex items-center gap-1 px-2 py-1 rounded-md text-xs",
+                viewMode === 'list' ? "bg-accent text-accent-foreground" : "text-muted-foreground hover-elevate"
+              )}
+              onClick={() => setViewMode('list')}
+              data-testid="button-view-list"
+            >
+              <List className="w-3 h-3" />
+              <span>List</span>
+            </button>
+            <button
+              className={cn(
+                "flex items-center gap-1 px-2 py-1 rounded-md text-xs",
+                viewMode === 'circle' ? "bg-accent text-accent-foreground" : "text-muted-foreground hover-elevate"
+              )}
+              onClick={() => setViewMode('circle')}
+              data-testid="button-view-circle"
+            >
+              <Circle className="w-3 h-3" />
+              <span>Circle</span>
+            </button>
+          </div>
         </div>
 
         {/* Day Header Row */}
@@ -1678,28 +1704,6 @@ function GameTrackerView({
             </Button>
           </div>
         </div>
-      </div>
-
-      {/* View Toggle */}
-      <div className="flex items-center justify-center gap-1 py-2">
-        <Button
-          variant={viewMode === 'list' ? 'default' : 'ghost'}
-          size="sm"
-          onClick={() => setViewMode('list')}
-          data-testid="button-view-list"
-        >
-          <List className="w-4 h-4 mr-1" />
-          List
-        </Button>
-        <Button
-          variant={viewMode === 'circle' ? 'default' : 'ghost'}
-          size="sm"
-          onClick={() => setViewMode('circle')}
-          data-testid="button-view-circle"
-        >
-          <Circle className="w-4 h-4 mr-1" />
-          Circle
-        </Button>
       </div>
 
       {viewMode === 'list' ? (
