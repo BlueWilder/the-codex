@@ -5,7 +5,7 @@ import { ALL_CHARACTERS, OFFICIAL_SCRIPTS } from "@/lib/game-data";
 import { useLocalScripts, type LocalScript } from "@/hooks/use-local-scripts";
 import { ScriptBuilderDialog } from "@/components/ScriptBuilderDialog";
 import { InlineGameLog } from "@/components/InlineGameLog";
-import { Users, ChevronRight, Play, Skull, X, Plus, Check, Hand, Search, Sun, Moon, ChevronUp, ChevronDown, FileText, Theater, Vote, Loader2, Ghost, GripVertical, UserPlus, ArrowRight, Target, Scale, Scroll, BookOpen, HandMetal, Ban, LogOut, Trash2, List, Circle, Pencil, MoreVertical } from "lucide-react";
+import { Users, ChevronRight, ChevronLeft, Play, Skull, X, Plus, Check, Hand, Search, Sun, Moon, ChevronUp, ChevronDown, FileText, Theater, Vote, Loader2, Ghost, GripVertical, UserPlus, ArrowRight, Target, Scale, Scroll, BookOpen, HandMetal, Ban, LogOut, Trash2, List, Circle, Pencil, MoreVertical } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -1558,10 +1558,10 @@ function GameTrackerView({
 
   return (
     <div className="space-y-4">
-      {/* Header Row - Script + Day + Overflow Menu */}
+      {/* Dashboard Card */}
       <div className="bg-card border border-border rounded-lg overflow-hidden">
-        <div className="flex items-center justify-between gap-2 px-3 py-2">
-          {/* Script Selector */}
+        {/* Script Header Row */}
+        <div className="flex items-center justify-between gap-2 px-3 py-2 border-b border-border">
           <Popover open={scriptPopoverOpen} onOpenChange={setScriptPopoverOpen}>
             <PopoverTrigger asChild>
               <button
@@ -1569,7 +1569,7 @@ function GameTrackerView({
                 data-testid="button-change-script"
               >
                 <Scroll className="w-4 h-4 text-amber-500" />
-                <span className="font-display text-amber-500 truncate max-w-[100px] sm:max-w-none">
+                <span className="font-display text-amber-500 truncate max-w-[140px] sm:max-w-none">
                   {resolvedScript ? resolvedScript.name : "No Script"}
                 </span>
                 <ChevronDown className="w-3.5 h-3.5 text-amber-500/50" />
@@ -1647,29 +1647,6 @@ function GameTrackerView({
             </PopoverContent>
           </Popover>
 
-          {/* Day Tracker - centered */}
-          <div className="flex items-center gap-1">
-            <button
-              onClick={onPrevDay}
-              disabled={game.currentDay <= 1}
-              className="p-1 rounded hover-elevate disabled:opacity-30 disabled:cursor-not-allowed"
-              data-testid="button-prev-day"
-            >
-              <ChevronDown className="w-4 h-4 text-muted-foreground" />
-            </button>
-            <div className="flex items-center gap-1.5 px-2">
-              <Sun className="w-4 h-4 text-amber-500" />
-              <span className="font-display text-amber-500">Day {game.currentDay}</span>
-            </div>
-            <button
-              onClick={onNextDay}
-              className="p-1 rounded hover-elevate"
-              data-testid="button-next-day"
-            >
-              <ChevronUp className="w-4 h-4 text-muted-foreground" />
-            </button>
-          </div>
-
           {/* Overflow Menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -1707,8 +1684,33 @@ function GameTrackerView({
           </DropdownMenu>
         </div>
 
+        {/* Day Row - Action Button Style */}
+        <div className="flex items-center justify-center gap-3 px-3 py-3 border-b border-border bg-amber-950/10">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={onPrevDay}
+            disabled={game.currentDay <= 1}
+            data-testid="button-prev-day"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </Button>
+          <div className="flex items-center gap-2 px-4 py-1.5 bg-amber-900/30 border border-amber-700/30 rounded-md">
+            <Sun className="w-4 h-4 text-amber-500" />
+            <span className="font-display text-lg text-amber-400">Day {game.currentDay}</span>
+          </div>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={onNextDay}
+            data-testid="button-next-day"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </Button>
+        </div>
+
         {/* 2x2 Stats Grid */}
-        <div className="grid grid-cols-2 border-t border-border">
+        <div className="grid grid-cols-2">
           {/* Alive */}
           <div className="p-4 text-center border-r border-b border-border">
             <div className="flex items-center justify-center gap-2">
@@ -1817,7 +1819,7 @@ function GameTrackerView({
         </div>
 
         {/* Action Bar */}
-        <div className="flex items-center justify-end gap-2 px-3 py-2.5 border-t border-border bg-muted/20">
+        <div className="flex items-center justify-center gap-2 px-3 py-2.5 border-t border-border bg-muted/20">
           <Button variant="outline" onClick={() => setShowAddTravelerDialog(true)} data-testid="button-add-traveler">
             <Plus className="w-4 h-4 mr-1.5" />
             Traveler
