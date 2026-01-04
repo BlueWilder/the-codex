@@ -372,11 +372,12 @@ function CharacterPicker({
 }: { 
   open: boolean; 
   onClose: () => void; 
-  onSelect: (characterId: string) => void;
+  onSelect: (characterIds: string[]) => void;
   excludeIds?: string[];
   scriptCharacterIds?: string[] | null;
 }) {
   const [search, setSearch] = useState("");
+  const [selected, setSelected] = useState<Set<string>>(new Set());
 
   const filteredCharacters = useMemo(() => {
     const term = search.toLowerCase();
@@ -402,12 +403,39 @@ function CharacterPicker({
     });
   }, [search, excludeIds, scriptCharacterIds]);
 
+  const toggleCharacter = (charId: string) => {
+    setSelected(prev => {
+      const next = new Set(prev);
+      if (next.has(charId)) {
+        next.delete(charId);
+      } else {
+        next.add(charId);
+      }
+      return next;
+    });
+  };
+
+  const handleConfirm = () => {
+    if (selected.size > 0) {
+      onSelect(Array.from(selected));
+    }
+    setSelected(new Set());
+    setSearch("");
+    onClose();
+  };
+
+  const handleClose = () => {
+    setSelected(new Set());
+    setSearch("");
+    onClose();
+  };
+
   return (
-    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+    <Dialog open={open} onOpenChange={(o) => !o && handleClose()}>
       <DialogContent className="max-w-md p-0">
-        <div className="flex flex-col max-h-[70vh] overflow-hidden p-6">
+        <div className="flex flex-col max-h-[70vh] overflow-hidden p-6 pb-0">
           <DialogHeader className="mb-4">
-            <DialogTitle className="font-display text-amber-500">Select Character</DialogTitle>
+            <DialogTitle className="font-display text-amber-500">Select Characters</DialogTitle>
           </DialogHeader>
           <div className="relative mb-4 flex-shrink-0">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -421,26 +449,47 @@ function CharacterPicker({
           </div>
           <div className="flex-1 overflow-y-auto -mx-2 px-2">
             <div className="space-y-1 pb-4">
-              {filteredCharacters.map(char => (
-                <button
-                  key={char.id}
-                  onClick={() => { onSelect(char.id); onClose(); setSearch(""); }}
-                  className={cn(
-                    "w-full text-left p-3 rounded-lg border transition-colors flex items-center gap-3",
-                    "hover-elevate active-elevate-2",
-                    TEAM_COLORS[char.team]
-                  )}
-                  data-testid={`button-select-character-${char.id}`}
-                >
-                  <span className="font-medium">{char.name}</span>
-                  <span className="text-xs opacity-70 capitalize ml-auto">{char.team}</span>
-                </button>
-              ))}
+              {filteredCharacters.map(char => {
+                const isSelected = selected.has(char.id);
+                return (
+                  <button
+                    key={char.id}
+                    onClick={() => toggleCharacter(char.id)}
+                    className={cn(
+                      "w-full text-left p-3 rounded-lg border transition-colors flex items-center gap-3",
+                      "hover-elevate active-elevate-2",
+                      TEAM_COLORS[char.team],
+                      isSelected && "ring-2 ring-amber-500 ring-offset-1 ring-offset-background"
+                    )}
+                    data-testid={`button-select-character-${char.id}`}
+                  >
+                    <Checkbox 
+                      checked={isSelected} 
+                      className="pointer-events-none"
+                      data-testid={`checkbox-character-${char.id}`}
+                    />
+                    <span className="font-medium">{char.name}</span>
+                    <span className="text-xs opacity-70 capitalize ml-auto">{char.team}</span>
+                  </button>
+                );
+              })}
               {filteredCharacters.length === 0 && (
                 <p className="text-center text-muted-foreground py-8">No characters found</p>
               )}
             </div>
           </div>
+        </div>
+        <div className="flex items-center justify-between gap-3 p-4 border-t border-border bg-card/50">
+          <span className="text-sm text-muted-foreground">
+            {selected.size > 0 ? `${selected.size} selected` : "Select characters to add"}
+          </span>
+          <Button 
+            onClick={handleConfirm}
+            disabled={selected.size === 0}
+            data-testid="button-confirm-add-claims"
+          >
+            Add {selected.size > 0 ? `${selected.size} ` : ""}Claim{selected.size !== 1 ? "s" : ""}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
@@ -744,7 +793,7 @@ function PlayerDetailDrawer({
       <CharacterPicker
         open={showCharacterPicker}
         onClose={() => setShowCharacterPicker(false)}
-        onSelect={onAddClaim}
+        onSelect={(characterIds) => characterIds.forEach(id => onAddClaim(id))}
         excludeIds={player.claims}
         scriptCharacterIds={scriptCharacterIds}
       />
