@@ -335,7 +335,8 @@ function CharacterPicker({
     const term = search.toLowerCase();
     return ALL_CHARACTERS.filter(c => {
       if (excludeIds.includes(c.id)) return false;
-      if (scriptCharacterIds && scriptCharacterIds.length > 0 && !scriptCharacterIds.includes(c.id)) return false;
+      // Always include Travelers regardless of script selection
+      if (scriptCharacterIds && scriptCharacterIds.length > 0 && !scriptCharacterIds.includes(c.id) && c.team !== 'traveler') return false;
       return c.name.toLowerCase().includes(term) || c.team.toLowerCase().includes(term);
     }).sort((a, b) => {
       const teamOrder = { townsfolk: 0, outsider: 1, minion: 2, demon: 3, traveler: 4 };
@@ -1036,15 +1037,13 @@ function AddTravelerDialog({
   const [claimSearch, setClaimSearch] = useState("");
 
   const travelerCharacters = useMemo(() => {
+    // Travelers are never filtered by script - they can be added to any game
     let chars = ALL_CHARACTERS.filter(c => c.team === "traveler");
-    if (scriptCharacterIds) {
-      chars = chars.filter(c => scriptCharacterIds.includes(c.id));
-    }
     if (claimSearch) {
       chars = chars.filter(c => c.name.toLowerCase().includes(claimSearch.toLowerCase()));
     }
     return chars;
-  }, [scriptCharacterIds, claimSearch]);
+  }, [claimSearch]);
 
   const resetState = () => {
     setName("");

@@ -445,11 +445,13 @@ export default function Reference() {
                           char.ability.toLowerCase().includes(search.toLowerCase());
     const matchesTeam = teamFilter === "all" || char.team === teamFilter;
     
+    // Travelers are always available regardless of script selection
+    const isTraveler = char.team === "traveler";
     let matchesScript = true;
     if (scriptFilter === "custom") {
-      matchesScript = customCharacters.has(char.id);
+      matchesScript = customCharacters.has(char.id) || isTraveler;
     } else if (scriptFilter !== "all") {
-      matchesScript = char.edition === scriptFilter;
+      matchesScript = char.edition === scriptFilter || isTraveler;
     }
     
     return matchesSearch && matchesTeam && matchesScript;
