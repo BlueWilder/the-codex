@@ -1565,14 +1565,14 @@ function GameTrackerView({
           <Popover open={scriptPopoverOpen} onOpenChange={setScriptPopoverOpen}>
             <PopoverTrigger asChild>
               <button
-                className="flex items-center gap-1.5 px-2 py-1.5 rounded-md hover-elevate active-elevate-2"
+                className="flex items-center gap-1.5 px-2 py-1.5 rounded-md hover-elevate active-elevate-2 flex-1 max-w-[75%]"
                 data-testid="button-change-script"
               >
-                <Scroll className="w-4 h-4 text-amber-500" />
-                <span className="font-display text-amber-500 truncate max-w-[140px] sm:max-w-none">
+                <Scroll className="w-4 h-4 text-amber-500 shrink-0" />
+                <span className="font-display text-amber-500 truncate">
                   {resolvedScript ? resolvedScript.name : "No Script"}
                 </span>
-                <ChevronDown className="w-3.5 h-3.5 text-amber-500/50" />
+                <ChevronDown className="w-3.5 h-3.5 text-amber-500/50 shrink-0" />
               </button>
             </PopoverTrigger>
             <PopoverContent className="w-64 p-2" align="start">
