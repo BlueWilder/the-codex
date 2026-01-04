@@ -1,5 +1,4 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { 
@@ -22,7 +21,6 @@ import {
   UserMinus, 
   Sun, 
   Moon,
-  X,
   Filter,
 } from "lucide-react";
 import { useState, useMemo } from "react";
@@ -277,19 +275,9 @@ export function GameLogDialog({ open, onOpenChange, game }: GameLogDialogProps) 
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg max-h-[85vh] flex flex-col p-0">
         <DialogHeader className="p-4 pb-2 border-b border-amber-900/30">
-          <div className="flex items-center justify-between gap-2">
-            <DialogTitle className="font-display text-lg text-amber-500">
-              Game Log
-            </DialogTitle>
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={() => onOpenChange(false)}
-              data-testid="button-close-log"
-            >
-              <X className="w-4 h-4" />
-            </Button>
-          </div>
+          <DialogTitle className="font-display text-lg text-amber-500">
+            Game Log
+          </DialogTitle>
           
           <div className="flex flex-wrap gap-1 pt-2">
             {filterButtons.map(fb => (
