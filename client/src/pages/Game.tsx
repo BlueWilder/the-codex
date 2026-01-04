@@ -3,7 +3,7 @@ import { useState, useMemo, useEffect } from "react";
 import { usePlayerGame, getBreakdown, type GamePlayer, type Nomination, type PlayerVote, type GameScriptRef } from "@/hooks/use-player-game";
 import { ALL_CHARACTERS, OFFICIAL_SCRIPTS } from "@/lib/game-data";
 import { useLocalScripts, type LocalScript } from "@/hooks/use-local-scripts";
-import { Users, ChevronRight, Play, Skull, X, Plus, Check, Hand, Search, Sun, Moon, ChevronUp, ChevronDown, FileText, Theater, Vote, Loader2, Ghost, GripVertical, UserPlus, ArrowRight, Target, Scale, Scroll, BookOpen } from "lucide-react";
+import { Users, ChevronRight, Play, Skull, X, Plus, Check, Hand, Search, Sun, Moon, ChevronUp, ChevronDown, FileText, Theater, Vote, Loader2, Ghost, GripVertical, UserPlus, ArrowRight, Target, Scale, Scroll, BookOpen, HandMetal } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -525,7 +525,7 @@ function PlayerDetailDrawer({
                               )}
                               {nom.nominatorId === player.id && (
                                 <div className="flex items-center gap-1 text-purple-400">
-                                  <UserPlus className="w-3 h-3" /> Made nomination
+                                  <HandMetal className="w-3 h-3" /> Made nomination
                                 </div>
                               )}
                               {playerVote && (
@@ -666,7 +666,7 @@ function SortablePlayerCard({
           )}
           {nominationsMade > 0 && (
             <span className="flex items-center gap-1 text-purple-400" data-testid={`text-nominations-made-${player.id}`}>
-              <UserPlus className="w-3.5 h-3.5" />
+              <HandMetal className="w-3.5 h-3.5" />
               {nominationsMade}
             </span>
           )}
