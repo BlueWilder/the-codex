@@ -1,9 +1,16 @@
 import { useState, useEffect, useCallback } from "react";
 
-export interface VoteRecord {
+export interface PlayerVote {
+  playerId: string;
+  voted: boolean;
+}
+
+export interface Nomination {
+  id: string;
   day: number;
   nomineeId: string;
-  voted: boolean;
+  nominatorId: string;
+  votes: PlayerVote[];
 }
 
 export interface GamePlayer {
@@ -13,7 +20,6 @@ export interface GamePlayer {
   hasGhostVote: boolean;
   notes: string;
   claims: string[];
-  votes: VoteRecord[];
 }
 
 export interface PlayerGame {
@@ -22,6 +28,7 @@ export interface PlayerGame {
   playerCount: number;
   breakdown: { townsfolk: number; outsiders: number; minions: number; demons: number };
   players: GamePlayer[];
+  nominations: Nomination[];
   currentDay: number;
 }
 
@@ -55,7 +62,21 @@ export function usePlayerGame() {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
       try {
-        setGame(JSON.parse(stored));
+        const parsed = JSON.parse(stored);
+        // Migrate legacy data: ensure nominations array exists
+        if (!parsed.nominations) {
+          parsed.nominations = [];
+        }
+        // Remove legacy votes from players if present
+        if (parsed.players) {
+          parsed.players = parsed.players.map((p: GamePlayer & { votes?: unknown }) => {
+            const { votes, ...rest } = p;
+            return rest;
+          });
+        }
+        setGame(parsed);
+        // Re-save to persist migration
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
       } catch {
         localStorage.removeItem(STORAGE_KEY);
       }
@@ -86,8 +107,8 @@ export function usePlayerGame() {
         hasGhostVote: true,
         notes: "",
         claims: [],
-        votes: [],
       })),
+      nominations: [],
     };
     saveGame(newGame);
     return newGame;
@@ -122,13 +143,39 @@ export function usePlayerGame() {
     updatePlayer(playerId, { claims: player.claims.filter(c => c !== characterId) });
   }, [game, updatePlayer]);
 
-  const addVote = useCallback((playerId: string, nomineeId: string, voted: boolean) => {
+  const hasBeenNominatedToday = useCallback((playerId: string) => {
+    if (!game) return false;
+    return game.nominations.some(n => n.day === game.currentDay && n.nomineeId === playerId);
+  }, [game]);
+
+  const hasNominatedToday = useCallback((playerId: string) => {
+    if (!game) return false;
+    return game.nominations.some(n => n.day === game.currentDay && n.nominatorId === playerId);
+  }, [game]);
+
+  const getDayNominations = useCallback((day: number) => {
+    if (!game) return [];
+    return game.nominations.filter(n => n.day === day);
+  }, [game]);
+
+  const createNomination = useCallback((nomineeId: string, nominatorId: string, votes: PlayerVote[]) => {
     if (!game) return;
-    const player = game.players.find(p => p.id === playerId);
-    if (!player) return;
-    const newVote: VoteRecord = { day: game.currentDay, nomineeId, voted };
-    updatePlayer(playerId, { votes: [...player.votes, newVote] });
-  }, [game, updatePlayer]);
+    if (hasBeenNominatedToday(nomineeId) || hasNominatedToday(nominatorId)) return;
+    
+    const newNomination: Nomination = {
+      id: crypto.randomUUID(),
+      day: game.currentDay,
+      nomineeId,
+      nominatorId,
+      votes,
+    };
+    saveGame({ ...game, nominations: [...game.nominations, newNomination] });
+  }, [game, saveGame, hasBeenNominatedToday, hasNominatedToday]);
+
+  const deleteNomination = useCallback((nominationId: string) => {
+    if (!game) return;
+    saveGame({ ...game, nominations: game.nominations.filter(n => n.id !== nominationId) });
+  }, [game, saveGame]);
 
   const toggleAlive = useCallback((playerId: string) => {
     if (!game) return;
@@ -178,12 +225,16 @@ export function usePlayerGame() {
     updatePlayer,
     addClaim,
     removeClaim,
-    addVote,
     toggleAlive,
     toggleGhostVote,
     setNotes,
     nextDay,
     prevDay,
     reorderPlayers,
+    hasBeenNominatedToday,
+    hasNominatedToday,
+    getDayNominations,
+    createNomination,
+    deleteNomination,
   };
 }

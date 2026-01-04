@@ -1,8 +1,9 @@
 import { Layout } from "@/components/ui/Layout";
 import { useState, useMemo } from "react";
-import { usePlayerGame, getBreakdown, type GamePlayer } from "@/hooks/use-player-game";
+import { usePlayerGame, getBreakdown, type GamePlayer, type Nomination, type PlayerVote } from "@/hooks/use-player-game";
 import { ALL_CHARACTERS } from "@/lib/game-data";
-import { Users, ChevronRight, Play, Skull, X, Plus, Check, Hand, Search, Sun, Moon, ChevronUp, ChevronDown, FileText, Theater, Vote, Loader2, Ghost, GripVertical } from "lucide-react";
+import { Users, ChevronRight, Play, Skull, X, Plus, Check, Hand, Search, Sun, Moon, ChevronUp, ChevronDown, FileText, Theater, Vote, Loader2, Ghost, GripVertical, UserPlus, ArrowRight } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -226,130 +227,41 @@ function CharacterPicker({
   );
 }
 
-function NomineePicker({
-  open,
-  onClose,
-  onSelect,
-  players,
-  currentPlayerId,
-}: {
-  open: boolean;
-  onClose: () => void;
-  onSelect: (nomineeId: string, voted: boolean) => void;
-  players: GamePlayer[];
-  currentPlayerId: string;
-}) {
-  const [selectedNominee, setSelectedNominee] = useState<string | null>(null);
-
-  const handleVote = (voted: boolean) => {
-    if (selectedNominee) {
-      onSelect(selectedNominee, voted);
-      setSelectedNominee(null);
-      onClose();
-    }
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={(o) => { if (!o) { setSelectedNominee(null); onClose(); }}}>
-      <DialogContent className="max-w-sm">
-        <DialogHeader>
-          <DialogTitle className="font-display text-amber-500">
-            {selectedNominee ? "Record Vote" : "Select Nominee"}
-          </DialogTitle>
-        </DialogHeader>
-        
-        {!selectedNominee ? (
-          <div className="space-y-2">
-            <p className="text-sm text-muted-foreground mb-4">Who was on the block?</p>
-            {players.filter(p => p.id !== currentPlayerId).map(player => (
-              <button
-                key={player.id}
-                onClick={() => setSelectedNominee(player.id)}
-                className={cn(
-                  "w-full text-left p-3 rounded-lg border transition-colors",
-                  "hover-elevate active-elevate-2",
-                  player.isAlive 
-                    ? "bg-card border-border" 
-                    : "bg-muted/30 border-muted text-muted-foreground"
-                )}
-                data-testid={`button-select-nominee-${player.id}`}
-              >
-                <span className="flex items-center gap-2">
-                  {!player.isAlive && <Skull className="w-4 h-4" />}
-                  {player.name}
-                </span>
-              </button>
-            ))}
-          </div>
-        ) : (
-          <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Did this player vote on <span className="text-amber-400 font-medium">{players.find(p => p.id === selectedNominee)?.name}</span>?
-            </p>
-            <div className="grid grid-cols-2 gap-3">
-              <Button
-                variant="outline"
-                className="h-20 flex-col gap-2 bg-emerald-950/30 border-emerald-800 text-emerald-400 hover:bg-emerald-900/40"
-                onClick={() => handleVote(true)}
-                data-testid="button-voted-yes"
-              >
-                <Hand className="w-6 h-6" />
-                <span>Voted</span>
-              </Button>
-              <Button
-                variant="outline"
-                className="h-20 flex-col gap-2 bg-red-950/30 border-red-800 text-red-400 hover:bg-red-900/40"
-                onClick={() => handleVote(false)}
-                data-testid="button-voted-no"
-              >
-                <X className="w-6 h-6" />
-                <span>Did Not Vote</span>
-              </Button>
-            </div>
-            <Button variant="ghost" className="w-full" onClick={() => setSelectedNominee(null)}>
-              Back
-            </Button>
-          </div>
-        )}
-      </DialogContent>
-    </Dialog>
-  );
-}
-
 function PlayerDetailDrawer({
   player,
   players,
-  currentDay,
+  nominations,
   onClose,
   onToggleAlive,
   onToggleGhostVote,
   onAddClaim,
   onRemoveClaim,
   onSetNotes,
-  onAddVote,
 }: {
   player: GamePlayer | null;
   players: GamePlayer[];
-  currentDay: number;
+  nominations: Nomination[];
   onClose: () => void;
   onToggleAlive: () => void;
   onToggleGhostVote: () => void;
   onAddClaim: (characterId: string) => void;
   onRemoveClaim: (characterId: string) => void;
   onSetNotes: (notes: string) => void;
-  onAddVote: (nomineeId: string, voted: boolean) => void;
 }) {
   const [showCharacterPicker, setShowCharacterPicker] = useState(false);
-  const [showNomineePicker, setShowNomineePicker] = useState(false);
 
   if (!player) return null;
 
   const claimedCharacters = player.claims.map(id => ALL_CHARACTERS.find(c => c.id === id)).filter(Boolean);
-  const votesByDay = player.votes.reduce((acc, vote) => {
-    if (!acc[vote.day]) acc[vote.day] = [];
-    acc[vote.day].push(vote);
+  
+  const playerNominations = nominations.filter(n => 
+    n.nomineeId === player.id || n.nominatorId === player.id || n.votes.some(v => v.playerId === player.id)
+  );
+  const nominationsByDay = playerNominations.reduce((acc, nom) => {
+    if (!acc[nom.day]) acc[nom.day] = [];
+    acc[nom.day].push(nom);
     return acc;
-  }, {} as Record<number, typeof player.votes>);
+  }, {} as Record<number, Nomination[]>);
 
   return (
     <>
@@ -453,30 +365,53 @@ function PlayerDetailDrawer({
               <div className="space-y-3">
                 <div className="flex items-center justify-between gap-2">
                   <h3 className="font-bold text-sm uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                    <Vote className="w-4 h-4" /> Voting Record
+                    <Vote className="w-4 h-4" /> Nomination History
                   </h3>
-                  <Button size="sm" variant="ghost" onClick={() => setShowNomineePicker(true)} data-testid="button-add-vote">
-                    <Plus className="w-4 h-4 mr-1" /> Add
-                  </Button>
                 </div>
-                {Object.keys(votesByDay).length > 0 ? (
-                  <div className="space-y-2">
-                    {Object.entries(votesByDay).sort(([a], [b]) => Number(b) - Number(a)).map(([day, votes]) => (
-                      <div key={day} className="space-y-1">
+                {Object.keys(nominationsByDay).length > 0 ? (
+                  <div className="space-y-3">
+                    {Object.entries(nominationsByDay).sort(([a], [b]) => Number(b) - Number(a)).map(([day, noms]) => (
+                      <div key={day} className="space-y-2">
                         <p className="text-xs font-bold text-muted-foreground">Day {day}</p>
-                        {votes.map((vote, i) => {
-                          const nominee = players.find(p => p.id === vote.nomineeId);
+                        {noms.map((nom) => {
+                          const nominee = players.find(p => p.id === nom.nomineeId);
+                          const nominator = players.find(p => p.id === nom.nominatorId);
+                          const playerVote = nom.votes.find(v => v.playerId === player.id);
+                          const votesFor = nom.votes.filter(v => v.voted).length;
+                          
                           return (
-                            <div key={i} className="text-sm flex items-center gap-2 pl-2">
-                              {vote.voted ? (
-                                <Check className="w-4 h-4 text-emerald-500" />
-                              ) : (
-                                <X className="w-4 h-4 text-red-500" />
+                            <div key={nom.id} className="text-sm pl-2 space-y-1">
+                              <div className="flex items-center gap-2">
+                                <span className="text-amber-400">{nominee?.name}</span>
+                                <span className="text-muted-foreground">nominated by</span>
+                                <span className="text-purple-400">{nominator?.name}</span>
+                                <Badge variant="secondary" className="text-xs">{votesFor} votes</Badge>
+                              </div>
+                              {nom.nomineeId === player.id && (
+                                <div className="flex items-center gap-1 text-amber-400">
+                                  <Theater className="w-3 h-3" /> Was nominated
+                                </div>
                               )}
-                              <span>
-                                {vote.voted ? "Voted on" : "Did not vote on"}{" "}
-                                <span className="text-amber-400">{nominee?.name || "Unknown"}</span>
-                              </span>
+                              {nom.nominatorId === player.id && (
+                                <div className="flex items-center gap-1 text-purple-400">
+                                  <UserPlus className="w-3 h-3" /> Made nomination
+                                </div>
+                              )}
+                              {playerVote && (
+                                <div className="flex items-center gap-1">
+                                  {playerVote.voted ? (
+                                    <>
+                                      <Check className="w-3 h-3 text-emerald-500" />
+                                      <span className="text-emerald-400">Voted for execution</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <X className="w-3 h-3 text-red-500" />
+                                      <span className="text-red-400">Did not vote</span>
+                                    </>
+                                  )}
+                                </div>
+                              )}
                             </div>
                           );
                         })}
@@ -484,7 +419,7 @@ function PlayerDetailDrawer({
                     ))}
                   </div>
                 ) : (
-                  <p className="text-sm text-muted-foreground italic">No votes recorded</p>
+                  <p className="text-sm text-muted-foreground italic">No nomination activity</p>
                 )}
               </div>
             </div>
@@ -498,14 +433,6 @@ function PlayerDetailDrawer({
         onClose={() => setShowCharacterPicker(false)}
         onSelect={onAddClaim}
         excludeIds={player.claims}
-      />
-
-      <NomineePicker
-        open={showNomineePicker}
-        onClose={() => setShowNomineePicker(false)}
-        onSelect={onAddVote}
-        players={players}
-        currentPlayerId={player.id}
       />
     </>
   );
@@ -538,10 +465,9 @@ function SortablePlayerCard({
 
   const claimedChars = player.claims.map(id => ALL_CHARACTERS.find(c => c.id === id)).filter(Boolean);
   const hasNotes = player.notes.trim().length > 0;
-  const voteCount = player.votes.length;
-  const nominatedCount = game.players.reduce((count, p) => 
-    count + p.votes.filter(v => v.nomineeId === player.id).length, 0
-  );
+  
+  const nominationsReceived = game.nominations.filter(n => n.nomineeId === player.id).length;
+  const nominationsMade = game.nominations.filter(n => n.nominatorId === player.id).length;
 
   return (
     <Card
@@ -600,21 +526,209 @@ function SortablePlayerCard({
           <div className="flex-1" />
         )}
         <div className="flex items-center gap-3 text-xs text-muted-foreground shrink-0">
-          {nominatedCount > 0 && (
-            <span className="flex items-center gap-1" data-testid={`text-nominated-${player.id}`}>
+          {nominationsReceived > 0 && (
+            <span className="flex items-center gap-1 text-amber-400" data-testid={`text-nominated-${player.id}`}>
               <Theater className="w-3.5 h-3.5" />
-              {nominatedCount}
+              {nominationsReceived}
             </span>
           )}
-          {voteCount > 0 && (
-            <span className="flex items-center gap-1" data-testid={`text-votes-${player.id}`}>
-              <Hand className="w-3.5 h-3.5" />
-              {voteCount}
+          {nominationsMade > 0 && (
+            <span className="flex items-center gap-1 text-purple-400" data-testid={`text-nominations-made-${player.id}`}>
+              <UserPlus className="w-3.5 h-3.5" />
+              {nominationsMade}
             </span>
           )}
         </div>
       </div>
     </Card>
+  );
+}
+
+function NominationDialog({
+  open,
+  onClose,
+  players,
+  hasBeenNominatedToday,
+  hasNominatedToday,
+  onCreateNomination,
+}: {
+  open: boolean;
+  onClose: () => void;
+  players: GamePlayer[];
+  hasBeenNominatedToday: (playerId: string) => boolean;
+  hasNominatedToday: (playerId: string) => boolean;
+  onCreateNomination: (nomineeId: string, nominatorId: string, votes: PlayerVote[]) => void;
+}) {
+  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [nomineeId, setNomineeId] = useState<string | null>(null);
+  const [nominatorId, setNominatorId] = useState<string | null>(null);
+  const [selectedVoters, setSelectedVoters] = useState<Set<string>>(new Set());
+
+  const reset = () => {
+    setStep(1);
+    setNomineeId(null);
+    setNominatorId(null);
+    setSelectedVoters(new Set());
+  };
+
+  const handleClose = () => {
+    reset();
+    onClose();
+  };
+
+  const handleSelectNominee = (id: string) => {
+    setNomineeId(id);
+    setStep(2);
+  };
+
+  const handleSelectNominator = (id: string) => {
+    setNominatorId(id);
+    setStep(3);
+  };
+
+  const handleToggleVoter = (playerId: string) => {
+    setSelectedVoters(prev => {
+      const next = new Set(prev);
+      if (next.has(playerId)) {
+        next.delete(playerId);
+      } else {
+        next.add(playerId);
+      }
+      return next;
+    });
+  };
+
+  const handleSubmit = () => {
+    if (!nomineeId || !nominatorId) return;
+    
+    const votes: PlayerVote[] = players
+      .filter(p => p.isAlive || p.hasGhostVote)
+      .map(p => ({
+        playerId: p.id,
+        voted: selectedVoters.has(p.id),
+      }));
+    
+    onCreateNomination(nomineeId, nominatorId, votes);
+    handleClose();
+  };
+
+  const eligibleNominees = players.filter(p => p.isAlive && !hasBeenNominatedToday(p.id));
+  const eligibleNominators = players.filter(p => p.isAlive && !hasNominatedToday(p.id) && p.id !== nomineeId);
+  const eligibleVoters = players.filter(p => p.isAlive || p.hasGhostVote);
+  const nominee = players.find(p => p.id === nomineeId);
+  const nominator = players.find(p => p.id === nominatorId);
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => { if (!o) handleClose(); }}>
+      <DialogContent className="max-w-sm max-h-[80vh] flex flex-col">
+        <DialogHeader>
+          <DialogTitle className="font-display text-amber-500">
+            {step === 1 && "Select Nominee"}
+            {step === 2 && "Select Nominator"}
+            {step === 3 && "Record Votes"}
+          </DialogTitle>
+        </DialogHeader>
+
+        {step === 1 && (
+          <div className="space-y-2 overflow-y-auto flex-1">
+            <p className="text-sm text-muted-foreground mb-4">Who is being put on the block?</p>
+            {eligibleNominees.length > 0 ? (
+              eligibleNominees.map(player => (
+                <button
+                  key={player.id}
+                  onClick={() => handleSelectNominee(player.id)}
+                  className="w-full text-left p-3 rounded-lg border bg-card border-border hover-elevate active-elevate-2"
+                  data-testid={`button-nominee-${player.id}`}
+                >
+                  {player.name}
+                </button>
+              ))
+            ) : (
+              <p className="text-sm text-muted-foreground italic">All players have been nominated today</p>
+            )}
+          </div>
+        )}
+
+        {step === 2 && (
+          <div className="space-y-2 overflow-y-auto flex-1">
+            <p className="text-sm text-muted-foreground mb-4">
+              Who nominated <span className="text-amber-400 font-medium">{nominee?.name}</span>?
+            </p>
+            {eligibleNominators.length > 0 ? (
+              eligibleNominators.map(player => (
+                <button
+                  key={player.id}
+                  onClick={() => handleSelectNominator(player.id)}
+                  className="w-full text-left p-3 rounded-lg border bg-card border-border hover-elevate active-elevate-2"
+                  data-testid={`button-nominator-${player.id}`}
+                >
+                  {player.name}
+                </button>
+              ))
+            ) : (
+              <p className="text-sm text-muted-foreground italic">All players have nominated today</p>
+            )}
+            <Button variant="ghost" className="w-full mt-2" onClick={() => setStep(1)}>
+              Back
+            </Button>
+          </div>
+        )}
+
+        {step === 3 && (
+          <div className="space-y-4 overflow-y-auto flex-1">
+            <div className="text-sm text-muted-foreground space-y-1">
+              <p>
+                <span className="text-amber-400 font-medium">{nominee?.name}</span>
+                {" "}nominated by{" "}
+                <span className="text-purple-400 font-medium">{nominator?.name}</span>
+              </p>
+              <p>Check all players who voted for execution:</p>
+            </div>
+            <div className="space-y-2">
+              {eligibleVoters.map(player => (
+                <label
+                  key={player.id}
+                  className={cn(
+                    "flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors",
+                    selectedVoters.has(player.id)
+                      ? "bg-emerald-950/30 border-emerald-800"
+                      : "bg-card border-border hover:bg-muted/50"
+                  )}
+                  data-testid={`label-voter-${player.id}`}
+                >
+                  <Checkbox
+                    checked={selectedVoters.has(player.id)}
+                    onCheckedChange={() => handleToggleVoter(player.id)}
+                    data-testid={`checkbox-voter-${player.id}`}
+                  />
+                  <span className={cn(
+                    "flex-1",
+                    !player.isAlive && "text-muted-foreground"
+                  )}>
+                    {player.name}
+                    {!player.isAlive && player.hasGhostVote && (
+                      <Ghost className="w-4 h-4 inline ml-2 text-purple-400" />
+                    )}
+                  </span>
+                  {selectedVoters.has(player.id) && (
+                    <Hand className="w-4 h-4 text-emerald-500" />
+                  )}
+                </label>
+              ))}
+            </div>
+            <div className="flex gap-2 pt-2">
+              <Button variant="ghost" className="flex-1" onClick={() => setStep(2)}>
+                Back
+              </Button>
+              <Button className="flex-1" onClick={handleSubmit} data-testid="button-confirm-nomination">
+                <Check className="w-4 h-4 mr-2" />
+                Confirm ({selectedVoters.size} votes)
+              </Button>
+            </div>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -626,10 +740,12 @@ function GameTrackerView({
   onAddClaim,
   onRemoveClaim,
   onSetNotes,
-  onAddVote,
   onNextDay,
   onPrevDay,
   onReorderPlayers,
+  hasBeenNominatedToday,
+  hasNominatedToday,
+  onCreateNomination,
 }: {
   game: NonNullable<ReturnType<typeof usePlayerGame>["game"]>;
   onEndGame: () => void;
@@ -638,13 +754,16 @@ function GameTrackerView({
   onAddClaim: (playerId: string, characterId: string) => void;
   onRemoveClaim: (playerId: string, characterId: string) => void;
   onSetNotes: (playerId: string, notes: string) => void;
-  onAddVote: (playerId: string, nomineeId: string, voted: boolean) => void;
   onNextDay: () => void;
   onPrevDay: () => void;
   onReorderPlayers: (activeId: string, overId: string) => void;
+  hasBeenNominatedToday: (playerId: string) => boolean;
+  hasNominatedToday: (playerId: string) => boolean;
+  onCreateNomination: (nomineeId: string, nominatorId: string, votes: PlayerVote[]) => void;
 }) {
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
   const [confirmEnd, setConfirmEnd] = useState(false);
+  const [showNominationDialog, setShowNominationDialog] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -694,18 +813,24 @@ function GameTrackerView({
             )}
           </div>
         </div>
-        <div className="flex items-center gap-2 text-xs">
-          <span className="text-muted-foreground">Players:</span>
-          <span className="font-semibold text-foreground">{playerCount}</span>
-          <span className="text-muted-foreground/50">|</span>
-          <span className="text-muted-foreground">Alive:</span>
-          <span className="font-semibold text-foreground">{aliveCount}</span>
-          <span className="text-muted-foreground/50">|</span>
-          <span className="text-muted-foreground">Exec:</span>
-          <span className="font-semibold text-amber-400">{votesNeeded}</span>
-          <span className="text-muted-foreground/50">|</span>
-          <span className="text-muted-foreground">Poss:</span>
-          <span className="font-semibold text-purple-400">{totalVotesAvailable}</span>
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 text-xs">
+            <span className="text-muted-foreground">Players:</span>
+            <span className="font-semibold text-foreground">{playerCount}</span>
+            <span className="text-muted-foreground/50">|</span>
+            <span className="text-muted-foreground">Alive:</span>
+            <span className="font-semibold text-foreground">{aliveCount}</span>
+            <span className="text-muted-foreground/50">|</span>
+            <span className="text-muted-foreground">Exec:</span>
+            <span className="font-semibold text-amber-400">{votesNeeded}</span>
+            <span className="text-muted-foreground/50">|</span>
+            <span className="text-muted-foreground">Poss:</span>
+            <span className="font-semibold text-purple-400">{totalVotesAvailable}</span>
+          </div>
+          <Button onClick={() => setShowNominationDialog(true)} data-testid="button-nominate">
+            <UserPlus className="w-4 h-4 mr-2" />
+            Nominate
+          </Button>
         </div>
       </div>
 
@@ -727,14 +852,22 @@ function GameTrackerView({
       <PlayerDetailDrawer
         player={selectedPlayer}
         players={game.players}
-        currentDay={game.currentDay}
+        nominations={game.nominations}
         onClose={() => setSelectedPlayerId(null)}
         onToggleAlive={() => selectedPlayerId && onToggleAlive(selectedPlayerId)}
         onToggleGhostVote={() => selectedPlayerId && onToggleGhostVote(selectedPlayerId)}
         onAddClaim={(charId) => selectedPlayerId && onAddClaim(selectedPlayerId, charId)}
         onRemoveClaim={(charId) => selectedPlayerId && onRemoveClaim(selectedPlayerId, charId)}
         onSetNotes={(notes) => selectedPlayerId && onSetNotes(selectedPlayerId, notes)}
-        onAddVote={(nomineeId, voted) => selectedPlayerId && onAddVote(selectedPlayerId, nomineeId, voted)}
+      />
+
+      <NominationDialog
+        open={showNominationDialog}
+        onClose={() => setShowNominationDialog(false)}
+        players={game.players}
+        hasBeenNominatedToday={hasBeenNominatedToday}
+        hasNominatedToday={hasNominatedToday}
+        onCreateNomination={onCreateNomination}
       />
     </div>
   );
@@ -751,10 +884,12 @@ export default function Game() {
     toggleAlive,
     toggleGhostVote,
     setNotes,
-    addVote,
     nextDay,
     prevDay,
     reorderPlayers,
+    hasBeenNominatedToday,
+    hasNominatedToday,
+    createNomination,
   } = usePlayerGame();
 
   if (isLoading) {
@@ -780,10 +915,12 @@ export default function Game() {
           onAddClaim={addClaim}
           onRemoveClaim={removeClaim}
           onSetNotes={setNotes}
-          onAddVote={addVote}
           onNextDay={nextDay}
           onPrevDay={prevDay}
           onReorderPlayers={reorderPlayers}
+          hasBeenNominatedToday={hasBeenNominatedToday}
+          hasNominatedToday={hasNominatedToday}
+          onCreateNomination={createNomination}
         />
       )}
     </Layout>
