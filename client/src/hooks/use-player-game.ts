@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 
+export type PlayerStatus = 'alive' | 'dead' | 'left' | 'exiled';
+
 export interface PlayerVote {
   playerId: string;
   voted: boolean;
@@ -13,14 +15,37 @@ export interface Nomination {
   votes: PlayerVote[];
 }
 
+export interface ExileVote {
+  id: string;
+  day: number;
+  travelerId: string;
+  votes: PlayerVote[];
+  passed: boolean;
+}
+
 export interface GamePlayer {
   id: string;
   name: string;
   isAlive: boolean;
+  status: PlayerStatus;
   hasGhostVote: boolean;
   notes: string;
   claims: string[];
   isTraveler?: boolean;
+}
+
+export function isPlayerActive(player: GamePlayer): boolean {
+  return player.status === 'alive';
+}
+
+export function canPlayerVote(player: GamePlayer): boolean {
+  if (player.status === 'alive') return true;
+  if (player.status === 'dead' && player.hasGhostVote && !player.isTraveler) return true;
+  return false;
+}
+
+export function canPlayerVoteOnExile(player: GamePlayer): boolean {
+  return player.status === 'alive' || player.status === 'dead';
 }
 
 export interface GameScriptRef {
@@ -34,6 +59,7 @@ export interface PlayerGame {
   breakdown: { townsfolk: number; outsiders: number; minions: number; demons: number; travelers?: number };
   players: GamePlayer[];
   nominations: Nomination[];
+  exileVotes: ExileVote[];
   currentDay: number;
   script?: GameScriptRef | null;
 }
@@ -76,10 +102,18 @@ export function usePlayerGame() {
         if (!parsed.nominations) {
           parsed.nominations = [];
         }
-        // Remove legacy votes from players if present
+        // Migrate: ensure exileVotes array exists
+        if (!parsed.exileVotes) {
+          parsed.exileVotes = [];
+        }
+        // Migrate: add status field to players if missing
         if (parsed.players) {
           parsed.players = parsed.players.map((p: GamePlayer & { votes?: unknown }) => {
             const { votes, ...rest } = p;
+            // Add status field based on isAlive if missing
+            if (!rest.status) {
+              rest.status = rest.isAlive ? 'alive' : 'dead';
+            }
             return rest;
           });
         }
@@ -114,12 +148,14 @@ export function usePlayerGame() {
         id: `player-${i}`,
         name,
         isAlive: true,
-        hasGhostVote: true,
+        status: 'alive' as PlayerStatus,
+        hasGhostVote: !( i >= travelerStartIndex), // Travelers don't get ghost votes
         notes: "",
         claims: [],
         isTraveler: i >= travelerStartIndex,
       })),
       nominations: [],
+      exileVotes: [],
       script: script || null,
     };
     saveGame(newGame);
@@ -183,18 +219,18 @@ export function usePlayerGame() {
     };
     
     // Calculate votes needed and check for automatic execution
-    const aliveCount = game.players.filter(p => p.isAlive).length;
+    const aliveCount = game.players.filter(p => p.status === 'alive').length;
     const votesNeeded = Math.ceil(aliveCount / 2);
     const yesVotes = votes.filter(v => v.voted).length;
     
     let updatedPlayers = game.players;
     if (yesVotes >= votesNeeded) {
-      // Auto-execute: mark nominee as dead but keep their ghost vote
+      // Auto-execute: mark nominee as dead, Travelers don't get ghost votes
       const nominee = game.players.find(p => p.id === nomineeId);
-      if (nominee && nominee.isAlive) {
+      if (nominee && nominee.status === 'alive') {
         updatedPlayers = game.players.map(p => 
           p.id === nomineeId 
-            ? { ...p, isAlive: false, hasGhostVote: true }
+            ? { ...p, isAlive: false, status: 'dead' as PlayerStatus, hasGhostVote: !nominee.isTraveler }
             : p
         );
       }
@@ -216,13 +252,29 @@ export function usePlayerGame() {
     if (!game) return;
     const player = game.players.find(p => p.id === playerId);
     if (!player) return;
-    updatePlayer(playerId, { isAlive: !player.isAlive });
+    const newStatus: PlayerStatus = player.status === 'alive' ? 'dead' : 'alive';
+    const newIsAlive = newStatus === 'alive';
+    // Regular players get ghost vote when dying, Travelers don't
+    const hasGhostVote = !newIsAlive && !player.isTraveler ? true : player.hasGhostVote;
+    updatePlayer(playerId, { isAlive: newIsAlive, status: newStatus, hasGhostVote });
+  }, [game, updatePlayer]);
+
+  const setPlayerStatus = useCallback((playerId: string, status: PlayerStatus) => {
+    if (!game) return;
+    const player = game.players.find(p => p.id === playerId);
+    if (!player) return;
+    const newIsAlive = status === 'alive';
+    // Travelers never get ghost votes
+    const hasGhostVote = player.isTraveler ? false : (status === 'dead' ? true : player.hasGhostVote);
+    updatePlayer(playerId, { isAlive: newIsAlive, status, hasGhostVote });
   }, [game, updatePlayer]);
 
   const toggleGhostVote = useCallback((playerId: string) => {
     if (!game) return;
     const player = game.players.find(p => p.id === playerId);
     if (!player) return;
+    // Travelers can never have ghost votes
+    if (player.isTraveler) return;
     updatePlayer(playerId, { hasGhostVote: !player.hasGhostVote });
   }, [game, updatePlayer]);
 
@@ -262,6 +314,79 @@ export function usePlayerGame() {
     saveGame({ ...game, script: scriptRef });
   }, [game, saveGame]);
 
+  const addTraveler = useCallback((name: string, initialClaims: string[] = []) => {
+    if (!game) return;
+    const travelerCount = game.players.filter(p => p.isTraveler).length;
+    const newTraveler: GamePlayer = {
+      id: `traveler-${Date.now()}`,
+      name: name || `Traveler ${travelerCount + 1}`,
+      isAlive: true,
+      status: 'alive',
+      hasGhostVote: false, // Travelers never get ghost votes
+      notes: "",
+      claims: initialClaims,
+      isTraveler: true,
+    };
+    saveGame({ ...game, players: [...game.players, newTraveler] });
+  }, [game, saveGame]);
+
+  const removeTraveler = useCallback((playerId: string) => {
+    if (!game) return;
+    const player = game.players.find(p => p.id === playerId);
+    if (!player || !player.isTraveler) return; // Only Travelers can be removed
+    // Remove player and their nominations/exile votes
+    const newNominations = game.nominations.filter(
+      n => n.nomineeId !== playerId && n.nominatorId !== playerId
+    );
+    const newExileVotes = game.exileVotes.filter(e => e.travelerId !== playerId);
+    saveGame({ 
+      ...game, 
+      players: game.players.filter(p => p.id !== playerId),
+      nominations: newNominations,
+      exileVotes: newExileVotes,
+    });
+  }, [game, saveGame]);
+
+  const createExileVote = useCallback((travelerId: string, votes: PlayerVote[]) => {
+    if (!game) return;
+    const traveler = game.players.find(p => p.id === travelerId);
+    if (!traveler || !traveler.isTraveler) return;
+    
+    // Calculate if exile passes (50% of living players)
+    const aliveCount = game.players.filter(p => p.status === 'alive').length;
+    const votesNeeded = Math.ceil(aliveCount / 2);
+    const yesVotes = votes.filter(v => v.voted).length;
+    const passed = yesVotes >= votesNeeded;
+    
+    const newExileVote: ExileVote = {
+      id: crypto.randomUUID(),
+      day: game.currentDay,
+      travelerId,
+      votes,
+      passed,
+    };
+    
+    let updatedPlayers = game.players;
+    if (passed) {
+      updatedPlayers = game.players.map(p => 
+        p.id === travelerId 
+          ? { ...p, isAlive: false, status: 'exiled' as PlayerStatus, hasGhostVote: false }
+          : p
+      );
+    }
+    
+    saveGame({ 
+      ...game, 
+      players: updatedPlayers,
+      exileVotes: [...game.exileVotes, newExileVote] 
+    });
+  }, [game, saveGame]);
+
+  const getPlayerExileVotes = useCallback((playerId: string) => {
+    if (!game) return [];
+    return game.exileVotes.filter(e => e.travelerId === playerId);
+  }, [game]);
+
   return {
     game,
     isLoading,
@@ -271,6 +396,7 @@ export function usePlayerGame() {
     addClaim,
     removeClaim,
     toggleAlive,
+    setPlayerStatus,
     toggleGhostVote,
     setNotes,
     nextDay,
@@ -283,5 +409,9 @@ export function usePlayerGame() {
     deleteNomination,
     clearScript,
     setScript,
+    addTraveler,
+    removeTraveler,
+    createExileVote,
+    getPlayerExileVotes,
   };
 }

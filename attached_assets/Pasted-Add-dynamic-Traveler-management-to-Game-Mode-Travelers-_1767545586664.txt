@@ -1,0 +1,125 @@
+Add dynamic Traveler management to Game Mode. Travelers can join or leave at any point during a game, regardless of player count.
+
+## CURRENT APP CONTEXT
+The Game Mode already has:
+- Player cards with drag-and-drop reordering (⋮⋮ handle)
+- Dead players: skull icon, strikethrough name, ghost icon (👻) for ghost vote
+- Claim badges displayed on player cards (e.g., "Apprentice")
+- Nomination flag with count (🚩) on player cards
+- Player detail drawer with: Notes, Claims (searchable add), Nomination History
+- Nominate flow: Select nominee → Select nominator → Checkbox all voters
+- Live stats: Alive/Dead counts, To Exec threshold, Can Vote total, nom count, ghost count
+- Day tracker with increment/decrement
+- Script selector (Trouble Brewing, etc.)
+
+## 1. UPDATE PLAYER DATA STRUCTURE
+
+Add to the existing GamePlayer interface:
+  isTraveler: boolean;  // NEW FIELD
+  status: 'alive' | 'dead' | 'left' | 'exiled';  // EXPAND from isAlive boolean
+
+## 2. ADD TRAVELER BUTTON
+
+Add "+ Add Traveler" button in the game view, near the Nominate button or in the header area.
+
+When tapped, show a simple modal:
+- Name input (default: "Traveler 1", "Traveler 2", etc.)
+- Optional: Character claim picker (Travelers are public roles, so they often claim immediately)
+- "Add to Game" button
+
+New Travelers are inserted into the player list with:
+- isTraveler: true
+- status: 'alive'
+- Positioned at bottom of list (user can drag to correct seat position)
+
+## 3. TRAVELER VISUAL DISTINCTION
+
+Traveler player cards should be visually distinct from regular players:
+- Different border color: gold/amber (#d97706) instead of the standard border
+- Small "Traveler" badge OR 🎭 icon on the card (similar to how claim badges display)
+- Slightly different background tint (subtle)
+
+In the player list, Travelers should be:
+- Draggable like regular players (they sit in the circle between neighbors)
+- Sortable among all players, not segregated
+
+## 4. TRAVELER STATUS OPTIONS
+
+In the Traveler's detail drawer, replace "Mark as Dead" with expanded options:
+
+Show a status selector or multiple buttons:
+- "Mark as Exiled" - Traveler-specific (exile vote passed)
+- "Mark as Dead" - Died at night (rare, but possible via abilities)
+- "Left Game" - Traveler departed voluntarily
+
+Display states:
+- Exiled: Skull icon + "Exiled" badge, strikethrough name
+- Dead: Skull icon, strikethrough name (same as regular dead)
+- Left: Grayed out + "Left" badge, no skull (they didn't die)
+
+All inactive Travelers remain in list for historical reference.
+
+## 5. TRAVELER GHOST VOTES
+
+Travelers who are EXILED or DEAD:
+- Do NOT get a ghost vote (they're out of the game)
+- No 👻 icon
+
+Travelers who LEFT:
+- Also no ghost vote
+- Completely inactive
+
+This differs from regular players who die and get one ghost vote.
+
+## 6. EXILE VOTING (Distinct from Nomination)
+
+Add an "Exile" button or option, separate from "Nominate":
+- Exile can be called at any time during the day
+- Exile does NOT use the nomination queue
+- Exile requires ~50% of LIVING players (different threshold)
+- Dead players CAN vote on exile (doesn't spend ghost vote)
+
+When "Exile" is tapped:
+1. Show Traveler list only (can't exile non-Travelers)
+2. Select which Traveler to exile
+3. Record votes (all players can vote, including dead)
+4. If passed, mark Traveler as 'exiled'
+
+Track exile votes separately in the Traveler's Nomination History:
+- "Day 2: Exile vote - 8 voted (Passed)" 
+- "Day 1: Exile vote - 4 voted (Failed)"
+
+## 7. UPDATE LIVE STATS
+
+Current stats: "16 Alive / 4 Dead"
+
+Update to account for Travelers:
+- Option A: "14 Players (12 alive) + 2 Travelers (1 exiled)"
+- Option B: "12 Alive / 4 Dead / 2 Travelers" with Traveler count separate
+- The "To Exec" and "Can Vote" calculations should include living Travelers
+
+The "ghost" count should NOT include exiled/dead Travelers (they don't get ghost votes).
+
+## 8. REMOVE TRAVELER OPTION
+
+In the Traveler's detail drawer, add "Remove from Game" at the bottom:
+- Confirmation prompt: "Remove [Name]? This deletes all their records."
+- Use case: Traveler left early and user wants to clean up
+- Regular players should NOT have this option (they're part of the core game)
+
+## 9. SETUP FLOW FOR 16+ PLAYERS
+
+Currently the app handles 5-15 players with the standard breakdown.
+
+For 16+ players:
+- Base breakdown stays at 15-player max: { townsfolk: 9, outsiders: 2, minions: 3, demons: 1 }
+- Auto-calculate Travelers needed: playerCount - 15
+- Display: "9 Townsfolk, 2 Outsiders, 3 Minions, 1 Demon + 2 Travelers"
+
+In player name entry:
+- First 15 slots: "Player 1" through "Player 15"
+- Additional slots: "Traveler 1", "Traveler 2", etc. (pre-marked as isTraveler: true)
+
+## 10. OPTIONAL: ADD TRAVELER MID-SETUP
+
+For games of 15 or fewer, add a subtle "+ Add Travelers?" link after entering player names, before starting the game. This lets users add Travelers during setup if they know they'll have them.

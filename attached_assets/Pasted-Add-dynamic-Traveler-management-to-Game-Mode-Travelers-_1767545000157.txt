@@ -1,0 +1,93 @@
+Add dynamic Traveler management to Game Mode. Travelers can join or leave at any point during a game, regardless of player count.
+
+## 1. UPDATE PLAYER DATA STRUCTURE
+
+Modify GamePlayer interface:
+interface GamePlayer {
+  id: string;
+  name: string;
+  isAlive: boolean;
+  isTraveler: boolean;  // NEW FIELD
+  notes: string;
+  claims: string[];
+  votes: VoteRecord[];
+}
+
+## 2. ADD TRAVELER BUTTON IN GAME VIEW
+
+Add a persistent "+ Add Traveler" button in the game view header or footer.
+
+When tapped, show a simple form:
+- Name input (default: "Traveler [N]" where N is next traveler number)
+- "Add to Game" button
+
+New Travelers are added to the player list immediately with:
+- isTraveler: true
+- isAlive: true
+- Empty notes, claims, votes
+
+## 3. TRAVELER VISUAL DISTINCTION
+
+Traveler player cards should be visually distinct:
+- Different border color (suggest gold/amber: #d97706)
+- Small "Traveler" badge or 🎭 icon on the card
+- Slightly different background tint
+
+## 4. TRAVELER-SPECIFIC ACTIONS
+
+In the Traveler's expanded player card, add these unique options:
+
+### "Left Game" button (instead of just Dead)
+- Travelers can LEAVE without dying
+- When tapped, mark them as "Left" (different from Dead)
+- Display: Grayed out with "Left" label
+- They remain in the list for historical reference but clearly inactive
+
+### "Exiled" status option
+- Add "Exiled" as a status distinct from "Executed" or "Died at Night"
+- When marking a Traveler dead, show options:
+  - "Exiled" (Traveler-specific)
+  - "Died at Night" (rare but possible via abilities)
+
+## 5. REMOVE TRAVELER OPTION
+
+In the Traveler's expanded card, add "Remove from Game" option:
+- Confirmation prompt: "Remove [Name] from this game? This will delete their records."
+- Use for: Travelers who left early and you want to clean up the list
+- Regular players should NOT have this option
+
+## 6. TRAVELER NOTES IN VOTING
+
+Update voting record display to clarify Traveler exile votes:
+- Regular nomination: "Day 1: ✋ Voted on Sarah"
+- Traveler exile: "Day 1: ✋ Voted to exile Marcus (Traveler)"
+
+When recording a vote on a Traveler, auto-tag it as an exile vote.
+
+## 7. GAME SUMMARY UPDATES
+
+Update the game header/summary to show:
+"12 Players + 2 Travelers (1 left)"
+
+Breakdown display example:
+┌────────────────────────────────────────┐
+│ Day 2                    [Next Day]    │
+│ 12 Players (10 alive) + 2 Travelers    │
+│ [+ Add Traveler]                       │
+└────────────────────────────────────────┘
+
+## 8. PLAYER LIST ORDERING
+
+Display players in this order:
+1. Living regular players (alphabetical or entry order)
+2. Living Travelers (with visual distinction)
+3. Dead regular players (grayed)
+4. Dead/Exiled/Left Travelers (grayed)
+
+## 9. SETUP FLOW UPDATE
+
+In the initial game setup:
+- For 15 or fewer players: Show "+ Add Travelers?" optional link after entering player names
+- For 16+ players: Auto-generate Traveler slots as before, but also show "+ Add Another Traveler" option
+
+Travelers added during setup vs mid-game should function identically.

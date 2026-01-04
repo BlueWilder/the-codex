@@ -1,9 +1,9 @@
 import { Layout } from "@/components/ui/Layout";
 import { useState, useMemo, useEffect } from "react";
-import { usePlayerGame, getBreakdown, type GamePlayer, type Nomination, type PlayerVote, type GameScriptRef } from "@/hooks/use-player-game";
+import { usePlayerGame, getBreakdown, isPlayerActive, canPlayerVote, canPlayerVoteOnExile, type GamePlayer, type Nomination, type PlayerVote, type GameScriptRef, type ExileVote, type PlayerStatus } from "@/hooks/use-player-game";
 import { ALL_CHARACTERS, OFFICIAL_SCRIPTS } from "@/lib/game-data";
 import { useLocalScripts, type LocalScript } from "@/hooks/use-local-scripts";
-import { Users, ChevronRight, Play, Skull, X, Plus, Check, Hand, Search, Sun, Moon, ChevronUp, ChevronDown, FileText, Theater, Vote, Loader2, Ghost, GripVertical, UserPlus, ArrowRight, Target, Scale, Scroll, BookOpen, HandMetal } from "lucide-react";
+import { Users, ChevronRight, Play, Skull, X, Plus, Check, Hand, Search, Sun, Moon, ChevronUp, ChevronDown, FileText, Theater, Vote, Loader2, Ghost, GripVertical, UserPlus, ArrowRight, Target, Scale, Scroll, BookOpen, HandMetal, Ban, LogOut, Trash2 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -392,23 +392,29 @@ function PlayerDetailDrawer({
   player,
   players,
   nominations,
+  exileVotes,
   onClose,
   onToggleAlive,
+  onSetPlayerStatus,
   onToggleGhostVote,
   onAddClaim,
   onRemoveClaim,
   onSetNotes,
+  onRemoveTraveler,
   scriptCharacterIds,
 }: {
   player: GamePlayer | null;
   players: GamePlayer[];
   nominations: Nomination[];
+  exileVotes?: ExileVote[];
   onClose: () => void;
   onToggleAlive: () => void;
+  onSetPlayerStatus?: (status: PlayerStatus) => void;
   onToggleGhostVote: () => void;
   onAddClaim: (characterId: string) => void;
   onRemoveClaim: (characterId: string) => void;
   onSetNotes: (notes: string) => void;
+  onRemoveTraveler?: () => void;
   scriptCharacterIds?: string[] | null;
 }) {
   const [showCharacterPicker, setShowCharacterPicker] = useState(false);
@@ -432,11 +438,25 @@ function PlayerDetailDrawer({
         <DrawerContent className="max-h-[85vh] flex flex-col">
           <DrawerHeader className="border-b border-border pb-4 shrink-0">
             <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-3">
-                {!player.isAlive && <Skull className="w-5 h-5 text-muted-foreground" />}
+              <div className="flex items-center gap-3 flex-wrap">
+                {player.status === 'dead' && <Skull className="w-5 h-5 text-muted-foreground" />}
+                {player.status === 'exiled' && <Ban className="w-5 h-5 text-purple-400" />}
+                {player.status === 'left' && <LogOut className="w-5 h-5 text-muted-foreground" />}
                 <DrawerTitle className="font-display text-xl text-amber-500">{player.name}</DrawerTitle>
-                <Badge variant={player.isAlive ? "default" : "secondary"} className={player.isAlive ? "bg-emerald-900/50 text-emerald-300" : ""}>
-                  {player.isAlive ? "Alive" : "Dead"}
+                {player.isTraveler && (
+                  <Badge variant="secondary" className="bg-purple-900/40 text-purple-300 border-purple-700">
+                    Traveler
+                  </Badge>
+                )}
+                <Badge 
+                  variant={player.status === 'alive' ? "default" : "secondary"} 
+                  className={cn(
+                    player.status === 'alive' && "bg-emerald-900/50 text-emerald-300",
+                    player.status === 'exiled' && "bg-purple-900/50 text-purple-300",
+                    player.status === 'left' && "bg-muted text-muted-foreground"
+                  )}
+                >
+                  {player.status === 'alive' ? "Alive" : player.status === 'dead' ? "Dead" : player.status === 'exiled' ? "Exiled" : "Left"}
                 </Badge>
               </div>
               <DrawerClose asChild>
@@ -450,37 +470,108 @@ function PlayerDetailDrawer({
           <ScrollArea className="flex-1 overflow-auto">
             <div className="p-4">
             <div className="space-y-6">
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "flex-1",
-                    player.isAlive
-                      ? "border-red-800 text-red-400 hover:bg-red-950/30"
-                      : "border-emerald-800 text-emerald-400 hover:bg-emerald-950/30"
+              {/* Status Controls - Different for Travelers vs Regular Players */}
+              {player.isTraveler ? (
+                <div className="space-y-2">
+                  <div className="flex flex-wrap gap-2">
+                    {player.status !== 'alive' && onSetPlayerStatus && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="border-emerald-800 text-emerald-400"
+                        onClick={() => onSetPlayerStatus('alive')}
+                        data-testid="button-set-alive"
+                      >
+                        <Users className="w-4 h-4 mr-1" />
+                        Mark Alive
+                      </Button>
+                    )}
+                    {player.status !== 'dead' && onSetPlayerStatus && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="border-red-800 text-red-400"
+                        onClick={() => onSetPlayerStatus('dead')}
+                        data-testid="button-set-dead"
+                      >
+                        <Skull className="w-4 h-4 mr-1" />
+                        Mark Dead
+                      </Button>
+                    )}
+                    {player.status !== 'exiled' && onSetPlayerStatus && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="border-purple-800 text-purple-400"
+                        onClick={() => onSetPlayerStatus('exiled')}
+                        data-testid="button-set-exiled"
+                      >
+                        <Ban className="w-4 h-4 mr-1" />
+                        Mark Exiled
+                      </Button>
+                    )}
+                    {player.status !== 'left' && onSetPlayerStatus && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="border-muted text-muted-foreground"
+                        onClick={() => onSetPlayerStatus('left')}
+                        data-testid="button-set-left"
+                      >
+                        <LogOut className="w-4 h-4 mr-1" />
+                        Mark Left
+                      </Button>
+                    )}
+                  </div>
+                  {onRemoveTraveler && (
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      className="w-full"
+                      onClick={() => {
+                        onRemoveTraveler();
+                        onClose();
+                      }}
+                      data-testid="button-remove-traveler"
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Remove from Game
+                    </Button>
                   )}
-                  onClick={onToggleAlive}
-                  data-testid="button-toggle-alive"
-                >
-                  <Skull className="w-4 h-4 mr-2" />
-                  {player.isAlive ? "Mark as Dead" : "Mark as Alive"}
-                </Button>
-                {!player.isAlive && (
+                </div>
+              ) : (
+                <div className="flex gap-2">
                   <Button
                     variant="outline"
                     className={cn(
-                      player.hasGhostVote
-                        ? "border-purple-800 text-purple-400 hover:bg-purple-950/30"
-                        : "border-muted text-muted-foreground"
+                      "flex-1",
+                      player.status === 'alive'
+                        ? "border-red-800 text-red-400"
+                        : "border-emerald-800 text-emerald-400"
                     )}
-                    onClick={onToggleGhostVote}
-                    data-testid="button-toggle-ghost-vote"
+                    onClick={onToggleAlive}
+                    data-testid="button-toggle-alive"
                   >
-                    <Ghost className="w-4 h-4 mr-2" />
-                    {player.hasGhostVote ? "Has Ghost Vote" : "Ghost Vote Used"}
+                    <Skull className="w-4 h-4 mr-2" />
+                    {player.status === 'alive' ? "Mark as Dead" : "Mark as Alive"}
                   </Button>
-                )}
-              </div>
+                  {player.status === 'dead' && !player.isTraveler && (
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        player.hasGhostVote
+                          ? "border-purple-800 text-purple-400"
+                          : "border-muted text-muted-foreground"
+                      )}
+                      onClick={onToggleGhostVote}
+                      data-testid="button-toggle-ghost-vote"
+                    >
+                      <Ghost className="w-4 h-4 mr-2" />
+                      {player.hasGhostVote ? "Has Ghost Vote" : "Ghost Vote Used"}
+                    </Button>
+                  )}
+                </div>
+              )}
 
               <div className="space-y-3">
                 <div className="flex items-center justify-between gap-2">
@@ -633,13 +724,16 @@ function SortablePlayerCard({
   const nominationsReceived = game.nominations.filter(n => n.nomineeId === player.id).length;
   const nominationsMade = game.nominations.filter(n => n.nominatorId === player.id).length;
 
+  const isActive = player.status === 'alive';
+  const isInactive = player.status !== 'alive';
+
   return (
     <Card
       ref={setNodeRef}
       style={style}
       className={cn(
         "p-4",
-        !player.isAlive && "opacity-60",
+        isInactive && "opacity-60",
         isDragging && "opacity-80 shadow-lg z-50 scale-[1.02]",
         player.isTraveler && "border-purple-700/50"
       )}
@@ -655,7 +749,9 @@ function SortablePlayerCard({
           >
             <GripVertical className="w-5 h-5" />
           </button>
-          {!player.isAlive && <Skull className="w-4 h-4 text-muted-foreground" />}
+          {player.status === 'dead' && <Skull className="w-4 h-4 text-muted-foreground" />}
+          {player.status === 'exiled' && <Ban className="w-4 h-4 text-purple-400" />}
+          {player.status === 'left' && <LogOut className="w-4 h-4 text-muted-foreground" />}
           {player.isTraveler && (
             <Badge variant="secondary" className="bg-purple-900/40 text-purple-300 border-purple-700 text-xs">
               T
@@ -665,14 +761,14 @@ function SortablePlayerCard({
             onClick={onSelect}
             className={cn(
               "font-bold text-lg text-left hover:underline",
-              player.isAlive ? "text-amber-100" : "text-muted-foreground line-through"
+              isActive ? "text-amber-100" : "text-muted-foreground line-through"
             )}
           >
             {player.name}
           </button>
         </div>
         <div className="flex items-center gap-2 text-muted-foreground">
-          {!player.isAlive && player.hasGhostVote && (
+          {player.status === 'dead' && player.hasGhostVote && !player.isTraveler && (
             <Ghost className="w-5 h-5 text-purple-400" data-testid={`icon-ghost-vote-${player.id}`} />
           )}
           {hasNotes && <FileText className="w-4 h-4" />}
@@ -873,10 +969,10 @@ function NominationDialog({
                   />
                   <span className={cn(
                     "flex-1",
-                    !player.isAlive && "text-muted-foreground"
+                    player.status !== 'alive' && "text-muted-foreground"
                   )}>
                     {player.name}
-                    {!player.isAlive && player.hasGhostVote && (
+                    {player.status === 'dead' && player.hasGhostVote && !player.isTraveler && (
                       <Ghost className="w-4 h-4 inline ml-2 text-purple-400" />
                     )}
                   </span>
@@ -902,10 +998,276 @@ function NominationDialog({
   );
 }
 
+function AddTravelerDialog({
+  open,
+  onClose,
+  onAddTraveler,
+  scriptCharacterIds,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onAddTraveler: (name: string, initialClaims?: string[]) => void;
+  scriptCharacterIds?: string[];
+}) {
+  const [name, setName] = useState("");
+  const [selectedClaim, setSelectedClaim] = useState<string | null>(null);
+  const [claimSearch, setClaimSearch] = useState("");
+
+  const travelerCharacters = useMemo(() => {
+    let chars = ALL_CHARACTERS.filter(c => c.team === "traveler");
+    if (scriptCharacterIds) {
+      chars = chars.filter(c => scriptCharacterIds.includes(c.id));
+    }
+    if (claimSearch) {
+      chars = chars.filter(c => c.name.toLowerCase().includes(claimSearch.toLowerCase()));
+    }
+    return chars;
+  }, [scriptCharacterIds, claimSearch]);
+
+  const resetState = () => {
+    setName("");
+    setSelectedClaim(null);
+    setClaimSearch("");
+  };
+
+  const handleAdd = () => {
+    if (!name.trim()) return;
+    const claims = selectedClaim ? [selectedClaim] : [];
+    onAddTraveler(name.trim(), claims);
+    resetState();
+    onClose();
+  };
+
+  const handleClose = () => {
+    resetState();
+    onClose();
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={(open) => !open && handleClose()}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle className="text-amber-500 font-display">Add Traveler</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div>
+            <label className="text-sm text-muted-foreground mb-1 block">Traveler Name</label>
+            <Input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Traveler name"
+              data-testid="input-traveler-name"
+            />
+          </div>
+          <div>
+            <label className="text-sm text-muted-foreground mb-1 block">Character Claim (optional)</label>
+            <div className="relative mb-2">
+              <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                value={claimSearch}
+                onChange={(e) => setClaimSearch(e.target.value)}
+                placeholder="Search travelers..."
+                className="pl-8"
+                data-testid="input-search-traveler-claim"
+              />
+            </div>
+            <div className="max-h-32 overflow-y-auto space-y-1">
+              {travelerCharacters.map(char => (
+                <button
+                  key={char.id}
+                  onClick={() => setSelectedClaim(selectedClaim === char.id ? null : char.id)}
+                  className={cn(
+                    "w-full text-left px-2 py-1.5 rounded-md text-sm flex items-center gap-2",
+                    selectedClaim === char.id 
+                      ? "bg-purple-900/40 border border-purple-700" 
+                      : "hover-elevate"
+                  )}
+                  data-testid={`button-claim-${char.id}`}
+                >
+                  {char.name}
+                  {selectedClaim === char.id && <Check className="w-3 h-3 ml-auto text-purple-400" />}
+                </button>
+              ))}
+              {travelerCharacters.length === 0 && (
+                <p className="text-sm text-muted-foreground text-center py-2">No travelers found</p>
+              )}
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="ghost" className="flex-1" onClick={handleClose}>
+              Cancel
+            </Button>
+            <Button className="flex-1" onClick={handleAdd} disabled={!name.trim()} data-testid="button-confirm-add-traveler">
+              <Plus className="w-4 h-4 mr-2" />
+              Add Traveler
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function ExileDialog({
+  open,
+  onClose,
+  players,
+  onCreateExileVote,
+}: {
+  open: boolean;
+  onClose: () => void;
+  players: GamePlayer[];
+  onCreateExileVote: (travelerId: string, votes: PlayerVote[]) => void;
+}) {
+  const [step, setStep] = useState<1 | 2>(1);
+  const [selectedTravelerId, setSelectedTravelerId] = useState<string | null>(null);
+  const [selectedVoters, setSelectedVoters] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (!open) {
+      setStep(1);
+      setSelectedTravelerId(null);
+      setSelectedVoters(new Set());
+    }
+  }, [open]);
+
+  const aliveTravelers = players.filter(p => p.isTraveler && p.status === 'alive');
+  const selectedTraveler = players.find(p => p.id === selectedTravelerId);
+  
+  // All alive and dead players can vote on exile (not left/exiled)
+  const eligibleVoters = players.filter(p => canPlayerVoteOnExile(p));
+  const aliveCount = players.filter(p => p.status === 'alive').length;
+  const votesNeeded = Math.ceil(aliveCount / 2);
+
+  const handleToggleVoter = (playerId: string) => {
+    setSelectedVoters(prev => {
+      const next = new Set(prev);
+      if (next.has(playerId)) {
+        next.delete(playerId);
+      } else {
+        next.add(playerId);
+      }
+      return next;
+    });
+  };
+
+  const handleSubmit = () => {
+    if (!selectedTravelerId) return;
+    const votes: PlayerVote[] = eligibleVoters.map(p => ({
+      playerId: p.id,
+      voted: selectedVoters.has(p.id),
+    }));
+    onCreateExileVote(selectedTravelerId, votes);
+    onClose();
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle className="text-amber-500 font-display">
+            {step === 1 ? "Call for Exile" : `Exile ${selectedTraveler?.name}?`}
+          </DialogTitle>
+        </DialogHeader>
+
+        {step === 1 && (
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">Select a Traveler to call for exile:</p>
+            <div className="space-y-2 max-h-60 overflow-y-auto">
+              {aliveTravelers.map(player => (
+                <button
+                  key={player.id}
+                  onClick={() => {
+                    setSelectedTravelerId(player.id);
+                    setStep(2);
+                  }}
+                  className="w-full text-left p-3 rounded-lg border border-purple-700/50 bg-purple-900/20 hover-elevate"
+                  data-testid={`button-exile-${player.id}`}
+                >
+                  <div className="font-medium">{player.name}</div>
+                  {player.claims.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {player.claims.map(claimId => {
+                        const char = ALL_CHARACTERS.find(c => c.id === claimId);
+                        return char && (
+                          <Badge key={claimId} variant="secondary" className="text-xs bg-purple-900/40 text-purple-300 border-purple-700">
+                            {char.name}
+                          </Badge>
+                        );
+                      })}
+                    </div>
+                  )}
+                </button>
+              ))}
+            </div>
+            <Button variant="ghost" className="w-full" onClick={onClose}>
+              Cancel
+            </Button>
+          </div>
+        )}
+
+        {step === 2 && (
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              Select all players who vote to exile. Dead players can vote on exile (doesn't use ghost vote). Need {votesNeeded} votes to pass.
+            </p>
+            <div className="space-y-2 max-h-60 overflow-y-auto">
+              {eligibleVoters.map(player => (
+                <label
+                  key={player.id}
+                  className={cn(
+                    "flex items-center gap-3 p-2 rounded-lg border cursor-pointer transition-colors",
+                    selectedVoters.has(player.id)
+                      ? "bg-emerald-900/30 border-emerald-700"
+                      : "bg-card border-border hover:bg-muted/50"
+                  )}
+                  data-testid={`label-exile-voter-${player.id}`}
+                >
+                  <Checkbox
+                    checked={selectedVoters.has(player.id)}
+                    onCheckedChange={() => handleToggleVoter(player.id)}
+                    data-testid={`checkbox-exile-voter-${player.id}`}
+                  />
+                  <span className={cn(
+                    "flex-1",
+                    player.status !== 'alive' && "text-muted-foreground"
+                  )}>
+                    {player.name}
+                    {player.status === 'dead' && (
+                      <Skull className="w-4 h-4 inline ml-2 text-red-400/70" />
+                    )}
+                  </span>
+                  {selectedVoters.has(player.id) && (
+                    <Hand className="w-4 h-4 text-emerald-500" />
+                  )}
+                </label>
+              ))}
+            </div>
+            <div className="flex gap-2 pt-2">
+              <Button variant="ghost" className="flex-1" onClick={() => setStep(1)}>
+                Back
+              </Button>
+              <Button 
+                className={cn("flex-1", selectedVoters.size >= votesNeeded ? "bg-red-600 hover:bg-red-700" : "")}
+                onClick={handleSubmit} 
+                data-testid="button-confirm-exile"
+              >
+                <Check className="w-4 h-4 mr-2" />
+                {selectedVoters.size >= votesNeeded ? `Exile (${selectedVoters.size} votes)` : `${selectedVoters.size} / ${votesNeeded} votes`}
+              </Button>
+            </div>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function GameTrackerView({
   game,
   onEndGame,
   onToggleAlive,
+  onSetPlayerStatus,
   onToggleGhostVote,
   onAddClaim,
   onRemoveClaim,
@@ -918,10 +1280,15 @@ function GameTrackerView({
   onCreateNomination,
   onClearScript,
   onSetScript,
+  onAddTraveler,
+  onRemoveTraveler,
+  onCreateExileVote,
+  getPlayerExileVotes,
 }: {
   game: NonNullable<ReturnType<typeof usePlayerGame>["game"]>;
   onEndGame: () => void;
   onToggleAlive: (playerId: string) => void;
+  onSetPlayerStatus: (playerId: string, status: PlayerStatus) => void;
   onToggleGhostVote: (playerId: string) => void;
   onAddClaim: (playerId: string, characterId: string) => void;
   onRemoveClaim: (playerId: string, characterId: string) => void;
@@ -934,10 +1301,16 @@ function GameTrackerView({
   onCreateNomination: (nomineeId: string, nominatorId: string, votes: PlayerVote[]) => void;
   onClearScript: () => void;
   onSetScript: (scriptRef: GameScriptRef | null) => void;
+  onAddTraveler: (name: string, initialClaims?: string[]) => void;
+  onRemoveTraveler: (playerId: string) => void;
+  onCreateExileVote: (travelerId: string, votes: PlayerVote[]) => void;
+  getPlayerExileVotes: (playerId: string) => ExileVote[];
 }) {
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
   const [confirmEnd, setConfirmEnd] = useState(false);
   const [showNominationDialog, setShowNominationDialog] = useState(false);
+  const [showAddTravelerDialog, setShowAddTravelerDialog] = useState(false);
+  const [showExileDialog, setShowExileDialog] = useState(false);
   const [scriptPopoverOpen, setScriptPopoverOpen] = useState(false);
   const { getScriptById, isLoading: scriptsLoading, allScripts } = useLocalScripts();
   
@@ -964,11 +1337,16 @@ function GameTrackerView({
   };
 
   const selectedPlayer = game.players.find(p => p.id === selectedPlayerId) || null;
-  const playerCount = game.players.length;
-  const aliveCount = game.players.filter(p => p.isAlive).length;
-  const deadCount = playerCount - aliveCount;
+  const regularPlayers = game.players.filter(p => !p.isTraveler);
+  const travelers = game.players.filter(p => p.isTraveler);
+  const alivePlayers = game.players.filter(p => p.status === 'alive');
+  const aliveCount = alivePlayers.length;
+  const deadCount = game.players.filter(p => p.status === 'dead').length;
+  const exiledCount = game.players.filter(p => p.status === 'exiled').length;
+  const leftCount = game.players.filter(p => p.status === 'left').length;
+  const aliveTravelers = travelers.filter(p => p.status === 'alive');
   const votesNeeded = Math.ceil(aliveCount / 2);
-  const ghostVotesAvailable = game.players.filter(p => !p.isAlive && p.hasGhostVote).length;
+  const ghostVotesAvailable = game.players.filter(p => p.status === 'dead' && p.hasGhostVote && !p.isTraveler).length;
   const totalVotesAvailable = aliveCount + ghostVotesAvailable;
   const todayNominations = game.nominations.filter(n => n.day === game.currentDay);
   const canExecute = totalVotesAvailable >= votesNeeded;
@@ -1105,7 +1483,24 @@ function GameTrackerView({
           </div>
         </div>
 
-        {/* Today's Activity & Nominate Button */}
+        {/* Travelers Row (if any) */}
+        {travelers.length > 0 && (
+          <div className="flex items-center justify-center gap-3 px-3 py-1.5 border-t border-border bg-purple-950/20">
+            <div className="flex items-center gap-1.5 text-xs">
+              <Badge variant="secondary" className="bg-purple-900/40 text-purple-300 border-purple-700">
+                {aliveTravelers.length} / {travelers.length} Travelers
+              </Badge>
+              {exiledCount > 0 && (
+                <span className="text-purple-400/70">{exiledCount} exiled</span>
+              )}
+              {leftCount > 0 && (
+                <span className="text-muted-foreground">{leftCount} left</span>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Today's Activity & Action Buttons */}
         <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 border-t border-border bg-muted/20">
           <div className="flex items-center gap-2 sm:gap-3 text-sm">
             <div className="flex items-center gap-1.5">
@@ -1120,10 +1515,21 @@ function GameTrackerView({
               </div>
             )}
           </div>
-          <Button onClick={() => setShowNominationDialog(true)} data-testid="button-nominate">
-            <UserPlus className="w-4 h-4 mr-2" />
-            Nominate
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={() => setShowAddTravelerDialog(true)} data-testid="button-add-traveler">
+              <Plus className="w-4 h-4 mr-1" />
+              Traveler
+            </Button>
+            {aliveTravelers.length > 0 && (
+              <Button variant="outline" size="sm" onClick={() => setShowExileDialog(true)} data-testid="button-exile">
+                Exile
+              </Button>
+            )}
+            <Button onClick={() => setShowNominationDialog(true)} data-testid="button-nominate">
+              <UserPlus className="w-4 h-4 mr-2" />
+              Nominate
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -1146,12 +1552,15 @@ function GameTrackerView({
         player={selectedPlayer}
         players={game.players}
         nominations={game.nominations}
+        exileVotes={selectedPlayer ? getPlayerExileVotes(selectedPlayer.id) : []}
         onClose={() => setSelectedPlayerId(null)}
         onToggleAlive={() => selectedPlayerId && onToggleAlive(selectedPlayerId)}
+        onSetPlayerStatus={(status) => selectedPlayerId && onSetPlayerStatus(selectedPlayerId, status)}
         onToggleGhostVote={() => selectedPlayerId && onToggleGhostVote(selectedPlayerId)}
         onAddClaim={(charId) => selectedPlayerId && onAddClaim(selectedPlayerId, charId)}
         onRemoveClaim={(charId) => selectedPlayerId && onRemoveClaim(selectedPlayerId, charId)}
         onSetNotes={(notes) => selectedPlayerId && onSetNotes(selectedPlayerId, notes)}
+        onRemoveTraveler={selectedPlayer?.isTraveler ? () => selectedPlayerId && onRemoveTraveler(selectedPlayerId) : undefined}
         scriptCharacterIds={scriptCharacterIds}
       />
 
@@ -1162,6 +1571,20 @@ function GameTrackerView({
         hasBeenNominatedToday={hasBeenNominatedToday}
         hasNominatedToday={hasNominatedToday}
         onCreateNomination={onCreateNomination}
+      />
+
+      <AddTravelerDialog
+        open={showAddTravelerDialog}
+        onClose={() => setShowAddTravelerDialog(false)}
+        onAddTraveler={onAddTraveler}
+        scriptCharacterIds={scriptCharacterIds}
+      />
+
+      <ExileDialog
+        open={showExileDialog}
+        onClose={() => setShowExileDialog(false)}
+        players={game.players}
+        onCreateExileVote={onCreateExileVote}
       />
     </div>
   );
@@ -1176,6 +1599,7 @@ export default function Game() {
     addClaim,
     removeClaim,
     toggleAlive,
+    setPlayerStatus,
     toggleGhostVote,
     setNotes,
     nextDay,
@@ -1186,6 +1610,10 @@ export default function Game() {
     createNomination,
     clearScript,
     setScript,
+    addTraveler,
+    removeTraveler,
+    createExileVote,
+    getPlayerExileVotes,
   } = usePlayerGame();
 
   if (isLoading) {
@@ -1207,6 +1635,7 @@ export default function Game() {
           game={game}
           onEndGame={endGame}
           onToggleAlive={toggleAlive}
+          onSetPlayerStatus={setPlayerStatus}
           onToggleGhostVote={toggleGhostVote}
           onAddClaim={addClaim}
           onRemoveClaim={removeClaim}
@@ -1219,6 +1648,10 @@ export default function Game() {
           onCreateNomination={createNomination}
           onClearScript={clearScript}
           onSetScript={setScript}
+          onAddTraveler={addTraveler}
+          onRemoveTraveler={removeTraveler}
+          onCreateExileVote={createExileVote}
+          getPlayerExileVotes={getPlayerExileVotes}
         />
       )}
     </Layout>
