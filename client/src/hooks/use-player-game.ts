@@ -251,6 +251,11 @@ export function usePlayerGame() {
     saveGame({ ...game, script: null });
   }, [game, saveGame]);
 
+  const setScript = useCallback((scriptRef: GameScriptRef | null) => {
+    if (!game) return;
+    saveGame({ ...game, script: scriptRef });
+  }, [game, saveGame]);
+
   return {
     game,
     isLoading,
@@ -271,5 +276,6 @@ export function usePlayerGame() {
     createNomination,
     deleteNomination,
     clearScript,
+    setScript,
   };
 }

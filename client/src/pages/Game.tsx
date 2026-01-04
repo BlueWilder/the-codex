@@ -14,6 +14,7 @@ import { Card } from "@/components/ui/card";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerClose } from "@/components/ui/drawer";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, TouchSensor, useSensor, useSensors, DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, sortableKeyboardCoordinates, useSortable, rectSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -858,6 +859,7 @@ function GameTrackerView({
   hasNominatedToday,
   onCreateNomination,
   onClearScript,
+  onSetScript,
 }: {
   game: NonNullable<ReturnType<typeof usePlayerGame>["game"]>;
   onEndGame: () => void;
@@ -873,11 +875,13 @@ function GameTrackerView({
   hasNominatedToday: (playerId: string) => boolean;
   onCreateNomination: (nomineeId: string, nominatorId: string, votes: PlayerVote[]) => void;
   onClearScript: () => void;
+  onSetScript: (scriptRef: GameScriptRef | null) => void;
 }) {
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
   const [confirmEnd, setConfirmEnd] = useState(false);
   const [showNominationDialog, setShowNominationDialog] = useState(false);
-  const { getScriptById, isLoading: scriptsLoading } = useLocalScripts();
+  const [scriptPopoverOpen, setScriptPopoverOpen] = useState(false);
+  const { getScriptById, isLoading: scriptsLoading, allScripts } = useLocalScripts();
   
   const resolvedScript = game.script ? getScriptById(game.script.id) : null;
   const scriptCharacterIds = resolvedScript?.characterIds;
@@ -915,15 +919,63 @@ function GameTrackerView({
     <div className="space-y-4">
       {/* Scoreboard Header */}
       <div className="bg-card border border-border rounded-lg overflow-hidden">
-        {/* Script Badge Row (if script selected and resolved) */}
-        {game.script && resolvedScript && (
-          <div className="flex items-center justify-center gap-2 px-3 py-1.5 border-b border-border bg-amber-950/20">
-            <Scroll className="w-3.5 h-3.5 text-amber-500/70" />
-            <span className="text-xs font-medium text-amber-400" data-testid="text-script-name">
-              {resolvedScript.name}
-            </span>
-          </div>
-        )}
+        {/* Script Badge Row - always clickable */}
+        <div className="flex items-center justify-center px-3 py-1.5 border-b border-border bg-amber-950/20">
+          <Popover open={scriptPopoverOpen} onOpenChange={setScriptPopoverOpen}>
+            <PopoverTrigger asChild>
+              <button
+                className="flex items-center gap-2 px-3 py-1 rounded-md hover-elevate active-elevate-2"
+                data-testid="button-change-script"
+              >
+                <Scroll className="w-3.5 h-3.5 text-amber-500/70" />
+                <span className="text-xs font-medium text-amber-400">
+                  {resolvedScript ? resolvedScript.name : "No Script"}
+                </span>
+                <ChevronDown className="w-3 h-3 text-amber-500/50" />
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="w-64 p-2" align="center">
+              <div className="space-y-1">
+                <div className="px-2 py-1 text-xs text-muted-foreground font-medium">Select Script</div>
+                <button
+                  className={cn(
+                    "w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-sm text-left hover-elevate",
+                    !game.script && "bg-accent"
+                  )}
+                  onClick={() => {
+                    onSetScript(null);
+                    setScriptPopoverOpen(false);
+                  }}
+                  data-testid="button-script-none"
+                >
+                  <X className="w-3.5 h-3.5 text-muted-foreground" />
+                  <span>No Script (All Characters)</span>
+                </button>
+                {allScripts.map((script) => (
+                  <button
+                    key={script.id}
+                    className={cn(
+                      "w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-sm text-left hover-elevate",
+                      game.script?.id === script.id && "bg-accent"
+                    )}
+                    onClick={() => {
+                      onSetScript({ id: script.id });
+                      setScriptPopoverOpen(false);
+                    }}
+                    data-testid={`button-script-${script.id}`}
+                  >
+                    {script.isOfficial ? (
+                      <BookOpen className="w-3.5 h-3.5 text-amber-500/70" />
+                    ) : (
+                      <FileText className="w-3.5 h-3.5 text-purple-500/70" />
+                    )}
+                    <span className="truncate">{script.name}</span>
+                  </button>
+                ))}
+              </div>
+            </PopoverContent>
+          </Popover>
+        </div>
 
         {/* Day Header Row */}
         <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 border-b border-border bg-muted/30">
@@ -1075,6 +1127,7 @@ export default function Game() {
     hasNominatedToday,
     createNomination,
     clearScript,
+    setScript,
   } = usePlayerGame();
 
   if (isLoading) {
@@ -1107,6 +1160,7 @@ export default function Game() {
           hasNominatedToday={hasNominatedToday}
           onCreateNomination={createNomination}
           onClearScript={clearScript}
+          onSetScript={setScript}
         />
       )}
     </Layout>
