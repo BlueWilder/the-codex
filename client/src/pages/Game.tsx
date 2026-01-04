@@ -47,6 +47,18 @@ function GallowsIcon({ className }: { className?: string }) {
   );
 }
 
+function PointingFingerIcon({ className }: { className?: string }) {
+  return (
+    <svg 
+      viewBox="0 0 24 24" 
+      fill="currentColor"
+      className={className}
+    >
+      <path d="M2 11c0-1.5 1-2.5 2-3v-1c0-1 .5-2 2-2h1l2-2h4v3h7c1.5 0 2.5 1 2.5 2.5s-1 2.5-2.5 2.5h-7v1h-1v2h-1v2H9v-2H7v-2H5c-1.5 0-3-1-3-2.5z" />
+    </svg>
+  );
+}
+
 function SetupWizard({ onStart }: { onStart: (count: number, names: string[], script?: GameScriptRef | null) => void }) {
   const [step, setStep] = useState(1);
   const [playerCount, setPlayerCount] = useState(8);
@@ -525,7 +537,7 @@ function PlayerDetailDrawer({
                               )}
                               {nom.nominatorId === player.id && (
                                 <div className="flex items-center gap-1 text-purple-400">
-                                  <HandMetal className="w-3 h-3" /> Made nomination
+                                  <PointingFingerIcon className="w-3 h-3" /> Made nomination
                                 </div>
                               )}
                               {playerVote && (
@@ -666,7 +678,7 @@ function SortablePlayerCard({
           )}
           {nominationsMade > 0 && (
             <span className="flex items-center gap-1 text-purple-400" data-testid={`text-nominations-made-${player.id}`}>
-              <HandMetal className="w-3.5 h-3.5" />
+              <PointingFingerIcon className="w-3.5 h-3.5" />
               {nominationsMade}
             </span>
           )}
