@@ -1372,7 +1372,7 @@ function CircleSeatingChart({
   const radius = Math.min(centerX, centerY) - nodeSize / 2 - 10;
 
   const getPlayerPosition = (index: number) => {
-    const angle = ((index / playerCount) * 360 - 90) * (Math.PI / 180);
+    const angle = (-(index / playerCount) * 360 - 90) * (Math.PI / 180);
     return {
       x: centerX + radius * Math.cos(angle) - nodeSize / 2,
       y: centerY + radius * Math.sin(angle) - nodeSize / 2,
