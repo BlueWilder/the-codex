@@ -1,8 +1,9 @@
 import { Layout } from "@/components/ui/Layout";
-import { useState, useMemo } from "react";
-import { usePlayerGame, getBreakdown, type GamePlayer, type Nomination, type PlayerVote } from "@/hooks/use-player-game";
-import { ALL_CHARACTERS } from "@/lib/game-data";
-import { Users, ChevronRight, Play, Skull, X, Plus, Check, Hand, Search, Sun, Moon, ChevronUp, ChevronDown, FileText, Theater, Vote, Loader2, Ghost, GripVertical, UserPlus, ArrowRight, Target, Scale } from "lucide-react";
+import { useState, useMemo, useEffect } from "react";
+import { usePlayerGame, getBreakdown, type GamePlayer, type Nomination, type PlayerVote, type GameScriptRef } from "@/hooks/use-player-game";
+import { ALL_CHARACTERS, OFFICIAL_SCRIPTS } from "@/lib/game-data";
+import { useLocalScripts, type LocalScript } from "@/hooks/use-local-scripts";
+import { Users, ChevronRight, Play, Skull, X, Plus, Check, Hand, Search, Sun, Moon, ChevronUp, ChevronDown, FileText, Theater, Vote, Loader2, Ghost, GripVertical, UserPlus, ArrowRight, Target, Scale, Scroll, BookOpen } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -25,10 +26,12 @@ const TEAM_COLORS: Record<string, string> = {
   traveler: "bg-purple-900/60 text-purple-200 border-purple-700",
 };
 
-function SetupWizard({ onStart }: { onStart: (count: number, names: string[]) => void }) {
+function SetupWizard({ onStart }: { onStart: (count: number, names: string[], script?: GameScriptRef | null) => void }) {
   const [step, setStep] = useState(1);
   const [playerCount, setPlayerCount] = useState(8);
   const [playerNames, setPlayerNames] = useState<string[]>([]);
+  const [selectedScript, setSelectedScript] = useState<LocalScript | null>(null);
+  const { allScripts, customScripts } = useLocalScripts();
 
   const breakdown = getBreakdown(playerCount);
 
@@ -45,12 +48,19 @@ function SetupWizard({ onStart }: { onStart: (count: number, names: string[]) =>
     });
   };
 
+  const handleStartGame = () => {
+    const scriptRef: GameScriptRef | null = selectedScript ? {
+      id: selectedScript.id,
+    } : null;
+    onStart(playerCount, playerNames, scriptRef);
+  };
+
   return (
     <div className="max-w-2xl mx-auto py-8">
       <h1 className="text-3xl md:text-4xl font-display text-amber-500 mb-8 text-center">New Game</h1>
 
       <div className="flex items-center justify-center mb-8 gap-4">
-        {[1, 2].map((i) => (
+        {[1, 2, 3].map((i) => (
           <div key={i} className="flex items-center">
             <div className={cn(
               "w-8 h-8 rounded-full flex items-center justify-center font-bold border-2 transition-colors",
@@ -60,7 +70,7 @@ function SetupWizard({ onStart }: { onStart: (count: number, names: string[]) =>
             )}>
               {i}
             </div>
-            {i < 2 && <div className={cn("w-12 h-0.5 mx-2", step > i ? "bg-amber-800" : "bg-muted")} />}
+            {i < 3 && <div className={cn("w-8 sm:w-12 h-0.5 mx-1 sm:mx-2", step > i ? "bg-amber-800" : "bg-muted")} />}
           </div>
         ))}
       </div>
@@ -147,7 +157,102 @@ function SetupWizard({ onStart }: { onStart: (count: number, names: string[]) =>
               <Button variant="ghost" onClick={() => setStep(1)} data-testid="button-back">
                 Back
               </Button>
-              <Button onClick={() => onStart(playerCount, playerNames)} data-testid="button-start-game">
+              <Button onClick={() => setStep(3)} data-testid="button-next-step-2">
+                Next <ChevronRight className="w-4 h-4 ml-1" />
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {step === 3 && (
+          <div className="space-y-6 animate-in fade-in duration-300">
+            <div className="text-center space-y-2">
+              <Scroll className="w-12 h-12 mx-auto text-amber-500 mb-4" />
+              <h2 className="text-2xl font-display text-amber-100">Select Script</h2>
+              <p className="text-muted-foreground text-sm">Optional: Choose a script to filter character claims</p>
+            </div>
+
+            <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2">
+              <button
+                onClick={() => setSelectedScript(null)}
+                className={cn(
+                  "w-full text-left p-4 rounded-lg border transition-colors",
+                  !selectedScript 
+                    ? "bg-amber-900/30 border-amber-600 ring-1 ring-amber-500/50" 
+                    : "bg-card border-border hover-elevate"
+                )}
+                data-testid="button-no-script"
+              >
+                <div className="flex items-center gap-3">
+                  <BookOpen className="w-5 h-5 text-muted-foreground" />
+                  <div>
+                    <div className="font-medium">All Characters</div>
+                    <div className="text-sm text-muted-foreground">No script filter - show all characters when claiming</div>
+                  </div>
+                </div>
+              </button>
+
+              <div className="pt-2 pb-1">
+                <span className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Official Scripts</span>
+              </div>
+
+              {allScripts.filter(s => s.isOfficial).map(script => (
+                <button
+                  key={script.id}
+                  onClick={() => setSelectedScript(script)}
+                  className={cn(
+                    "w-full text-left p-4 rounded-lg border transition-colors",
+                    selectedScript?.id === script.id
+                      ? "bg-amber-900/30 border-amber-600 ring-1 ring-amber-500/50" 
+                      : "bg-card border-border hover-elevate"
+                  )}
+                  data-testid={`button-script-${script.id}`}
+                >
+                  <div className="flex items-center gap-3">
+                    <Scroll className="w-5 h-5 text-amber-500/70" />
+                    <div>
+                      <div className="font-medium">{script.name}</div>
+                      <div className="text-sm text-muted-foreground">{script.characterIds.length} characters</div>
+                    </div>
+                  </div>
+                </button>
+              ))}
+
+              {customScripts.length > 0 && (
+                <>
+                  <div className="pt-2 pb-1">
+                    <span className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Custom Scripts</span>
+                  </div>
+                  {customScripts.map(script => (
+                    <button
+                      key={script.id}
+                      onClick={() => setSelectedScript(script)}
+                      className={cn(
+                        "w-full text-left p-4 rounded-lg border transition-colors",
+                        selectedScript?.id === script.id
+                          ? "bg-purple-900/30 border-purple-600 ring-1 ring-purple-500/50" 
+                          : "bg-card border-border hover-elevate"
+                      )}
+                      data-testid={`button-script-${script.id}`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <Scroll className="w-5 h-5 text-purple-500/70" />
+                        <div>
+                          <div className="font-medium">{script.name}</div>
+                          <div className="text-sm text-muted-foreground">{script.characterIds.length} characters</div>
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </>
+              )}
+            </div>
+
+            <div className="flex justify-between pt-4">
+              <Button variant="ghost" onClick={() => setStep(2)} data-testid="button-back-2">
+                Back
+              </Button>
+              <Button onClick={handleStartGame} data-testid="button-start-game">
                 <Play className="w-4 h-4 mr-2" /> Start Game
               </Button>
             </div>
@@ -162,25 +267,28 @@ function CharacterPicker({
   open, 
   onClose, 
   onSelect,
-  excludeIds = []
+  excludeIds = [],
+  scriptCharacterIds,
 }: { 
   open: boolean; 
   onClose: () => void; 
   onSelect: (characterId: string) => void;
   excludeIds?: string[];
+  scriptCharacterIds?: string[] | null;
 }) {
   const [search, setSearch] = useState("");
 
   const filteredCharacters = useMemo(() => {
     const term = search.toLowerCase();
-    return ALL_CHARACTERS.filter(c => 
-      !excludeIds.includes(c.id) &&
-      (c.name.toLowerCase().includes(term) || c.team.toLowerCase().includes(term))
-    ).sort((a, b) => {
+    return ALL_CHARACTERS.filter(c => {
+      if (excludeIds.includes(c.id)) return false;
+      if (scriptCharacterIds && scriptCharacterIds.length > 0 && !scriptCharacterIds.includes(c.id)) return false;
+      return c.name.toLowerCase().includes(term) || c.team.toLowerCase().includes(term);
+    }).sort((a, b) => {
       const teamOrder = { townsfolk: 0, outsider: 1, minion: 2, demon: 3, traveler: 4 };
       return (teamOrder[a.team] || 5) - (teamOrder[b.team] || 5) || a.name.localeCompare(b.name);
     });
-  }, [search, excludeIds]);
+  }, [search, excludeIds, scriptCharacterIds]);
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
@@ -237,6 +345,7 @@ function PlayerDetailDrawer({
   onAddClaim,
   onRemoveClaim,
   onSetNotes,
+  scriptCharacterIds,
 }: {
   player: GamePlayer | null;
   players: GamePlayer[];
@@ -247,6 +356,7 @@ function PlayerDetailDrawer({
   onAddClaim: (characterId: string) => void;
   onRemoveClaim: (characterId: string) => void;
   onSetNotes: (notes: string) => void;
+  scriptCharacterIds?: string[] | null;
 }) {
   const [showCharacterPicker, setShowCharacterPicker] = useState(false);
 
@@ -433,6 +543,7 @@ function PlayerDetailDrawer({
         onClose={() => setShowCharacterPicker(false)}
         onSelect={onAddClaim}
         excludeIds={player.claims}
+        scriptCharacterIds={scriptCharacterIds}
       />
     </>
   );
@@ -746,6 +857,7 @@ function GameTrackerView({
   hasBeenNominatedToday,
   hasNominatedToday,
   onCreateNomination,
+  onClearScript,
 }: {
   game: NonNullable<ReturnType<typeof usePlayerGame>["game"]>;
   onEndGame: () => void;
@@ -760,10 +872,21 @@ function GameTrackerView({
   hasBeenNominatedToday: (playerId: string) => boolean;
   hasNominatedToday: (playerId: string) => boolean;
   onCreateNomination: (nomineeId: string, nominatorId: string, votes: PlayerVote[]) => void;
+  onClearScript: () => void;
 }) {
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
   const [confirmEnd, setConfirmEnd] = useState(false);
   const [showNominationDialog, setShowNominationDialog] = useState(false);
+  const { getScriptById, isLoading: scriptsLoading } = useLocalScripts();
+  
+  const resolvedScript = game.script ? getScriptById(game.script.id) : null;
+  const scriptCharacterIds = resolvedScript?.characterIds;
+
+  useEffect(() => {
+    if (!scriptsLoading && game.script && !resolvedScript) {
+      onClearScript();
+    }
+  }, [scriptsLoading, game.script, resolvedScript, onClearScript]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -792,6 +915,16 @@ function GameTrackerView({
     <div className="space-y-4">
       {/* Scoreboard Header */}
       <div className="bg-card border border-border rounded-lg overflow-hidden">
+        {/* Script Badge Row (if script selected and resolved) */}
+        {game.script && resolvedScript && (
+          <div className="flex items-center justify-center gap-2 px-3 py-1.5 border-b border-border bg-amber-950/20">
+            <Scroll className="w-3.5 h-3.5 text-amber-500/70" />
+            <span className="text-xs font-medium text-amber-400" data-testid="text-script-name">
+              {resolvedScript.name}
+            </span>
+          </div>
+        )}
+
         {/* Day Header Row */}
         <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 border-b border-border bg-muted/30">
           <div className="flex items-center gap-1 flex-wrap">
@@ -909,6 +1042,7 @@ function GameTrackerView({
         onAddClaim={(charId) => selectedPlayerId && onAddClaim(selectedPlayerId, charId)}
         onRemoveClaim={(charId) => selectedPlayerId && onRemoveClaim(selectedPlayerId, charId)}
         onSetNotes={(notes) => selectedPlayerId && onSetNotes(selectedPlayerId, notes)}
+        scriptCharacterIds={scriptCharacterIds}
       />
 
       <NominationDialog
@@ -940,6 +1074,7 @@ export default function Game() {
     hasBeenNominatedToday,
     hasNominatedToday,
     createNomination,
+    clearScript,
   } = usePlayerGame();
 
   if (isLoading) {
@@ -971,6 +1106,7 @@ export default function Game() {
           hasBeenNominatedToday={hasBeenNominatedToday}
           hasNominatedToday={hasNominatedToday}
           onCreateNomination={createNomination}
+          onClearScript={clearScript}
         />
       )}
     </Layout>

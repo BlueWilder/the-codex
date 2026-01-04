@@ -22,6 +22,10 @@ export interface GamePlayer {
   claims: string[];
 }
 
+export interface GameScriptRef {
+  id: string;
+}
+
 export interface PlayerGame {
   id: string;
   createdAt: string;
@@ -30,6 +34,7 @@ export interface PlayerGame {
   players: GamePlayer[];
   nominations: Nomination[];
   currentDay: number;
+  script?: GameScriptRef | null;
 }
 
 const STORAGE_KEY = "clocktower_player_game";
@@ -93,7 +98,7 @@ export function usePlayerGame() {
     }
   }, []);
 
-  const createGame = useCallback((playerCount: number, playerNames: string[]) => {
+  const createGame = useCallback((playerCount: number, playerNames: string[], script?: GameScriptRef | null) => {
     const newGame: PlayerGame = {
       id: crypto.randomUUID(),
       createdAt: new Date().toISOString(),
@@ -109,6 +114,7 @@ export function usePlayerGame() {
         claims: [],
       })),
       nominations: [],
+      script: script || null,
     };
     saveGame(newGame);
     return newGame;
@@ -217,6 +223,11 @@ export function usePlayerGame() {
     saveGame({ ...game, players: newPlayers });
   }, [game, saveGame]);
 
+  const clearScript = useCallback(() => {
+    if (!game) return;
+    saveGame({ ...game, script: null });
+  }, [game, saveGame]);
+
   return {
     game,
     isLoading,
@@ -236,5 +247,6 @@ export function usePlayerGame() {
     getDayNominations,
     createNomination,
     deleteNomination,
+    clearScript,
   };
 }

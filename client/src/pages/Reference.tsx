@@ -1,13 +1,15 @@
 import { Layout } from "@/components/ui/Layout";
 import { ALL_CHARACTERS, getJinxesForCharacter, type Character, type Jinx } from "@/lib/game-data";
 import { useState, useEffect } from "react";
-import { Search, Moon, Sun, Settings, AlertTriangle, ChevronDown, Quote, Lightbulb, Sword, Eye, RotateCcw, Check, BookOpen, Plus, Minus } from "lucide-react";
+import { Search, Moon, Sun, Settings, AlertTriangle, ChevronDown, Quote, Lightbulb, Sword, Eye, RotateCcw, Check, BookOpen, Plus, Minus, Save, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Input } from "@/components/ui/input";
+import { useLocalScripts, type LocalScript } from "@/hooks/use-local-scripts";
 
 function CharacterCard({ char, isExpanded, onToggle }: { 
   char: Character; 
@@ -434,6 +436,9 @@ export default function Reference() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [customDialogOpen, setCustomDialogOpen] = useState(false);
   const [customCharacters, setCustomCharacters] = useState<Set<string>>(new Set());
+  const [saveScriptDialogOpen, setSaveScriptDialogOpen] = useState(false);
+  const [newScriptName, setNewScriptName] = useState("");
+  const { customScripts, addCustomScript, deleteCustomScript } = useLocalScripts();
 
   const filtered = ALL_CHARACTERS.filter(char => {
     const matchesSearch = char.name.toLowerCase().includes(search.toLowerCase()) || 
@@ -520,14 +525,57 @@ export default function Reference() {
             </button>
 
             {scriptFilter === "custom" && customCharacters.size > 0 && (
-              <button
-                onClick={handleResetCustom}
-                className="p-1.5 rounded-full text-muted-foreground hover:bg-white/10 transition-colors"
-                title="Reset custom script"
-                data-testid="button-reset-custom"
-              >
-                <RotateCcw className="w-4 h-4" />
-              </button>
+              <>
+                <button
+                  onClick={() => setSaveScriptDialogOpen(true)}
+                  className="p-1.5 rounded-full text-muted-foreground hover:bg-white/10 transition-colors"
+                  title="Save as custom script"
+                  data-testid="button-save-script"
+                >
+                  <Save className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={handleResetCustom}
+                  className="p-1.5 rounded-full text-muted-foreground hover:bg-white/10 transition-colors"
+                  title="Reset custom script"
+                  data-testid="button-reset-custom"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                </button>
+              </>
+            )}
+
+            {customScripts.length > 0 && (
+              <>
+                <div className="w-px h-6 bg-border mx-1" />
+                {customScripts.map((script) => (
+                  <div key={script.id} className="flex items-center gap-0.5">
+                    <button
+                      onClick={() => {
+                        setCustomCharacters(new Set(script.characterIds));
+                        setScriptFilter("custom");
+                      }}
+                      className={cn(
+                        "px-3 py-1.5 rounded-l-full text-xs font-bold tracking-wider transition-all border-y border-l whitespace-nowrap",
+                        scriptFilter === "custom" && Array.from(customCharacters).sort().join(',') === Array.from(script.characterIds).sort().join(',')
+                          ? "bg-purple-900/50 text-purple-100 border-purple-600"
+                          : "bg-transparent text-muted-foreground border-transparent hover:bg-white/5"
+                      )}
+                      data-testid={`button-load-script-${script.id}`}
+                    >
+                      {script.name}
+                    </button>
+                    <button
+                      onClick={() => deleteCustomScript(script.id)}
+                      className="px-1.5 py-1.5 rounded-r-full text-xs text-muted-foreground border-y border-r border-transparent hover:bg-red-900/30 hover:text-red-400 transition-colors"
+                      title="Delete script"
+                      data-testid={`button-delete-script-${script.id}`}
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+              </>
             )}
           </div>
 
@@ -556,6 +604,47 @@ export default function Reference() {
           selectedCharacters={customCharacters}
           onSave={setCustomCharacters}
         />
+
+        <Dialog open={saveScriptDialogOpen} onOpenChange={setSaveScriptDialogOpen}>
+          <DialogContent className="max-w-sm">
+            <DialogHeader>
+              <DialogTitle className="font-display text-amber-500">Save Custom Script</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-2">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Script Name</label>
+                <Input
+                  value={newScriptName}
+                  onChange={(e) => setNewScriptName(e.target.value)}
+                  placeholder="e.g., My Custom Script"
+                  data-testid="input-script-name"
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {customCharacters.size} characters selected
+              </p>
+            </div>
+            <DialogFooter className="gap-2">
+              <Button variant="outline" size="sm" onClick={() => setSaveScriptDialogOpen(false)} data-testid="button-cancel-save">
+                Cancel
+              </Button>
+              <Button 
+                size="sm" 
+                onClick={() => {
+                  if (newScriptName.trim()) {
+                    addCustomScript(newScriptName.trim(), Array.from(customCharacters));
+                    setNewScriptName("");
+                    setSaveScriptDialogOpen(false);
+                  }
+                }}
+                disabled={!newScriptName.trim()}
+                data-testid="button-confirm-save"
+              >
+                Save Script
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.map((char) => (
