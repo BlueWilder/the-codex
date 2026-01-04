@@ -1684,8 +1684,8 @@ function GameTrackerView({
           </DropdownMenu>
         </div>
 
-        {/* Day Row - Action Button Style */}
-        <div className="flex items-center justify-center gap-3 px-3 py-3 border-b border-border bg-amber-950/10">
+        {/* Day Row - Full Width Action Style */}
+        <div className="flex items-center justify-between px-3 py-3 border-b border-border bg-amber-950/10">
           <Button
             variant="outline"
             size="icon"
@@ -1693,11 +1693,11 @@ function GameTrackerView({
             disabled={game.currentDay <= 1}
             data-testid="button-prev-day"
           >
-            <ChevronLeft className="w-4 h-4" />
+            <ChevronLeft className="w-5 h-5" />
           </Button>
-          <div className="flex items-center gap-2 px-4 py-1.5 bg-amber-900/30 border border-amber-700/30 rounded-md">
-            <Sun className="w-4 h-4 text-amber-500" />
-            <span className="font-display text-lg text-amber-400">Day {game.currentDay}</span>
+          <div className="flex items-center justify-center gap-2 flex-1 mx-4 py-2 bg-amber-900/30 border border-amber-700/30 rounded-md">
+            <Sun className="w-5 h-5 text-amber-500" />
+            <span className="font-display text-xl text-amber-400">Day {game.currentDay}</span>
           </div>
           <Button
             variant="outline"
@@ -1705,7 +1705,7 @@ function GameTrackerView({
             onClick={onNextDay}
             data-testid="button-next-day"
           >
-            <ChevronRight className="w-4 h-4" />
+            <ChevronRight className="w-5 h-5" />
           </Button>
         </div>
 
