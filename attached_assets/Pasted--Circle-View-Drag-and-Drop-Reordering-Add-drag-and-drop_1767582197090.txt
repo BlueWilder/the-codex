@@ -1,0 +1,154 @@
+# Circle View Drag and Drop Reordering
+
+Add drag-and-drop functionality to reorder players directly in Circle View.
+
+## Concept
+
+Players can drag a node around the circle to change seating order. This is more intuitive than switching to List View since the circle matches the physical table layout.
+
+## 1. Drag Interaction
+
+### Initiate Drag:
+
+- Long-press (mobile) or click-and-hold (desktop) on a player node
+- Node visually “lifts” (slight scale up, shadow, or opacity change)
+- Other nodes become potential drop targets
+
+### During Drag:
+
+- Dragged node follows finger/cursor
+- Show insertion indicator between nodes where player would be placed
+- Highlight the gap between adjacent players as drop zones
+
+### Visual Feedback:
+
+```
+        [Mel]
+    [Hans]   [Eric]
+              ↓ ← insertion indicator
+  [Russ]  ·········  [Destini]
+              ↑
+         [DRAGGING: Michael]
+```
+
+- Insertion point shown as a glowing dot, line, or gap highlight
+- Adjacent nodes subtly shift apart to show where drop will occur
+
+## 2. Drop Behavior
+
+### Valid Drop:
+
+- Release between any two players
+- Dragged player is inserted at that position
+- Circle reflows to accommodate new order
+- Order persists (updates underlying player array)
+
+### Cancel Drag:
+
+- Drag back to original position
+- Drag outside circle area
+- Tap elsewhere on screen
+- Player returns to original position
+
+## 3. Mobile Optimization
+
+### Touch Handling:
+
+- Long-press (~300ms) to initiate drag (avoid conflict with tap-to-open)
+- Clear haptic feedback when drag starts (if supported)
+- Large enough touch targets for drop zones
+- Smooth animation during drag
+
+### Preventing Scroll Conflict:
+
+- Lock page scroll while dragging
+- Only vertical/horizontal movement should reposition the node around the circle
+
+## 4. Visual States
+
+### Normal Node:
+
+- Standard styling (current)
+
+### Dragging Node:
+
+- Slightly larger scale (1.1x)
+- Drop shadow or glow
+- Higher z-index (appears above other nodes)
+- Slight opacity on original position (ghost)
+
+### Drop Zone (between nodes):
+
+- Subtle highlight or pulse
+- Gap widens slightly when drag hovers nearby
+- Clear visual that “drop here” is valid
+
+### Invalid Zone:
+
+- No highlight outside the circle
+- Dragging to invalid area returns node to origin
+
+## 5. Reorder Logic
+
+When player is dropped between Player A and Player B:
+
+1. Remove dragged player from current position in array
+1. Insert at new index (after Player A, before Player B)
+1. Circle view re-renders with new order
+1. List view also reflects new order (shared data)
+
+## 6. Circle Position Calculation
+
+After reorder, recalculate positions:
+
+```typescript
+// Players positioned clockwise from top
+const angle = (index / totalPlayers) * 360 - 90; // -90 starts at top
+const x = centerX + radius * cos(angle);
+const y = centerY + radius * sin(angle);
+```
+
+Ensure clockwise ordering is maintained (per earlier fix).
+
+## 7. Animation
+
+### During Drag:
+
+- Dragged node moves with finger (no animation, direct follow)
+- Other nodes smoothly animate apart to show insertion gap
+
+### On Drop:
+
+- Smooth transition of all nodes to new positions (~200ms ease-out)
+- Dragged node settles into place
+
+### On Cancel:
+
+- Dragged node animates back to original position
+
+## 8. Accessibility
+
+- Keep tap-to-open player detail working (don’t break with long-press)
+- Clear timing distinction: quick tap = open, long-press = drag
+- Consider adding a small drag handle icon on nodes (optional)
+
+## 9. Default View Consideration
+
+Since Circle View is more valuable during games:
+
+- Consider making Circle the default tab (instead of List)
+- Or remember user’s last selected view
+
+## 10. Technical Notes
+
+### Libraries (optional):
+
+- Can use native HTML5 drag-and-drop
+- Or touch-friendly libraries like @dnd-kit, react-beautiful-dnd, or Framer Motion
+- Native touch events work fine for simple implementation
+
+### State Update:
+
+- Update player order in game state
+- Persist to localStorage with other game data
+- Both List and Circle views read from same ordered array

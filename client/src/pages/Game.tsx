@@ -20,7 +20,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, TouchSensor, useSensor, useSensors, DragEndEvent } from "@dnd-kit/core";
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, TouchSensor, useSensor, useSensors, DragEndEvent, DragOverlay, DragStartEvent } from "@dnd-kit/core";
 import { SortableContext, sortableKeyboardCoordinates, useSortable, rectSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
@@ -1904,19 +1904,168 @@ function ExileDialog({
   );
 }
 
+function CircleNodeContent({
+  player,
+  nodeSize,
+  nominations,
+  isDragging = false,
+  isOverlay = false,
+}: {
+  player: GamePlayer;
+  nodeSize: number;
+  nominations: Nomination[];
+  isDragging?: boolean;
+  isOverlay?: boolean;
+}) {
+  const nomCount = nominations.filter(n => n.nomineeId === player.id).length;
+  const firstClaim = player.claims[0];
+  const claimChar = firstClaim ? ALL_CHARACTERS.find(c => c.id === firstClaim) : null;
+  const isActive = player.status === 'alive';
+  const isDead = player.status === 'dead';
+
+  return (
+    <div
+      className={cn(
+        "flex flex-col items-center justify-center rounded-full border-2 text-center",
+        isActive ? "bg-card border-border" : "bg-muted/50 border-muted",
+        player.isTraveler && "border-purple-700",
+        !isActive && "opacity-70",
+        isOverlay && "shadow-2xl scale-110 border-amber-500 bg-card",
+        isDragging && "opacity-40"
+      )}
+      style={{ width: nodeSize, height: nodeSize }}
+    >
+      <div className="flex items-center gap-0.5 px-1">
+        {isDead && <Skull className="w-3 h-3 text-muted-foreground shrink-0" />}
+        <span className={cn(
+          "text-xs font-medium truncate max-w-[50px]",
+          !isActive && "text-muted-foreground"
+        )}>
+          {player.name.length > 8 ? player.name.slice(0, 7) + '...' : player.name}
+        </span>
+      </div>
+      
+      {claimChar && (
+        <span className={cn(
+          "text-[9px] truncate max-w-[55px] px-1",
+          TEAM_COLORS[claimChar.team]
+        )}>
+          {claimChar.name.length > 8 ? claimChar.name.slice(0, 7) + '...' : claimChar.name}
+        </span>
+      )}
+      
+      <div className="flex items-center gap-1 mt-0.5">
+        {isDead && !player.isTraveler && (
+          player.hasGhostVote ? (
+            <Ghost className="w-3 h-3 text-purple-400" />
+          ) : (
+            <span className="relative">
+              <Ghost className="w-3 h-3 text-muted-foreground/40" />
+              <X className="w-2 h-2 text-red-500 absolute -bottom-0.5 -right-0.5" />
+            </span>
+          )
+        )}
+        {nomCount > 0 && (
+          <span className="flex items-center text-[10px] text-amber-400">
+            <GallowsIcon className="w-2.5 h-2.5" />
+            {nomCount}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function SortableCircleNode({
+  player,
+  position,
+  nodeSize,
+  nominations,
+  onSelectPlayer,
+  isOver,
+}: {
+  player: GamePlayer;
+  position: { x: number; y: number };
+  nodeSize: number;
+  nominations: Nomination[];
+  onSelectPlayer: (playerId: string) => void;
+  isOver: boolean;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    isDragging,
+  } = useSortable({ id: player.id });
+
+  const style: React.CSSProperties = {
+    left: position.x,
+    top: position.y,
+    width: nodeSize,
+    height: nodeSize,
+    transition: 'left 200ms ease, top 200ms ease',
+  };
+
+  return (
+    <button
+      ref={setNodeRef}
+      {...attributes}
+      {...listeners}
+      onClick={() => !isDragging && onSelectPlayer(player.id)}
+      className={cn(
+        "absolute touch-none",
+        !isDragging && "hover-elevate active-elevate-2"
+      )}
+      style={style}
+      data-testid={`circle-node-${player.id}`}
+    >
+      {isOver && (
+        <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-amber-500 animate-pulse z-20" />
+      )}
+      <CircleNodeContent
+        player={player}
+        nodeSize={nodeSize}
+        nominations={nominations}
+        isDragging={isDragging}
+      />
+    </button>
+  );
+}
+
 function CircleSeatingChart({
   players,
   nominations,
   currentDay,
   onSelectPlayer,
+  onReorderPlayers,
 }: {
   players: GamePlayer[];
   nominations: Nomination[];
   currentDay: number;
   onSelectPlayer: (playerId: string) => void;
+  onReorderPlayers: (activeId: string, overId: string) => void;
 }) {
-  const containerRef = useMemo(() => ({ current: null as HTMLDivElement | null }), []);
   const [dimensions, setDimensions] = useState({ width: 300, height: 300 });
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [overId, setOverId] = useState<string | null>(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        delay: 200,
+        tolerance: 5,
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 200,
+        tolerance: 5,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   useEffect(() => {
     const updateDimensions = () => {
@@ -1942,88 +2091,63 @@ function CircleSeatingChart({
     };
   };
 
-  const getNominationCount = (playerId: string) => {
-    return nominations.filter(n => n.nomineeId === playerId).length;
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id as string);
   };
 
-  return (
-    <div 
-      className="flex justify-center py-4"
-      ref={(el) => { containerRef.current = el; }}
-    >
-      <div 
-        className="relative"
-        style={{ width: dimensions.width, height: dimensions.height }}
-      >
-        {players.map((player, index) => {
-          const pos = getPlayerPosition(index);
-          const nomCount = getNominationCount(player.id);
-          const firstClaim = player.claims[0];
-          const claimChar = firstClaim ? ALL_CHARACTERS.find(c => c.id === firstClaim) : null;
-          const isActive = player.status === 'alive';
-          const isDead = player.status === 'dead';
-          const isSpentGhost = isDead && !player.hasGhostVote && !player.isTraveler;
+  const handleDragOver = (event: { over: { id: string | number } | null }) => {
+    setOverId(event.over?.id as string | null);
+  };
 
-          return (
-            <button
-              key={player.id}
-              onClick={() => onSelectPlayer(player.id)}
-              className={cn(
-                "absolute flex flex-col items-center justify-center rounded-full border-2 text-center transition-all",
-                "hover-elevate active-elevate-2",
-                isActive ? "bg-card border-border" : "bg-muted/50 border-muted",
-                player.isTraveler && "border-purple-700",
-                !isActive && "opacity-70"
-              )}
-              style={{
-                left: pos.x,
-                top: pos.y,
-                width: nodeSize,
-                height: nodeSize,
-              }}
-              data-testid={`circle-node-${player.id}`}
-            >
-              <div className="flex items-center gap-0.5 px-1">
-                {isDead && <Skull className="w-3 h-3 text-muted-foreground shrink-0" />}
-                <span className={cn(
-                  "text-xs font-medium truncate max-w-[50px]",
-                  !isActive && "text-muted-foreground"
-                )}>
-                  {player.name.length > 8 ? player.name.slice(0, 7) + '...' : player.name}
-                </span>
-              </div>
-              
-              {claimChar && (
-                <span className={cn(
-                  "text-[9px] truncate max-w-[55px] px-1",
-                  TEAM_COLORS[claimChar.team]
-                )}>
-                  {claimChar.name.length > 8 ? claimChar.name.slice(0, 7) + '...' : claimChar.name}
-                </span>
-              )}
-              
-              <div className="flex items-center gap-1 mt-0.5">
-                {isDead && !player.isTraveler && (
-                  player.hasGhostVote ? (
-                    <Ghost className="w-3 h-3 text-purple-400" />
-                  ) : (
-                    <span className="relative">
-                      <Ghost className="w-3 h-3 text-muted-foreground/40" />
-                      <X className="w-2 h-2 text-red-500 absolute -bottom-0.5 -right-0.5" />
-                    </span>
-                  )
-                )}
-                {nomCount > 0 && (
-                  <span className="flex items-center text-[10px] text-amber-400">
-                    <GallowsIcon className="w-2.5 h-2.5" />
-                    {nomCount}
-                  </span>
-                )}
-              </div>
-            </button>
-          );
-        })}
-      </div>
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      onReorderPlayers(active.id as string, over.id as string);
+    }
+    setActiveId(null);
+    setOverId(null);
+  };
+
+  const activePlayer = activeId ? players.find(p => p.id === activeId) : null;
+
+  return (
+    <div className="flex justify-center py-4">
+      <DndContext 
+        sensors={sensors} 
+        collisionDetection={closestCenter} 
+        onDragStart={handleDragStart}
+        onDragOver={handleDragOver}
+        onDragEnd={handleDragEnd}
+      >
+        <SortableContext items={players.map(p => p.id)} strategy={rectSortingStrategy}>
+          <div 
+            className="relative"
+            style={{ width: dimensions.width, height: dimensions.height }}
+          >
+            {players.map((player, index) => (
+              <SortableCircleNode
+                key={player.id}
+                player={player}
+                position={getPlayerPosition(index)}
+                nodeSize={nodeSize}
+                nominations={nominations}
+                onSelectPlayer={onSelectPlayer}
+                isOver={overId === player.id && activeId !== player.id}
+              />
+            ))}
+          </div>
+        </SortableContext>
+        <DragOverlay>
+          {activePlayer && (
+            <CircleNodeContent
+              player={activePlayer}
+              nodeSize={nodeSize}
+              nominations={nominations}
+              isOverlay={true}
+            />
+          )}
+        </DragOverlay>
+      </DndContext>
     </div>
   );
 }
@@ -2498,6 +2622,7 @@ function GameTrackerView({
           nominations={game.nominations}
           currentDay={game.currentDay}
           onSelectPlayer={(playerId) => setSelectedPlayerId(playerId)}
+          onReorderPlayers={onReorderPlayers}
         />
       )}
       
