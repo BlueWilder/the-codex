@@ -541,7 +541,7 @@ function PlayerDetailDrawer({
   const claimedCharacters = player.claims.map(id => ALL_CHARACTERS.find(c => c.id === id)).filter(Boolean);
   
   const playerNominations = nominations.filter(n => 
-    n.nomineeId === player.id || n.nominatorId === player.id || n.votes.some(v => v.playerId === player.id)
+    n.nomineeId === player.id || n.nominatorId === player.id || (n.votes && n.votes.some(v => v.playerId === player.id))
   );
   const nominationsByDay = playerNominations.reduce((acc, nom) => {
     if (!acc[nom.day]) acc[nom.day] = [];
@@ -783,8 +783,8 @@ function PlayerDetailDrawer({
                         {noms.map((nom) => {
                           const nominee = players.find(p => p.id === nom.nomineeId);
                           const nominator = players.find(p => p.id === nom.nominatorId);
-                          const playerVote = nom.votes.find(v => v.playerId === player.id);
-                          const votesFor = nom.votes.filter(v => v.voted).length;
+                          const playerVote = nom.votes?.find(v => v.playerId === player.id);
+                          const votesFor = nom.votes?.filter(v => v.voted).length ?? nom.yesVotes;
                           
                           return (
                             <div key={nom.id} className="text-sm pl-2 space-y-1">

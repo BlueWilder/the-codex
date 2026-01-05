@@ -7,15 +7,19 @@ export interface PlayerVote {
   voted: boolean;
 }
 
+export type NominationResult = 'failed' | 'passed' | 'executed';
+
 export interface Nomination {
   id: string;
   day: number;
   nomineeId: string;
   nominatorId: string;
-  votes: PlayerVote[];
+  votes?: PlayerVote[]; // Only if Full Vote Record used
   passed: boolean; // Whether the nomination passed (enough votes to execute)
   yesVotes: number; // Number of yes votes
   votesNeeded: number; // Votes needed at the time of nomination
+  isQuickLog?: boolean; // True if Quick Log was used
+  result?: NominationResult; // Quick log result - failed, passed (on block), or executed
 }
 
 export interface ExileVote {
@@ -659,6 +663,10 @@ export function usePlayerGame() {
     
     // Clean up nominations: remove the player's votes and recalculate yesVotes
     const cleanedNominations = game.nominations.map(nom => {
+      // Quick log nominations don't have individual votes
+      if (!nom.votes || nom.isQuickLog) {
+        return nom;
+      }
       const filteredVotes = nom.votes.filter(v => v.playerId !== playerId);
       const newYesVotes = filteredVotes.filter(v => v.voted).length;
       // Keep the original votesNeeded/passed as historical record (reflects state at time of nomination)
