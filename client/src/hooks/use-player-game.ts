@@ -311,11 +311,48 @@ export function usePlayerGame() {
     const nominationId = crypto.randomUUID();
     const timestamp = new Date().toISOString();
     
-    // Calculate votes needed and check for automatic execution
+    // Calculate votes needed
     const aliveCount = game.players.filter(p => p.status === 'alive').length;
     const votesNeeded = Math.ceil(aliveCount / 2);
     const yesVotes = votes.filter(v => v.voted).length;
-    const passed = yesVotes >= votesNeeded;
+    const meetsThreshold = yesVotes >= votesNeeded;
+    
+    // Get current block state
+    const currentBlock = game.choppingBlock || [];
+    const blockNominations = currentBlock
+      .map(id => game.nominations.find(n => n.id === id))
+      .filter((n): n is Nomination => n !== undefined);
+    const currentBlockVotes = blockNominations.length > 0 ? blockNominations[0].yesVotes : 0;
+    
+    // Determine result based on block logic
+    let result: NominationResult = 'failed';
+    let newBlock = [...currentBlock];
+    let updatedNominations = [...game.nominations];
+    
+    if (meetsThreshold) {
+      if (currentBlock.length === 0) {
+        // First to reach threshold - goes on block
+        result = 'on_the_block';
+        newBlock = [nominationId];
+      } else if (yesVotes > currentBlockVotes) {
+        // More votes than current block - replaces them
+        result = 'on_the_block';
+        // Update previous block holders to 'passed'
+        updatedNominations = updatedNominations.map(nom =>
+          currentBlock.includes(nom.id)
+            ? { ...nom, result: 'passed' as NominationResult }
+            : nom
+        );
+        newBlock = [nominationId];
+      } else if (yesVotes === currentBlockVotes) {
+        // Ties current block - joins them (signals no execution)
+        result = 'on_the_block';
+        newBlock = [...currentBlock, nominationId];
+      } else {
+        // Fewer votes than current block - fails
+        result = 'failed';
+      }
+    }
     
     const newNomination: Nomination = {
       id: nominationId,
@@ -323,15 +360,16 @@ export function usePlayerGame() {
       nomineeId,
       nominatorId,
       votes,
-      passed,
+      passed: meetsThreshold,
       yesVotes,
       votesNeeded,
+      result,
     };
     
     // Track ghost vote events
     const newGhostVoteEvents: GhostVoteEvent[] = [];
     
-    // First, mark ghost votes as spent for dead non-Traveler players who voted yes
+    // Mark ghost votes as spent for dead non-Traveler players who voted yes
     let updatedPlayers = game.players.map(p => {
       const playerVote = votes.find(v => v.playerId === p.id);
       // If dead, non-Traveler, has ghost vote, and voted yes - spend it
@@ -347,33 +385,11 @@ export function usePlayerGame() {
       return p;
     });
     
-    // Track death records
-    const newDeathRecords: DeathRecord[] = [];
-    
-    if (yesVotes >= votesNeeded) {
-      // Auto-execute: mark nominee as dead, Travelers don't get ghost votes
-      const nominee = updatedPlayers.find(p => p.id === nomineeId);
-      if (nominee && nominee.status === 'alive') {
-        newDeathRecords.push({
-          playerId: nomineeId,
-          day: game.currentDay,
-          type: 'execution',
-          timestamp,
-          nominationId,
-        });
-        updatedPlayers = updatedPlayers.map(p => 
-          p.id === nomineeId 
-            ? { ...p, isAlive: false, status: 'dead' as PlayerStatus, hasGhostVote: !nominee.isTraveler }
-            : p
-        );
-      }
-    }
-    
     saveGame({ 
       ...game, 
       players: updatedPlayers,
-      nominations: [...game.nominations, newNomination],
-      deathRecords: [...(game.deathRecords || []), ...newDeathRecords],
+      nominations: [...updatedNominations, newNomination],
+      choppingBlock: newBlock,
       ghostVoteEvents: [...(game.ghostVoteEvents || []), ...newGhostVoteEvents],
     });
   }, [game, saveGame, hasBeenNominatedToday, hasNominatedToday]);
@@ -392,7 +408,49 @@ export function usePlayerGame() {
     
     const aliveCount = game.players.filter(p => p.status === 'alive').length;
     const votesNeeded = Math.ceil(aliveCount / 2);
-    const passed = result === 'passed' || result === 'executed';
+    const passed = result === 'passed' || result === 'executed' || result === 'on_the_block';
+    
+    // Get current block state for handling 'on_the_block' result
+    const currentBlock = game.choppingBlock || [];
+    const blockNominations = currentBlock
+      .map(id => game.nominations.find(n => n.id === id))
+      .filter((n): n is Nomination => n !== undefined);
+    const currentBlockVotes = blockNominations.length > 0 ? blockNominations[0].yesVotes : 0;
+    
+    let newBlock = [...currentBlock];
+    let updatedNominations = [...game.nominations];
+    let finalResult = result;
+    
+    // Handle block logic for 'on_the_block' result
+    if (result === 'on_the_block') {
+      if (currentBlock.length === 0) {
+        // First on block
+        newBlock = [nominationId];
+      } else if (yesVotes > currentBlockVotes) {
+        // Replaces current block
+        updatedNominations = updatedNominations.map(nom =>
+          currentBlock.includes(nom.id)
+            ? { ...nom, result: 'passed' as NominationResult }
+            : nom
+        );
+        newBlock = [nominationId];
+      } else if (yesVotes === currentBlockVotes) {
+        // Ties current block
+        newBlock = [...currentBlock, nominationId];
+      } else {
+        // Fewer votes - becomes 'passed' (survived but didn't make block)
+        finalResult = 'passed';
+      }
+    } else if (result === 'executed') {
+      // Clear block since execution is happening
+      // Update any previous block holders to 'passed'
+      updatedNominations = updatedNominations.map(nom =>
+        currentBlock.includes(nom.id)
+          ? { ...nom, result: 'passed' as NominationResult }
+          : nom
+      );
+      newBlock = [];
+    }
     
     const newNomination: Nomination = {
       id: nominationId,
@@ -403,7 +461,7 @@ export function usePlayerGame() {
       yesVotes,
       votesNeeded,
       isQuickLog: true,
-      result,
+      result: finalResult,
     };
     
     let updatedPlayers = game.players;
@@ -431,7 +489,8 @@ export function usePlayerGame() {
     saveGame({ 
       ...game, 
       players: updatedPlayers,
-      nominations: [...game.nominations, newNomination],
+      nominations: [...updatedNominations, newNomination],
+      choppingBlock: newBlock,
       deathRecords: [...(game.deathRecords || []), ...newDeathRecords],
     });
   }, [game, saveGame, hasBeenNominatedToday, hasNominatedToday]);
