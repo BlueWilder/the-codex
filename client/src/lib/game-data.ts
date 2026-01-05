@@ -2225,29 +2225,29 @@ This applies even if the Heretic is dead.`,
     name: 'Hermit',
     edition: 'experimental',
     team: 'outsider',
-    ability: 'If the Demon dies before final 3, you become the Demon. You only win if evil wins by execution.',
+    ability: 'You have all Outsider abilities. [-0 or -1 Outsider]',
     firstNightOrder: null,
     otherNightOrder: null,
-    setup: false,
-    reminders: [],
-    flavorQuote: "Leave me be. I want nothing of your world.",
-    extendedSummary: `The Hermit becomes the Demon if the original dies too early.
+    setup: true,
+    reminders: ['1', '2', '3'],
+    flavorQuote: "In the lost and forgotten places of the earth, the soul's light beckons.",
+    extendedSummary: `The Hermit has all Outsider abilities on the script.
 
-If the Demon dies before the game reaches the final 3 players, the Hermit becomes the Demon.
+The Hermit has the abilities of all other Outsiders on the script, all at once. If one Outsider ability continues after death (like the Recluse's), the Hermit keeps that ability when dead.
 
-The Hermit (now Demon) only wins if evil wins by execution - not by other means.`,
+A Hermit with the Drunk ability doesn't know they are the Hermit. During setup, the Storyteller may remove an additional Outsider and add a Townsfolk instead.`,
     tipsAndTricks: [
-      "You're a backup Demon for evil, but you only win by execution.",
-      "If you become Demon, you want good to execute the wrong player.",
-      "Evil might try to use you as a failsafe.",
-      "Be careful revealing this - evil might want to kill the Demon early."
+      "You have ALL Outsider abilities - track each one carefully.",
+      "If you have the Drunk ability, you might not know you're the Hermit.",
+      "Some Outsider abilities can clash - the Storyteller will resolve conflicts.",
+      "Reveal your role to help good understand multiple Outsider effects."
     ],
     bluffingAs: [
-      "Claim Hermit to explain why the game continued after the Demon died.",
-      "Use this to create confusion about who the Demon is.",
-      "Be careful - the Hermit's win condition is unusual."
+      "Claim Hermit to explain multiple Outsider-like behaviors.",
+      "Use this to cover for strange interactions.",
+      "This is a complex bluff - know all Outsiders on the script."
     ],
-    howToRun: "If the Demon dies before the final 3 players remain, the Hermit becomes the Demon. Change the Hermit token to a Demon token (their choice or yours). Wake the Hermit and show them the YOU ARE info token and their new Demon token.\n\nIf the Hermit (now Demon) wins, it must be due to a good player being executed when only 3 players remain."
+    howToRun: "During setup, you may remove an Outsider token (not the Hermit) and add a Townsfolk token instead. Treat the Hermit as if they have all other Outsider abilities on the script - wake them at night when appropriate and use the relevant reminder tokens.\n\nIf Outsider abilities clash, create a rule to fix the conflict and tell the group."
   },
   {
     id: 'ogre',
@@ -2826,60 +2826,60 @@ This gives evil an early advantage.`,
     name: 'Wraith',
     edition: 'experimental',
     team: 'minion',
-    ability: 'The Demon\'s kills affect their target\'s neighbors instead. Each night, any players that are exactly 1 step away from being killed wake to learn this.',
-    firstNightOrder: 21,
-    otherNightOrder: 11,
+    ability: 'You may choose to open your eyes at night. You wake when other evil players do.',
+    firstNightOrder: null,
+    otherNightOrder: null,
     setup: false,
-    reminders: ['Warning'],
-    flavorQuote: "I am the shadow that haunts your dreams.",
-    extendedSummary: `The Wraith redirects the Demon's kills to neighbors.
+    reminders: [],
+    flavorQuote: "In the shadows, I see all.",
+    extendedSummary: `The Wraith knows and shares what happens at night.
 
-When the Demon kills a player, instead of that player dying, one or both of their neighbors die.
+The Wraith may open their eyes at any point during the night. They also wake whenever other evil players wake, allowing communication.
 
-Players who are exactly one step away from dying wake and learn they were almost killed.`,
+When several players have their eyes open, they may communicate silently. A dead or drunk/poisoned Wraith may not open their eyes.`,
     tipsAndTricks: [
-      "The Demon kills who they choose, but neighbors die instead.",
-      "This can confuse good about who the Demon targeted.",
-      "Players who 'almost die' learn about it - this creates uncertainty.",
-      "Coordinate with the Demon about actual targets vs apparent targets."
+      "Look around to see which good players wake and what they do.",
+      "Communicate with evil teammates when you wake together.",
+      "Coordinate with your Demon on who to target based on what you see.",
+      "If caught, you're confirmed evil but not confirmed as Demon."
     ],
     fightingThe: [
-      "The Demon's target isn't who dies - neighbors die instead.",
-      "If you're warned you 'almost died', the Demon targeted your neighbor.",
-      "Track who the Demon seems to target vs who actually dies.",
-      "This creates confusion about Demon intentions."
+      "If you wake at night, look around - you might catch the Wraith peeking.",
+      "Ask other players if they've seen anything suspicious at night.",
+      "Watch day conversation patterns - evil can coordinate at night.",
+      "If you find the Wraith, they're not a Demon candidate."
     ],
-    howToRun: "When the Demon kills a player, instead of that player dying, one or both of their alive neighbors die.\n\nMark players who are exactly 1 step away from being killed (i.e., would have been killed if the Wraith effect shifted differently) with the WARNING reminder. Wake each warned player and show them a thumbs-down to indicate they almost died. Put them to sleep."
+    howToRun: "Each time you wake an evil player at night, first wake the Wraith. When you put that evil player to sleep, put the Wraith to sleep.\n\nIf the Wraith loses their ability while alive, privately tell them they may not open their eyes tonight."
   },
   {
     id: 'xaan',
     name: 'Xaan',
     edition: 'experimental',
     team: 'minion',
-    ability: 'On night X, all Townsfolk are poisoned until dusk. X is the night equal to the number of players you publicly "touched" yesterday.',
+    ability: 'On night X, all Townsfolk are poisoned until dusk. [X Outsiders]',
     firstNightOrder: null,
-    otherNightOrder: 66,
-    setup: false,
-    reminders: ['Touched', 'Touched', 'Touched', 'Night X'],
-    flavorQuote: "Your pain sustains me.",
-    extendedSummary: `Xaan can poison all Townsfolk on a chosen night.
+    otherNightOrder: null,
+    setup: true,
+    reminders: ['Night 1', 'Night 2', 'Night 3', 'X'],
+    flavorQuote: "Down they fall. One by one. By two, by three, by five.",
+    extendedSummary: `The Xaan poisons all Townsfolk on night X.
 
-During the day, Xaan publicly "touches" players by announcing it. The number of players touched determines which night all Townsfolk are poisoned.
+X equals the number of Outsiders in play during setup. For example, if there are 2 Outsiders, Xaan poisons on night 2.
 
-On night X (where X = number touched yesterday), all Townsfolk are poisoned until dusk.`,
+The Xaan can add any number of Outsiders during setup. The Xaan must be alive to poison.`,
     tipsAndTricks: [
-      "Choose how many players to touch to control when Townsfolk are poisoned.",
-      "Timing is crucial - poison on a night when it matters most.",
-      "This affects ALL Townsfolk - very powerful.",
-      "Coordinate with the Demon about when to trigger this."
+      "Figure out how many Outsiders are in play to know when night X happens.",
+      "Coordinate with evil to bluff poisoned information on night X.",
+      "Stay alive until after night X - you must be alive to poison.",
+      "Fake Outsider claims can confuse good about when night X is."
     ],
     fightingThe: [
-      "Watch for players publicly 'touching' others - that's Xaan.",
-      "Count the touches to know which night Townsfolk are poisoned.",
-      "On night X, all Townsfolk info might be wrong.",
-      "Once you identify Xaan, their touching becomes less dangerous."
+      "Count Outsider claims to estimate which night is X.",
+      "Compare information from the same night - if many are wrong, it might be night X.",
+      "Disregard information from night X once you identify it.",
+      "Outsider math won't add up with Xaan - any number is possible."
     ],
-    howToRun: "During the day, Xaan may publicly 'touch' players by announcing it. Count the number of players touched.\n\nOn night X (where X = the number of players touched yesterday), all Townsfolk are poisoned until dusk tomorrow. Mark each Townsfolk with a POISONED reminder, and remove these reminders at dusk."
+    howToRun: "During setup, add or remove any number of Outsider tokens. On the night that equals the number of Outsiders in play during setup, add the X reminder. While X is in the Grimoire, all Townsfolk are poisoned. Remove X at dusk."
   },
   // DEMONS
   {
@@ -3190,29 +3190,29 @@ Multiple kills are possible if the phrase is said multiple times.`,
     name: 'Cacklejack',
     edition: 'experimental',
     team: 'traveler',
-    ability: 'Once per night, if you are alive, choose a player: they learn your alignment.',
-    firstNightOrder: 1,
-    otherNightOrder: 1,
+    ability: 'Each day, choose a player: a different player changes character tonight.',
+    firstNightOrder: null,
+    otherNightOrder: 50,
     setup: false,
-    reminders: [],
-    flavorQuote: "Hee hee hee!",
-    extendedSummary: `The Cacklejack reveals their alignment to one player per night.
+    reminders: ['Not Me'],
+    flavorQuote: "Wire A to wire B. Light on. Buzzer off. Gazoinks!",
+    extendedSummary: `The Cacklejack causes character-changing chaos.
 
-Each night, the Cacklejack may choose a player to learn the Cacklejack's alignment (good or evil).
+Each day, the Cacklejack chooses a player who is immune from changing. That night, the Storyteller changes a different player's character.
 
-This helps players understand who to trust.`,
+The Storyteller chooses who changes and what character they become. This may create duplicate characters in play.`,
     tipsAndTricks: [
-      "Reveal your alignment strategically to build trust or deceive.",
-      "Good Cacklejacks can confirm themselves to key players.",
-      "Evil Cacklejacks can pretend to be good.",
-      "Choose wisely who learns your alignment."
+      "Choose trusted players with powerful abilities to protect them from changing.",
+      "Avoid choosing players whose abilities harm good (like Recluse or Barber) - let them potentially change.",
+      "Ask players each day if their character changed to figure out who was affected.",
+      "If powerful good roles appear, the Storyteller might be signaling good is losing."
     ],
     bluffingAs: [
-      "Claim you told someone you were good.",
-      "Coordinate with that player to back you up.",
-      "Be careful if they reveal you said something different."
+      "If an evil player changes, encourage them to lie about becoming a good character.",
+      "Publicly pick trusted good players early to gain trust, then privately pick targets that help evil.",
+      "Ask players their characters pretending to choose wisely, then tell the Demon everything."
     ],
-    howToRun: "Each night, wake the Cacklejack. They either shake their head no or point to a player. Put the Cacklejack to sleep.\n\nIf they pointed to a player, wake that player. Show them a thumbs-up if the Cacklejack is good, or a thumbs-down if the Cacklejack is evil. Put that player to sleep."
+    howToRun: "Each day, the Cacklejack chooses a player. Mark them with the NOT ME reminder.\n\nEach night except the first, replace any player's character token with a different character token. Wake that player, show the YOU ARE info token and their new character token, then put them to sleep."
   },
   {
     id: 'gangster',
@@ -3248,29 +3248,29 @@ This creates interesting dynamics with neighboring players.`,
     name: 'Gnome',
     edition: 'experimental',
     team: 'traveler',
-    ability: 'If you are exiled, a player is killed, decided by you, the exiled (if evil) or the Storyteller (if good).',
+    ability: 'All players start knowing a player of your alignment. You may choose to kill anyone who nominates them.',
     firstNightOrder: null,
     otherNightOrder: null,
     setup: false,
-    reminders: [],
-    flavorQuote: "I'm watching you...",
-    extendedSummary: `The Gnome causes a death when exiled.
+    reminders: ['Amigo'],
+    flavorQuote: "Four the score or seven beers, no shows are goes for me and my...",
+    extendedSummary: `The Gnome protects one player on their team.
 
-If the Gnome is exiled, a player dies. If the Gnome is evil, they choose who dies. If good, the Storyteller chooses.
+The Gnome starts as the same alignment as one player (their "amigo"). The Storyteller publicly announces which player this is.
 
-This makes exiling the Gnome risky.`,
+When their amigo is nominated, the Gnome may choose to kill the nominator immediately. Voting still occurs afterward.`,
     tipsAndTricks: [
-      "Being exiled triggers a death - use this as leverage.",
-      "If evil, you get to choose who dies.",
-      "If good, the Storyteller will help good by choosing the death.",
-      "Threaten exile to influence the game."
+      "Get as many players as possible to nominate your amigo - more chances to kill evil players.",
+      "Stay silent so players forget you're in play, then surprise them with your ability.",
+      "Don't vote for your amigo - you know they share your alignment.",
+      "Talk to players to decide whether to use your ability on them."
     ],
     bluffingAs: [
-      "Threaten that your exile will kill someone.",
-      "Claim Gnome to discourage exile attempts.",
-      "Use the threat to survive longer."
+      "If your amigo is the Demon, encourage nominations to kill good players.",
+      "If your amigo is a Minion, discourage nominations to protect them.",
+      "Be chaotic and surprise players with how you use your ability."
     ],
-    howToRun: "If the Gnome is exiled, a player dies. If the Gnome is evil, they choose who dies. If the Gnome is good, you choose who dies."
+    howToRun: "When the Gnome enters play, mark a player of the same alignment with the AMIGO reminder. Publicly declare that player is the same alignment as the Gnome.\n\nIf that player is nominated, before voting begins, if the Gnome declares they wish to use their ability, the nominator dies."
   },
   // FABLED
   {
@@ -3303,25 +3303,25 @@ This is typically used to correct game imbalances.`,
     name: 'Ferryman',
     edition: 'experimental',
     team: 'traveler',
-    ability: 'On the final night, dead players who voted that day will die again. The Storyteller may reveal which dead player is in play.',
+    ability: 'On the final day, all dead players regain their vote token.',
     firstNightOrder: null,
-    otherNightOrder: 80,
+    otherNightOrder: null,
     setup: false,
     reminders: [],
-    flavorQuote: "Coin for the ferryman?",
-    extendedSummary: `The Ferryman affects dead players who vote.
+    flavorQuote: "When righteous dreams come, they have the weight of truth.",
+    extendedSummary: `The Ferryman gives dead players their votes back on the final day.
 
-On the final night, dead players who voted during the day will 'die again' and lose their vote for the final day.
+Use the Ferryman to create a fun and inclusive finale even if newer players have used their vote tokens early.
 
-The Storyteller may reveal which dead player this affects.`,
+All dead players regain their vote tokens on the final day, regardless of alignment or when they voted.`,
     tipsAndTricks: [
-      "Dead players must consider whether to vote.",
-      "Voting costs them their final vote.",
-      "This creates strategic voting decisions for the dead.",
-      "The reveal can help good or evil depending on the situation."
+      "This is a Storyteller tool for newer player games.",
+      "If dead players used votes too early, this fixes it for the final day.",
+      "Everyone gets a say in the critical final votes.",
+      "The final day is typically when only 3 players remain alive."
     ],
     bluffingAs: [],
-    howToRun: "This is a Fabled (Storyteller tool). On the final night, note which dead players voted that day. Those players lose their ghost vote for the final day."
+    howToRun: "This is a Fabled (Storyteller tool). During the game, when you notice it would help, declare the Ferryman is in play.\n\nAt the start of the final day, ask players to return vote tokens to any dead players who don't have one."
   },
   {
     id: 'stormcatcher',
