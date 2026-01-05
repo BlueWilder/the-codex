@@ -510,7 +510,7 @@ function PlayerDetailDrawer({
   onToggleAlive,
   onSetPlayerStatus,
   onToggleGhostVote,
-  onAddClaim,
+  onAddMultipleClaims,
   onRemoveClaim,
   onSetNotes,
   onSetPlayerName,
@@ -527,7 +527,7 @@ function PlayerDetailDrawer({
   onToggleAlive: () => void;
   onSetPlayerStatus?: (status: PlayerStatus) => void;
   onToggleGhostVote: () => void;
-  onAddClaim: (characterId: string) => void;
+  onAddMultipleClaims: (characterIds: string[]) => void;
   onRemoveClaim: (characterId: string) => void;
   onSetNotes: (notes: string) => void;
   onSetPlayerName: (name: string) => void;
@@ -905,7 +905,7 @@ function PlayerDetailDrawer({
       <CharacterPicker
         open={showCharacterPicker}
         onClose={() => setShowCharacterPicker(false)}
-        onSelect={(characterIds) => characterIds.forEach(id => onAddClaim(id))}
+        onSelect={(characterIds) => onAddMultipleClaims(characterIds)}
         excludeIds={player.claims}
         scriptCharacterIds={scriptCharacterIds}
       />
@@ -2165,6 +2165,7 @@ function GameTrackerView({
   onSetPlayerStatus,
   onToggleGhostVote,
   onAddClaim,
+  onAddMultipleClaims,
   onRemoveClaim,
   onSetNotes,
   onUpdatePlayerName,
@@ -2195,6 +2196,7 @@ function GameTrackerView({
   onSetPlayerStatus: (playerId: string, status: PlayerStatus) => void;
   onToggleGhostVote: (playerId: string) => void;
   onAddClaim: (playerId: string, characterId: string) => void;
+  onAddMultipleClaims: (playerId: string, characterIds: string[]) => void;
   onRemoveClaim: (playerId: string, characterId: string) => void;
   onSetNotes: (playerId: string, notes: string) => void;
   onUpdatePlayerName: (playerId: string, name: string) => void;
@@ -2644,7 +2646,7 @@ function GameTrackerView({
         onToggleAlive={() => selectedPlayerId && onToggleAlive(selectedPlayerId)}
         onSetPlayerStatus={(status) => selectedPlayerId && onSetPlayerStatus(selectedPlayerId, status)}
         onToggleGhostVote={() => selectedPlayerId && onToggleGhostVote(selectedPlayerId)}
-        onAddClaim={(charId) => selectedPlayerId && onAddClaim(selectedPlayerId, charId)}
+        onAddMultipleClaims={(charIds) => selectedPlayerId && onAddMultipleClaims(selectedPlayerId, charIds)}
         onRemoveClaim={(charId) => selectedPlayerId && onRemoveClaim(selectedPlayerId, charId)}
         onSetNotes={(notes) => selectedPlayerId && onSetNotes(selectedPlayerId, notes)}
         onSetPlayerName={(name) => selectedPlayerId && onUpdatePlayerName(selectedPlayerId, name)}
@@ -2810,6 +2812,7 @@ export default function Game() {
     playAgain,
     updatePlayer,
     addClaim,
+    addMultipleClaims,
     removeClaim,
     toggleAlive,
     setPlayerStatus,
@@ -2863,6 +2866,7 @@ export default function Game() {
           onSetPlayerStatus={setPlayerStatus}
           onToggleGhostVote={toggleGhostVote}
           onAddClaim={addClaim}
+          onAddMultipleClaims={addMultipleClaims}
           onRemoveClaim={removeClaim}
           onSetNotes={setNotes}
           onUpdatePlayerName={updatePlayerName}

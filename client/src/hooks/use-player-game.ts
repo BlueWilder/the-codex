@@ -281,6 +281,29 @@ export function usePlayerGame() {
       claimRecords: [...existingRecords, newClaimRecord],
     });
   }, [game, updatePlayer]);
+  
+  const addMultipleClaims = useCallback((playerId: string, characterIds: string[]) => {
+    if (!game) return;
+    const player = game.players.find(p => p.id === playerId);
+    if (!player) return;
+    
+    // Filter out any already-claimed characters
+    const newCharacterIds = characterIds.filter(id => !player.claims.includes(id));
+    if (newCharacterIds.length === 0) return;
+    
+    const timestamp = new Date().toISOString();
+    const newClaimRecords: ClaimRecord[] = newCharacterIds.map(characterId => ({
+      characterId,
+      addedAt: timestamp,
+      day: game.currentDay,
+    }));
+    
+    const existingRecords = player.claimRecords || [];
+    updatePlayer(playerId, { 
+      claims: [...player.claims, ...newCharacterIds],
+      claimRecords: [...existingRecords, ...newClaimRecords],
+    });
+  }, [game, updatePlayer]);
 
   const removeClaim = useCallback((playerId: string, characterId: string) => {
     if (!game) return;
@@ -910,6 +933,7 @@ export function usePlayerGame() {
     playAgain,
     updatePlayer,
     addClaim,
+    addMultipleClaims,
     removeClaim,
     toggleAlive,
     setPlayerStatus,
