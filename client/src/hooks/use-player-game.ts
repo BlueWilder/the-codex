@@ -7,7 +7,7 @@ export interface PlayerVote {
   voted: boolean;
 }
 
-export type NominationResult = 'failed' | 'passed' | 'executed';
+export type NominationResult = 'failed' | 'on_the_block' | 'passed' | 'executed';
 
 export interface Nomination {
   id: string;
@@ -108,6 +108,8 @@ export interface PlayerGame {
   ghostVoteEvents?: GhostVoteEvent[];
   // Free-form game notes
   gameNotes?: string;
+  // Chopping block - nomination IDs of players currently on the block
+  choppingBlock?: string[];
 }
 
 const STORAGE_KEY = "clocktower_player_game";
@@ -437,6 +439,86 @@ export function usePlayerGame() {
   const deleteNomination = useCallback((nominationId: string) => {
     if (!game) return;
     saveGame({ ...game, nominations: game.nominations.filter(n => n.id !== nominationId) });
+  }, [game, saveGame]);
+
+  // Get current chopping block info
+  const getChoppingBlock = useCallback(() => {
+    if (!game) return { nominations: [], isTied: false };
+    const blockIds = game.choppingBlock || [];
+    const nominations = blockIds
+      .map(id => game.nominations.find(n => n.id === id))
+      .filter((n): n is Nomination => n !== undefined);
+    return {
+      nominations,
+      isTied: nominations.length > 1,
+    };
+  }, [game]);
+
+  // Clear the chopping block (no execution) - update all block nominations to 'passed'
+  const clearChoppingBlock = useCallback(() => {
+    if (!game) return;
+    const blockIds = game.choppingBlock || [];
+    
+    const updatedNominations = game.nominations.map(nom => 
+      blockIds.includes(nom.id) 
+        ? { ...nom, result: 'passed' as NominationResult }
+        : nom
+    );
+    
+    saveGame({
+      ...game,
+      nominations: updatedNominations,
+      choppingBlock: [],
+    });
+  }, [game, saveGame]);
+
+  // Execute from chopping block (only when single player on block)
+  const executeFromBlock = useCallback(() => {
+    if (!game) return;
+    const blockIds = game.choppingBlock || [];
+    if (blockIds.length !== 1) return; // Can only execute when single player on block
+    
+    const nominationId = blockIds[0];
+    const nomination = game.nominations.find(n => n.id === nominationId);
+    if (!nomination) return;
+    
+    const nominee = game.players.find(p => p.id === nomination.nomineeId);
+    if (!nominee) return;
+    
+    const timestamp = new Date().toISOString();
+    const newDeathRecords: DeathRecord[] = [];
+    let updatedPlayers = game.players;
+    
+    // Mark player as dead
+    if (nominee.status === 'alive') {
+      newDeathRecords.push({
+        playerId: nomination.nomineeId,
+        day: game.currentDay,
+        type: 'execution',
+        timestamp,
+        nominationId,
+      });
+      updatedPlayers = updatedPlayers.map(p => 
+        p.id === nomination.nomineeId 
+          ? { ...p, isAlive: false, status: 'dead' as PlayerStatus, hasGhostVote: !nominee.isTraveler }
+          : p
+      );
+    }
+    
+    // Update nomination result to 'executed'
+    const updatedNominations = game.nominations.map(nom => 
+      nom.id === nominationId 
+        ? { ...nom, result: 'executed' as NominationResult }
+        : nom
+    );
+    
+    saveGame({
+      ...game,
+      players: updatedPlayers,
+      nominations: updatedNominations,
+      deathRecords: [...(game.deathRecords || []), ...newDeathRecords],
+      choppingBlock: [],
+    });
   }, [game, saveGame]);
 
   const toggleAlive = useCallback((playerId: string) => {
@@ -783,6 +865,9 @@ export function usePlayerGame() {
     createNomination,
     createQuickNomination,
     deleteNomination,
+    getChoppingBlock,
+    clearChoppingBlock,
+    executeFromBlock,
     clearScript,
     setScript,
     addTraveler,

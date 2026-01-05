@@ -1,0 +1,156 @@
+# Chopping Block Flow
+
+Add a “Chopping Block” feature to track and resolve player(s) about to be executed.
+
+## BOTC Rules
+
+- First player to reach the execution threshold (votes >= “To Exec”) goes on the block
+- To replace: new nomination must get MORE votes than current player on block
+- If a nomination TIES the current block holder, BOTH are on the block (signals no execution)
+- Ties at end of day = NO ONE dies
+- Only one player can be executed per day
+
+## 1. Chopping Block Indicator
+
+Show indicator when player(s) on block:
+
+**Single player:**
+🪓 On the Block: Player 5 (8 votes) [View]
+
+**Tie (2 players):**
+🪓 Tied on Block: 2 players (8 votes) [View]
+
+Tapping opens the Chopping Block modal.
+
+## 2. Chopping Block Modal
+
+### Single Player on Block:
+
+**Title:** 🪓 CHOPPING BLOCK
+
+**Content:**
+
+- Player name (large)
+- Vote count received
+- Who nominated them
+- “Needs more than 8 votes to replace”
+
+**Buttons:**
+
+- [Execute] - End day and execute this player
+- [No Execution] - Clear block, no one dies
+
+-----
+
+### Tied Players on Block:
+
+**Title:** 🪓 CHOPPING BLOCK - TIE
+
+**Content:**
+
+- “No execution - players are tied”
+- List both players with vote counts:
+  - Player 5 (8 votes) - nominated by Player 8
+  - Player 2 (8 votes) - nominated by Player 11
+
+**Buttons:**
+
+- [Confirm No Execution] - Clear block, no one dies
+
+(No execute option when tied)
+
+## 3. Block Logic
+
+### First Nomination to Reach Threshold:
+
+- If vote count >= “To Exec” AND block is empty:
+  - Player goes on the block alone
+  - Result: ‘on_the_block’
+
+### Subsequent Nominations - More Votes:
+
+- If vote count > current block vote count:
+  - New player replaces ALL current block holders
+  - Previous player(s) result updated to ‘passed’
+  - New player alone on block
+  - Toast: “Player 2 takes the block (9 > 8)”
+
+### Subsequent Nominations - Equal Votes:
+
+- If vote count = current block vote count (and >= threshold):
+  - Add player to block (now tied)
+  - Both players have result: ‘on_the_block’
+  - Toast: “Player 2 ties Player 5 - no execution”
+
+### Subsequent Nominations - Fewer Votes:
+
+- If vote count < current block vote count:
+  - Does NOT affect block
+  - Result: ‘failed’
+
+## 4. Actions
+
+### Execute (Single Player Only)
+
+- Only available when ONE player on block
+- Confirmation: “Execute [Player]? This ends the day.”
+- On confirm:
+  - Update nomination result to ‘executed’
+  - Mark player as dead
+  - Clear block
+  - Close modal
+
+### No Execution / Confirm No Execution
+
+- Clears the block
+- All block holders’ results updated to ‘passed’
+- Add log note: “Day X - No execution”
+- Close modal
+
+## 5. Day Change Prompt
+
+**Single player on block:**
+“[Player 5] is on the block with 8 votes. Resolve before advancing?”
+[Execute] [No Execution] [Back]
+
+**Tied players:**
+“Player 5 and Player 2 are tied with 8 votes. No execution today.”
+[Confirm No Execution] [Back]
+
+## 6. Log Display
+
+**Single execution:**
+
+```
+☀️ DAY 2
+  ⚖️ Player 5 nominated by Player 8 (On Block - 8 votes)
+  ⚖️ Player 2 nominated by Player 11 (Failed - 6 votes)
+  🪓 Player 5 executed
+```
+
+**Replaced then executed:**
+
+```
+☀️ DAY 2
+  ⚖️ Player 5 nominated by Player 8 (Survived - 8 votes)
+  ⚖️ Player 2 nominated by Player 11 (On Block - 9 votes)
+  🪓 Player 2 executed
+```
+
+**Tie - no execution:**
+
+```
+☀️ DAY 2
+  ⚖️ Player 5 nominated by Player 8 (Tied - 8 votes)
+  ⚖️ Player 2 nominated by Player 11 (Tied - 8 votes)
+  ☀️ No execution - tie
+```
+
+## 7. Data
+
+- Block can hold multiple nominations: `choppingBlock: nominationId[]`
+- Nomination results: ‘failed’ | ‘on_the_block’ | ‘passed’ | ‘executed’
+  - failed: Didn’t reach threshold OR didn’t match/beat current block
+  - on_the_block: Currently on block (alone or tied)
+  - passed: Was on block but survived
+  - executed: Died
