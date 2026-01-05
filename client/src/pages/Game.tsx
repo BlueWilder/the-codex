@@ -1378,8 +1378,8 @@ function NominationDialog({
               </p>
             </div>
 
-            <div className="flex gap-2 pt-2">
-              <Button variant="ghost" className="flex-1" onClick={() => setStep(3)}>
+            <div className="flex gap-2 pt-4">
+              <Button variant="outline" className="flex-1" onClick={() => setStep(3)} data-testid="button-back-quick-log">
                 Back
               </Button>
               <Button className="flex-1" onClick={handleSubmitQuickLog} data-testid="button-confirm-quick-log">
