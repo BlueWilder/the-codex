@@ -1290,34 +1290,35 @@ function NominationDialog({
         )}
 
         {step === 5 && (
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div className="text-sm text-muted-foreground">
               <p>
                 <span className="text-amber-400 font-medium">{nominee?.name}</span>
                 {" "}nominated by{" "}
                 <span className="text-purple-400 font-medium">{nominator?.name}</span>
               </p>
-              <p className="mt-2 text-xs">Votes needed: {votesNeeded}</p>
+              <p className="mt-1 text-xs">Votes needed: {votesNeeded}</p>
             </div>
             
-            <div>
-              <label className="text-sm text-muted-foreground mb-1 block">Vote Count</label>
+            <div className="flex items-center gap-3">
+              <label className="text-sm text-muted-foreground whitespace-nowrap">Vote Count</label>
               <Input
                 type="number"
                 min="0"
                 value={quickVoteCount}
                 onChange={(e) => setQuickVoteCount(e.target.value)}
-                placeholder="Number of votes for"
+                placeholder="Number of votes"
+                className="flex-1"
                 data-testid="input-quick-vote-count"
               />
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <label className="text-sm text-muted-foreground block">Result</label>
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <label
                   className={cn(
-                    "flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors",
+                    "flex items-center gap-3 px-3 py-2 rounded-lg border cursor-pointer transition-colors",
                     quickResult === "failed" ? "bg-red-950/30 border-red-800" : "bg-card border-border"
                   )}
                 >
@@ -1336,7 +1337,7 @@ function NominationDialog({
                 </label>
                 <label
                   className={cn(
-                    "flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors",
+                    "flex items-center gap-3 px-3 py-2 rounded-lg border cursor-pointer transition-colors",
                     quickResult === "on_the_block" ? "bg-amber-950/30 border-amber-800" : "bg-card border-border"
                   )}
                 >
@@ -1350,12 +1351,12 @@ function NominationDialog({
                   />
                   <span className="flex items-center gap-2">
                     <Target className="w-4 h-4 text-amber-500" />
-                    On the Block (not executed yet)
+                    On the Block
                   </span>
                 </label>
                 <label
                   className={cn(
-                    "flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors",
+                    "flex items-center gap-3 px-3 py-2 rounded-lg border cursor-pointer transition-colors",
                     quickResult === "executed" ? "bg-emerald-950/30 border-emerald-800" : "bg-card border-border"
                   )}
                 >
@@ -1373,12 +1374,12 @@ function NominationDialog({
                   </span>
                 </label>
               </div>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-xs text-muted-foreground">
                 Note: Quick Log does not auto-spend ghost votes
               </p>
             </div>
 
-            <div className="flex gap-2 pt-4">
+            <div className="flex gap-2 pt-2">
               <Button variant="outline" className="flex-1" onClick={() => setStep(3)} data-testid="button-back-quick-log">
                 Back
               </Button>
