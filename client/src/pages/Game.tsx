@@ -1399,15 +1399,15 @@ function AxeIcon({ className }: { className?: string }) {
   return (
     <svg 
       viewBox="0 0 24 24" 
-      fill="none" 
-      stroke="currentColor" 
-      strokeWidth="2" 
-      strokeLinecap="round" 
-      strokeLinejoin="round"
+      fill="currentColor"
       className={className}
     >
-      <path d="M14 12L3 3" />
-      <path d="M21 3c-1.5 4-4 7-8 9a5 5 0 0 1-4.5-1.5L7 9l-3 3 1.5 1.5A5 5 0 0 1 4 18c2-4 5-6.5 9-8z" />
+      {/* Handle */}
+      <rect x="10" y="12" width="3" height="11" rx="1" fill="currentColor" opacity="0.7" />
+      {/* Axe head - curved blade */}
+      <path d="M6 4 C2 6, 2 12, 6 14 L13 14 L13 4 Z" fill="currentColor" />
+      {/* Metal edge highlight */}
+      <path d="M6 4 C3 6, 3 12, 6 14" stroke="currentColor" strokeWidth="0.5" fill="none" opacity="0.5" />
     </svg>
   );
 }
