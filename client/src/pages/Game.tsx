@@ -787,8 +787,8 @@ function PlayerDetailDrawer({
                           const votesFor = nom.votes?.filter(v => v.voted).length ?? nom.yesVotes;
                           
                           // Quick log result display
-                          const quickLogResult = nom.isQuickLog && nom.result 
-                            ? (nom.result === 'executed' ? 'Executed' : nom.result === 'passed' ? 'On Block' : 'Failed')
+                          const quickLogResult = nom.result 
+                            ? (nom.result === 'executed' ? 'Executed' : nom.result === 'on_the_block' ? 'On Block' : nom.result === 'passed' ? 'Survived' : 'Failed')
                             : null;
                           
                           return (
@@ -804,7 +804,8 @@ function PlayerDetailDrawer({
                                     className={cn(
                                       "text-xs",
                                       nom.result === 'executed' && "border-red-500 text-red-400",
-                                      nom.result === 'passed' && "border-amber-500 text-amber-400",
+                                      nom.result === 'on_the_block' && "border-amber-500 text-amber-400",
+                                      nom.result === 'passed' && "border-emerald-500 text-emerald-400",
                                       nom.result === 'failed' && "border-muted-foreground"
                                     )}
                                   >
@@ -1336,16 +1337,16 @@ function NominationDialog({
                 <label
                   className={cn(
                     "flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors",
-                    quickResult === "passed" ? "bg-amber-950/30 border-amber-800" : "bg-card border-border"
+                    quickResult === "on_the_block" ? "bg-amber-950/30 border-amber-800" : "bg-card border-border"
                   )}
                 >
                   <input
                     type="radio"
                     name="quickResult"
-                    checked={quickResult === "passed"}
-                    onChange={() => setQuickResult("passed")}
+                    checked={quickResult === "on_the_block"}
+                    onChange={() => setQuickResult("on_the_block")}
                     className="accent-amber-500"
-                    data-testid="radio-result-passed"
+                    data-testid="radio-result-on-block"
                   />
                   <span className="flex items-center gap-2">
                     <Target className="w-4 h-4 text-amber-500" />
@@ -1390,6 +1391,168 @@ function NominationDialog({
         )}
       </DialogContent>
     </Dialog>
+  );
+}
+
+function AxeIcon({ className }: { className?: string }) {
+  return (
+    <svg 
+      viewBox="0 0 24 24" 
+      fill="none" 
+      stroke="currentColor" 
+      strokeWidth="2" 
+      strokeLinecap="round" 
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M14 12L3 3" />
+      <path d="M21 3c-1.5 4-4 7-8 9a5 5 0 0 1-4.5-1.5L7 9l-3 3 1.5 1.5A5 5 0 0 1 4 18c2-4 5-6.5 9-8z" />
+    </svg>
+  );
+}
+
+function ChoppingBlockModal({
+  open,
+  onClose,
+  nominations,
+  isTied,
+  players,
+  onExecute,
+  onNoExecution,
+}: {
+  open: boolean;
+  onClose: () => void;
+  nominations: Nomination[];
+  isTied: boolean;
+  players: GamePlayer[];
+  onExecute: () => void;
+  onNoExecution: () => void;
+}) {
+  const [showConfirmExecute, setShowConfirmExecute] = useState(false);
+  
+  if (nominations.length === 0) return null;
+  
+  const currentBlockVotes = nominations[0]?.yesVotes ?? 0;
+  
+  const handleExecute = () => {
+    onExecute();
+    setShowConfirmExecute(false);
+    onClose();
+  };
+  
+  const handleNoExecution = () => {
+    onNoExecution();
+    onClose();
+  };
+  
+  return (
+    <>
+      <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className={cn(
+              "font-display flex items-center gap-2",
+              isTied ? "text-amber-500" : "text-red-500"
+            )}>
+              <AxeIcon className="w-5 h-5" />
+              {isTied ? "CHOPPING BLOCK - TIE" : "CHOPPING BLOCK"}
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            {isTied ? (
+              <>
+                <p className="text-muted-foreground">No execution - players are tied</p>
+                <div className="space-y-2">
+                  {nominations.map(nom => {
+                    const nominee = players.find(p => p.id === nom.nomineeId);
+                    const nominator = players.find(p => p.id === nom.nominatorId);
+                    return (
+                      <div key={nom.id} className="p-3 bg-card rounded-lg border border-amber-800/50">
+                        <p className="font-medium text-amber-400">{nominee?.name || 'Unknown'}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {nom.yesVotes} votes - nominated by {nominator?.name || 'Unknown'}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+                <Button 
+                  className="w-full" 
+                  variant="outline"
+                  onClick={handleNoExecution}
+                  data-testid="button-confirm-no-execution-tie"
+                >
+                  Confirm No Execution
+                </Button>
+              </>
+            ) : (
+              <>
+                {nominations.map(nom => {
+                  const nominee = players.find(p => p.id === nom.nomineeId);
+                  const nominator = players.find(p => p.id === nom.nominatorId);
+                  return (
+                    <div key={nom.id} className="text-center space-y-2">
+                      <p className="text-2xl font-display text-red-400">{nominee?.name || 'Unknown'}</p>
+                      <p className="text-muted-foreground">
+                        {nom.yesVotes} votes received
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        Nominated by {nominator?.name || 'Unknown'}
+                      </p>
+                      <p className="text-xs text-amber-500 mt-2">
+                        Needs more than {currentBlockVotes} votes to replace
+                      </p>
+                    </div>
+                  );
+                })}
+                
+                <div className="flex gap-2 pt-2">
+                  <Button 
+                    variant="outline"
+                    className="flex-1"
+                    onClick={handleNoExecution}
+                    data-testid="button-no-execution"
+                  >
+                    No Execution
+                  </Button>
+                  <Button 
+                    className="flex-1 bg-red-600 hover:bg-red-700"
+                    onClick={() => setShowConfirmExecute(true)}
+                    data-testid="button-execute"
+                  >
+                    <GallowsIcon className="w-4 h-4 mr-2" />
+                    Execute
+                  </Button>
+                </div>
+              </>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Execute Confirmation */}
+      <AlertDialog open={showConfirmExecute} onOpenChange={setShowConfirmExecute}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Execute Player?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Execute "{players.find(p => p.id === nominations[0]?.nomineeId)?.name}"? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="button-cancel-execute">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 hover:bg-red-700"
+              onClick={handleExecute}
+              data-testid="button-confirm-execute"
+            >
+              Execute
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
 
@@ -1891,6 +2054,9 @@ function GameTrackerView({
   onSetGameNotes,
   onAddPlayer,
   onRemovePlayer,
+  choppingBlock,
+  onExecuteFromBlock,
+  onClearChoppingBlock,
 }: {
   game: NonNullable<ReturnType<typeof usePlayerGame>["game"]>;
   onEndGame: () => void;
@@ -1918,6 +2084,9 @@ function GameTrackerView({
   onSetGameNotes: (notes: string) => void;
   onAddPlayer: (name: string, insertAfterPlayerId: string | null) => void;
   onRemovePlayer: (playerId: string) => void;
+  choppingBlock: { nominations: Nomination[]; isTied: boolean };
+  onExecuteFromBlock: () => void;
+  onClearChoppingBlock: () => void;
 }) {
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
   const [confirmEnd, setConfirmEnd] = useState(false);
@@ -1926,6 +2095,7 @@ function GameTrackerView({
   const [showAddTravelerDialog, setShowAddTravelerDialog] = useState(false);
   const [showAddPlayerDialog, setShowAddPlayerDialog] = useState(false);
   const [showExileDialog, setShowExileDialog] = useState(false);
+  const [showChoppingBlockModal, setShowChoppingBlockModal] = useState(false);
   const [scriptPopoverOpen, setScriptPopoverOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'list' | 'circle' | 'log'>('list');
   const [showScriptBuilder, setShowScriptBuilder] = useState(false);
@@ -2188,6 +2358,30 @@ function GameTrackerView({
           </div>
         </div>
 
+        {/* Chopping Block Indicator */}
+        {choppingBlock.nominations.length > 0 && (
+          <button
+            onClick={() => setShowChoppingBlockModal(true)}
+            className={cn(
+              "flex items-center justify-center gap-2 px-3 py-2.5 border-t border-border w-full hover-elevate active-elevate-2",
+              choppingBlock.isTied ? "bg-amber-950/30" : "bg-red-950/30"
+            )}
+            data-testid="button-view-chopping-block"
+          >
+            <AxeIcon className={cn("w-5 h-5", choppingBlock.isTied ? "text-amber-500" : "text-red-500")} />
+            {choppingBlock.isTied ? (
+              <span className="text-amber-400 font-medium">
+                Tied on Block: {choppingBlock.nominations.length} players ({choppingBlock.nominations[0]?.yesVotes} votes)
+              </span>
+            ) : (
+              <span className="text-red-400 font-medium">
+                On the Block: {game.players.find(p => p.id === choppingBlock.nominations[0]?.nomineeId)?.name} ({choppingBlock.nominations[0]?.yesVotes} votes)
+              </span>
+            )}
+            <Badge variant="outline" className="text-xs">View</Badge>
+          </button>
+        )}
+
         {/* Traveler Row - Conditional */}
         {travelers.length > 0 && (
           <div className="flex items-center justify-center gap-2 px-3 py-2 border-t border-border bg-purple-950/20">
@@ -2330,6 +2524,16 @@ function GameTrackerView({
         onCreateQuickNomination={onCreateQuickNomination}
       />
 
+      <ChoppingBlockModal
+        open={showChoppingBlockModal}
+        onClose={() => setShowChoppingBlockModal(false)}
+        nominations={choppingBlock.nominations}
+        isTied={choppingBlock.isTied}
+        players={game.players}
+        onExecute={onExecuteFromBlock}
+        onNoExecution={onClearChoppingBlock}
+      />
+
       <AddTravelerDialog
         open={showAddTravelerDialog}
         onClose={() => setShowAddTravelerDialog(false)}
@@ -2433,6 +2637,9 @@ export default function Game() {
     setGameNotes,
     addPlayer,
     removePlayer,
+    getChoppingBlock,
+    executeFromBlock,
+    clearChoppingBlock,
   } = usePlayerGame();
 
   const updatePlayerName = (playerId: string, name: string) => {
@@ -2481,6 +2688,9 @@ export default function Game() {
           onSetGameNotes={setGameNotes}
           onAddPlayer={addPlayer}
           onRemovePlayer={removePlayer}
+          choppingBlock={getChoppingBlock()}
+          onExecuteFromBlock={executeFromBlock}
+          onClearChoppingBlock={clearChoppingBlock}
         />
       )}
     </Layout>
