@@ -92,10 +92,16 @@ export function GameLogDialog({ open, onOpenChange, game }: GameLogDialogProps) 
       const yesVotes = nom.yesVotes ?? nom.votes?.filter(v => v.voted).length ?? 0;
       const passed = nom.passed ?? false;
       
-      // Determine display text based on quick log result or standard passed/failed
-      let resultText = passed ? 'Passed' : 'Failed';
-      if (nom.isQuickLog && nom.result) {
-        resultText = nom.result === 'executed' ? 'Executed' : nom.result === 'passed' ? 'On Block' : 'Failed';
+      // Determine display text based on result
+      let resultText = 'Failed';
+      if (nom.result === 'executed') {
+        resultText = 'Executed';
+      } else if (nom.result === 'on_the_block') {
+        resultText = 'On Block';
+      } else if (nom.result === 'passed') {
+        resultText = 'Passed (no exec)';
+      } else if (passed) {
+        resultText = 'Passed';
       }
       
       allEvents.push({
