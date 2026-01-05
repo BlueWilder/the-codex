@@ -2096,6 +2096,7 @@ function GameTrackerView({
   const [showAddPlayerDialog, setShowAddPlayerDialog] = useState(false);
   const [showExileDialog, setShowExileDialog] = useState(false);
   const [showChoppingBlockModal, setShowChoppingBlockModal] = useState(false);
+  const [showDayChangePrompt, setShowDayChangePrompt] = useState(false);
   const [scriptPopoverOpen, setScriptPopoverOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'list' | 'circle' | 'log'>('list');
   const [showScriptBuilder, setShowScriptBuilder] = useState(false);
@@ -2121,6 +2122,14 @@ function GameTrackerView({
     const { active, over } = event;
     if (over && active.id !== over.id) {
       onReorderPlayers(active.id as string, over.id as string);
+    }
+  };
+
+  const handleNextDay = () => {
+    if (choppingBlock.nominations.length > 0) {
+      setShowDayChangePrompt(true);
+    } else {
+      onNextDay();
     }
   };
 
@@ -2302,7 +2311,7 @@ function GameTrackerView({
           <Button
             variant="outline"
             size="icon"
-            onClick={onNextDay}
+            onClick={handleNextDay}
             data-testid="button-next-day"
           >
             <ChevronRight className="w-5 h-5" />
@@ -2598,6 +2607,60 @@ function GameTrackerView({
               data-testid="button-confirm-play-again"
             >
               Play Again
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={showDayChangePrompt} onOpenChange={setShowDayChangePrompt}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AxeIcon className="w-5 h-5 text-red-500" />
+              {choppingBlock.isTied ? "Tied on the Block" : "Player on the Block"}
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-3">
+                {choppingBlock.isTied ? (
+                  <p>
+                    {choppingBlock.nominations.length} players are tied with {choppingBlock.nominations[0]?.yesVotes} votes each.
+                    In BOTC, ties mean no execution.
+                  </p>
+                ) : (
+                  <p>
+                    <span className="font-medium text-red-400">
+                      {game.players.find(p => p.id === choppingBlock.nominations[0]?.nomineeId)?.name}
+                    </span>
+                    {" "}is on the chopping block with {choppingBlock.nominations[0]?.yesVotes} votes.
+                  </p>
+                )}
+                <p className="text-sm text-muted-foreground">
+                  Resolve the block before moving to the next day, or skip to continue without executing.
+                </p>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="gap-2 sm:gap-0">
+            <AlertDialogCancel data-testid="button-cancel-day-change">Stay on Day {game.currentDay}</AlertDialogCancel>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowDayChangePrompt(false);
+                setShowChoppingBlockModal(true);
+              }}
+              data-testid="button-resolve-block"
+            >
+              <AxeIcon className="w-4 h-4 mr-2" />
+              Resolve Block
+            </Button>
+            <AlertDialogAction 
+              onClick={() => {
+                onClearChoppingBlock();
+                onNextDay();
+              }}
+              data-testid="button-skip-execution"
+            >
+              Skip & Next Day
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
