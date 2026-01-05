@@ -75,8 +75,14 @@ export function InlineGameLog({ game, onUpdateGameNotes }: InlineGameLogProps) {
     game.nominations.forEach(nom => {
       const nominee = players.find(p => p.id === nom.nomineeId);
       const nominator = players.find(p => p.id === nom.nominatorId);
-      const yesVotes = nom.yesVotes ?? nom.votes.filter(v => v.voted).length;
+      const yesVotes = nom.yesVotes ?? nom.votes?.filter(v => v.voted).length ?? 0;
       const passed = nom.passed ?? false;
+      
+      // Determine display text based on quick log result or standard passed/failed
+      let resultText = passed ? 'Passed' : 'Failed';
+      if (nom.isQuickLog && nom.result) {
+        resultText = nom.result === 'executed' ? 'Executed' : nom.result === 'passed' ? 'On Block' : 'Failed';
+      }
       
       allEvents.push({
         id: `nom-${nom.id}`,
@@ -87,7 +93,7 @@ export function InlineGameLog({ game, onUpdateGameNotes }: InlineGameLogProps) {
         playerId: nom.nomineeId,
         playerName: nominee?.name || '[Removed]',
         description: `nominated by ${nominator?.name || '[Removed]'}`,
-        details: `${passed ? 'Passed' : 'Failed'} - ${yesVotes} votes`,
+        details: `${resultText} - ${yesVotes} votes`,
         icon: Scale,
         iconColor: passed ? 'text-red-400' : 'text-amber-400',
       });

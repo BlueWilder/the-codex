@@ -786,13 +786,31 @@ function PlayerDetailDrawer({
                           const playerVote = nom.votes?.find(v => v.playerId === player.id);
                           const votesFor = nom.votes?.filter(v => v.voted).length ?? nom.yesVotes;
                           
+                          // Quick log result display
+                          const quickLogResult = nom.isQuickLog && nom.result 
+                            ? (nom.result === 'executed' ? 'Executed' : nom.result === 'passed' ? 'On Block' : 'Failed')
+                            : null;
+                          
                           return (
                             <div key={nom.id} className="text-sm pl-2 space-y-1">
-                              <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-2 flex-wrap">
                                 <span className="text-amber-400">{nominee?.name || '[Removed]'}</span>
                                 <span className="text-muted-foreground">nominated by</span>
                                 <span className="text-purple-400">{nominator?.name || '[Removed]'}</span>
                                 <Badge variant="secondary" className="text-xs">{votesFor} votes</Badge>
+                                {quickLogResult && (
+                                  <Badge 
+                                    variant="outline" 
+                                    className={cn(
+                                      "text-xs",
+                                      nom.result === 'executed' && "border-red-500 text-red-400",
+                                      nom.result === 'passed' && "border-amber-500 text-amber-400",
+                                      nom.result === 'failed' && "border-muted-foreground"
+                                    )}
+                                  >
+                                    {quickLogResult}
+                                  </Badge>
+                                )}
                               </div>
                               {nom.nomineeId === player.id && (
                                 <div className="flex items-center gap-1 text-amber-400">
