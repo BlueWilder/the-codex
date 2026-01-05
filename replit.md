@@ -72,7 +72,15 @@ A localStorage-based player tracking tool at `/game` for note-taking during game
 - **Nomination system**: Dual recording modes:
   - **Full Vote Record**: Track individual player votes with auto ghost vote handling
   - **Quick Log**: Simple vote count and result entry (Failed/On Block/Executed) without individual voter tracking
-- **Hook**: `client/src/hooks/use-player-game.ts` manages all game state with types for GamePlayer, VoteRecord, PlayerGame, GameScriptRef, Nomination (with isQuickLog, result fields)
+- **Chopping Block system**: Official BOTC execution rules:
+  - First nomination reaching vote threshold goes on the block
+  - Subsequent nominations with higher votes replace the current block
+  - Equal votes create a tie (no execution in BOTC rules)
+  - Block indicator in game header shows current status (single player or tied)
+  - Modal for resolving block: execute, no execution, or keep block
+  - Day change prompts when unresolved block exists
+  - Result types: `on_the_block`, `passed`, `executed`, `failed`
+- **Hook**: `client/src/hooks/use-player-game.ts` manages all game state with types for GamePlayer, VoteRecord, PlayerGame, GameScriptRef, Nomination (with isQuickLog, result fields), and choppingBlock array for tracking block nominations
 - **Script sync**: `client/src/hooks/use-local-scripts.ts` provides reactive script storage shared across all pages with cross-tab sync via storage events
 
 ### Game Log
