@@ -2668,30 +2668,38 @@ Votes against the Organ Grinder only count if the Organ Grinder also votes.`,
     name: 'Psychopath',
     edition: 'experimental',
     team: 'minion',
-    ability: 'Each day, before nominations, you may publicly choose a player. Tonight, you wake to learn if they are good or evil. Good dies.',
+    ability: 'Each day, before nominations, you may publicly choose a player: they die. If executed, you only die if you lose roshambo.',
     firstNightOrder: null,
-    otherNightOrder: 15,
+    otherNightOrder: null,
     setup: false,
-    reminders: ['Stabbed'],
-    flavorQuote: "I like you. I'll kill you last.",
-    extendedSummary: `The Psychopath can publicly kill players during the day.
+    reminders: ['Dead'],
+    flavorQuote: "Surprise!",
+    extendedSummary: `The Psychopath kills in broad daylight.
 
-Each day, before nominations, the Psychopath may publicly choose a player. That night, the Psychopath learns if their target was good or evil, and if good, that player dies.
+During the day, if the Psychopath declares that they are the Psychopath and publicly chooses a player, that player dies immediately. This can only be done once per day, and only before the Storyteller has called for nominations. The Psychopath does not need to use this ability if they don't want to.
 
-This is a public ability - everyone knows who the Psychopath targeted.`,
+The Psychopath can be nominated and voted for normally. If the Psychopath is executed, they might not die. They play Roshambo (Rock-Paper-Scissors) with the player that nominated them. The nominator needs to win for the Psychopath to die. Drawing or losing means the Psychopath lives.
+
+If the Psychopath is executed, this still counts as the one execution for the day. No more players may be nominated or executed today. If the Psychopath dies by other means, such as the Demon attacking them, they do not play Roshambo - they just die.`,
     tipsAndTricks: [
-      "You can kill publicly, but everyone knows you're the Psychopath.",
-      "Kill good players to reduce their numbers.",
-      "You can't be stopped once you use your ability.",
-      "Use this aggressively to overwhelm good."
+      "Reveal yourself early and start killing immediately - even non-ideal kills help evil by accelerating the game.",
+      "Wait for the perfect opportunity to kill a particularly powerful character like the Lycanthrope, King, or Cult Leader.",
+      "In the final 3 players, you can kill someone before nominations and win immediately.",
+      "Be aware that being known as a Minion gives good players information they can use.",
+      "Soak up executions when the Demon is suspicious - you only need to not lose Roshambo to survive.",
+      "Learn Roshambo psychology: you only need to not lose (win OR draw), so figure out what they WON'T play.",
+      "Kill yourself if necessary near the end - being dead gets evil closer to a 2-player win condition.",
+      "Occasionally kill an evil player to make them look good and confuse the town."
     ],
     fightingThe: [
-      "The Psychopath is known - execute them quickly!",
-      "They kill every day they stay alive.",
-      "Prioritize killing the Psychopath over the Demon sometimes.",
-      "Their kills happen at night - the target has one last day."
+      "Execute the Psychopath repeatedly until they lose Roshambo - especially in large games where they could kill many players.",
+      "If you have no leads on the Demon, keep executing the Psychopath and hope for lucky Roshambo wins.",
+      "If you have Demon leads, consider ignoring the Psychopath and hunting the Demon instead.",
+      "Be unanimous in your strategy - flip-flopping benefits evil.",
+      "Get in early to nominate the Psychopath yourself so YOU play Roshambo (you know you're good).",
+      "Be suspicious of eager nominators who might be evil players planning to deliberately lose Roshambo."
     ],
-    howToRun: "Each day, before nominations, the Psychopath may publicly choose a player. Mark that player with the STABBED reminder.\n\nThat night, wake the Psychopath. If the stabbed player is good, show a thumbs-down and they die tonight. If the stabbed player is evil, show a thumbs-up (they don't die). Put the Psychopath to sleep."
+    howToRun: "Once per day, before you have called for nominations, the Psychopath may publicly choose a player. That player dies immediately.\n\nIf the Psychopath is executed, the Psychopath and the nominator play a game of Roshambo (Rock-Paper-Scissors). If the Psychopath loses, they die. If the Psychopath draws or wins, they live. Either way, the day ends since there is only one execution per day.\n\nIf the Psychopath is executed due to a self-nomination, they play Roshambo with you instead."
   },
   {
     id: 'summoner',
