@@ -80,13 +80,16 @@ function SetupWizard({ onStart }: { onStart: (count: number, names: string[], sc
   const breakdown = getBreakdown(playerCount);
 
   const handleCountConfirm = () => {
-    setPlayerNames(Array(playerCount).fill("").map((_, i) => {
-      if (playerCount > 15 && i >= 15) {
-        return `Traveler ${i - 14}`;
-      }
-      return `Player ${i + 1}`;
-    }));
+    // Initialize with empty strings - placeholder text shows default names
+    setPlayerNames(Array(playerCount).fill(""));
     setStep(2);
+  };
+  
+  const getDefaultName = (index: number) => {
+    if (playerCount > 15 && index >= 15) {
+      return `Traveler ${index - 14}`;
+    }
+    return `Player ${index + 1}`;
   };
 
   const handleNameChange = (index: number, name: string) => {
@@ -101,7 +104,9 @@ function SetupWizard({ onStart }: { onStart: (count: number, names: string[], sc
     const scriptRef: GameScriptRef | null = selectedScript ? {
       id: selectedScript.id,
     } : null;
-    onStart(playerCount, playerNames, scriptRef);
+    // Use default names for any empty inputs
+    const finalNames = playerNames.map((name, i) => name.trim() || getDefaultName(i));
+    onStart(playerCount, finalNames, scriptRef);
   };
 
   return (
@@ -200,7 +205,7 @@ function SetupWizard({ onStart }: { onStart: (count: number, names: string[], sc
                   <Input
                     value={name}
                     onChange={(e) => handleNameChange(i, e.target.value)}
-                    placeholder={playerCount > 15 && i >= 15 ? `Traveler ${i - 14}` : `Player ${i + 1}`}
+                    placeholder={getDefaultName(i)}
                     data-testid={`input-player-name-${i}`}
                     className={playerCount > 15 && i >= 15 ? "border-purple-700/50" : ""}
                   />
