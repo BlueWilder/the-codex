@@ -69,7 +69,10 @@ A localStorage-based player tracking tool at `/game` for note-taking during game
 - **Day tracker**: Scoreboard-style header with alive/dead counts, votes to execute, available votes, and script name badge
 - **View modes**: List view and Circle seating chart view (toggle in header)
 - **Persistence**: Game state saved to localStorage, survives page refresh
-- **Hook**: `client/src/hooks/use-player-game.ts` manages all game state with types for GamePlayer, VoteRecord, PlayerGame, GameScriptRef
+- **Nomination system**: Dual recording modes:
+  - **Full Vote Record**: Track individual player votes with auto ghost vote handling
+  - **Quick Log**: Simple vote count and result entry (Failed/On Block/Executed) without individual voter tracking
+- **Hook**: `client/src/hooks/use-player-game.ts` manages all game state with types for GamePlayer, VoteRecord, PlayerGame, GameScriptRef, Nomination (with isQuickLog, result fields)
 - **Script sync**: `client/src/hooks/use-local-scripts.ts` provides reactive script storage shared across all pages with cross-tab sync via storage events
 
 ### Game Log
