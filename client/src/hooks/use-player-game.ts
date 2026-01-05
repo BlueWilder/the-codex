@@ -376,6 +376,64 @@ export function usePlayerGame() {
     });
   }, [game, saveGame, hasBeenNominatedToday, hasNominatedToday]);
 
+  const createQuickNomination = useCallback((
+    nomineeId: string, 
+    nominatorId: string, 
+    yesVotes: number,
+    result: NominationResult
+  ) => {
+    if (!game) return;
+    if (hasBeenNominatedToday(nomineeId) || hasNominatedToday(nominatorId)) return;
+    
+    const nominationId = crypto.randomUUID();
+    const timestamp = new Date().toISOString();
+    
+    const aliveCount = game.players.filter(p => p.status === 'alive').length;
+    const votesNeeded = Math.ceil(aliveCount / 2);
+    const passed = result === 'passed' || result === 'executed';
+    
+    const newNomination: Nomination = {
+      id: nominationId,
+      day: game.currentDay,
+      nomineeId,
+      nominatorId,
+      passed,
+      yesVotes,
+      votesNeeded,
+      isQuickLog: true,
+      result,
+    };
+    
+    let updatedPlayers = game.players;
+    const newDeathRecords: DeathRecord[] = [];
+    
+    // If result is 'executed', mark nominee as dead
+    if (result === 'executed') {
+      const nominee = updatedPlayers.find(p => p.id === nomineeId);
+      if (nominee && nominee.status === 'alive') {
+        newDeathRecords.push({
+          playerId: nomineeId,
+          day: game.currentDay,
+          type: 'execution',
+          timestamp,
+          nominationId,
+        });
+        updatedPlayers = updatedPlayers.map(p => 
+          p.id === nomineeId 
+            ? { ...p, isAlive: false, status: 'dead' as PlayerStatus, hasGhostVote: !nominee.isTraveler }
+            : p
+        );
+      }
+    }
+    
+    saveGame({ 
+      ...game, 
+      players: updatedPlayers,
+      nominations: [...game.nominations, newNomination],
+      deathRecords: [...(game.deathRecords || []), ...newDeathRecords],
+    });
+  }, [game, saveGame, hasBeenNominatedToday, hasNominatedToday]);
+
   const deleteNomination = useCallback((nominationId: string) => {
     if (!game) return;
     saveGame({ ...game, nominations: game.nominations.filter(n => n.id !== nominationId) });
@@ -723,6 +781,7 @@ export function usePlayerGame() {
     hasNominatedToday,
     getDayNominations,
     createNomination,
+    createQuickNomination,
     deleteNomination,
     clearScript,
     setScript,

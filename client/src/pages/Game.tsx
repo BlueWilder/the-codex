@@ -1,6 +1,6 @@
 import { Layout } from "@/components/ui/Layout";
 import { useState, useMemo, useEffect } from "react";
-import { usePlayerGame, getBreakdown, isPlayerActive, canPlayerVote, canPlayerVoteOnExile, type GamePlayer, type Nomination, type PlayerVote, type GameScriptRef, type ExileVote, type PlayerStatus } from "@/hooks/use-player-game";
+import { usePlayerGame, getBreakdown, isPlayerActive, canPlayerVote, canPlayerVoteOnExile, type GamePlayer, type Nomination, type PlayerVote, type GameScriptRef, type ExileVote, type PlayerStatus, type NominationResult } from "@/hooks/use-player-game";
 import { ALL_CHARACTERS, OFFICIAL_SCRIPTS } from "@/lib/game-data";
 import { useLocalScripts, type LocalScript } from "@/hooks/use-local-scripts";
 import { ScriptBuilderDialog } from "@/components/ScriptBuilderDialog";
@@ -1020,6 +1020,7 @@ function NominationDialog({
   hasBeenNominatedToday,
   hasNominatedToday,
   onCreateNomination,
+  onCreateQuickNomination,
 }: {
   open: boolean;
   onClose: () => void;
@@ -1027,17 +1028,24 @@ function NominationDialog({
   hasBeenNominatedToday: (playerId: string) => boolean;
   hasNominatedToday: (playerId: string) => boolean;
   onCreateNomination: (nomineeId: string, nominatorId: string, votes: PlayerVote[]) => void;
+  onCreateQuickNomination: (nomineeId: string, nominatorId: string, yesVotes: number, result: NominationResult) => void;
 }) {
-  const [step, setStep] = useState<1 | 2 | 3>(1);
+  // Steps: 1=nominee, 2=nominator, 3=choose mode, 4=full vote record, 5=quick log
+  const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1);
   const [nomineeId, setNomineeId] = useState<string | null>(null);
   const [nominatorId, setNominatorId] = useState<string | null>(null);
   const [selectedVoters, setSelectedVoters] = useState<Set<string>>(new Set());
+  // Quick log state
+  const [quickVoteCount, setQuickVoteCount] = useState<string>("");
+  const [quickResult, setQuickResult] = useState<NominationResult>("failed");
 
   const reset = () => {
     setStep(1);
     setNomineeId(null);
     setNominatorId(null);
     setSelectedVoters(new Set());
+    setQuickVoteCount("");
+    setQuickResult("failed");
   };
 
   const handleClose = () => {
@@ -1067,7 +1075,7 @@ function NominationDialog({
     });
   };
 
-  const handleSubmit = () => {
+  const handleSubmitFullVote = () => {
     if (!nomineeId || !nominatorId) return;
     
     const votes: PlayerVote[] = players
@@ -1081,6 +1089,13 @@ function NominationDialog({
     handleClose();
   };
 
+  const handleSubmitQuickLog = () => {
+    if (!nomineeId || !nominatorId) return;
+    const voteCount = parseInt(quickVoteCount) || 0;
+    onCreateQuickNomination(nomineeId, nominatorId, voteCount, quickResult);
+    handleClose();
+  };
+
   const eligibleNominees = players.filter(p => p.status === 'alive' && !hasBeenNominatedToday(p.id));
   const eligibleNominators = players.filter(p => p.status === 'alive' && !hasNominatedToday(p.id) && p.id !== nomineeId);
   // Show all alive players and dead non-travelers (travelers can't vote on nominations)
@@ -1089,6 +1104,10 @@ function NominationDialog({
   const canVote = (player: GamePlayer) => player.status === 'alive' || (player.status === 'dead' && player.hasGhostVote && !player.isTraveler);
   const nominee = players.find(p => p.id === nomineeId);
   const nominator = players.find(p => p.id === nominatorId);
+  
+  // Calculate votes needed for display
+  const aliveCount = players.filter(p => p.status === 'alive').length;
+  const votesNeeded = Math.ceil(aliveCount / 2);
 
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) handleClose(); }}>
@@ -1097,7 +1116,9 @@ function NominationDialog({
           <DialogTitle className="font-display text-amber-500">
             {step === 1 && "Select Nominee"}
             {step === 2 && "Select Nominator"}
-            {step === 3 && "Record Votes"}
+            {step === 3 && "How to Record?"}
+            {step === 4 && "Record Votes"}
+            {step === 5 && "Quick Log"}
           </DialogTitle>
         </DialogHeader>
 
@@ -1147,6 +1168,43 @@ function NominationDialog({
         )}
 
         {step === 3 && (
+          <div className="space-y-4">
+            <div className="text-sm text-muted-foreground">
+              <p>
+                <span className="text-amber-400 font-medium">{nominee?.name}</span>
+                {" "}nominated by{" "}
+                <span className="text-purple-400 font-medium">{nominator?.name}</span>
+              </p>
+            </div>
+            <div className="space-y-3">
+              <button
+                onClick={() => setStep(5)}
+                className="w-full text-left p-4 rounded-lg border bg-card border-border hover-elevate active-elevate-2"
+                data-testid="button-quick-log"
+              >
+                <div className="font-medium mb-1">Quick Log</div>
+                <div className="text-sm text-muted-foreground">
+                  Just record vote count and result
+                </div>
+              </button>
+              <button
+                onClick={() => setStep(4)}
+                className="w-full text-left p-4 rounded-lg border bg-card border-border hover-elevate active-elevate-2"
+                data-testid="button-full-vote-record"
+              >
+                <div className="font-medium mb-1">Full Vote Record</div>
+                <div className="text-sm text-muted-foreground">
+                  Track each player's vote individually
+                </div>
+              </button>
+            </div>
+            <Button variant="ghost" className="w-full" onClick={() => setStep(2)}>
+              Back
+            </Button>
+          </div>
+        )}
+
+        {step === 4 && (
           <div className="space-y-4 overflow-y-auto flex-1">
             <div className="text-sm text-muted-foreground space-y-1">
               <p>
@@ -1201,12 +1259,113 @@ function NominationDialog({
               })}
             </div>
             <div className="flex gap-2 pt-2">
-              <Button variant="ghost" className="flex-1" onClick={() => setStep(2)}>
+              <Button variant="ghost" className="flex-1" onClick={() => setStep(3)}>
                 Back
               </Button>
-              <Button className="flex-1" onClick={handleSubmit} data-testid="button-confirm-nomination">
+              <Button className="flex-1" onClick={handleSubmitFullVote} data-testid="button-confirm-nomination">
                 <Check className="w-4 h-4 mr-2" />
                 Confirm ({selectedVoters.size} votes)
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {step === 5 && (
+          <div className="space-y-4">
+            <div className="text-sm text-muted-foreground">
+              <p>
+                <span className="text-amber-400 font-medium">{nominee?.name}</span>
+                {" "}nominated by{" "}
+                <span className="text-purple-400 font-medium">{nominator?.name}</span>
+              </p>
+              <p className="mt-2 text-xs">Votes needed: {votesNeeded}</p>
+            </div>
+            
+            <div>
+              <label className="text-sm text-muted-foreground mb-1 block">Vote Count</label>
+              <Input
+                type="number"
+                min="0"
+                value={quickVoteCount}
+                onChange={(e) => setQuickVoteCount(e.target.value)}
+                placeholder="Number of votes for"
+                data-testid="input-quick-vote-count"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm text-muted-foreground block">Result</label>
+              <div className="space-y-2">
+                <label
+                  className={cn(
+                    "flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors",
+                    quickResult === "failed" ? "bg-red-950/30 border-red-800" : "bg-card border-border"
+                  )}
+                >
+                  <input
+                    type="radio"
+                    name="quickResult"
+                    checked={quickResult === "failed"}
+                    onChange={() => setQuickResult("failed")}
+                    className="accent-red-500"
+                    data-testid="radio-result-failed"
+                  />
+                  <span className="flex items-center gap-2">
+                    <X className="w-4 h-4 text-red-500" />
+                    Failed
+                  </span>
+                </label>
+                <label
+                  className={cn(
+                    "flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors",
+                    quickResult === "passed" ? "bg-amber-950/30 border-amber-800" : "bg-card border-border"
+                  )}
+                >
+                  <input
+                    type="radio"
+                    name="quickResult"
+                    checked={quickResult === "passed"}
+                    onChange={() => setQuickResult("passed")}
+                    className="accent-amber-500"
+                    data-testid="radio-result-passed"
+                  />
+                  <span className="flex items-center gap-2">
+                    <Target className="w-4 h-4 text-amber-500" />
+                    On the Block (not executed yet)
+                  </span>
+                </label>
+                <label
+                  className={cn(
+                    "flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors",
+                    quickResult === "executed" ? "bg-emerald-950/30 border-emerald-800" : "bg-card border-border"
+                  )}
+                >
+                  <input
+                    type="radio"
+                    name="quickResult"
+                    checked={quickResult === "executed"}
+                    onChange={() => setQuickResult("executed")}
+                    className="accent-emerald-500"
+                    data-testid="radio-result-executed"
+                  />
+                  <span className="flex items-center gap-2">
+                    <GallowsIcon className="w-4 h-4 text-emerald-500" />
+                    Executed
+                  </span>
+                </label>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Note: Quick Log does not auto-spend ghost votes
+              </p>
+            </div>
+
+            <div className="flex gap-2 pt-2">
+              <Button variant="ghost" className="flex-1" onClick={() => setStep(3)}>
+                Back
+              </Button>
+              <Button className="flex-1" onClick={handleSubmitQuickLog} data-testid="button-confirm-quick-log">
+                <Check className="w-4 h-4 mr-2" />
+                Confirm
               </Button>
             </div>
           </div>
@@ -1704,6 +1863,7 @@ function GameTrackerView({
   hasBeenNominatedToday,
   hasNominatedToday,
   onCreateNomination,
+  onCreateQuickNomination,
   onClearScript,
   onSetScript,
   onAddTraveler,
@@ -1730,6 +1890,7 @@ function GameTrackerView({
   hasBeenNominatedToday: (playerId: string) => boolean;
   hasNominatedToday: (playerId: string) => boolean;
   onCreateNomination: (nomineeId: string, nominatorId: string, votes: PlayerVote[]) => void;
+  onCreateQuickNomination: (nomineeId: string, nominatorId: string, yesVotes: number, result: NominationResult) => void;
   onClearScript: () => void;
   onSetScript: (scriptRef: GameScriptRef | null) => void;
   onAddTraveler: (name: string, initialClaims?: string[]) => void;
@@ -2148,6 +2309,7 @@ function GameTrackerView({
         hasBeenNominatedToday={hasBeenNominatedToday}
         hasNominatedToday={hasNominatedToday}
         onCreateNomination={onCreateNomination}
+        onCreateQuickNomination={onCreateQuickNomination}
       />
 
       <AddTravelerDialog
@@ -2243,6 +2405,7 @@ export default function Game() {
     hasBeenNominatedToday,
     hasNominatedToday,
     createNomination,
+    createQuickNomination,
     clearScript,
     setScript,
     addTraveler,
@@ -2290,6 +2453,7 @@ export default function Game() {
           hasBeenNominatedToday={hasBeenNominatedToday}
           hasNominatedToday={hasNominatedToday}
           onCreateNomination={createNomination}
+          onCreateQuickNomination={createQuickNomination}
           onClearScript={clearScript}
           onSetScript={setScript}
           onAddTraveler={addTraveler}
