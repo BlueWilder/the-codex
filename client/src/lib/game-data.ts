@@ -2638,30 +2638,30 @@ The Mezepheles only gets one conversion - once someone says the word, their abil
     name: 'Organ Grinder',
     edition: 'experimental',
     team: 'minion',
-    ability: 'All players keep their eyes closed when voting & the vote tally is secret. Votes for you only count if you vote.',
-    firstNightOrder: null,
-    otherNightOrder: null,
+    ability: 'All players keep their eyes closed when voting and the vote tally is secret. Each night, choose if you are drunk until dusk.',
+    firstNightOrder: 80,
+    otherNightOrder: 80,
     setup: false,
-    reminders: [],
-    flavorQuote: "Dance, monkey, dance!",
-    extendedSummary: `The Organ Grinder makes votes secret.
+    reminders: ['Drunk'],
+    flavorQuote: "Round and round the handles go. The more you dance the less you know.",
+    extendedSummary: `The Organ Grinder makes voting secret.
 
-While the Organ Grinder is alive, all players close their eyes when voting, and the vote tally is kept secret by the Storyteller.
+While the Organ Grinder is sober, all players close their eyes when voting. The Storyteller does not reveal vote counts or who is about to die. Only at the end of nominations does the Storyteller reveal who is executed.
 
-Votes against the Organ Grinder only count if the Organ Grinder also votes.`,
+Each night, the Organ Grinder chooses whether to become drunk until dusk. If drunk, voting returns to normal for that day.`,
     tipsAndTricks: [
       "Voting is now secret - evil can vote freely without suspicion.",
-      "You can protect yourself by not voting when you're nominated.",
-      "Good can't coordinate votes as easily.",
-      "Use the chaos to your advantage."
+      "Good can't coordinate votes as easily - use this chaos.",
+      "Choose to be drunk if you think you might be executed.",
+      "Coordinate votes with your evil team - the good team can't see you doing it."
     ],
     fightingThe: [
-      "You can't see who's voting - be careful with your votes.",
-      "The Organ Grinder is protected unless they vote for themselves.",
-      "Try to figure out who the Organ Grinder is.",
+      "You can't see who's voting - communicate your intentions publicly.",
+      "If the Organ Grinder is drunk, voting is normal for that day.",
+      "Try to identify who voted when based on discussion afterwards.",
       "Once they're dead, voting returns to normal."
     ],
-    howToRun: "When a nomination occurs, instruct all players to close their eyes before voting. Count the votes silently. Do not reveal the vote count to the players.\n\nWhen the Organ Grinder is nominated, their votes only count if they also voted for themselves."
+    howToRun: "Each night, wake the Organ Grinder. They nod (to become drunk) or shake their head (to stay sober). If they nod, mark them with the DRUNK reminder.\n\nDuring the day, if the Organ Grinder is sober, ask all players to close their eyes before voting. Count votes silently. Do not reveal vote counts or who is about to die. At the end of nominations, declare who is executed.\n\nEach dusk, remove the DRUNK reminder."
   },
   {
     id: 'psychopath',
@@ -2736,30 +2736,30 @@ The Summoner gets 3 bluffs to share with their team.`,
     name: 'Vizier',
     edition: 'experimental',
     team: 'minion',
-    ability: 'All players know who you are. You can not die during the day. If a good player publicly guessed you are the Vizier, you might die.',
+    ability: 'All players know you are the Vizier. You cannot die during the day. If good voted, you may choose to execute immediately.',
     firstNightOrder: null,
     otherNightOrder: null,
     setup: false,
     reminders: [],
-    flavorQuote: "I am but a humble servant of the crown.",
-    extendedSummary: `The Vizier is known to all and cannot be executed.
+    flavorQuote: "An excellent decision, as always, sire. Leave everything... to me.",
+    extendedSummary: `The Vizier executes players without the town's consent.
 
-All players know who the Vizier is from the start. The Vizier cannot die during the day - they can be nominated and voted for, but they won't die.
+On the first day, all players learn that the Vizier is in play, and which player it is. The Vizier cannot die during the day by any means.
 
-If a good player publicly guesses the Vizier is evil, the Storyteller may kill the Vizier.`,
+After a vote is tallied, if at least one good player voted, the Vizier may choose to immediately execute the nominee - even if the vote tally was insufficient. This counts as the day's execution.`,
     tipsAndTricks: [
-      "You're known to all but can't be executed - use this power.",
-      "You can dominate day discussions without fear.",
-      "Push for executions of good players.",
-      "Be careful of good players guessing you're evil."
+      "Execute with abandon! You can force through any execution where a good player voted.",
+      "Don't always execute - good players will read into your choices.",
+      "Who votes when you execute is information for good. Be strategic.",
+      "You're known to be evil, so don't bother with subtle evil coordination."
     ],
     fightingThe: [
-      "Everyone knows who the Vizier is - don't trust them!",
-      "You can't execute them, but you can ignore them.",
-      "Publicly guess the Vizier is evil to potentially kill them.",
-      "Focus on finding the Demon instead."
+      "The Vizier is a known evil player - don't trust them!",
+      "Pay attention to who the Vizier chooses NOT to execute.",
+      "One good vote on anyone is all the Vizier needs to force execution.",
+      "On the final day, be very careful about who you vote for."
     ],
-    howToRun: "During the first day, announce to all players who the Vizier is. The Vizier cannot die during the day.\n\nIf a good player publicly guesses that the Vizier is the Vizier (or evil), you may choose to kill the Vizier that night."
+    howToRun: "When the first night ends, declare that the Vizier is in play and which player it is.\n\nThe Vizier cannot die during the day.\n\nAfter any vote is tallied, if at least one good player voted and the Vizier declares the nominee is executed, that player dies immediately. No more nominations occur today."
   },
   {
     id: 'widow',
@@ -3127,30 +3127,32 @@ This allows targeted killing based on character knowledge.`,
     name: 'Riot',
     edition: 'experimental',
     team: 'demon',
-    ability: 'Nominees die, but may nominate again immediately (on day 3+, a player might not die). After day 3, evil wins. [All Minions are Riot]',
+    ability: 'On day 3, Minions become Riot & nominees die but nominate an alive player immediately. This must happen.',
     firstNightOrder: null,
     otherNightOrder: null,
     setup: true,
-    reminders: [],
-    flavorQuote: "CHAOS!",
-    extendedSummary: `Riot creates chaotic chain nominations.
+    reminders: ['Day 1', 'Day 2', 'Day 3'],
+    flavorQuote: "Larga vida a la revolucion! Mi revolucion!",
+    extendedSummary: `Riot kills everybody in a panic.
 
-All Minions become Riot. When a player is nominated, they die but may immediately nominate someone else, creating a chain of deaths.
+On the 3rd day, each player that is nominated dies immediately. Even though they are dead, they must nominate again.
 
-After day 3, if the game hasn't ended, evil wins. On day 3+, a player might survive nomination.`,
+The player that was nominated must nominate again immediately or lose their chance. The Storyteller counts down "3... 2... 1..." to let the player know how long they have. If they don't nominate, the Storyteller nominates instead.
+
+On day 3, Minions become Riot. Good wins if all Riot players are dead.`,
     tipsAndTricks: [
-      "Nominations kill - use this to eliminate good players.",
-      "The chain continues until no one nominates.",
-      "You win after day 3 if the game continues.",
-      "All your Minions are also Riot."
+      "Days 1 and 2 are normal - use them to position yourself.",
+      "On day 3, the chaos begins - every nomination kills.",
+      "All your Minions become Riot too - multiple Demons!",
+      "Good must kill all Riots to win - even one alive means you win."
     ],
     fightingThe: [
-      "Nominations kill! Be very careful who you nominate.",
-      "You must find and kill all Riots before day 3.",
-      "All Minions are Riot - there are multiple Demons.",
-      "On day 3+, nominated players might survive."
+      "You have until day 3 to find and kill all evil players!",
+      "On day 3, nominations kill - think carefully before nominating.",
+      "All Minions become Riot - there are multiple Demons to find.",
+      "Good wins only if ALL Riot players are dead."
     ],
-    howToRun: "During setup, all Minions become Riot. There is no normal Demon - all Riots are Demons.\n\nWhen a player is nominated, that player dies immediately (on day 3+, you may choose to save them). That player may immediately nominate another player. This chain continues until no one nominates.\n\nAt the end of day 3, if any Riot is alive, evil wins."
+    howToRun: "Track which day it is with Day 1, Day 2, Day 3 reminders. On the 3rd night, wake each Minion, show them the YOU ARE info token and the Riot token - they become Riot.\n\nDuring the 3rd day, each time a player is nominated, they die immediately. Declare they are dead and add a shroud. Tell them to nominate again and count down 3... 2... 1... If they don't nominate in time, you nominate a player.\n\nRepeat until all Riot are dead (good wins) or just 2 players are alive."
   },
   {
     id: 'yaggababble',

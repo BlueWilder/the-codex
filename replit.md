@@ -56,6 +56,7 @@ Character data is stored client-side in `client/src/lib/game-data.ts` with full 
 - Extended summaries, tips, and bluffing advice
 - Jinx interactions between characters
 - Storyteller "How to Run" instructions for all characters
+- **Data Verification (Jan 2026)**: All 57+ experimental characters audited against official wiki. Major fixes applied to: Psychopath, Organ Grinder, Vizier, Riot abilities.
 
 ### Game Mode (Player Tracker)
 A localStorage-based player tracking tool at `/game` for note-taking during games:
