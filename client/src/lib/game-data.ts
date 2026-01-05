@@ -1269,7 +1269,7 @@ If the Acrobat is drunk or poisoned, they cannot die to their own ability. The A
     name: 'Alchemist',
     edition: 'experimental',
     team: 'townsfolk',
-    ability: 'You have a Minion ability.',
+    ability: 'You have a Minion ability. When using this, the Storyteller may prompt you to choose differently.',
     firstNightOrder: 35,
     otherNightOrder: null,
     setup: false,
@@ -1279,7 +1279,7 @@ If the Acrobat is drunk or poisoned, they cannot die to their own ability. The A
 
 The Alchemist's ability is usually that of a not-in-play Minion, but can duplicate an in-play Minion ability. They learn which ability this is on the first night.
 
-They are still a good Townsfolk - they win when good wins. They register as good and as the Alchemist. The Alchemist does not wake to learn who the other Minions are or who the Demon is.`,
+They are still a good Townsfolk - they win when good wins. They register as good and as the Alchemist. The Alchemist does not wake to learn who the other Minions are or who the Demon is. If the Alchemist has an ability where the player chooses something, the Storyteller may ask them to choose differently.`,
     tipsAndTricks: [
       "Figure out which Minion ability you have and use it to help the good team.",
       "If you have a Poisoner ability, poison players you suspect are evil.",
@@ -1789,17 +1789,17 @@ This information is very useful for narrowing down Demon candidates on the final
     name: 'Lycanthrope',
     edition: 'experimental',
     team: 'townsfolk',
-    ability: 'Each night*, choose an alive player. If good, they die, but they are the only player that can die tonight.',
+    ability: 'Each night*, choose an alive player. If good, they die & the Demon doesn\'t kill tonight. One good player registers as evil.',
     firstNightOrder: null,
     otherNightOrder: 22,
     setup: false,
-    reminders: ['Dead'],
+    reminders: ['Dead', 'Faux Paw'],
     flavorQuote: "Awooooooo!",
     extendedSummary: `The Lycanthrope kills at night, but protects the town from the Demon.
 
-Each night except the first, the Lycanthrope chooses a player. If that player is good, they die, but no other player can die that night - not even from the Demon.
+Each night except the first, the Lycanthrope chooses a player. If that player is good, they die, and the Demon cannot kill tonight.
 
-If the Lycanthrope chooses an evil player, nothing happens and the Demon may kill as normal.`,
+If the Lycanthrope chooses an evil player, that player does not die and the Demon may kill as normal. While the Lycanthrope lives, one good player registers as evil (but cannot be killed by the Lycanthrope).`,
     tipsAndTricks: [
       "Choose players you suspect are evil - if they're good, at least you've protected the town.",
       "If no one dies after your choice, you've found an evil player!",
@@ -1847,7 +1847,7 @@ This causes confusion for the evil team about who is actually on their side.`,
     name: 'Nightwatchman',
     edition: 'experimental',
     team: 'townsfolk',
-    ability: 'Once per game, at night, choose a player: they learn who you are.',
+    ability: 'Once per game, at night, choose a player: they learn you are the Nightwatchman.',
     firstNightOrder: 64,
     otherNightOrder: 78,
     setup: false,
@@ -2458,7 +2458,7 @@ This ability works even if the Demon is drunk or poisoned.`,
     name: 'Boomdandy',
     edition: 'experimental',
     team: 'minion',
-    ability: 'If you are executed, all but 3 players die. 1 minute later, the player with the most players pointing at them dies.',
+    ability: 'If you are executed, all but 3 players die. After a 10 to 1 countdown, the player with the most players pointing at them, dies.',
     firstNightOrder: null,
     otherNightOrder: null,
     setup: false,
