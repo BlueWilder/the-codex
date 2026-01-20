@@ -77,7 +77,7 @@ export default function Introduction() {
             <p className="text-foreground/90 font-serif text-lg leading-relaxed">
               Two teams, hidden roles. The <span className="text-blue-400 font-semibold">Good team</span> (most players) 
               wants to execute the demon. The <span className="text-red-400 font-semibold">Evil team</span> (demon + minions) 
-              wants to survive until only two players remain. That's it—everything else flows from this.
+              wants to survive until only two players remain.
             </p>
           </Card>
         </motion.section>
