@@ -1,7 +1,7 @@
 import { Layout } from "@/components/ui/Layout";
 import { ALL_CHARACTERS, getJinxesForCharacter, type Character, type Jinx } from "@/lib/game-data";
 import { useState, useEffect } from "react";
-import { Search, Moon, Sun, Settings, AlertTriangle, ChevronDown, Quote, Lightbulb, Sword, Eye, Check, BookOpen, Plus, Minus, Trash2, Pencil } from "lucide-react";
+import { Search, Moon, Sun, Settings, AlertTriangle, ChevronDown, Quote, Lightbulb, Sword, Eye, Check, BookOpen, Plus, Minus, Trash2, Pencil, ArrowDownAZ, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -286,10 +286,20 @@ export default function Reference() {
   const [search, setSearch] = useState("");
   const [teamFilter, setTeamFilter] = useState<string>("all");
   const [scriptFilter, setScriptFilter] = useState<string>("all");
+  const [sortOrder, setSortOrder] = useState<"alphabetical" | "night">("alphabetical");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showScriptBuilder, setShowScriptBuilder] = useState(false);
   const [editingScript, setEditingScript] = useState<LocalScript | null>(null);
   const { customScripts, addCustomScript, updateCustomScript, deleteCustomScript } = useLocalScripts();
+
+  // Update sort order based on script filter
+  useEffect(() => {
+    if (scriptFilter === "all") {
+      setSortOrder("alphabetical");
+    } else {
+      setSortOrder("night");
+    }
+  }, [scriptFilter]);
 
   const activeCustomScript = scriptFilter.startsWith('custom:') 
     ? customScripts.find(s => s.id === scriptFilter.replace('custom:', ''))
@@ -311,15 +321,24 @@ export default function Reference() {
     
     return matchesSearch && matchesTeam && matchesScript;
   }).sort((a, b) => {
-    // Sort travelers alphabetically
+    // Travelers always sorted alphabetically and kept at the end
     if (a.team === "traveler" && b.team === "traveler") {
       return a.name.localeCompare(b.name);
     }
-    // Keep travelers at the end when viewing all teams
     if (a.team === "traveler" && b.team !== "traveler") return 1;
     if (a.team !== "traveler" && b.team === "traveler") return -1;
-    // Maintain original order for non-travelers
-    return 0;
+    
+    // Sort non-travelers based on selected sort order
+    if (sortOrder === "alphabetical") {
+      return a.name.localeCompare(b.name);
+    } else {
+      // Night order sorting - use firstNightOrder, fall back to otherNightOrder
+      const aOrder = a.firstNightOrder ?? a.otherNightOrder ?? 999;
+      const bOrder = b.firstNightOrder ?? b.otherNightOrder ?? 999;
+      if (aOrder !== bOrder) return aOrder - bOrder;
+      // If same night order, sort alphabetically
+      return a.name.localeCompare(b.name);
+    }
   });
 
   const handleToggle = (charId: string) => {
@@ -421,22 +440,46 @@ export default function Reference() {
             </button>
           </div>
 
-          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-            {['all', 'townsfolk', 'outsider', 'minion', 'demon', 'traveler'].map((f) => (
-              <button
-                key={f}
-                onClick={() => setTeamFilter(f)}
-                className={cn(
-                  "px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all border",
-                  teamFilter === f 
-                    ? "bg-amber-900/50 text-amber-100 border-amber-600" 
-                    : "bg-transparent text-muted-foreground border-transparent hover:bg-white/5"
-                )}
-                data-testid={`button-filter-${f}`}
-              >
-                {f}
-              </button>
-            ))}
+          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide items-center justify-between">
+            <div className="flex gap-2 overflow-x-auto scrollbar-hide">
+              {['all', 'townsfolk', 'outsider', 'minion', 'demon', 'traveler'].map((f) => (
+                <button
+                  key={f}
+                  onClick={() => setTeamFilter(f)}
+                  className={cn(
+                    "px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all border",
+                    teamFilter === f 
+                      ? "bg-amber-900/50 text-amber-100 border-amber-600" 
+                      : "bg-transparent text-muted-foreground border-transparent hover:bg-white/5"
+                  )}
+                  data-testid={`button-filter-${f}`}
+                >
+                  {f}
+                </button>
+              ))}
+            </div>
+            
+            <button
+              onClick={() => setSortOrder(prev => prev === "alphabetical" ? "night" : "alphabetical")}
+              className={cn(
+                "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold tracking-wider transition-all border whitespace-nowrap",
+                "bg-transparent text-muted-foreground border-amber-900/30 hover:bg-white/5"
+              )}
+              title={sortOrder === "alphabetical" ? "Switch to night order" : "Switch to alphabetical order"}
+              data-testid="button-toggle-sort"
+            >
+              {sortOrder === "alphabetical" ? (
+                <>
+                  <ArrowDownAZ className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">A-Z</span>
+                </>
+              ) : (
+                <>
+                  <Clock className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Night</span>
+                </>
+              )}
+            </button>
           </div>
         </div>
 
