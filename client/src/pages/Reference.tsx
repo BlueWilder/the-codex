@@ -1,7 +1,7 @@
 import { Layout } from "@/components/ui/Layout";
 import { ALL_CHARACTERS, getJinxesForCharacter, type Character, type Jinx } from "@/lib/game-data";
 import { useState, useEffect } from "react";
-import { Search, Moon, Sun, Settings, AlertTriangle, ChevronDown, Quote, Lightbulb, Sword, Eye, Check, BookOpen, Plus, Minus, Trash2, Pencil, ArrowDownAZ, LayoutList } from "lucide-react";
+import { Search, Moon, Sun, Settings, AlertTriangle, ChevronDown, Quote, Lightbulb, Sword, Eye, Check, BookOpen, Plus, Minus, Trash2, Pencil, ArrowDownAZ, LayoutList, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -286,7 +286,7 @@ export default function Reference() {
   const [search, setSearch] = useState("");
   const [teamFilter, setTeamFilter] = useState<string>("all");
   const [scriptFilter, setScriptFilter] = useState<string>("all");
-  const [sortOrder, setSortOrder] = useState<"alphabetical" | "sheet">("alphabetical");
+  const [sortOrder, setSortOrder] = useState<"alphabetical" | "sheet" | "night">("alphabetical");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showScriptBuilder, setShowScriptBuilder] = useState(false);
   const [editingScript, setEditingScript] = useState<LocalScript | null>(null);
@@ -330,6 +330,12 @@ export default function Reference() {
     
     // Sort non-travelers based on selected sort order
     if (sortOrder === "alphabetical") {
+      return a.name.localeCompare(b.name);
+    } else if (sortOrder === "night") {
+      // Night order sorting - use firstNightOrder, fall back to otherNightOrder
+      const aOrder = a.firstNightOrder ?? a.otherNightOrder ?? 999;
+      const bOrder = b.firstNightOrder ?? b.otherNightOrder ?? 999;
+      if (aOrder !== bOrder) return aOrder - bOrder;
       return a.name.localeCompare(b.name);
     } else {
       // Sheet order: group by team, maintain original array order within team
@@ -463,23 +469,36 @@ export default function Reference() {
             </div>
             
             <button
-              onClick={() => setSortOrder(prev => prev === "alphabetical" ? "sheet" : "alphabetical")}
+              onClick={() => setSortOrder(prev => {
+                if (prev === "sheet") return "alphabetical";
+                if (prev === "alphabetical") return "night";
+                return "sheet";
+              })}
               className={cn(
                 "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold tracking-wider transition-all border whitespace-nowrap",
                 "bg-transparent text-muted-foreground border-amber-900/30 hover:bg-white/5"
               )}
-              title={sortOrder === "alphabetical" ? "Switch to sheet order (by team)" : "Switch to alphabetical order"}
+              title={
+                sortOrder === "sheet" ? "Sheet order (by team) - click for A-Z" :
+                sortOrder === "alphabetical" ? "Alphabetical - click for Night order" :
+                "Night order - click for Sheet order"
+              }
               data-testid="button-toggle-sort"
             >
-              {sortOrder === "alphabetical" ? (
+              {sortOrder === "sheet" ? (
+                <>
+                  <LayoutList className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Sheet</span>
+                </>
+              ) : sortOrder === "alphabetical" ? (
                 <>
                   <ArrowDownAZ className="w-3.5 h-3.5" />
                   <span className="hidden sm:inline">A-Z</span>
                 </>
               ) : (
                 <>
-                  <LayoutList className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Sheet</span>
+                  <Clock className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Night</span>
                 </>
               )}
             </button>
