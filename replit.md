@@ -37,7 +37,7 @@ Preferred communication style: Simple, everyday language.
 client/           # React frontend
   src/
     components/   # UI components (shadcn/ui based)
-    pages/        # Route pages (Home, Reference)
+    pages/        # Route pages (Home, Reference, Game, Introduction)
     lib/          # Utilities and game data (game-data.ts contains all character info)
 server/           # Express backend
   routes.ts       # API route handlers
@@ -59,6 +59,17 @@ Character data is stored client-side in `client/src/lib/game-data.ts` with full 
 - **Data Verification (Jan 2026)**: Complete audit of all character editions against official wiki:
   - Core editions (TB, BMR, S&V): 100% verified accurate
   - Experimental characters: 57+ verified with 8 fixes applied - Psychopath, Organ Grinder, Vizier, Riot, Alchemist, Lycanthrope, Nightwatchman, Boomdandy
+
+### Introduction Page
+A beginner-friendly guide at `/introduction` explaining Blood on the Clocktower to new players:
+- **Hero**: "Welcome to Ravenswood Bluff" with atmospheric intro
+- **The Setup**: Two teams, hidden roles explanation
+- **How It Plays**: Night/Day/Execution phase rhythm
+- **What Makes This Different**: Three key differentiators (info can be wrong, dead players stay in, Storyteller plays too)
+- **Your Role**: Expandable accordions for Townsfolk, Outsiders, Minions, Demons
+- **Quick Tips**: Two-column layout with tips for good vs evil players
+- **First Game Mindset**: Encouragement for new players
+- **CTA**: Links to Character Reference
 
 ### Game Mode (Player Tracker)
 A localStorage-based player tracking tool at `/game` for note-taking during games:

@@ -1,0 +1,77 @@
+Good call—the first version had better pacing. Here's how I'd structure it for a web page that reveals info progressively without overwhelming:
+
+---
+
+## Web Page Structure
+
+**Hero Section**
+Headline: "Welcome to Ravenswood Bluff"
+Subhead: A demon is killing villagers. Find them before it's too late.
+Visual: Moody clocktower imagery
+
+---
+
+**Section 1: The Setup** (what you need to know before anything else)
+
+Two teams, hidden roles. Good team (most players) wants to execute the demon. Evil team (demon + minions) wants to survive until only two players remain. That's it—everything else flows from this.
+
+---
+
+**Section 2: How It Plays** (the rhythm of the game)
+
+Night: Close your eyes. The Storyteller privately activates abilities—demon kills, info roles learn clues.
+
+Day: Open your eyes, learn who died, then talk. Share info, form theories, catch people in lies, defend yourself from accusations.
+
+Execution: Nominate someone, vote, and if they get majority they're executed. One execution max per day, and it's optional.
+
+Repeat until someone wins.
+
+---
+
+**Section 3: What Makes This Different** (the hook—why this isn't just Werewolf)
+
+Three punchy callouts:
+
+"Information can be wrong" — Some roles give unreliable info. The demon's team creates chaos. You're solving a puzzle where pieces don't fit.
+
+"Dead players stay in" — You can still talk, and you get one final vote to use anytime before the game ends.
+
+"The Storyteller plays too" — They're not just a facilitator. They balance the game and sometimes feed misinformation through certain abilities.
+
+---
+
+**Section 4: Your Role** (expandable cards or tabs)
+
+Four role types, each as a clickable card that expands:
+
+Townsfolk — Good. Helpful abilities to gather info or protect others.
+
+Outsiders — Good. Abilities that hinder the town, but you still want good to win.
+
+Minions — Evil. Know the demon. Protect them and spread misinformation.
+
+Demons — Evil. Kill each night. Avoid execution at all costs.
+
+---
+
+**Section 5: Quick Tips** (two columns, good vs evil)
+
+If you're good: Share information—the town needs data. Ask questions and look for contradictions. Trust but verify—info can be wrong. Take notes.
+
+If you're evil: Blend in and act like a good player. Pick a believable claim from your bluffs. Protect the demon by casting suspicion elsewhere. Sow doubt about good info.
+
+---
+
+**Section 6: First Game Mindset** (reassurance before they play)
+
+Don't try to play optimally. Talk to people, pay attention to claims, and enjoy the mystery. Ask the Storyteller anything—rules, abilities, what just happened. They're there so you can focus on deduction, not mechanics.
+
+---
+
+**Footer CTA**
+"Ready to play?" with link to the Codex for character reference.
+
+---
+
+Want me to write this out as actual web copy, or mock it up as a React component for your Replit stack?
