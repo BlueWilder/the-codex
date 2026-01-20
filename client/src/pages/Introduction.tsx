@@ -337,8 +337,8 @@ export default function Introduction() {
               Don't try to play optimally. Talk to people, pay attention to claims, and enjoy the mystery.
             </p>
             <p className="text-amber-100/60 font-serif italic">
-              Ask the Storyteller anything—rules, abilities, what just happened. 
-              They're there so you can focus on deduction, not mechanics.
+              Ask the Storyteller anything. Clarify rules, abilities, or what just happened. 
+              The Storyteller is there so you can focus on deduction, not mechanics.
             </p>
           </Card>
         </motion.section>
