@@ -130,7 +130,7 @@ export default function Introduction() {
                   <h3 className="font-semibold text-red-300 mb-1">Execution</h3>
                   <p className="text-foreground/80 font-serif">
                     Nominate someone, vote, and if they get majority they're executed. 
-                    One execution max per day, and it's optional.
+                    The town can execute one player per day, or choose to skip if unsure.
                   </p>
                 </div>
               </div>
