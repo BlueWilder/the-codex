@@ -13,7 +13,8 @@ import {
   Eye,
   Target,
   ArrowLeft,
-  BookOpen
+  BookOpen,
+  Gamepad2
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -89,7 +90,7 @@ export default function Introduction() {
           <Card className="bg-card/80 border-amber-900/30 p-6 md:p-8">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 rounded-full bg-purple-900/30 flex items-center justify-center">
-                <Moon className="w-5 h-5 text-purple-400" />
+                <Gamepad2 className="w-5 h-5 text-purple-400" />
               </div>
               <h2 className="text-2xl font-bold text-amber-500 font-display">How It Plays</h2>
             </div>
