@@ -1,7 +1,7 @@
 import { Layout } from "@/components/ui/Layout";
 import { ALL_CHARACTERS, getJinxesForCharacter, type Character, type Jinx } from "@/lib/game-data";
 import { useState, useEffect } from "react";
-import { Search, Moon, Sun, Settings, AlertTriangle, ChevronDown, Quote, Lightbulb, Sword, Eye, Check, BookOpen, Plus, Minus, Trash2, Pencil, ArrowDownAZ, Clock } from "lucide-react";
+import { Search, Moon, Sun, Settings, AlertTriangle, ChevronDown, Quote, Lightbulb, Sword, Eye, Check, BookOpen, Plus, Minus, Trash2, Pencil, ArrowDownAZ, LayoutList } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -286,7 +286,7 @@ export default function Reference() {
   const [search, setSearch] = useState("");
   const [teamFilter, setTeamFilter] = useState<string>("all");
   const [scriptFilter, setScriptFilter] = useState<string>("all");
-  const [sortOrder, setSortOrder] = useState<"alphabetical" | "night">("alphabetical");
+  const [sortOrder, setSortOrder] = useState<"alphabetical" | "sheet">("alphabetical");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showScriptBuilder, setShowScriptBuilder] = useState(false);
   const [editingScript, setEditingScript] = useState<LocalScript | null>(null);
@@ -297,7 +297,7 @@ export default function Reference() {
     if (scriptFilter === "all") {
       setSortOrder("alphabetical");
     } else {
-      setSortOrder("night");
+      setSortOrder("sheet");
     }
   }, [scriptFilter]);
 
@@ -332,12 +332,15 @@ export default function Reference() {
     if (sortOrder === "alphabetical") {
       return a.name.localeCompare(b.name);
     } else {
-      // Night order sorting - use firstNightOrder, fall back to otherNightOrder
-      const aOrder = a.firstNightOrder ?? a.otherNightOrder ?? 999;
-      const bOrder = b.firstNightOrder ?? b.otherNightOrder ?? 999;
-      if (aOrder !== bOrder) return aOrder - bOrder;
-      // If same night order, sort alphabetically
-      return a.name.localeCompare(b.name);
+      // Sheet order: group by team, maintain original array order within team
+      const teamOrder = { townsfolk: 0, outsider: 1, minion: 2, demon: 3, traveler: 4 };
+      const aTeamOrder = teamOrder[a.team] ?? 5;
+      const bTeamOrder = teamOrder[b.team] ?? 5;
+      if (aTeamOrder !== bTeamOrder) return aTeamOrder - bTeamOrder;
+      // Within same team, maintain original array index order
+      const aIndex = ALL_CHARACTERS.indexOf(a);
+      const bIndex = ALL_CHARACTERS.indexOf(b);
+      return aIndex - bIndex;
     }
   });
 
@@ -460,12 +463,12 @@ export default function Reference() {
             </div>
             
             <button
-              onClick={() => setSortOrder(prev => prev === "alphabetical" ? "night" : "alphabetical")}
+              onClick={() => setSortOrder(prev => prev === "alphabetical" ? "sheet" : "alphabetical")}
               className={cn(
                 "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold tracking-wider transition-all border whitespace-nowrap",
                 "bg-transparent text-muted-foreground border-amber-900/30 hover:bg-white/5"
               )}
-              title={sortOrder === "alphabetical" ? "Switch to night order" : "Switch to alphabetical order"}
+              title={sortOrder === "alphabetical" ? "Switch to sheet order (by team)" : "Switch to alphabetical order"}
               data-testid="button-toggle-sort"
             >
               {sortOrder === "alphabetical" ? (
@@ -475,8 +478,8 @@ export default function Reference() {
                 </>
               ) : (
                 <>
-                  <Clock className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Night</span>
+                  <LayoutList className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Sheet</span>
                 </>
               )}
             </button>
