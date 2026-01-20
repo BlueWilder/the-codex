@@ -310,6 +310,16 @@ export default function Reference() {
     }
     
     return matchesSearch && matchesTeam && matchesScript;
+  }).sort((a, b) => {
+    // Sort travelers alphabetically
+    if (a.team === "traveler" && b.team === "traveler") {
+      return a.name.localeCompare(b.name);
+    }
+    // Keep travelers at the end when viewing all teams
+    if (a.team === "traveler" && b.team !== "traveler") return 1;
+    if (a.team !== "traveler" && b.team === "traveler") return -1;
+    // Maintain original order for non-travelers
+    return 0;
   });
 
   const handleToggle = (charId: string) => {
