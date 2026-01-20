@@ -282,7 +282,7 @@ export default function Introduction() {
               <ul className="space-y-3 text-foreground/80 font-serif text-sm">
                 <li className="flex gap-2">
                   <span className="text-blue-400">•</span>
-                  <span>Share information—the town needs data</span>
+                  <span>Share information! The town needs data</span>
                 </li>
                 <li className="flex gap-2">
                   <span className="text-blue-400">•</span>
@@ -290,7 +290,7 @@ export default function Introduction() {
                 </li>
                 <li className="flex gap-2">
                   <span className="text-blue-400">•</span>
-                  <span>Trust but verify—info can be wrong</span>
+                  <span>Trust but verify. Info can be wrong</span>
                 </li>
                 <li className="flex gap-2">
                   <span className="text-blue-400">•</span>
