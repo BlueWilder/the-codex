@@ -171,9 +171,10 @@ export default function Introduction() {
                 <div className="w-12 h-12 rounded-full bg-blue-900/30 flex items-center justify-center mx-auto mb-3">
                   <Skull className="w-6 h-6 text-blue-400" />
                 </div>
-                <h3 className="font-semibold text-blue-300 mb-2">Dead players stay in</h3>
+                <h3 className="font-semibold text-blue-300 mb-2">Dead players keep playing</h3>
                 <p className="text-foreground/70 text-sm font-serif">
-                  You can still talk, and you get one final vote to use anytime 
+                  Dying is not the end. You still play as a ghost and try to help your team win 
+                  by collecting and sharing information. Plus you get one final vote to use anytime 
                   before the game ends.
                 </p>
               </div>
