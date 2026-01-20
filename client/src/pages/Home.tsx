@@ -27,6 +27,16 @@ export default function Home() {
           transition={{ delay: 0.3, duration: 0.5 }}
           className="grid gap-6 md:grid-cols-3 max-w-4xl mx-auto"
         >
+          <Link href="/introduction" className="group block" data-testid="link-introduction-card">
+            <div className="bg-card hover:bg-card/80 border border-amber-900/30 hover:border-amber-600/50 p-8 rounded-xl transition-all duration-300 shadow-lg hover:shadow-amber-900/20 group-hover:-translate-y-1 h-full">
+              <div className="w-16 h-16 rounded-full bg-emerald-900/20 flex items-center justify-center mx-auto mb-6 group-hover:bg-emerald-900/40 transition-colors">
+                <HelpCircle className="w-8 h-8 text-emerald-400" />
+              </div>
+              <h2 className="text-2xl font-bold text-amber-500 mb-3 font-display">Blood on the Clocktower</h2>
+              <p className="text-muted-foreground">Quick introduction and overview of the game and base mechanics.</p>
+            </div>
+          </Link>
+
           <Link href="/reference" className="group block" data-testid="link-reference-card">
             <div className="bg-card hover:bg-card/80 border border-amber-900/30 hover:border-amber-600/50 p-8 rounded-xl transition-all duration-300 shadow-lg hover:shadow-amber-900/20 group-hover:-translate-y-1 h-full">
               <div className="w-16 h-16 rounded-full bg-blue-900/20 flex items-center justify-center mx-auto mb-6 group-hover:bg-blue-900/40 transition-colors">
@@ -44,16 +54,6 @@ export default function Home() {
               </div>
               <h2 className="text-2xl font-bold text-amber-500 mb-3 font-display">Game Mode</h2>
               <p className="text-muted-foreground">Track players, notes, claims, and votes during your games.</p>
-            </div>
-          </Link>
-
-          <Link href="/introduction" className="group block" data-testid="link-introduction-card">
-            <div className="bg-card hover:bg-card/80 border border-amber-900/30 hover:border-amber-600/50 p-8 rounded-xl transition-all duration-300 shadow-lg hover:shadow-amber-900/20 group-hover:-translate-y-1 h-full">
-              <div className="w-16 h-16 rounded-full bg-emerald-900/20 flex items-center justify-center mx-auto mb-6 group-hover:bg-emerald-900/40 transition-colors">
-                <HelpCircle className="w-8 h-8 text-emerald-400" />
-              </div>
-              <h2 className="text-2xl font-bold text-amber-500 mb-3 font-display">Blood on the Clocktower</h2>
-              <p className="text-muted-foreground">Quick introduction and overview of the game and base mechanics.</p>
             </div>
           </Link>
         </motion.div>
