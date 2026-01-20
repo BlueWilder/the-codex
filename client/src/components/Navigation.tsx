@@ -1,6 +1,7 @@
 import { Link, useLocation } from "wouter";
-import { Skull, BookOpen, Gamepad2 } from "lucide-react";
+import { BookOpen, Gamepad2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import logoImage from "@assets/logo.png";
 
 export function Navigation() {
   const [location] = useLocation();
@@ -15,7 +16,7 @@ export function Navigation() {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-14 md:h-20">
           <Link href="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity" data-testid="link-logo-home">
-            <Skull className="w-6 h-6 md:w-8 md:h-8 text-red-700" />
+            <img src={logoImage} alt="The Codex" className="w-6 h-6 md:w-8 md:h-8" />
             <span className="font-display text-lg md:text-2xl text-amber-500 tracking-wider">The Codex</span>
           </Link>
 
