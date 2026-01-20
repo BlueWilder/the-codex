@@ -103,8 +103,8 @@ export default function Introduction() {
                 <div>
                   <h3 className="font-semibold text-indigo-300 mb-1">Night</h3>
                   <p className="text-foreground/80 font-serif">
-                    Close your eyes. The Storyteller privately activates abilities—demon kills, 
-                    info roles learn clues.
+                    Close your eyes. The Storyteller privately wakes up players to activate their abilities. 
+                    Demon kills, Minions disrupt, Good info roles learn clues.
                   </p>
                 </div>
               </div>
