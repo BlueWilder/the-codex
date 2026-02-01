@@ -737,6 +737,44 @@ export function usePlayerGame() {
     });
   }, [game, saveGame]);
 
+  const convertToTraveler = useCallback((playerId: string) => {
+    if (!game) return;
+    const player = game.players.find(p => p.id === playerId);
+    if (!player || player.isTraveler) return; // Already a traveler or not found
+    
+    const timestamp = new Date().toISOString();
+    
+    // Record traveler joined event
+    const travelerEvent: TravelerEvent = {
+      playerId,
+      playerName: player.name,
+      type: 'joined',
+      day: game.currentDay,
+      timestamp,
+      characterId: player.claims[0],
+    };
+    
+    // Update the player to be a traveler
+    const updatedPlayers = game.players.map(p => 
+      p.id === playerId 
+        ? { 
+            ...p, 
+            isTraveler: true, 
+            hasGhostVote: false, // Travelers don't get ghost votes
+            joinedAt: timestamp,
+            joinedDay: game.currentDay,
+          } 
+        : p
+    );
+    
+    saveGame({ 
+      ...game, 
+      players: updatedPlayers,
+      playerCount: updatedPlayers.filter(p => !p.isTraveler).length,
+      travelerEvents: [...(game.travelerEvents || []), travelerEvent],
+    });
+  }, [game, saveGame]);
+
   const removeTraveler = useCallback((playerId: string) => {
     if (!game) return;
     const player = game.players.find(p => p.id === playerId);
@@ -954,6 +992,7 @@ export function usePlayerGame() {
     clearScript,
     setScript,
     addTraveler,
+    convertToTraveler,
     removeTraveler,
     createExileVote,
     getPlayerExileVotes,

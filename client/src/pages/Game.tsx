@@ -516,6 +516,7 @@ function PlayerDetailDrawer({
   onSetPlayerName,
   onRemoveTraveler,
   onRemovePlayer,
+  onConvertToTraveler,
   canRemovePlayer,
   scriptCharacterIds,
 }: {
@@ -533,6 +534,7 @@ function PlayerDetailDrawer({
   onSetPlayerName: (name: string) => void;
   onRemoveTraveler?: () => void;
   onRemovePlayer?: () => void;
+  onConvertToTraveler?: () => void;
   canRemovePlayer?: boolean;
   scriptCharacterIds?: string[] | null;
 }) {
@@ -854,20 +856,37 @@ function PlayerDetailDrawer({
                 )}
               </div>
 
-              {/* Remove Player - subtle styling at bottom */}
-              {onRemovePlayer && !player.isTraveler && (
-                <div className="pt-6 mt-6 border-t border-border/50">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="w-full text-muted-foreground hover:text-destructive"
-                    onClick={() => setShowRemoveConfirm(true)}
-                    disabled={!canRemovePlayer}
-                    data-testid="button-remove-player"
-                  >
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    {canRemovePlayer ? "Remove Player" : "Cannot remove last player"}
-                  </Button>
+              {/* Player Actions - subtle styling at bottom */}
+              {!player.isTraveler && (onConvertToTraveler || onRemovePlayer) && (
+                <div className="pt-6 mt-6 border-t border-border/50 space-y-2">
+                  {onConvertToTraveler && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full text-muted-foreground hover:text-purple-400"
+                      onClick={() => {
+                        onConvertToTraveler();
+                        onClose();
+                      }}
+                      data-testid="button-convert-to-traveler"
+                    >
+                      <UserPlus className="w-4 h-4 mr-2" />
+                      Make Traveler
+                    </Button>
+                  )}
+                  {onRemovePlayer && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full text-muted-foreground hover:text-destructive"
+                      onClick={() => setShowRemoveConfirm(true)}
+                      disabled={!canRemovePlayer}
+                      data-testid="button-remove-player"
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      {canRemovePlayer ? "Remove Player" : "Cannot remove last player"}
+                    </Button>
+                  )}
                 </div>
               )}
             </div>
@@ -2180,6 +2199,7 @@ function GameTrackerView({
   onClearScript,
   onSetScript,
   onAddTraveler,
+  onConvertToTraveler,
   onRemoveTraveler,
   onCreateExileVote,
   getPlayerExileVotes,
@@ -2211,6 +2231,7 @@ function GameTrackerView({
   onClearScript: () => void;
   onSetScript: (scriptRef: GameScriptRef | null) => void;
   onAddTraveler: (name: string, initialClaims?: string[]) => void;
+  onConvertToTraveler: (playerId: string) => void;
   onRemoveTraveler: (playerId: string) => void;
   onCreateExileVote: (travelerId: string, votes: PlayerVote[]) => void;
   getPlayerExileVotes: (playerId: string) => ExileVote[];
@@ -2653,6 +2674,7 @@ function GameTrackerView({
         onSetPlayerName={(name) => selectedPlayerId && onUpdatePlayerName(selectedPlayerId, name)}
         onRemoveTraveler={selectedPlayer?.isTraveler ? () => selectedPlayerId && onRemoveTraveler(selectedPlayerId) : undefined}
         onRemovePlayer={() => selectedPlayerId && onRemovePlayer(selectedPlayerId)}
+        onConvertToTraveler={!selectedPlayer?.isTraveler ? () => selectedPlayerId && onConvertToTraveler(selectedPlayerId) : undefined}
         canRemovePlayer={game.players.length > 1}
         scriptCharacterIds={scriptCharacterIds}
       />
@@ -2829,6 +2851,7 @@ export default function Game() {
     clearScript,
     setScript,
     addTraveler,
+    convertToTraveler,
     removeTraveler,
     createExileVote,
     getPlayerExileVotes,
@@ -2881,6 +2904,7 @@ export default function Game() {
           onClearScript={clearScript}
           onSetScript={setScript}
           onAddTraveler={addTraveler}
+          onConvertToTraveler={convertToTraveler}
           onRemoveTraveler={removeTraveler}
           onCreateExileVote={createExileVote}
           getPlayerExileVotes={getPlayerExileVotes}
