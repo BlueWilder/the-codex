@@ -3,11 +3,73 @@ import type { Server } from "http";
 import { storage } from "./storage";
 import { api } from "@shared/routes";
 import { z } from "zod";
+import { setupAuth, registerAuthRoutes, isAuthenticated } from "./replit_integrations/auth";
 
 export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
+  
+  await setupAuth(app);
+  registerAuthRoutes(app);
+
+  // === Custom Scripts (user-specific) ===
+  app.get("/api/custom-scripts", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const scripts = await storage.getCustomScripts(userId);
+      res.json(scripts);
+    } catch (error) {
+      console.error("Error fetching custom scripts:", error);
+      res.status(500).json({ message: "Failed to fetch custom scripts" });
+    }
+  });
+
+  app.post("/api/custom-scripts", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const { name, characterIds } = req.body;
+      if (!name || !characterIds || !Array.isArray(characterIds)) {
+        return res.status(400).json({ message: "Name and characterIds are required" });
+      }
+      const script = await storage.createCustomScript({ userId, name, characterIds });
+      res.status(201).json(script);
+    } catch (error) {
+      console.error("Error creating custom script:", error);
+      res.status(500).json({ message: "Failed to create custom script" });
+    }
+  });
+
+  app.put("/api/custom-scripts/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const scriptId = Number(req.params.id);
+      const { name, characterIds } = req.body;
+      const script = await storage.updateCustomScript(scriptId, userId, { name, characterIds });
+      if (!script) {
+        return res.status(404).json({ message: "Script not found or unauthorized" });
+      }
+      res.json(script);
+    } catch (error) {
+      console.error("Error updating custom script:", error);
+      res.status(500).json({ message: "Failed to update custom script" });
+    }
+  });
+
+  app.delete("/api/custom-scripts/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const scriptId = Number(req.params.id);
+      const deleted = await storage.deleteCustomScript(scriptId, userId);
+      if (!deleted) {
+        return res.status(404).json({ message: "Script not found or unauthorized" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting custom script:", error);
+      res.status(500).json({ message: "Failed to delete custom script" });
+    }
+  });
 
   // === Scripts ===
   app.get(api.scripts.list.path, async (_req, res) => {
