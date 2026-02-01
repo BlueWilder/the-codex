@@ -1121,7 +1121,7 @@ function NominationDialog({
   };
 
   const eligibleNominees = players.filter(p => p.status === 'alive' && !hasBeenNominatedToday(p.id));
-  const eligibleNominators = players.filter(p => p.status === 'alive' && !hasNominatedToday(p.id) && p.id !== nomineeId);
+  const eligibleNominators = players.filter(p => p.status === 'alive' && !hasNominatedToday(p.id));
   // Show all alive players and dead non-travelers (travelers can't vote on nominations)
   const allVoters = players.filter(p => p.status === 'alive' || (p.status === 'dead' && !p.isTraveler));
   // Helper to check if a player can actually vote
