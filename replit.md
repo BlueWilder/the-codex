@@ -103,6 +103,18 @@ A chronological event viewer accessible via "Log" button in game header:
 - **Historical accuracy**: Nomination outcomes (passed/failed, vote counts) are stored at creation time to ensure accuracy regardless of future game state changes
 - **Component**: `client/src/components/GameLogDialog.tsx`
 
+### User Authentication & Cloud Scripts
+Authentication system for saving custom scripts to the cloud:
+- **Authentication**: Replit Auth (OIDC) supporting Google, GitHub, X, Apple, and email/password
+- **Login/Logout UI**: User profile dropdown in navigation header
+- **Cloud Scripts**: When logged in, custom scripts are saved to PostgreSQL database (user-specific)
+- **Fallback**: When logged out, scripts are saved to localStorage
+- **Script ID format**: `db-{id}` for database scripts, `custom-{timestamp}` for localStorage scripts
+- **API endpoints**: `/api/custom-scripts` for CRUD operations (protected by authentication)
+- **Schema**: `customScripts` table in `shared/schema.ts` with userId, name, characterIds
+- **Hook**: `client/src/hooks/use-local-scripts.ts` handles sync between localStorage and database
+- **Auth hook**: `client/src/hooks/use-auth.ts` provides user state across the app
+
 ## External Dependencies
 
 ### Database

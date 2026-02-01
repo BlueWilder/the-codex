@@ -120,10 +120,28 @@ export function useLocalScripts() {
 
   const isLoading = authLoading || (user ? dbLoading : localLoading);
 
-  const addCustomScript = useCallback((name: string, characterIds: string[]) => {
+  const addCustomScript = useCallback((name: string, characterIds: string[]): LocalScript => {
     if (user) {
       createMutation.mutate({ name, characterIds });
-      return { id: `db-temp-${Date.now()}`, name, isOfficial: false, characterIds };
+      return { id: `db-pending`, name, isOfficial: false, characterIds };
+    } else {
+      const newScript: LocalScript = {
+        id: `custom-${Date.now()}`,
+        name,
+        isOfficial: false,
+        characterIds,
+      };
+      const updated = [...localScripts, newScript];
+      setLocalScripts(updated);
+      saveToLocalStorage(updated);
+      return newScript;
+    }
+  }, [user, localScripts, createMutation]);
+
+  const addCustomScriptAsync = useCallback(async (name: string, characterIds: string[]): Promise<LocalScript> => {
+    if (user) {
+      const dbScript = await createMutation.mutateAsync({ name, characterIds });
+      return { id: `db-${dbScript.id}`, name: dbScript.name, isOfficial: false, characterIds: dbScript.characterIds };
     } else {
       const newScript: LocalScript = {
         id: `custom-${Date.now()}`,
@@ -139,6 +157,10 @@ export function useLocalScripts() {
   }, [user, localScripts, createMutation]);
 
   const updateCustomScript = useCallback((id: string, name: string, characterIds: string[]) => {
+    if (id === "db-pending") {
+      console.warn("Cannot update script that is still being created");
+      return;
+    }
     if (user && id.startsWith("db-")) {
       const dbId = parseInt(id.replace("db-", ""));
       updateMutation.mutate({ id: dbId, name, characterIds });
@@ -152,6 +174,10 @@ export function useLocalScripts() {
   }, [user, localScripts, updateMutation]);
 
   const deleteCustomScript = useCallback((id: string) => {
+    if (id === "db-pending") {
+      console.warn("Cannot delete script that is still being created");
+      return;
+    }
     if (user && id.startsWith("db-")) {
       const dbId = parseInt(id.replace("db-", ""));
       deleteMutation.mutate(dbId);
@@ -199,7 +225,9 @@ export function useLocalScripts() {
     allScripts,
     customScripts,
     isLoading,
+    isSaving: createMutation.isPending || updateMutation.isPending || deleteMutation.isPending,
     addCustomScript,
+    addCustomScriptAsync,
     updateCustomScript,
     deleteCustomScript,
     getScriptById,

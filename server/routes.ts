@@ -4,6 +4,12 @@ import { storage } from "./storage";
 import { api } from "@shared/routes";
 import { z } from "zod";
 import { setupAuth, registerAuthRoutes, isAuthenticated } from "./replit_integrations/auth";
+import { updateCustomScriptSchema } from "@shared/schema";
+
+const createCustomScriptSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  characterIds: z.array(z.string()).min(1, "At least one character is required"),
+});
 
 export async function registerRoutes(
   httpServer: Server,
@@ -28,10 +34,14 @@ export async function registerRoutes(
   app.post("/api/custom-scripts", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user?.claims?.sub;
-      const { name, characterIds } = req.body;
-      if (!name || !characterIds || !Array.isArray(characterIds)) {
-        return res.status(400).json({ message: "Name and characterIds are required" });
+      const parsed = createCustomScriptSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ 
+          message: parsed.error.errors[0].message,
+          field: parsed.error.errors[0].path.join('.')
+        });
       }
+      const { name, characterIds } = parsed.data;
       const script = await storage.createCustomScript({ userId, name, characterIds });
       res.status(201).json(script);
     } catch (error) {
@@ -44,8 +54,14 @@ export async function registerRoutes(
     try {
       const userId = req.user?.claims?.sub;
       const scriptId = Number(req.params.id);
-      const { name, characterIds } = req.body;
-      const script = await storage.updateCustomScript(scriptId, userId, { name, characterIds });
+      const parsed = updateCustomScriptSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ 
+          message: parsed.error.errors[0].message,
+          field: parsed.error.errors[0].path.join('.')
+        });
+      }
+      const script = await storage.updateCustomScript(scriptId, userId, parsed.data);
       if (!script) {
         return res.status(404).json({ message: "Script not found or unauthorized" });
       }

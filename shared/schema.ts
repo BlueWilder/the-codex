@@ -47,6 +47,11 @@ export const insertCustomScriptSchema = createInsertSchema(customScripts).omit({
   updatedAt: true 
 });
 
+export const updateCustomScriptSchema = z.object({
+  name: z.string().min(1).optional(),
+  characterIds: z.array(z.string()).optional(),
+});
+
 export const insertScriptSchema = createInsertSchema(scripts).omit({ 
   id: true, 
   createdAt: true 
