@@ -1,10 +1,19 @@
 import { Link, useLocation } from "wouter";
-import { BookOpen, Gamepad2 } from "lucide-react";
+import { BookOpen, Gamepad2, LogIn, LogOut, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import logoImage from "@assets/logo.png";
+import { useAuth } from "@/hooks/use-auth";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export function Navigation() {
   const [location] = useLocation();
+  const { user, isLoading } = useAuth();
 
   const navItems = [
     { href: "/reference", icon: BookOpen, label: "Reference" },
@@ -20,7 +29,7 @@ export function Navigation() {
             <span className="font-display text-lg md:text-2xl text-amber-500 tracking-wider">The Codex</span>
           </Link>
 
-          <div className="flex items-center space-x-2 md:space-x-8">
+          <div className="flex items-center space-x-2 md:space-x-6">
             {navItems.map((item) => (
               <Link
                 key={item.href}
@@ -36,6 +45,49 @@ export function Navigation() {
                 <span className="text-xs md:text-sm font-medium">{item.label}</span>
               </Link>
             ))}
+
+            {!isLoading && (
+              user ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="rounded-full h-8 w-8 md:h-10 md:w-10"
+                      data-testid="button-user-menu"
+                    >
+                      {user.profileImageUrl ? (
+                        <img 
+                          src={user.profileImageUrl} 
+                          alt="Profile" 
+                          className="h-8 w-8 md:h-10 md:w-10 rounded-full"
+                        />
+                      ) : (
+                        <User className="h-5 w-5 text-amber-500" />
+                      )}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuItem disabled className="text-sm text-muted-foreground">
+                      {user.email || user.firstName || "Logged in"}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <a href="/api/logout" className="flex items-center gap-2 cursor-pointer" data-testid="button-logout">
+                        <LogOut className="h-4 w-4" />
+                        Sign out
+                      </a>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <a href="/api/login" data-testid="button-login">
+                  <Button variant="outline" size="sm" className="gap-1.5 text-amber-500 border-amber-900/50 hover:bg-amber-950/30">
+                    <LogIn className="h-4 w-4" />
+                    <span className="hidden sm:inline">Sign in</span>
+                  </Button>
+                </a>
+              )
+            )}
           </div>
         </div>
       </div>
