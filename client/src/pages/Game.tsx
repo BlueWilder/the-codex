@@ -2581,8 +2581,8 @@ function GameTrackerView({
           </DropdownMenu>
         </div>
 
-        {/* Day Nav Zone - Middle Ground */}
-        <div className="flex items-center justify-center gap-2 px-3 py-2.5 border-b border-border bg-amber-950/10">
+        {/* Day Nav Zone - Arrows at edges, wide banner */}
+        <div className="flex items-center justify-between gap-2 px-3 py-2.5 border-b border-border bg-amber-950/10">
           <Button
             variant="outline"
             onClick={onPrevDay}
@@ -2592,7 +2592,7 @@ function GameTrackerView({
           >
             <ChevronLeft className="w-5 h-5" />
           </Button>
-          <div className="flex items-center gap-2 h-10 px-4 bg-amber-900/30 border border-amber-700/30 rounded-md">
+          <div className="flex-1 flex items-center justify-center gap-2 h-10 px-4 bg-amber-900/30 border border-amber-700/30 rounded-md">
             <Sun className="w-5 h-5 text-amber-400" />
             <span className="font-display text-lg text-amber-400">Day {game.currentDay}</span>
           </div>
