@@ -2587,19 +2587,19 @@ function GameTrackerView({
             variant="outline"
             onClick={onPrevDay}
             disabled={game.currentDay <= 1}
-            className="px-6"
+            className="px-6 h-12"
             data-testid="button-prev-day"
           >
             <ChevronLeft className="w-5 h-5" />
           </Button>
-          <div className="flex-1 flex items-center justify-center gap-2 py-2 px-4 bg-amber-900/30 border border-amber-700/30 rounded-md">
+          <div className="flex-1 flex items-center justify-center gap-2 h-12 px-4 bg-amber-900/30 border border-amber-700/30 rounded-md">
             <Sun className="w-5 h-5 text-amber-400" />
             <span className="font-display text-xl text-amber-400">Day {game.currentDay}</span>
           </div>
           <Button
             variant="outline"
             onClick={handleNextDay}
-            className="px-6"
+            className="px-6 h-12"
             data-testid="button-next-day"
           >
             <ChevronRight className="w-5 h-5" />
@@ -2607,7 +2607,7 @@ function GameTrackerView({
         </div>
 
         {/* Vote Info Text */}
-        <div className="text-center px-4 py-2 border-b border-border text-sm text-muted-foreground">
+        <div className="text-center px-4 py-2.5 border-b border-border text-base text-muted-foreground">
           <div>
             <span className="text-amber-400 font-semibold">{votesNeeded}</span> Votes To Execute out of{' '}
             <span className={cn("font-semibold", canExecute ? "text-purple-400" : "text-red-400")}>{totalVotesAvailable}</span> Possible
@@ -2739,7 +2739,6 @@ function GameTrackerView({
             )}
             <Button 
               variant="outline"
-              className="bg-red-500/20 border-red-500/50 text-red-400 hover:bg-red-500/30 hover:text-red-300"
               onClick={() => {
                 setNominationPreselectedNominee(null);
                 setShowNominationDialog(true);
