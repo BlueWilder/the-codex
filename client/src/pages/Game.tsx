@@ -1,5 +1,5 @@
 import { Layout } from "@/components/ui/Layout";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { usePlayerGame, getBreakdown, isPlayerActive, canPlayerVote, canPlayerVoteOnExile, type GamePlayer, type Nomination, type PlayerVote, type GameScriptRef, type ExileVote, type PlayerStatus, type NominationResult } from "@/hooks/use-player-game";
 import { ALL_CHARACTERS, OFFICIAL_SCRIPTS } from "@/lib/game-data";
 import { useLocalScripts, type LocalScript } from "@/hooks/use-local-scripts";
@@ -544,6 +544,7 @@ function PlayerDetailDrawer({
   const [editedName, setEditedName] = useState("");
   const [showRemoveConfirm, setShowRemoveConfirm] = useState(false);
   const [previewCharacter, setPreviewCharacter] = useState<typeof ALL_CHARACTERS[0] | null>(null);
+  const notesSectionRef = useRef<HTMLDivElement>(null);
 
   if (!player) return null;
 
@@ -751,14 +752,14 @@ function PlayerDetailDrawer({
                       <Badge
                         key={char.id}
                         className={cn(
-                          "cursor-pointer gap-1.5",
+                          "cursor-pointer gap-1.5 text-base",
                           TEAM_COLORS[char.team]
                         )}
                         onClick={() => setPreviewCharacter(char)}
                         data-testid={`badge-claim-${char.id}`}
                       >
                         {char.name}
-                        <Info className="w-3 h-3 opacity-60" />
+                        <Info className="w-3.5 h-3.5 opacity-60" />
                       </Badge>
                     ))}
                   </div>
@@ -768,7 +769,7 @@ function PlayerDetailDrawer({
               </div>
 
               {/* Notes Section */}
-              <div className="rounded-lg bg-card/30 border border-border/30 p-4 space-y-3">
+              <div ref={notesSectionRef} className="rounded-lg bg-card/30 border border-border/30 p-4 space-y-3">
                 <div className="flex items-center justify-between gap-2">
                   <h3 className="font-bold text-sm uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                     <FileText className="w-4 h-4" /> Notes
@@ -777,6 +778,11 @@ function PlayerDetailDrawer({
                 <Textarea
                   value={player.notes}
                   onChange={(e) => onSetNotes(e.target.value)}
+                  onFocus={() => {
+                    setTimeout(() => {
+                      notesSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 350);
+                  }}
                   placeholder="Add notes about this player..."
                   className="min-h-[80px] resize-none bg-background/50"
                   data-testid="textarea-notes"
