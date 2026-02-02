@@ -2581,28 +2581,28 @@ function GameTrackerView({
           </DropdownMenu>
         </div>
 
-        {/* Day Row - Wider Arrows, Narrower Badge */}
-        <div className="flex items-center justify-between gap-2 px-3 py-3 border-b border-border bg-amber-950/10">
+        {/* Day Nav Zone - Compact */}
+        <div className="flex items-center justify-center gap-1 px-3 py-2 border-b border-border bg-amber-950/10">
           <Button
-            variant="outline"
+            variant="ghost"
+            size="sm"
             onClick={onPrevDay}
             disabled={game.currentDay <= 1}
-            className="px-6 h-12"
             data-testid="button-prev-day"
           >
-            <ChevronLeft className="w-5 h-5" />
+            <ChevronLeft className="w-4 h-4" />
           </Button>
-          <div className="flex-1 flex items-center justify-center gap-2 h-12 px-4 bg-amber-900/30 border border-amber-700/30 rounded-md">
-            <Sun className="w-5 h-5 text-amber-400" />
-            <span className="font-display text-xl text-amber-400">Day {game.currentDay}</span>
+          <div className="flex items-center gap-1.5 px-3 py-1 bg-amber-900/30 border border-amber-700/30 rounded-md">
+            <Sun className="w-4 h-4 text-amber-400" />
+            <span className="font-display text-lg text-amber-400">Day {game.currentDay}</span>
           </div>
           <Button
-            variant="outline"
+            variant="ghost"
+            size="sm"
             onClick={handleNextDay}
-            className="px-6 h-12"
             data-testid="button-next-day"
           >
-            <ChevronRight className="w-5 h-5" />
+            <ChevronRight className="w-4 h-4" />
           </Button>
         </div>
 
@@ -2619,20 +2619,20 @@ function GameTrackerView({
           )}
         </div>
 
-        {/* Stats Row - Just Alive/Dead as Large Buttons */}
-        <div className="flex items-center justify-center gap-6 px-3 py-3 border-b border-border">
+        {/* Core Action Zone - Alive/Dead/Nominate as 3 main action buttons */}
+        <div className="grid grid-cols-3 gap-3 px-3 py-3 border-b border-border">
           {/* Alive - Interactive Filter */}
           <Button
             variant="outline"
             onClick={() => toggleFilter('alive')}
             className={cn(
-              "flex flex-col items-center h-auto py-3 px-8 toggle-elevate",
+              "flex flex-col items-center h-auto py-3 toggle-elevate",
               playerFilter === 'alive' && "toggle-elevated bg-emerald-500/20 border-emerald-500/50"
             )}
             data-testid="filter-alive"
           >
-            <span className="text-4xl font-bold text-emerald-400 tabular-nums">{aliveCount}</span>
-            <span className="text-sm text-muted-foreground uppercase tracking-wide">Alive</span>
+            <span className="text-3xl font-bold text-emerald-400 tabular-nums">{aliveCount}</span>
+            <span className="text-xs text-muted-foreground uppercase tracking-wide">Alive</span>
           </Button>
 
           {/* Dead - Interactive Filter */}
@@ -2640,15 +2640,28 @@ function GameTrackerView({
             variant="outline"
             onClick={() => toggleFilter('dead')}
             className={cn(
-              "flex flex-col items-center h-auto py-3 px-8 toggle-elevate",
+              "flex flex-col items-center h-auto py-3 toggle-elevate",
               playerFilter === 'dead' && "toggle-elevated bg-red-500/20 border-red-500/50"
             )}
             data-testid="filter-dead"
           >
-            <span className="text-4xl font-bold text-red-400/80 tabular-nums">{deadCount}</span>
-            <span className="text-sm text-muted-foreground uppercase tracking-wide">Dead</span>
+            <span className="text-3xl font-bold text-red-400/80 tabular-nums">{deadCount}</span>
+            <span className="text-xs text-muted-foreground uppercase tracking-wide">Dead</span>
           </Button>
 
+          {/* Nominate - Core Action */}
+          <Button 
+            variant="outline"
+            className="flex flex-col items-center h-auto py-3 bg-red-500/20 border-red-500/30 toggle-elevate"
+            onClick={() => {
+              setNominationPreselectedNominee(null);
+              setShowNominationDialog(true);
+            }} 
+            data-testid="button-nominate"
+          >
+            <span className="text-xl font-bold text-red-400">+</span>
+            <span className="text-xs text-muted-foreground uppercase tracking-wide">Nominate</span>
+          </Button>
         </div>
 
         {/* Chopping Block Indicator */}
@@ -2694,61 +2707,44 @@ function GameTrackerView({
           </div>
         )}
 
-        {/* Combined Navigation & Actions Row */}
-        <div className="grid grid-cols-3 gap-2 px-3 py-2.5 border-t border-border bg-muted/20">
-          {/* Left: View Toggle */}
-          <div className="flex items-center gap-0.5 p-1 bg-muted/30 rounded-lg w-fit">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setActiveTab('list')}
-              className={cn(
-                "toggle-elevate",
-                activeTab === 'list' && "toggle-elevated bg-background shadow-sm"
-              )}
-              data-testid="tab-list"
-            >
-              List
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setActiveTab('circle')}
-              className={cn(
-                "toggle-elevate",
-                activeTab === 'circle' && "toggle-elevated bg-background shadow-sm"
-              )}
-              data-testid="tab-circle"
-            >
-              Circle
-            </Button>
-          </div>
-
-          {/* Center: Game Log */}
-          <div className="flex items-center justify-center">
-            <Button
-              variant={activeTab === 'log' ? 'secondary' : 'outline'}
-              onClick={() => setActiveTab(activeTab === 'log' ? 'list' : 'log')}
-              data-testid="tab-log"
-            >
-              Game Log
-            </Button>
-          </div>
-
-          {/* Right: Nominate */}
-          <div className="flex items-center justify-end">
-            <Button 
-              variant="outline"
-              className="bg-red-500/20 border-border"
-              onClick={() => {
-                setNominationPreselectedNominee(null);
-                setShowNominationDialog(true);
-              }} 
-              data-testid="button-nominate"
-            >
-              Nominate
-            </Button>
-          </div>
+        {/* View Nav Zone - List/Circle/Log as 3 navigation buttons */}
+        <div className="grid grid-cols-3 gap-2 px-3 py-2 border-t border-border bg-muted/20">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setActiveTab('list')}
+            className={cn(
+              "toggle-elevate",
+              activeTab === 'list' && "toggle-elevated bg-background shadow-sm"
+            )}
+            data-testid="tab-list"
+          >
+            List
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setActiveTab('circle')}
+            className={cn(
+              "toggle-elevate",
+              activeTab === 'circle' && "toggle-elevated bg-background shadow-sm"
+            )}
+            data-testid="tab-circle"
+          >
+            Circle
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setActiveTab('log')}
+            className={cn(
+              "toggle-elevate",
+              activeTab === 'log' && "toggle-elevated bg-background shadow-sm"
+            )}
+            data-testid="tab-log"
+          >
+            Log
+          </Button>
         </div>
       </div>
 
