@@ -25,8 +25,8 @@ export function Navigation() {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-14 md:h-20">
           <Link href="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity" data-testid="link-logo-home">
-            <img src={logoImage} alt="The Codex" className="w-6 h-6 md:w-8 md:h-8" />
-            <span className="font-display text-lg md:text-2xl text-amber-500 tracking-wider">The Codex</span>
+            <img src={logoImage} alt="Codex" className="w-6 h-6 md:w-8 md:h-8" />
+            <span className="font-display text-lg md:text-2xl text-amber-500 tracking-wider">Codex</span>
           </Link>
 
           <div className="flex items-center space-x-2 md:space-x-6">

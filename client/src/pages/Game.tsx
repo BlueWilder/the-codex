@@ -2607,10 +2607,14 @@ function GameTrackerView({
 
         {/* Vote Info Text */}
         <div className="text-center px-4 py-2 border-b border-border text-sm text-muted-foreground">
-          <span className="text-amber-400 font-semibold">{votesNeeded}</span> Votes To Execute out of{' '}
-          <span className={cn("font-semibold", canExecute ? "text-purple-400" : "text-red-400")}>{totalVotesAvailable}</span> Possible
+          <div>
+            <span className="text-amber-400 font-semibold">{votesNeeded}</span> Votes To Execute out of{' '}
+            <span className={cn("font-semibold", canExecute ? "text-purple-400" : "text-red-400")}>{totalVotesAvailable}</span> Possible
+          </div>
           {ghostVotesAvailable > 0 && (
-            <> Including <span className="text-purple-400 font-semibold">{ghostVotesAvailable}</span> Ghost {ghostVotesAvailable === 1 ? 'Vote' : 'Votes'}</>
+            <div className="text-purple-400/80">
+              Including <span className="font-semibold">{ghostVotesAvailable}</span> Ghost {ghostVotesAvailable === 1 ? 'Vote' : 'Votes'}
+            </div>
           )}
         </div>
 
@@ -2644,18 +2648,6 @@ function GameTrackerView({
             <span className="text-sm text-muted-foreground uppercase tracking-wide">Dead</span>
           </Button>
 
-          {/* Clear filter indicator */}
-          {playerFilter !== 'all' && (
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={() => setPlayerFilter('all')}
-              data-testid="clear-filter"
-            >
-              <X className="w-3 h-3 mr-1" />
-              Clear
-            </Button>
-          )}
         </div>
 
         {/* Chopping Block Indicator */}
@@ -2697,9 +2689,9 @@ function GameTrackerView({
         )}
 
         {/* Combined Navigation & Actions Row */}
-        <div className="flex items-center justify-between gap-2 px-3 py-2.5 border-t border-border bg-muted/20">
-          {/* View Toggle: List/Circle */}
-          <div className="flex items-center gap-0.5 p-1 bg-muted/30 rounded-lg">
+        <div className="grid grid-cols-3 gap-2 px-3 py-2.5 border-t border-border bg-muted/20">
+          {/* Left: View Toggle */}
+          <div className="flex items-center gap-0.5 p-1 bg-muted/30 rounded-lg w-fit">
             <Button
               variant="ghost"
               size="sm"
@@ -2727,25 +2719,25 @@ function GameTrackerView({
           </div>
 
           {/* Center: Game Log */}
-          <Button
-            variant={activeTab === 'log' ? 'secondary' : 'ghost'}
-            size="sm"
-            onClick={() => setActiveTab(activeTab === 'log' ? 'list' : 'log')}
-            data-testid="tab-log"
-          >
-            Game Log
-          </Button>
+          <div className="flex items-center justify-center">
+            <Button
+              variant={activeTab === 'log' ? 'secondary' : 'outline'}
+              onClick={() => setActiveTab(activeTab === 'log' ? 'list' : 'log')}
+              data-testid="tab-log"
+            >
+              Game Log
+            </Button>
+          </div>
 
           {/* Right: Actions */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center justify-end gap-2">
             {aliveTravelers.length > 0 && (
-              <Button variant="outline" size="sm" onClick={() => setShowExileDialog(true)} data-testid="button-exile">
+              <Button variant="outline" onClick={() => setShowExileDialog(true)} data-testid="button-exile">
                 Exile
               </Button>
             )}
             <Button 
               variant="destructive"
-              size="sm"
               onClick={() => {
                 setNominationPreselectedNominee(null);
                 setShowNominationDialog(true);
