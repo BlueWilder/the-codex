@@ -1028,10 +1028,12 @@ function SortablePlayerCard({
   player,
   game,
   onSelect,
+  onQuickNominate,
 }: {
   player: GamePlayer;
   game: NonNullable<ReturnType<typeof usePlayerGame>["game"]>;
   onSelect: () => void;
+  onQuickNominate?: () => void;
 }) {
   const {
     attributes,
@@ -1129,18 +1131,34 @@ function SortablePlayerCard({
         ) : (
           <div className="flex-1" />
         )}
-        <div className="flex items-center gap-3 text-xs text-muted-foreground shrink-0">
-          {nominationsReceived > 0 && (
-            <span className="flex items-center gap-1 text-amber-400" data-testid={`text-nominated-${player.id}`}>
-              <GallowsIcon className="w-3.5 h-3.5" />
-              {nominationsReceived}
-            </span>
-          )}
-          {nominationsMade > 0 && (
-            <span className="flex items-center gap-1 text-purple-400" data-testid={`text-nominations-made-${player.id}`}>
-              <PointingFingerIcon className="w-3.5 h-3.5" />
-              {nominationsMade}
-            </span>
+        <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+            {nominationsReceived > 0 && (
+              <span className="flex items-center gap-1 text-amber-400" data-testid={`text-nominated-${player.id}`}>
+                <GallowsIcon className="w-3.5 h-3.5" />
+                {nominationsReceived}
+              </span>
+            )}
+            {nominationsMade > 0 && (
+              <span className="flex items-center gap-1 text-purple-400" data-testid={`text-nominations-made-${player.id}`}>
+                <PointingFingerIcon className="w-3.5 h-3.5" />
+                {nominationsMade}
+              </span>
+            )}
+          </div>
+          {onQuickNominate && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={(e) => {
+                e.stopPropagation();
+                onQuickNominate();
+              }}
+              className="text-red-400"
+              data-testid={`button-quick-nominate-${player.id}`}
+            >
+              <Target className="w-4 h-4" />
+            </Button>
           )}
         </div>
       </div>
@@ -1156,6 +1174,7 @@ function NominationDialog({
   hasNominatedToday,
   onCreateNomination,
   onCreateQuickNomination,
+  preselectedNomineeId,
 }: {
   open: boolean;
   onClose: () => void;
@@ -1164,6 +1183,7 @@ function NominationDialog({
   hasNominatedToday: (playerId: string) => boolean;
   onCreateNomination: (nomineeId: string, nominatorId: string, votes: PlayerVote[]) => void;
   onCreateQuickNomination: (nomineeId: string, nominatorId: string, yesVotes: number, result: NominationResult) => void;
+  preselectedNomineeId?: string | null;
 }) {
   // Steps: 1=nominee, 2=nominator, 3=choose mode, 4=full vote record, 5=quick log
   const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1);
@@ -1173,6 +1193,14 @@ function NominationDialog({
   // Quick log state
   const [quickVoteCount, setQuickVoteCount] = useState<string>("");
   const [quickResult, setQuickResult] = useState<NominationResult>("failed");
+
+  // Handle preselected nominee when dialog opens
+  useEffect(() => {
+    if (open && preselectedNomineeId) {
+      setNomineeId(preselectedNomineeId);
+      setStep(2);
+    }
+  }, [open, preselectedNomineeId]);
 
   const reset = () => {
     setStep(1);
@@ -2338,6 +2366,7 @@ function GameTrackerView({
   const [confirmEnd, setConfirmEnd] = useState(false);
   const [showPlayAgainConfirm, setShowPlayAgainConfirm] = useState(false);
   const [showNominationDialog, setShowNominationDialog] = useState(false);
+  const [nominationPreselectedNominee, setNominationPreselectedNominee] = useState<string | null>(null);
   const [showAddTravelerDialog, setShowAddTravelerDialog] = useState(false);
   const [showAddPlayerDialog, setShowAddPlayerDialog] = useState(false);
   const [showExileDialog, setShowExileDialog] = useState(false);
@@ -2347,6 +2376,7 @@ function GameTrackerView({
   const [activeTab, setActiveTab] = useState<'list' | 'circle' | 'log'>('list');
   const [showScriptBuilder, setShowScriptBuilder] = useState(false);
   const [editingScript, setEditingScript] = useState<LocalScript | null>(null);
+  const [playerFilter, setPlayerFilter] = useState<'all' | 'alive' | 'dead'>('all');
   const { getScriptById, isLoading: scriptsLoading, allScripts, addCustomScript, updateCustomScript, customScripts } = useLocalScripts();
   
   const resolvedScript = game.script ? getScriptById(game.script.id) : null;
@@ -2393,6 +2423,27 @@ function GameTrackerView({
   const totalVotesAvailable = aliveCount + ghostVotesAvailable;
   const todayNominations = game.nominations.filter(n => n.day === game.currentDay);
   const canExecute = totalVotesAvailable >= votesNeeded;
+
+  // Filter players based on current filter
+  const filteredPlayers = useMemo(() => {
+    if (playerFilter === 'alive') {
+      return game.players.filter(p => p.status === 'alive');
+    } else if (playerFilter === 'dead') {
+      return game.players.filter(p => p.status !== 'alive');
+    }
+    return game.players;
+  }, [game.players, playerFilter]);
+
+  // Toggle filter on tap
+  const toggleFilter = (filter: 'alive' | 'dead') => {
+    setPlayerFilter(prev => prev === filter ? 'all' : filter);
+  };
+
+  // Quick nominate handler
+  const handleQuickNominate = (playerId: string) => {
+    setNominationPreselectedNominee(playerId);
+    setShowNominationDialog(true);
+  };
 
   return (
     <div className="space-y-4">
@@ -2518,6 +2569,13 @@ function GameTrackerView({
                     Add Player
                   </DropdownMenuItem>
                   <DropdownMenuItem 
+                    onClick={() => setShowAddTravelerDialog(true)}
+                    data-testid="button-add-traveler-menu"
+                  >
+                    <Theater className="w-4 h-4 mr-2" />
+                    Add Traveler
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
                     onClick={() => setShowPlayAgainConfirm(true)}
                     data-testid="button-play-again"
                   >
@@ -2564,53 +2622,73 @@ function GameTrackerView({
           </Button>
         </div>
 
-        {/* 2x2 Stats Grid */}
-        <div className="grid grid-cols-2">
-          {/* Alive */}
-          <div className="p-4 text-center border-r border-b border-border">
-            <div className="flex items-center justify-center gap-2">
-              <Users className="w-5 h-5 text-emerald-500/70" />
-              <span className="text-2xl font-bold text-emerald-400 tabular-nums">{aliveCount}</span>
-            </div>
-            <div className="text-xs text-muted-foreground mt-1">Alive</div>
-          </div>
+        {/* Compact Stats Row */}
+        <div className="flex items-center justify-between gap-1 px-2 py-2 border-b border-border">
+          {/* Alive - Interactive Filter */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => toggleFilter('alive')}
+            className={cn(
+              "toggle-elevate",
+              playerFilter === 'alive' && "toggle-elevated bg-emerald-500/20"
+            )}
+            data-testid="filter-alive"
+          >
+            <Users className="w-4 h-4 text-emerald-500/80" />
+            <span className="text-lg font-bold text-emerald-400 tabular-nums">{aliveCount}</span>
+          </Button>
 
-          {/* Dead with Ghost Votes */}
-          <div className="p-4 text-center border-b border-border">
-            <div className="flex items-center justify-center gap-2">
-              <Skull className="w-5 h-5 text-red-500/70" />
-              <span className="text-2xl font-bold text-red-400/80 tabular-nums">
-                {deadCount}
-                {deadCount > 0 && (
-                  <span className="text-sm font-normal text-purple-400 ml-1">
-                    ({ghostVotesAvailable}<Ghost className="w-3 h-3 inline ml-0.5" />)
-                  </span>
-                )}
+          {/* Dead - Interactive Filter */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => toggleFilter('dead')}
+            className={cn(
+              "toggle-elevate",
+              playerFilter === 'dead' && "toggle-elevated bg-red-500/20"
+            )}
+            data-testid="filter-dead"
+          >
+            <Skull className="w-4 h-4 text-red-500/80" />
+            <span className="text-lg font-bold text-red-400/80 tabular-nums">{deadCount}</span>
+            {ghostVotesAvailable > 0 && (
+              <span className="text-xs text-purple-400">
+                <Ghost className="w-3 h-3 inline" />{ghostVotesAvailable}
               </span>
-            </div>
-            <div className="text-xs text-muted-foreground mt-1">Dead</div>
-          </div>
+            )}
+          </Button>
+
+          {/* Separator */}
+          <div className="w-px h-6 bg-border" />
 
           {/* Votes to Execute */}
-          <div className="p-4 text-center border-r border-border">
-            <div className="flex items-center justify-center gap-2">
-              <Scale className="w-5 h-5 text-amber-500/70" />
-              <span className="text-2xl font-bold text-amber-400 tabular-nums">{votesNeeded}</span>
-            </div>
-            <div className="text-xs text-muted-foreground mt-1">To Exec</div>
+          <div className="flex items-center gap-1.5 px-2 py-1.5">
+            <Scale className="w-4 h-4 text-amber-500/80" />
+            <span className="text-lg font-bold text-amber-400 tabular-nums">{votesNeeded}</span>
           </div>
 
           {/* Available Votes */}
-          <div className="p-4 text-center">
-            <div className="flex items-center justify-center gap-2">
-              <Hand className="w-5 h-5 text-purple-500/70" />
-              <span className={cn(
-                "text-2xl font-bold tabular-nums",
-                canExecute ? "text-purple-400" : "text-red-400"
-              )}>{totalVotesAvailable}</span>
-            </div>
-            <div className="text-xs text-muted-foreground mt-1">Can Vote</div>
+          <div className="flex items-center gap-1.5 px-2 py-1.5">
+            <Hand className="w-4 h-4 text-purple-500/80" />
+            <span className={cn(
+              "text-lg font-bold tabular-nums",
+              canExecute ? "text-purple-400" : "text-red-400"
+            )}>{totalVotesAvailable}</span>
           </div>
+
+          {/* Clear filter indicator */}
+          {playerFilter !== 'all' && (
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => setPlayerFilter('all')}
+              data-testid="clear-filter"
+            >
+              <X className="w-3 h-3 mr-1" />
+              Clear
+            </Button>
+          )}
         </div>
 
         {/* Chopping Block Indicator */}
@@ -2699,10 +2777,6 @@ function GameTrackerView({
 
         {/* Action Bar */}
         <div className="flex items-center justify-center gap-2 px-3 py-2.5 border-t border-border bg-muted/20">
-          <Button variant="outline" onClick={() => setShowAddTravelerDialog(true)} data-testid="button-add-traveler">
-            <Plus className="w-4 h-4 mr-1.5" />
-            Traveler
-          </Button>
           {aliveTravelers.length > 0 && (
             <Button variant="outline" onClick={() => setShowExileDialog(true)} data-testid="button-exile">
               Exile
@@ -2710,7 +2784,10 @@ function GameTrackerView({
           )}
           <Button 
             variant="destructive"
-            onClick={() => setShowNominationDialog(true)} 
+            onClick={() => {
+              setNominationPreselectedNominee(null);
+              setShowNominationDialog(true);
+            }} 
             data-testid="button-nominate"
           >
             <Target className="w-4 h-4 mr-1.5" />
@@ -2722,14 +2799,15 @@ function GameTrackerView({
       {/* Tab Content */}
       {activeTab === 'list' && (
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-          <SortableContext items={game.players.map(p => p.id)} strategy={rectSortingStrategy}>
+          <SortableContext items={filteredPlayers.map(p => p.id)} strategy={rectSortingStrategy}>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {game.players.map((player) => (
+              {filteredPlayers.map((player) => (
                 <SortablePlayerCard
                   key={player.id}
                   player={player}
                   game={game}
                   onSelect={() => setSelectedPlayerId(player.id)}
+                  onQuickNominate={!player.isTraveler && player.status === 'alive' && !hasBeenNominatedToday(player.id) ? () => handleQuickNominate(player.id) : undefined}
                 />
               ))}
             </div>
@@ -2773,12 +2851,16 @@ function GameTrackerView({
 
       <NominationDialog
         open={showNominationDialog}
-        onClose={() => setShowNominationDialog(false)}
+        onClose={() => {
+          setShowNominationDialog(false);
+          setNominationPreselectedNominee(null);
+        }}
         players={game.players}
         hasBeenNominatedToday={hasBeenNominatedToday}
         hasNominatedToday={hasNominatedToday}
         onCreateNomination={onCreateNomination}
         onCreateQuickNomination={onCreateQuickNomination}
+        preselectedNomineeId={nominationPreselectedNominee}
       />
 
       <ChoppingBlockModal
