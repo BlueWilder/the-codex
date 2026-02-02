@@ -5,7 +5,7 @@ import { ALL_CHARACTERS, OFFICIAL_SCRIPTS } from "@/lib/game-data";
 import { useLocalScripts, type LocalScript } from "@/hooks/use-local-scripts";
 import { ScriptBuilderDialog } from "@/components/ScriptBuilderDialog";
 import { InlineGameLog } from "@/components/InlineGameLog";
-import { Users, ChevronRight, ChevronLeft, Play, Skull, X, Plus, Check, Hand, Search, Sun, Moon, ChevronUp, ChevronDown, FileText, Theater, Vote, Loader2, Ghost, GripVertical, UserPlus, ArrowRight, Target, Scale, Scroll, BookOpen, HandMetal, Ban, LogOut, Trash2, List, Circle, Pencil, MoreVertical, RotateCcw, Info, ExternalLink } from "lucide-react";
+import { ChevronRight, ChevronLeft, Play, X, Plus, Check, Search, Moon, ChevronUp, ChevronDown, FileText, Vote, Loader2, GripVertical, UserPlus, ArrowRight, BookOpen, HandMetal, Ban, LogOut, Trash2, Pencil, MoreVertical, RotateCcw, Info, ExternalLink, Users, Skull, Ghost, Scroll, Hand, Target, Theater } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -1028,12 +1028,10 @@ function SortablePlayerCard({
   player,
   game,
   onSelect,
-  onQuickNominate,
 }: {
   player: GamePlayer;
   game: NonNullable<ReturnType<typeof usePlayerGame>["game"]>;
   onSelect: () => void;
-  onQuickNominate?: () => void;
 }) {
   const {
     attributes,
@@ -1146,20 +1144,6 @@ function SortablePlayerCard({
               </span>
             )}
           </div>
-          {onQuickNominate && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={(e) => {
-                e.stopPropagation();
-                onQuickNominate();
-              }}
-              className="text-red-400"
-              data-testid={`button-quick-nominate-${player.id}`}
-            >
-              <Target className="w-4 h-4" />
-            </Button>
-          )}
         </div>
       </div>
     </Card>
@@ -2609,7 +2593,6 @@ function GameTrackerView({
             <ChevronLeft className="w-5 h-5" />
           </Button>
           <div className="flex items-center justify-center gap-2 flex-1 mx-4 py-2 bg-amber-900/30 border border-amber-700/30 rounded-md">
-            <Sun className="w-5 h-5 text-amber-500" />
             <span className="font-display text-xl text-amber-400">Day {game.currentDay}</span>
           </div>
           <Button
@@ -2622,59 +2605,51 @@ function GameTrackerView({
           </Button>
         </div>
 
-        {/* Compact Stats Row */}
-        <div className="flex items-center justify-between gap-1 px-2 py-2 border-b border-border">
+        {/* Stats Row - Big Numbers with Text Labels */}
+        <div className="flex items-center justify-around px-3 py-3 border-b border-border">
           {/* Alive - Interactive Filter */}
           <Button
             variant="ghost"
-            size="sm"
             onClick={() => toggleFilter('alive')}
             className={cn(
-              "toggle-elevate",
+              "flex flex-col items-center h-auto py-2 px-4 toggle-elevate",
               playerFilter === 'alive' && "toggle-elevated bg-emerald-500/20"
             )}
             data-testid="filter-alive"
           >
-            <Users className="w-4 h-4 text-emerald-500/80" />
-            <span className="text-lg font-bold text-emerald-400 tabular-nums">{aliveCount}</span>
+            <span className="text-3xl font-bold text-emerald-400 tabular-nums">{aliveCount}</span>
+            <span className="text-xs text-muted-foreground uppercase tracking-wide">Alive</span>
           </Button>
 
           {/* Dead - Interactive Filter */}
           <Button
             variant="ghost"
-            size="sm"
             onClick={() => toggleFilter('dead')}
             className={cn(
-              "toggle-elevate",
+              "flex flex-col items-center h-auto py-2 px-4 toggle-elevate",
               playerFilter === 'dead' && "toggle-elevated bg-red-500/20"
             )}
             data-testid="filter-dead"
           >
-            <Skull className="w-4 h-4 text-red-500/80" />
-            <span className="text-lg font-bold text-red-400/80 tabular-nums">{deadCount}</span>
-            {ghostVotesAvailable > 0 && (
-              <span className="text-xs text-purple-400">
-                <Ghost className="w-3 h-3 inline" />{ghostVotesAvailable}
-              </span>
-            )}
+            <span className="text-3xl font-bold text-red-400/80 tabular-nums">{deadCount}</span>
+            <span className="text-xs text-muted-foreground uppercase tracking-wide">
+              Dead{ghostVotesAvailable > 0 && ` (${ghostVotesAvailable} votes)`}
+            </span>
           </Button>
 
-          {/* Separator */}
-          <div className="w-px h-6 bg-border" />
-
           {/* Votes to Execute */}
-          <div className="flex items-center gap-1.5 px-2 py-1.5">
-            <Scale className="w-4 h-4 text-amber-500/80" />
-            <span className="text-lg font-bold text-amber-400 tabular-nums">{votesNeeded}</span>
+          <div className="flex flex-col items-center px-4 py-2">
+            <span className="text-3xl font-bold text-amber-400 tabular-nums">{votesNeeded}</span>
+            <span className="text-xs text-muted-foreground uppercase tracking-wide">To Exec</span>
           </div>
 
           {/* Available Votes */}
-          <div className="flex items-center gap-1.5 px-2 py-1.5">
-            <Hand className="w-4 h-4 text-purple-500/80" />
+          <div className="flex flex-col items-center px-4 py-2">
             <span className={cn(
-              "text-lg font-bold tabular-nums",
+              "text-3xl font-bold tabular-nums",
               canExecute ? "text-purple-400" : "text-red-400"
             )}>{totalVotesAvailable}</span>
+            <span className="text-xs text-muted-foreground uppercase tracking-wide">Votes</span>
           </div>
 
           {/* Clear filter indicator */}
@@ -2718,7 +2693,6 @@ function GameTrackerView({
         {/* Traveler Row - Conditional */}
         {travelers.length > 0 && (
           <div className="flex items-center justify-center gap-2 px-3 py-2 border-t border-border bg-purple-950/20">
-            <Theater className="w-4 h-4 text-purple-400/70" />
             <span className="text-sm text-purple-300">
               {aliveTravelers.length}/{travelers.length} Travelers
               {(exiledCount > 0 || leftCount > 0) && (
@@ -2730,49 +2704,45 @@ function GameTrackerView({
           </div>
         )}
 
-        {/* Tab Navigation */}
-        <div className="border-t border-border">
-          <div className="grid grid-cols-3">
-            <button
+        {/* Tab Navigation - Simplified */}
+        <div className="flex items-center justify-between px-3 py-2 border-t border-border">
+          {/* View Toggle: List/Circle */}
+          <div className="flex items-center gap-0.5 p-1 bg-muted/30 rounded-lg">
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => setActiveTab('list')}
               className={cn(
-                "py-2.5 text-sm font-medium text-center border-b-2 transition-colors",
-                activeTab === 'list' 
-                  ? "border-amber-500 text-amber-400 bg-amber-950/20" 
-                  : "border-transparent text-muted-foreground hover-elevate"
+                "toggle-elevate",
+                activeTab === 'list' && "toggle-elevated bg-background shadow-sm"
               )}
               data-testid="tab-list"
             >
-              <List className="w-4 h-4 inline mr-1.5" />
               List
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => setActiveTab('circle')}
               className={cn(
-                "py-2.5 text-sm font-medium text-center border-b-2 transition-colors",
-                activeTab === 'circle' 
-                  ? "border-amber-500 text-amber-400 bg-amber-950/20" 
-                  : "border-transparent text-muted-foreground hover-elevate"
+                "toggle-elevate",
+                activeTab === 'circle' && "toggle-elevated bg-background shadow-sm"
               )}
               data-testid="tab-circle"
             >
-              <Circle className="w-4 h-4 inline mr-1.5" />
               Circle
-            </button>
-            <button
-              onClick={() => setActiveTab('log')}
-              className={cn(
-                "py-2.5 text-sm font-medium text-center border-b-2 transition-colors",
-                activeTab === 'log' 
-                  ? "border-amber-500 text-amber-400 bg-amber-950/20" 
-                  : "border-transparent text-muted-foreground hover-elevate"
-              )}
-              data-testid="tab-log"
-            >
-              <Scroll className="w-4 h-4 inline mr-1.5" />
-              Log
-            </button>
+            </Button>
           </div>
+
+          {/* Log Button */}
+          <Button
+            variant={activeTab === 'log' ? 'secondary' : 'ghost'}
+            size="sm"
+            onClick={() => setActiveTab(activeTab === 'log' ? 'list' : 'log')}
+            data-testid="tab-log"
+          >
+            Game Log
+          </Button>
         </div>
 
         {/* Action Bar */}
@@ -2790,7 +2760,6 @@ function GameTrackerView({
             }} 
             data-testid="button-nominate"
           >
-            <Target className="w-4 h-4 mr-1.5" />
             Nominate
           </Button>
         </div>
@@ -2807,7 +2776,6 @@ function GameTrackerView({
                   player={player}
                   game={game}
                   onSelect={() => setSelectedPlayerId(player.id)}
-                  onQuickNominate={!player.isTraveler && player.status === 'alive' && !hasBeenNominatedToday(player.id) ? () => handleQuickNominate(player.id) : undefined}
                 />
               ))}
             </div>
