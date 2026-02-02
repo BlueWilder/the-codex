@@ -2587,18 +2587,18 @@ function GameTrackerView({
             variant="outline"
             onClick={onPrevDay}
             disabled={game.currentDay <= 1}
-            className="px-4"
+            className="px-6"
             data-testid="button-prev-day"
           >
             <ChevronLeft className="w-5 h-5" />
           </Button>
-          <div className="flex items-center justify-center py-2 px-6 bg-amber-900/30 border border-amber-700/30 rounded-md">
+          <div className="flex items-center justify-center py-2 px-4 bg-amber-900/30 border border-amber-700/30 rounded-md">
             <span className="font-display text-xl text-amber-400">Day {game.currentDay}</span>
           </div>
           <Button
             variant="outline"
             onClick={handleNextDay}
-            className="px-4"
+            className="px-6"
             data-testid="button-next-day"
           >
             <ChevronRight className="w-5 h-5" />

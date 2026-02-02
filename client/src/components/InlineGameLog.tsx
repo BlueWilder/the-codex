@@ -263,6 +263,23 @@ export function InlineGameLog({ game, onUpdateGameNotes }: InlineGameLogProps) {
   
   return (
     <Card className="p-4">
+      {/* Game Notes Section - At the top */}
+      <div className="mb-4 pb-4 border-b border-border">
+        <div className="flex items-center gap-2 mb-3">
+          <FileText className="w-4 h-4 text-muted-foreground" />
+          <span className="text-sm font-display text-muted-foreground">
+            Notes
+          </span>
+        </div>
+        <Textarea
+          value={game.gameNotes || ''}
+          onChange={(e) => onUpdateGameNotes(e.target.value)}
+          placeholder="Add game notes... (demon bluffs, theories, whisper tracking)"
+          className="min-h-[100px] bg-muted/30 border-border resize-none"
+          data-testid="input-game-notes"
+        />
+      </div>
+      
       <div className="flex flex-wrap gap-1 mb-4">
         {filterButtons.map(fb => (
           <Badge
@@ -340,22 +357,6 @@ export function InlineGameLog({ game, onUpdateGameNotes }: InlineGameLogProps) {
         </div>
       )}
       
-      {/* Game Notes Section - Always visible regardless of filter */}
-      <div className="mt-6 pt-4 border-t border-border">
-        <div className="flex items-center gap-2 mb-3">
-          <FileText className="w-4 h-4 text-muted-foreground" />
-          <span className="text-sm font-display text-muted-foreground">
-            Notes
-          </span>
-        </div>
-        <Textarea
-          value={game.gameNotes || ''}
-          onChange={(e) => onUpdateGameNotes(e.target.value)}
-          placeholder="Add game notes... (demon bluffs, theories, whisper tracking)"
-          className="min-h-[100px] bg-muted/30 border-border resize-none"
-          data-testid="input-game-notes"
-        />
-      </div>
     </Card>
   );
 }
