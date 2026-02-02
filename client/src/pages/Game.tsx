@@ -2581,76 +2581,68 @@ function GameTrackerView({
           </DropdownMenu>
         </div>
 
-        {/* Day Row - Full Width Action Style */}
-        <div className="flex items-center justify-between px-3 py-3 border-b border-border bg-amber-950/10">
+        {/* Day Row - Wider Arrows, Narrower Badge */}
+        <div className="flex items-center justify-between gap-2 px-3 py-3 border-b border-border bg-amber-950/10">
           <Button
             variant="outline"
-            size="icon"
             onClick={onPrevDay}
             disabled={game.currentDay <= 1}
+            className="px-4"
             data-testid="button-prev-day"
           >
             <ChevronLeft className="w-5 h-5" />
           </Button>
-          <div className="flex items-center justify-center gap-2 flex-1 mx-4 py-2 bg-amber-900/30 border border-amber-700/30 rounded-md">
+          <div className="flex items-center justify-center py-2 px-6 bg-amber-900/30 border border-amber-700/30 rounded-md">
             <span className="font-display text-xl text-amber-400">Day {game.currentDay}</span>
           </div>
           <Button
             variant="outline"
-            size="icon"
             onClick={handleNextDay}
+            className="px-4"
             data-testid="button-next-day"
           >
             <ChevronRight className="w-5 h-5" />
           </Button>
         </div>
 
-        {/* Stats Row - Big Numbers with Text Labels */}
-        <div className="flex items-center justify-around px-3 py-3 border-b border-border">
+        {/* Vote Info Text */}
+        <div className="text-center px-4 py-2 border-b border-border text-sm text-muted-foreground">
+          <span className="text-amber-400 font-semibold">{votesNeeded}</span> Votes To Execute out of{' '}
+          <span className={cn("font-semibold", canExecute ? "text-purple-400" : "text-red-400")}>{totalVotesAvailable}</span> Possible
+          {ghostVotesAvailable > 0 && (
+            <> Including <span className="text-purple-400 font-semibold">{ghostVotesAvailable}</span> Ghost {ghostVotesAvailable === 1 ? 'Vote' : 'Votes'}</>
+          )}
+        </div>
+
+        {/* Stats Row - Just Alive/Dead as Large Buttons */}
+        <div className="flex items-center justify-center gap-6 px-3 py-3 border-b border-border">
           {/* Alive - Interactive Filter */}
           <Button
-            variant="ghost"
+            variant="outline"
             onClick={() => toggleFilter('alive')}
             className={cn(
-              "flex flex-col items-center h-auto py-2 px-4 toggle-elevate",
-              playerFilter === 'alive' && "toggle-elevated bg-emerald-500/20"
+              "flex flex-col items-center h-auto py-3 px-8 toggle-elevate",
+              playerFilter === 'alive' && "toggle-elevated bg-emerald-500/20 border-emerald-500/50"
             )}
             data-testid="filter-alive"
           >
-            <span className="text-3xl font-bold text-emerald-400 tabular-nums">{aliveCount}</span>
-            <span className="text-xs text-muted-foreground uppercase tracking-wide">Alive</span>
+            <span className="text-4xl font-bold text-emerald-400 tabular-nums">{aliveCount}</span>
+            <span className="text-sm text-muted-foreground uppercase tracking-wide">Alive</span>
           </Button>
 
           {/* Dead - Interactive Filter */}
           <Button
-            variant="ghost"
+            variant="outline"
             onClick={() => toggleFilter('dead')}
             className={cn(
-              "flex flex-col items-center h-auto py-2 px-4 toggle-elevate",
-              playerFilter === 'dead' && "toggle-elevated bg-red-500/20"
+              "flex flex-col items-center h-auto py-3 px-8 toggle-elevate",
+              playerFilter === 'dead' && "toggle-elevated bg-red-500/20 border-red-500/50"
             )}
             data-testid="filter-dead"
           >
-            <span className="text-3xl font-bold text-red-400/80 tabular-nums">{deadCount}</span>
-            <span className="text-xs text-muted-foreground uppercase tracking-wide">
-              Dead{ghostVotesAvailable > 0 && ` (${ghostVotesAvailable} votes)`}
-            </span>
+            <span className="text-4xl font-bold text-red-400/80 tabular-nums">{deadCount}</span>
+            <span className="text-sm text-muted-foreground uppercase tracking-wide">Dead</span>
           </Button>
-
-          {/* Votes to Execute */}
-          <div className="flex flex-col items-center px-4 py-2">
-            <span className="text-3xl font-bold text-amber-400 tabular-nums">{votesNeeded}</span>
-            <span className="text-xs text-muted-foreground uppercase tracking-wide">To Exec</span>
-          </div>
-
-          {/* Available Votes */}
-          <div className="flex flex-col items-center px-4 py-2">
-            <span className={cn(
-              "text-3xl font-bold tabular-nums",
-              canExecute ? "text-purple-400" : "text-red-400"
-            )}>{totalVotesAvailable}</span>
-            <span className="text-xs text-muted-foreground uppercase tracking-wide">Votes</span>
-          </div>
 
           {/* Clear filter indicator */}
           {playerFilter !== 'all' && (
@@ -2704,8 +2696,8 @@ function GameTrackerView({
           </div>
         )}
 
-        {/* Tab Navigation - Simplified */}
-        <div className="flex items-center justify-between px-3 py-2 border-t border-border">
+        {/* Combined Navigation & Actions Row */}
+        <div className="flex items-center justify-between gap-2 px-3 py-2.5 border-t border-border bg-muted/20">
           {/* View Toggle: List/Circle */}
           <div className="flex items-center gap-0.5 p-1 bg-muted/30 rounded-lg">
             <Button
@@ -2734,7 +2726,7 @@ function GameTrackerView({
             </Button>
           </div>
 
-          {/* Log Button */}
+          {/* Center: Game Log */}
           <Button
             variant={activeTab === 'log' ? 'secondary' : 'ghost'}
             size="sm"
@@ -2743,25 +2735,26 @@ function GameTrackerView({
           >
             Game Log
           </Button>
-        </div>
 
-        {/* Action Bar */}
-        <div className="flex items-center justify-center gap-2 px-3 py-2.5 border-t border-border bg-muted/20">
-          {aliveTravelers.length > 0 && (
-            <Button variant="outline" onClick={() => setShowExileDialog(true)} data-testid="button-exile">
-              Exile
+          {/* Right: Actions */}
+          <div className="flex items-center gap-2">
+            {aliveTravelers.length > 0 && (
+              <Button variant="outline" size="sm" onClick={() => setShowExileDialog(true)} data-testid="button-exile">
+                Exile
+              </Button>
+            )}
+            <Button 
+              variant="destructive"
+              size="sm"
+              onClick={() => {
+                setNominationPreselectedNominee(null);
+                setShowNominationDialog(true);
+              }} 
+              data-testid="button-nominate"
+            >
+              Nominate
             </Button>
-          )}
-          <Button 
-            variant="destructive"
-            onClick={() => {
-              setNominationPreselectedNominee(null);
-              setShowNominationDialog(true);
-            }} 
-            data-testid="button-nominate"
-          >
-            Nominate
-          </Button>
+          </div>
         </div>
       </div>
 
