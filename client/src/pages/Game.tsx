@@ -2677,7 +2677,7 @@ function GameTrackerView({
 
         {/* Traveler Row - Conditional */}
         {travelers.length > 0 && (
-          <div className="flex items-center justify-center gap-2 px-3 py-2 border-t border-border bg-purple-950/20">
+          <div className="flex items-center justify-between gap-3 flex-wrap px-3 py-2 border-t border-border bg-purple-950/20">
             <span className="text-sm text-purple-300">
               {aliveTravelers.length}/{travelers.length} Travelers
               {(exiledCount > 0 || leftCount > 0) && (
@@ -2686,6 +2686,11 @@ function GameTrackerView({
                 </span>
               )}
             </span>
+            {aliveTravelers.length > 0 && (
+              <Button variant="outline" size="sm" onClick={() => setShowExileDialog(true)} data-testid="button-exile">
+                Exile
+              </Button>
+            )}
           </div>
         )}
 
@@ -2730,13 +2735,8 @@ function GameTrackerView({
             </Button>
           </div>
 
-          {/* Right: Actions */}
-          <div className="flex items-center justify-end gap-2">
-            {aliveTravelers.length > 0 && (
-              <Button variant="outline" onClick={() => setShowExileDialog(true)} data-testid="button-exile">
-                Exile
-              </Button>
-            )}
+          {/* Right: Nominate */}
+          <div className="flex items-center justify-end">
             <Button 
               variant="outline"
               className="bg-red-500/20 border-border"
