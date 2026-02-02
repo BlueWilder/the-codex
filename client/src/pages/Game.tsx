@@ -2739,6 +2739,7 @@ function GameTrackerView({
             )}
             <Button 
               variant="outline"
+              className="bg-red-500/20 border-border"
               onClick={() => {
                 setNominationPreselectedNominee(null);
                 setShowNominationDialog(true);
