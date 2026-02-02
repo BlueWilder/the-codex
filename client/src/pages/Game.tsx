@@ -5,7 +5,7 @@ import { ALL_CHARACTERS, OFFICIAL_SCRIPTS } from "@/lib/game-data";
 import { useLocalScripts, type LocalScript } from "@/hooks/use-local-scripts";
 import { ScriptBuilderDialog } from "@/components/ScriptBuilderDialog";
 import { InlineGameLog } from "@/components/InlineGameLog";
-import { Users, ChevronRight, ChevronLeft, Play, Skull, X, Plus, Check, Hand, Search, Sun, Moon, ChevronUp, ChevronDown, FileText, Theater, Vote, Loader2, Ghost, GripVertical, UserPlus, ArrowRight, Target, Scale, Scroll, BookOpen, HandMetal, Ban, LogOut, Trash2, List, Circle, Pencil, MoreVertical, RotateCcw } from "lucide-react";
+import { Users, ChevronRight, ChevronLeft, Play, Skull, X, Plus, Check, Hand, Search, Sun, Moon, ChevronUp, ChevronDown, FileText, Theater, Vote, Loader2, Ghost, GripVertical, UserPlus, ArrowRight, Target, Scale, Scroll, BookOpen, HandMetal, Ban, LogOut, Trash2, List, Circle, Pencil, MoreVertical, RotateCcw, Info, ExternalLink } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -543,6 +543,7 @@ function PlayerDetailDrawer({
   const [isEditingName, setIsEditingName] = useState(false);
   const [editedName, setEditedName] = useState("");
   const [showRemoveConfirm, setShowRemoveConfirm] = useState(false);
+  const [previewCharacter, setPreviewCharacter] = useState<typeof ALL_CHARACTERS[0] | null>(null);
 
   if (!player) return null;
 
@@ -734,7 +735,40 @@ function PlayerDetailDrawer({
                 </div>
               )}
 
-              <div className="space-y-3">
+              {/* Claims Section - Primary focus */}
+              <div className="rounded-lg bg-card/50 border border-border/50 p-4 space-y-3">
+                <div className="flex items-center justify-between gap-2">
+                  <h3 className="font-bold text-sm uppercase tracking-wider text-amber-500/80 flex items-center gap-2">
+                    <Theater className="w-4 h-4" /> Claims
+                  </h3>
+                  <Button size="sm" variant="outline" className="border-amber-800/50 text-amber-400" onClick={() => setShowCharacterPicker(true)} data-testid="button-add-claim">
+                    <Plus className="w-4 h-4 mr-1" /> Add
+                  </Button>
+                </div>
+                {claimedCharacters.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {claimedCharacters.map(char => char && (
+                      <Badge
+                        key={char.id}
+                        className={cn(
+                          "cursor-pointer gap-1.5",
+                          TEAM_COLORS[char.team]
+                        )}
+                        onClick={() => setPreviewCharacter(char)}
+                        data-testid={`badge-claim-${char.id}`}
+                      >
+                        {char.name}
+                        <Info className="w-3 h-3 opacity-60" />
+                      </Badge>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground italic">No claims recorded</p>
+                )}
+              </div>
+
+              {/* Notes Section */}
+              <div className="rounded-lg bg-card/30 border border-border/30 p-4 space-y-3">
                 <div className="flex items-center justify-between gap-2">
                   <h3 className="font-bold text-sm uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                     <FileText className="w-4 h-4" /> Notes
@@ -744,40 +778,13 @@ function PlayerDetailDrawer({
                   value={player.notes}
                   onChange={(e) => onSetNotes(e.target.value)}
                   placeholder="Add notes about this player..."
-                  className="min-h-[100px] resize-none"
+                  className="min-h-[80px] resize-none bg-background/50"
                   data-testid="textarea-notes"
                 />
               </div>
 
-              <div className="space-y-3">
-                <div className="flex items-center justify-between gap-2">
-                  <h3 className="font-bold text-sm uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                    <Theater className="w-4 h-4" /> Claims
-                  </h3>
-                  <Button size="sm" variant="ghost" onClick={() => setShowCharacterPicker(true)} data-testid="button-add-claim">
-                    <Plus className="w-4 h-4 mr-1" /> Add
-                  </Button>
-                </div>
-                {claimedCharacters.length > 0 ? (
-                  <div className="flex flex-wrap gap-2">
-                    {claimedCharacters.map(char => char && (
-                      <Badge
-                        key={char.id}
-                        className={cn("cursor-pointer gap-1", TEAM_COLORS[char.team])}
-                        onClick={() => onRemoveClaim(char.id)}
-                        data-testid={`badge-claim-${char.id}`}
-                      >
-                        {char.name}
-                        <X className="w-3 h-3" />
-                      </Badge>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground italic">No claims recorded</p>
-                )}
-              </div>
-
-              <div className="space-y-3">
+              {/* Nomination History Section */}
+              <div className="rounded-lg bg-card/30 border border-border/30 p-4 space-y-3">
                 <div className="flex items-center justify-between gap-2">
                   <h3 className="font-bold text-sm uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                     <Vote className="w-4 h-4" /> Nomination History
@@ -929,6 +936,84 @@ function PlayerDetailDrawer({
         excludeIds={player.claims}
         scriptCharacterIds={scriptCharacterIds}
       />
+
+      {/* Character Preview Dialog */}
+      <Dialog open={!!previewCharacter} onOpenChange={(open) => !open && setPreviewCharacter(null)}>
+        <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
+          {previewCharacter && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-3">
+                  <span className={cn(
+                    "px-2 py-0.5 rounded text-xs uppercase tracking-wider",
+                    TEAM_COLORS[previewCharacter.team]
+                  )}>
+                    {previewCharacter.team}
+                  </span>
+                  <span className="text-amber-400 font-display">{previewCharacter.name}</span>
+                </DialogTitle>
+              </DialogHeader>
+              
+              <div className="space-y-4 mt-4">
+                {/* Ability */}
+                <div className="space-y-2">
+                  <h4 className="text-xs uppercase tracking-wider text-muted-foreground font-bold">Ability</h4>
+                  <p className="text-sm leading-relaxed text-foreground/90 italic">"{previewCharacter.ability}"</p>
+                </div>
+
+                {/* Extended Summary */}
+                {previewCharacter.extendedSummary && (
+                  <div className="space-y-2">
+                    <h4 className="text-xs uppercase tracking-wider text-muted-foreground font-bold">How it Works</h4>
+                    <p className="text-sm leading-relaxed text-foreground/80">{previewCharacter.extendedSummary}</p>
+                  </div>
+                )}
+
+                {/* Tips (first 3) */}
+                {previewCharacter.tipsAndTricks && previewCharacter.tipsAndTricks.length > 0 && (
+                  <div className="space-y-2">
+                    <h4 className="text-xs uppercase tracking-wider text-muted-foreground font-bold">Tips</h4>
+                    <ul className="text-sm space-y-1 text-foreground/80">
+                      {previewCharacter.tipsAndTricks.slice(0, 3).map((tip, i) => (
+                        <li key={i} className="flex gap-2">
+                          <span className="text-amber-500">•</span>
+                          <span>{tip}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Action buttons */}
+                <div className="flex gap-2 pt-4 border-t border-border">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => window.open(`/reference?character=${previewCharacter.id}`, '_blank')}
+                    data-testid="button-view-full-reference"
+                  >
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    Full Reference
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => {
+                      onRemoveClaim(previewCharacter.id);
+                      setPreviewCharacter(null);
+                    }}
+                    data-testid="button-remove-claim-from-preview"
+                  >
+                    <X className="w-4 h-4 mr-2" />
+                    Remove Claim
+                  </Button>
+                </div>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
