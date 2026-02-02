@@ -398,8 +398,9 @@ function CharacterPicker({
     };
     return ALL_CHARACTERS.filter(c => {
       if (excludeIds.includes(c.id)) return false;
-      // Always include Travelers regardless of script selection
-      if (scriptCharacterIds && scriptCharacterIds.length > 0 && !scriptCharacterIds.includes(c.id) && c.team !== 'traveler') return false;
+      // Exclude Travelers from claims - they are always known before the game begins
+      if (c.team === 'traveler') return false;
+      if (scriptCharacterIds && scriptCharacterIds.length > 0 && !scriptCharacterIds.includes(c.id)) return false;
       return c.name.toLowerCase().includes(term) || c.team.toLowerCase().includes(term);
     }).sort((a, b) => {
       const orderDiff = getTeamOrder(a.team) - getTeamOrder(b.team);
