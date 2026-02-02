@@ -76,7 +76,11 @@ A localStorage-based player tracking tool at `/game` for note-taking during game
 - **Setup wizard**: 3-step flow with player count selection (5-20), player name inputs, and optional script selection
 - **Script selection**: Choose from official scripts or custom scripts saved from Reference page
 - **Player cards**: Grid display showing name, alive/dead status, claim badges, indicator icons
-- **Player detail drawer**: Notes, claims (filtered by selected script), voting record by day
+- **Player detail drawer**: Claims (with team color-coded badges), notes, nomination history by day
+  - Claims section appears first (more frequently accessed during play)
+  - Tapping a claim badge opens character preview with ability, tips, and link to full reference
+  - Travelers excluded from claims list (they're always known before game starts)
+  - "Convert to Traveler" option for mid-game player conversion
 - **Day tracker**: Scoreboard-style header with alive/dead counts, votes to execute, available votes, and script name badge
 - **View modes**: List view and Circle seating chart view (toggle in header)
 - **Persistence**: Game state saved to localStorage, survives page refresh
