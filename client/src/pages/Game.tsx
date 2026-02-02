@@ -2609,12 +2609,12 @@ function GameTrackerView({
         {/* Vote Info Text */}
         <div className="text-center px-4 py-2.5 border-b border-border text-base text-muted-foreground">
           <div>
-            <span className="text-amber-400 font-semibold">{votesNeeded}</span> Votes To Execute out of{' '}
+            <span className="text-amber-400 font-semibold">{votesNeeded}</span> Votes <span className="font-semibold">to execute</span> out of{' '}
             <span className={cn("font-semibold", canExecute ? "text-purple-400" : "text-red-400")}>{totalVotesAvailable}</span> Possible
           </div>
           {ghostVotesAvailable > 0 && (
             <div className="text-purple-400/80">
-              Including <span className="font-semibold">{ghostVotesAvailable}</span> Ghost {ghostVotesAvailable === 1 ? 'Vote' : 'Votes'}
+              including <span className="font-semibold">{ghostVotesAvailable}</span> Ghost {ghostVotesAvailable === 1 ? 'Vote' : 'Votes'}
             </div>
           )}
         </div>
