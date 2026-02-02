@@ -438,7 +438,7 @@ function CharacterPicker({
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && handleClose()}>
-      <DialogContent className="max-w-md p-0">
+      <DialogContent className="max-w-md p-0" onOpenAutoFocus={(e) => e.preventDefault()}>
         <div className="flex flex-col max-h-[70vh] overflow-hidden p-6 pb-0">
           <DialogHeader className="mb-4">
             <DialogTitle className="font-display text-amber-500">Select Characters</DialogTitle>
