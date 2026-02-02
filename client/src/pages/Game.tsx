@@ -5,7 +5,7 @@ import { ALL_CHARACTERS, OFFICIAL_SCRIPTS } from "@/lib/game-data";
 import { useLocalScripts, type LocalScript } from "@/hooks/use-local-scripts";
 import { ScriptBuilderDialog } from "@/components/ScriptBuilderDialog";
 import { InlineGameLog } from "@/components/InlineGameLog";
-import { ChevronRight, ChevronLeft, Play, X, Plus, Check, Search, Moon, ChevronUp, ChevronDown, FileText, Vote, Loader2, GripVertical, UserPlus, ArrowRight, BookOpen, HandMetal, Ban, LogOut, Trash2, Pencil, MoreVertical, RotateCcw, Info, ExternalLink, Users, Skull, Ghost, Scroll, Hand, Target, Theater } from "lucide-react";
+import { ChevronRight, ChevronLeft, Play, X, Plus, Check, Search, Moon, Sun, ChevronUp, ChevronDown, FileText, Vote, Loader2, GripVertical, UserPlus, ArrowRight, BookOpen, HandMetal, Ban, LogOut, Trash2, Pencil, MoreVertical, RotateCcw, Info, ExternalLink, Users, Skull, Ghost, Scroll, Hand, Target, Theater } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -2592,7 +2592,8 @@ function GameTrackerView({
           >
             <ChevronLeft className="w-5 h-5" />
           </Button>
-          <div className="flex items-center justify-center py-2 px-4 bg-amber-900/30 border border-amber-700/30 rounded-md">
+          <div className="flex-1 flex items-center justify-center gap-2 py-2 px-4 bg-amber-900/30 border border-amber-700/30 rounded-md">
+            <Sun className="w-5 h-5 text-amber-400" />
             <span className="font-display text-xl text-amber-400">Day {game.currentDay}</span>
           </div>
           <Button
@@ -2737,7 +2738,8 @@ function GameTrackerView({
               </Button>
             )}
             <Button 
-              variant="destructive"
+              variant="outline"
+              className="bg-red-500/20 border-red-500/50 text-red-400 hover:bg-red-500/30 hover:text-red-300"
               onClick={() => {
                 setNominationPreselectedNominee(null);
                 setShowNominationDialog(true);
