@@ -8,6 +8,7 @@ export interface LocalScript {
   id: string;
   name: string;
   isOfficial: boolean;
+  isCommunity?: boolean;
   characterIds: string[];
 }
 
@@ -197,6 +198,7 @@ export function useLocalScripts() {
         id: official.id,
         name: official.name,
         isOfficial: true,
+        isCommunity: !official.isOfficial,
         characterIds: official.characters,
       };
     }
@@ -216,6 +218,7 @@ export function useLocalScripts() {
       id: s.id,
       name: s.name,
       isOfficial: true,
+      isCommunity: !s.isOfficial,
       characterIds: s.characters,
     })),
     ...customScripts,
@@ -245,6 +248,7 @@ export function getScriptByIdStatic(id: string | null): LocalScript | null {
       id: official.id,
       name: official.name,
       isOfficial: true,
+      isCommunity: !official.isOfficial,
       characterIds: official.characters,
     };
   }

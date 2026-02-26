@@ -261,7 +261,7 @@ function SetupWizard({ onStart }: { onStart: (count: number, names: string[], sc
                 <span className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Official Scripts</span>
               </div>
 
-              {allScripts.filter(s => s.isOfficial).map(script => (
+              {allScripts.filter(s => s.isOfficial && !s.isCommunity).map(script => (
                 <button
                   key={script.id}
                   onClick={() => setSelectedScript(script)}
@@ -275,6 +275,32 @@ function SetupWizard({ onStart }: { onStart: (count: number, names: string[], sc
                 >
                   <div className="flex items-center gap-3">
                     <Scroll className="w-5 h-5 text-amber-500/70" />
+                    <div>
+                      <div className="font-medium">{script.name}</div>
+                      <div className="text-sm text-muted-foreground">{script.characterIds.length} characters</div>
+                    </div>
+                  </div>
+                </button>
+              ))}
+
+              <div className="pt-2 pb-1">
+                <span className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Community Scripts</span>
+              </div>
+
+              {allScripts.filter(s => s.isOfficial && s.isCommunity).map(script => (
+                <button
+                  key={script.id}
+                  onClick={() => setSelectedScript(script)}
+                  className={cn(
+                    "w-full text-left p-4 rounded-lg border transition-colors",
+                    selectedScript?.id === script.id
+                      ? "bg-teal-900/30 border-teal-600 ring-1 ring-teal-500/50" 
+                      : "bg-card border-border hover-elevate"
+                  )}
+                  data-testid={`button-script-${script.id}`}
+                >
+                  <div className="flex items-center gap-3">
+                    <Users className="w-5 h-5 text-teal-500/70" />
                     <div>
                       <div className="font-medium">{script.name}</div>
                       <div className="text-sm text-muted-foreground">{script.characterIds.length} characters</div>
@@ -2481,7 +2507,9 @@ function GameTrackerView({
                       }}
                       data-testid={`button-script-${script.id}`}
                     >
-                      {script.isOfficial ? (
+                      {script.isCommunity ? (
+                        <Users className="w-3.5 h-3.5 text-teal-500/70" />
+                      ) : script.isOfficial ? (
                         <BookOpen className="w-3.5 h-3.5 text-amber-500/70" />
                       ) : (
                         <FileText className="w-3.5 h-3.5 text-purple-500/70" />
