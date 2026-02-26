@@ -59,6 +59,8 @@ Character data is stored client-side in `client/src/lib/game-data.ts` with full 
 - **Data Verification (Jan 2026)**: Complete audit of all character editions against official wiki:
   - Core editions (TB, BMR, S&V): 100% verified accurate
   - Experimental characters: 57+ verified with 8 fixes applied - Psychopath, Organ Grinder, Vizier, Riot, Alchemist, Lycanthrope, Nightwatchman, Boomdandy
+- **Built-in Scripts**: Trouble Brewing, Bad Moon Rising, Sects & Violets (official), The Wild Hunt (community, by Logan & Brad)
+  - The Wild Hunt uses experimental characters; Reference page filter uses `OFFICIAL_SCRIPTS` character lists instead of `edition` matching
 
 ### Introduction Page
 A beginner-friendly guide at `/introduction` explaining Blood on the Clocktower to new players:

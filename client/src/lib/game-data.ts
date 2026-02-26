@@ -3379,6 +3379,14 @@ export const OFFICIAL_SCRIPTS = [
     isOfficial: true,
     characters: SECTS_AND_VIOLETS.map(c => c.id),
   },
+  {
+    id: 'twh',
+    name: 'The Wild Hunt',
+    author: 'Logan & Brad',
+    description: 'A community script blending hunter and hunted. Features bounty hunters, exorcists, and lycanthropes alongside cunning demons and deadly minions.',
+    isOfficial: false,
+    characters: ['steward', 'knight', 'noble', 'bountyhunter', 'preacher', 'king', 'innkeeper', 'exorcist', 'lycanthrope', 'professor', 'fisherman', 'choirboy', 'banshee', 'ogre', 'lunatic', 'golem', 'moonchild', 'devilsadvocate', 'psychopath', 'wraith', 'goblin', 'mastermind', 'ojo', 'kazali', 'po'],
+  },
 ];
 
 // ===================

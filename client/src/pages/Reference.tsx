@@ -1,5 +1,5 @@
 import { Layout } from "@/components/ui/Layout";
-import { ALL_CHARACTERS, getJinxesForCharacter, type Character, type Jinx } from "@/lib/game-data";
+import { ALL_CHARACTERS, OFFICIAL_SCRIPTS, getJinxesForCharacter, type Character, type Jinx } from "@/lib/game-data";
 import { useState, useEffect } from "react";
 import { Search, Moon, Sun, Settings, AlertTriangle, ChevronDown, Quote, Lightbulb, Sword, Eye, Check, BookOpen, Plus, Minus, Trash2, Pencil, ArrowDownAZ, LayoutList, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -279,6 +279,7 @@ const SCRIPTS = [
   { id: 'tb', label: 'Trouble Brewing' },
   { id: 'bmr', label: 'Bad Moon Rising' },
   { id: 'snv', label: 'Sects & Violets' },
+  { id: 'twh', label: 'The Wild Hunt' },
 ];
 
 
@@ -316,7 +317,12 @@ export default function Reference() {
     if (activeCustomScript) {
       matchesScript = activeCustomScript.characterIds.includes(char.id) || isTraveler;
     } else if (scriptFilter !== "all") {
-      matchesScript = char.edition === scriptFilter || isTraveler;
+      const officialScript = OFFICIAL_SCRIPTS.find(s => s.id === scriptFilter);
+      if (officialScript) {
+        matchesScript = officialScript.characters.includes(char.id) || isTraveler;
+      } else {
+        matchesScript = char.edition === scriptFilter || isTraveler;
+      }
     }
     
     return matchesSearch && matchesTeam && matchesScript;
