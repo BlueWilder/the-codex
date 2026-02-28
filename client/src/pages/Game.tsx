@@ -2549,16 +2549,23 @@ function GameTrackerView({
           </Popover>
 
           {/* Overflow Menu */}
-          <DropdownMenu>
+          <DropdownMenu onOpenChange={(open) => { if (!open) setConfirmEnd(false); }}>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" data-testid="button-overflow-menu">
                 <MoreVertical className="w-4 h-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent
+              align="end"
+              onInteractOutside={(e) => { if (confirmEnd) e.preventDefault(); }}
+              onEscapeKeyDown={(e) => { if (confirmEnd) e.preventDefault(); }}
+            >
               {confirmEnd ? (
                 <>
-                  <DropdownMenuItem onClick={() => setConfirmEnd(false)} data-testid="button-cancel-end">
+                  <DropdownMenuItem
+                    onSelect={(e) => { e.preventDefault(); setConfirmEnd(false); }}
+                    data-testid="button-cancel-end"
+                  >
                     <X className="w-4 h-4 mr-2" />
                     Cancel
                   </DropdownMenuItem>
@@ -2596,7 +2603,7 @@ function GameTrackerView({
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem 
-                    onClick={() => setConfirmEnd(true)}
+                    onSelect={(e) => { e.preventDefault(); setConfirmEnd(true); }}
                     className="text-destructive focus:text-destructive"
                     data-testid="button-end-game"
                   >
