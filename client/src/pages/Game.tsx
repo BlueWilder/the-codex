@@ -2236,6 +2236,9 @@ function CircleSeatingChart({
   const handleDragStart = (event: DragStartEvent) => {
     setActiveId(event.active.id as string);
     setDragDelta({ x: 0, y: 0 });
+    if (navigator.vibrate) {
+      navigator.vibrate(30);
+    }
   };
 
   const handleDragMove = (event: { delta: { x: number; y: number } }) => {
@@ -2360,6 +2363,8 @@ function DraggableCircleNode({
         width: nodeSize,
         height: nodeSize,
         transition: isDragging ? 'none' : 'left 200ms ease, top 200ms ease',
+        transform: isDragging ? 'scale(1.15)' : 'scale(1)',
+        filter: isDragging ? 'drop-shadow(0 0 8px rgba(201, 162, 39, 0.7)) drop-shadow(0 0 16px rgba(201, 162, 39, 0.4))' : 'none',
       }}
       data-testid={`circle-node-${player.id}`}
     >
