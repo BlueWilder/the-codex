@@ -2364,7 +2364,8 @@ function DraggableCircleNode({
         height: nodeSize,
         transition: isDragging ? 'none' : 'left 200ms ease, top 200ms ease',
         transform: isDragging ? 'scale(1.15)' : 'scale(1)',
-        filter: isDragging ? 'drop-shadow(0 0 8px rgba(201, 162, 39, 0.7)) drop-shadow(0 0 16px rgba(201, 162, 39, 0.4))' : 'none',
+        borderRadius: '50%',
+        boxShadow: isDragging ? '0 0 8px 3px rgba(201, 162, 39, 0.7), 0 0 20px 6px rgba(201, 162, 39, 0.35)' : 'none',
       }}
       data-testid={`circle-node-${player.id}`}
     >
