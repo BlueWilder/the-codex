@@ -547,6 +547,7 @@ function PlayerDetailDrawer({
   onConvertToTraveler,
   canRemovePlayer,
   scriptCharacterIds,
+  onSetTrust,
 }: {
   player: GamePlayer | null;
   players: GamePlayer[];
@@ -565,6 +566,7 @@ function PlayerDetailDrawer({
   onConvertToTraveler?: () => void;
   canRemovePlayer?: boolean;
   scriptCharacterIds?: string[] | null;
+  onSetTrust: (trust: number) => void;
 }) {
   const [showCharacterPicker, setShowCharacterPicker] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
@@ -793,6 +795,18 @@ function PlayerDetailDrawer({
                 ) : (
                   <p className="text-sm text-muted-foreground italic">No claims recorded</p>
                 )}
+              </div>
+
+              {/* Trust Section */}
+              <div className="rounded-lg bg-card/30 border border-border/30 p-4 space-y-3">
+                <h3 className="font-bold text-sm uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                  <Hand className="w-4 h-4" /> Trust
+                </h3>
+                <TrustSlider
+                  value={player.trust ?? 50}
+                  onChange={onSetTrust}
+                  disabled={player.status !== 'alive'}
+                />
               </div>
 
               {/* Notes Section */}
@@ -2845,6 +2859,7 @@ function GameTrackerView({
         onConvertToTraveler={!selectedPlayer?.isTraveler ? () => selectedPlayerId && onConvertToTraveler(selectedPlayerId) : undefined}
         canRemovePlayer={game.players.length > 1}
         scriptCharacterIds={scriptCharacterIds}
+        onSetTrust={(trust) => selectedPlayerId && onSetTrust(selectedPlayerId, trust)}
       />
 
       <NominationDialog
