@@ -119,7 +119,7 @@ export function TrustSlider({ value, onChange, disabled }: TrustSliderProps) {
           style={{
             height: "10px",
             borderRadius: "5px",
-            background: "linear-gradient(to right, #8B0000, #D4B896 50%, #228B22)",
+            background: "linear-gradient(to right, #8B0000, #D4B896 50%, #1A4B8C)",
           }}
         />
       </div>
