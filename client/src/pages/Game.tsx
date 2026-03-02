@@ -2094,7 +2094,6 @@ function CircleNodeContent({
   isDragging?: boolean;
   isOverlay?: boolean;
 }) {
-  const nomCount = nominations.filter(n => n.nomineeId === player.id).length;
   const firstClaim = player.claims[0];
   const claimChar = firstClaim ? ALL_CHARACTERS.find(c => c.id === firstClaim) : null;
   const isActive = player.status === 'alive';
@@ -2106,7 +2105,7 @@ function CircleNodeContent({
         "flex flex-col items-center justify-center rounded-full border-2 text-center",
         isActive ? "bg-card border-border" : "bg-muted/50 border-muted",
         player.isTraveler && "border-purple-700",
-        !isActive && "opacity-70",
+        !isActive && "opacity-50",
         isOverlay && "shadow-2xl scale-110 border-amber-500 bg-card",
         isDragging && "opacity-40"
       )}
@@ -2116,7 +2115,7 @@ function CircleNodeContent({
         {isDead && <Skull className="w-3 h-3 text-muted-foreground shrink-0" />}
         <span className={cn(
           "text-xs font-medium truncate max-w-[50px]",
-          !isActive && "text-muted-foreground"
+          !isActive && "text-muted-foreground line-through"
         )}>
           {player.name.length > 8 ? player.name.slice(0, 7) + '...' : player.name}
         </span>
@@ -2131,24 +2130,18 @@ function CircleNodeContent({
         </span>
       )}
       
-      <div className="flex items-center gap-1 mt-0.5">
-        {isDead && !player.isTraveler && (
-          player.hasGhostVote ? (
+      {isDead && !player.isTraveler && (
+        <div className="mt-0.5">
+          {player.hasGhostVote ? (
             <Ghost className="w-3 h-3 text-purple-400" />
           ) : (
             <span className="relative">
               <Ghost className="w-3 h-3 text-muted-foreground/40" />
               <X className="w-2 h-2 text-red-500 absolute -bottom-0.5 -right-0.5" />
             </span>
-          )
-        )}
-        {nomCount > 0 && (
-          <span className="flex items-center text-[10px] text-amber-400">
-            <GallowsIcon className="w-2.5 h-2.5" />
-            {nomCount}
-          </span>
-        )}
-      </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
