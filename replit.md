@@ -83,6 +83,7 @@ A localStorage-based player tracking tool at `/game` for note-taking during game
   - Tapping a claim badge opens character preview with ability, tips, and link to full reference
   - Travelers excluded from claims list (they're always known before game starts)
   - "Convert to Traveler" option for mid-game player conversion
+- **Trust slider**: Horizontal gradient bar (red→tan→green) on each player card with draggable brass knob (0-100 scale, 50=neutral). Disabled with reduced opacity for dead players. Component: `client/src/components/TrustSlider.tsx`
 - **Day tracker**: Scoreboard-style header with alive/dead counts, votes to execute, available votes, and script name badge
 - **View modes**: List view and Circle seating chart view (toggle in header)
 - **Persistence**: Game state saved to localStorage, survives page refresh

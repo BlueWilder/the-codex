@@ -5,6 +5,7 @@ import { ALL_CHARACTERS, OFFICIAL_SCRIPTS } from "@/lib/game-data";
 import { useLocalScripts, type LocalScript } from "@/hooks/use-local-scripts";
 import { ScriptBuilderDialog } from "@/components/ScriptBuilderDialog";
 import { InlineGameLog } from "@/components/InlineGameLog";
+import { TrustSlider } from "@/components/TrustSlider";
 import { ChevronRight, ChevronLeft, Play, X, Plus, Check, Search, Moon, Sun, ChevronUp, ChevronDown, FileText, Vote, Loader2, GripVertical, UserPlus, ArrowRight, BookOpen, HandMetal, Ban, LogOut, Trash2, Pencil, MoreVertical, RotateCcw, Info, ExternalLink, Users, Skull, Ghost, Scroll, Hand, Target, Theater } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
@@ -1054,10 +1055,12 @@ function SortablePlayerCard({
   player,
   game,
   onSelect,
+  onSetTrust,
 }: {
   player: GamePlayer;
   game: NonNullable<ReturnType<typeof usePlayerGame>["game"]>;
   onSelect: () => void;
+  onSetTrust: (playerId: string, trust: number) => void;
 }) {
   const {
     attributes,
@@ -1171,6 +1174,13 @@ function SortablePlayerCard({
             )}
           </div>
         </div>
+      </div>
+      <div className="mt-2">
+        <TrustSlider
+          value={player.trust ?? 50}
+          onChange={(val) => onSetTrust(player.id, val)}
+          disabled={player.status !== 'alive'}
+        />
       </div>
     </Card>
   );
@@ -2336,6 +2346,7 @@ function GameTrackerView({
   onSetGameNotes,
   onAddPlayer,
   onRemovePlayer,
+  onSetTrust,
   choppingBlock,
   onExecuteFromBlock,
   onClearChoppingBlock,
@@ -2368,6 +2379,7 @@ function GameTrackerView({
   onSetGameNotes: (notes: string) => void;
   onAddPlayer: (name: string, insertAfterPlayerId: string | null) => void;
   onRemovePlayer: (playerId: string) => void;
+  onSetTrust: (playerId: string, trust: number) => void;
   choppingBlock: { nominations: Nomination[]; isTied: boolean };
   onExecuteFromBlock: () => void;
   onClearChoppingBlock: () => void;
@@ -2794,6 +2806,7 @@ function GameTrackerView({
                   player={player}
                   game={game}
                   onSelect={() => setSelectedPlayerId(player.id)}
+                  onSetTrust={onSetTrust}
                 />
               ))}
             </div>
@@ -3018,6 +3031,7 @@ export default function Game() {
     setGameNotes,
     addPlayer,
     removePlayer,
+    setTrust,
     getChoppingBlock,
     executeFromBlock,
     clearChoppingBlock,
@@ -3071,6 +3085,7 @@ export default function Game() {
           onSetGameNotes={setGameNotes}
           onAddPlayer={addPlayer}
           onRemovePlayer={removePlayer}
+          onSetTrust={setTrust}
           choppingBlock={getChoppingBlock()}
           onExecuteFromBlock={executeFromBlock}
           onClearChoppingBlock={clearChoppingBlock}
