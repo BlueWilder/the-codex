@@ -1294,11 +1294,18 @@ function NominationDialog({
 
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) handleClose(); }}>
-      <DialogContent className="max-w-sm max-h-[80vh] flex flex-col">
+      <DialogContent className={cn(
+        "max-w-sm max-h-[80vh] flex flex-col",
+        step === 1 && "ring-1 ring-red-900/40",
+        step === 2 && "ring-1 ring-purple-900/40"
+      )}>
         <DialogHeader>
-          <DialogTitle className="font-display text-amber-500">
-            {step === 1 && "Select Nominee"}
-            {step === 2 && "Select Nominator"}
+          <DialogTitle className={cn(
+            "font-display flex items-center gap-2",
+            step === 1 ? "text-red-400" : step === 2 ? "text-purple-400" : "text-amber-500"
+          )}>
+            {step === 1 && <><Target className="w-5 h-5" /> Select Nominee</>}
+            {step === 2 && <><PointingFingerIcon className="w-5 h-5" /> Select Nominator</>}
             {step === 3 && "How to Record?"}
             {step === 4 && "Record Votes"}
             {step === 5 && "Quick Log"}
@@ -1307,13 +1314,13 @@ function NominationDialog({
 
         {step === 1 && (
           <div className="space-y-2 overflow-y-auto flex-1">
-            <p className="text-sm text-muted-foreground mb-4">Who is being put on the block?</p>
+            <p className="text-sm text-red-300/70 mb-4">Who is being put on the block?</p>
             {eligibleNominees.length > 0 ? (
               eligibleNominees.map(player => (
                 <button
                   key={player.id}
                   onClick={() => handleSelectNominee(player.id)}
-                  className="w-full text-left p-3 rounded-lg border bg-card border-border hover-elevate active-elevate-2"
+                  className="w-full text-left p-3 rounded-lg border border-l-2 bg-card border-border border-l-red-700/50 hover-elevate active-elevate-2"
                   data-testid={`button-nominee-${player.id}`}
                 >
                   {player.name}
@@ -1327,15 +1334,15 @@ function NominationDialog({
 
         {step === 2 && (
           <div className="space-y-2 overflow-y-auto flex-1">
-            <p className="text-sm text-muted-foreground mb-4">
-              Who nominated <span className="text-amber-400 font-medium">{nominee?.name}</span>?
+            <p className="text-sm text-purple-300/70 mb-4">
+              Who nominated <span className="text-purple-300 font-medium">{nominee?.name}</span>?
             </p>
             {eligibleNominators.length > 0 ? (
               eligibleNominators.map(player => (
                 <button
                   key={player.id}
                   onClick={() => handleSelectNominator(player.id)}
-                  className="w-full text-left p-3 rounded-lg border bg-card border-border hover-elevate active-elevate-2"
+                  className="w-full text-left p-3 rounded-lg border border-l-2 bg-card border-border border-l-purple-700/50 hover-elevate active-elevate-2"
                   data-testid={`button-nominator-${player.id}`}
                 >
                   {player.name}
