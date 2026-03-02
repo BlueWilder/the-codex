@@ -86,6 +86,7 @@ A localStorage-based player tracking tool at `/game` for note-taking during game
 - **Trust slider**: Horizontal gradient bar (red→tan→green) on each player card with draggable brass knob (0-100 scale, 50=neutral). Disabled with reduced opacity for dead players. Component: `client/src/components/TrustSlider.tsx`
 - **Day tracker**: Scoreboard-style header with alive/dead counts, votes to execute, available votes, and script name badge
 - **View modes**: List view and Circle seating chart view (toggle in header)
+  - Circle view features Storyteller box at top center with players in U-shape arrangement (300° arc with 60° gap at top)
 - **Persistence**: Game state saved to localStorage, survives page refresh
 - **Nomination system**: Dual recording modes:
   - **Full Vote Record**: Track individual player votes with auto ghost vote handling

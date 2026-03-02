@@ -2244,10 +2244,14 @@ function CircleSeatingChart({
     })
   );
 
+  const stBoxHeight = 36;
+  const stBoxWidth = 80;
+  const stTopPadding = stBoxHeight + 16;
+
   useEffect(() => {
     const updateDimensions = () => {
       const width = Math.min(window.innerWidth - 32, 500);
-      setDimensions({ width, height: width });
+      setDimensions({ width, height: width + stTopPadding });
     };
     updateDimensions();
     window.addEventListener('resize', updateDimensions);
@@ -2256,13 +2260,16 @@ function CircleSeatingChart({
 
   const playerCount = players.length;
   const centerX = dimensions.width / 2;
-  const centerY = dimensions.height / 2;
+  const centerY = (dimensions.height + stTopPadding) / 2;
   const nodeSize = playerCount <= 8 ? 70 : playerCount <= 12 ? 60 : 50;
-  const radius = Math.min(centerX, centerY) - nodeSize / 2 - 10;
+  const radius = Math.min(centerX, (dimensions.height - stTopPadding) / 2) - nodeSize / 2 - 10;
+
+  const gapDegrees = 60;
+  const arcDegrees = 360 - gapDegrees;
+  const startAngle = -90 + gapDegrees / 2;
 
   const getPlayerPosition = (index: number) => {
-    // Start at top (-90 degrees) and go clockwise (positive angle)
-    const angle = ((index / playerCount) * 360 - 90) * (Math.PI / 180);
+    const angle = (startAngle + (index / (playerCount - 1 || 1)) * arcDegrees) * (Math.PI / 180);
     return {
       x: centerX + radius * Math.cos(angle) - nodeSize / 2,
       y: centerY + radius * Math.sin(angle) - nodeSize / 2,
@@ -2302,6 +2309,18 @@ function CircleSeatingChart({
             className="relative"
             style={{ width: dimensions.width, height: dimensions.height }}
           >
+            <div
+              className="absolute flex items-center justify-center rounded-md border-2 border-amber-700/50 bg-amber-950/30 text-amber-400 font-display text-sm tracking-wider"
+              style={{
+                width: stBoxWidth,
+                height: stBoxHeight,
+                left: centerX - stBoxWidth / 2,
+                top: 0,
+              }}
+              data-testid="storyteller-box"
+            >
+              Storyteller
+            </div>
             {players.map((player, index) => (
               <SortableCircleNode
                 key={player.id}
