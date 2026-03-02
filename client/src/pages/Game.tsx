@@ -1471,15 +1471,15 @@ function NominationDialog({
               <p className="mt-1 text-xs">Votes needed: {votesNeeded}</p>
             </div>
             
-            <div className="flex items-center gap-3">
-              <label className="text-sm text-muted-foreground whitespace-nowrap">Vote Count</label>
+            <div className="space-y-1.5">
+              <label className="text-sm text-muted-foreground block">Vote Count</label>
               <Input
                 type="number"
                 min="0"
                 value={quickVoteCount}
                 onChange={(e) => setQuickVoteCount(e.target.value)}
-                placeholder="Number of votes"
-                className="flex-1"
+                placeholder="0"
+                className="text-center text-3xl font-bold h-16 border-2 border-amber-700/60 bg-amber-950/20 focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500"
                 data-testid="input-quick-vote-count"
               />
             </div>
