@@ -2244,9 +2244,9 @@ function CircleSeatingChart({
     })
   );
 
-  const stBoxHeight = 36;
-  const stBoxWidth = 80;
-  const stTopPadding = stBoxHeight + 16;
+  const stBoxHeight = 34;
+  const stBoxWidth = 48;
+  const stTopPadding = stBoxHeight + 4;
 
   useEffect(() => {
     const updateDimensions = () => {
@@ -2310,7 +2310,7 @@ function CircleSeatingChart({
             style={{ width: dimensions.width, height: dimensions.height }}
           >
             <div
-              className="absolute flex items-center justify-center rounded-md border-2 border-amber-700/50 bg-amber-950/30 text-amber-400 font-display text-sm tracking-wider"
+              className="absolute flex items-center justify-center rounded-md border-2 border-purple-500/50 bg-purple-950/30 text-purple-400 font-display text-base font-bold tracking-wider"
               style={{
                 width: stBoxWidth,
                 height: stBoxHeight,
@@ -2319,7 +2319,7 @@ function CircleSeatingChart({
               }}
               data-testid="storyteller-box"
             >
-              Storyteller
+              ST
             </div>
             {players.map((player, index) => (
               <SortableCircleNode
