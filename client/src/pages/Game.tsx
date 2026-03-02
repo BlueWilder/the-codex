@@ -21,7 +21,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, TouchSensor, useSensor, useSensors, DragEndEvent, DragOverlay, DragStartEvent } from "@dnd-kit/core";
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, TouchSensor, useSensor, useSensors, DragEndEvent, DragOverlay, DragStartEvent, useDraggable } from "@dnd-kit/core";
 import { SortableContext, sortableKeyboardCoordinates, useSortable, rectSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
@@ -2153,78 +2153,26 @@ function CircleNodeContent({
   );
 }
 
-function SortableCircleNode({
-  player,
-  position,
-  nodeSize,
-  nominations,
-  onSelectPlayer,
-  isOver,
-}: {
-  player: GamePlayer;
-  position: { x: number; y: number };
-  nodeSize: number;
-  nominations: Nomination[];
-  onSelectPlayer: (playerId: string) => void;
-  isOver: boolean;
-}) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    isDragging,
-  } = useSortable({ id: player.id });
-
-  const style: React.CSSProperties = {
-    left: position.x,
-    top: position.y,
-    width: nodeSize,
-    height: nodeSize,
-    transition: 'left 200ms ease, top 200ms ease',
-  };
-
-  return (
-    <button
-      ref={setNodeRef}
-      {...attributes}
-      {...listeners}
-      onClick={() => !isDragging && onSelectPlayer(player.id)}
-      className={cn(
-        "absolute touch-none",
-        !isDragging && "hover-elevate active-elevate-2"
-      )}
-      style={style}
-      data-testid={`circle-node-${player.id}`}
-    >
-      {isOver && (
-        <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-amber-500 animate-pulse z-20" />
-      )}
-      <CircleNodeContent
-        player={player}
-        nodeSize={nodeSize}
-        nominations={nominations}
-        isDragging={isDragging}
-      />
-    </button>
-  );
-}
-
 function CircleSeatingChart({
   players,
   nominations,
   currentDay,
   onSelectPlayer,
   onReorderPlayers,
+  onSetCirclePosition,
+  onResetCirclePositions,
 }: {
   players: GamePlayer[];
   nominations: Nomination[];
   currentDay: number;
   onSelectPlayer: (playerId: string) => void;
   onReorderPlayers: (activeId: string, overId: string) => void;
+  onSetCirclePosition: (playerId: string, x: number, y: number) => void;
+  onResetCirclePositions: () => void;
 }) {
   const [dimensions, setDimensions] = useState({ width: 300, height: 300 });
   const [activeId, setActiveId] = useState<string | null>(null);
-  const [overId, setOverId] = useState<string | null>(null);
+  const [dragDelta, setDragDelta] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -2238,9 +2186,6 @@ function CircleSeatingChart({
         delay: 200,
         tolerance: 5,
       },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
     })
   );
 
@@ -2268,7 +2213,7 @@ function CircleSeatingChart({
   const arcDegrees = 360 - gapDegrees;
   const startAngle = -90 + gapDegrees / 2;
 
-  const getPlayerPosition = (index: number) => {
+  const getDefaultPosition = (index: number) => {
     const angle = (startAngle + (index / (playerCount - 1 || 1)) * arcDegrees) * (Math.PI / 180);
     return {
       x: centerX + radius * Math.cos(angle) - nodeSize / 2,
@@ -2276,76 +2221,155 @@ function CircleSeatingChart({
     };
   };
 
-  const handleDragStart = (event: DragStartEvent) => {
-    setActiveId(event.active.id as string);
+  const getPlayerPosition = (player: GamePlayer, index: number) => {
+    if (player.circleX !== undefined && player.circleY !== undefined) {
+      return {
+        x: player.circleX * dimensions.width - nodeSize / 2,
+        y: player.circleY * dimensions.height - nodeSize / 2,
+      };
+    }
+    return getDefaultPosition(index);
   };
 
-  const handleDragOver = (event: { over: { id: string | number } | null }) => {
-    setOverId(event.over?.id as string | null);
+  const hasCustomPositions = players.some(p => p.circleX !== undefined);
+
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id as string);
+    setDragDelta({ x: 0, y: 0 });
+  };
+
+  const handleDragMove = (event: { delta: { x: number; y: number } }) => {
+    setDragDelta(event.delta);
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-    if (over && active.id !== over.id) {
-      onReorderPlayers(active.id as string, over.id as string);
+    const { active, delta } = event;
+    const playerId = active.id as string;
+    const playerIndex = players.findIndex(p => p.id === playerId);
+    if (playerIndex === -1) {
+      setActiveId(null);
+      setDragDelta({ x: 0, y: 0 });
+      return;
     }
+
+    const hasMoved = Math.abs(delta.x) > 3 || Math.abs(delta.y) > 3;
+    if (hasMoved) {
+      const currentPos = getPlayerPosition(players[playerIndex], playerIndex);
+      const newX = (currentPos.x + nodeSize / 2 + delta.x) / dimensions.width;
+      const newY = (currentPos.y + nodeSize / 2 + delta.y) / dimensions.height;
+      const clampedX = Math.max(0, Math.min(1, newX));
+      const clampedY = Math.max(0, Math.min(1, newY));
+      onSetCirclePosition(playerId, clampedX, clampedY);
+    }
+
     setActiveId(null);
-    setOverId(null);
+    setDragDelta({ x: 0, y: 0 });
   };
 
-  const activePlayer = activeId ? players.find(p => p.id === activeId) : null;
-
   return (
-    <div className="flex justify-center py-4">
-      <DndContext 
-        sensors={sensors} 
-        collisionDetection={closestCenter} 
+    <div className="flex flex-col items-center py-4">
+      {hasCustomPositions && (
+        <button
+          onClick={onResetCirclePositions}
+          className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground mb-2 transition-colors"
+          data-testid="reset-circle-layout"
+        >
+          <RotateCcw className="w-3 h-3" />
+          Reset Layout
+        </button>
+      )}
+      <DndContext
+        sensors={sensors}
         onDragStart={handleDragStart}
-        onDragOver={handleDragOver}
+        onDragMove={handleDragMove}
         onDragEnd={handleDragEnd}
       >
-        <SortableContext items={players.map(p => p.id)} strategy={rectSortingStrategy}>
-          <div 
-            className="relative"
-            style={{ width: dimensions.width, height: dimensions.height }}
+        <div
+          className="relative"
+          style={{ width: dimensions.width, height: dimensions.height }}
+        >
+          <div
+            className="absolute flex items-center justify-center rounded-md border-2 border-purple-500/50 bg-purple-950/30 text-purple-400 font-display text-base font-bold tracking-wider"
+            style={{
+              width: stBoxWidth,
+              height: stBoxHeight,
+              left: centerX - stBoxWidth / 2,
+              top: 0,
+            }}
+            data-testid="storyteller-box"
           >
-            <div
-              className="absolute flex items-center justify-center rounded-md border-2 border-purple-500/50 bg-purple-950/30 text-purple-400 font-display text-base font-bold tracking-wider"
-              style={{
-                width: stBoxWidth,
-                height: stBoxHeight,
-                left: centerX - stBoxWidth / 2,
-                top: 0,
-              }}
-              data-testid="storyteller-box"
-            >
-              ST
-            </div>
-            {players.map((player, index) => (
-              <SortableCircleNode
+            ST
+          </div>
+          {players.map((player, index) => {
+            const pos = getPlayerPosition(player, index);
+            const isBeingDragged = activeId === player.id;
+            const displayX = isBeingDragged ? pos.x + dragDelta.x : pos.x;
+            const displayY = isBeingDragged ? pos.y + dragDelta.y : pos.y;
+
+            return (
+              <DraggableCircleNode
                 key={player.id}
                 player={player}
-                position={getPlayerPosition(index)}
+                position={{ x: displayX, y: displayY }}
                 nodeSize={nodeSize}
                 nominations={nominations}
                 onSelectPlayer={onSelectPlayer}
-                isOver={overId === player.id && activeId !== player.id}
+                isDragging={isBeingDragged}
               />
-            ))}
-          </div>
-        </SortableContext>
-        <DragOverlay>
-          {activePlayer && (
-            <CircleNodeContent
-              player={activePlayer}
-              nodeSize={nodeSize}
-              nominations={nominations}
-              isOverlay={true}
-            />
-          )}
-        </DragOverlay>
+            );
+          })}
+        </div>
       </DndContext>
     </div>
+  );
+}
+
+function DraggableCircleNode({
+  player,
+  position,
+  nodeSize,
+  nominations,
+  onSelectPlayer,
+  isDragging,
+}: {
+  player: GamePlayer;
+  position: { x: number; y: number };
+  nodeSize: number;
+  nominations: Nomination[];
+  onSelectPlayer: (playerId: string) => void;
+  isDragging: boolean;
+}) {
+  const { attributes, listeners, setNodeRef } = useDraggable({
+    id: player.id,
+  });
+
+  return (
+    <button
+      ref={setNodeRef}
+      {...attributes}
+      {...listeners}
+      onClick={() => !isDragging && onSelectPlayer(player.id)}
+      className={cn(
+        "absolute touch-none z-10",
+        isDragging && "z-30",
+        !isDragging && "hover-elevate active-elevate-2"
+      )}
+      style={{
+        left: position.x,
+        top: position.y,
+        width: nodeSize,
+        height: nodeSize,
+        transition: isDragging ? 'none' : 'left 200ms ease, top 200ms ease',
+      }}
+      data-testid={`circle-node-${player.id}`}
+    >
+      <CircleNodeContent
+        player={player}
+        nodeSize={nodeSize}
+        nominations={nominations}
+        isDragging={isDragging}
+      />
+    </button>
   );
 }
 
@@ -2379,6 +2403,8 @@ function GameTrackerView({
   onAddPlayer,
   onRemovePlayer,
   onSetTrust,
+  onSetCirclePosition,
+  onResetCirclePositions,
   choppingBlock,
   onExecuteFromBlock,
   onClearChoppingBlock,
@@ -2412,6 +2438,8 @@ function GameTrackerView({
   onAddPlayer: (name: string, insertAfterPlayerId: string | null) => void;
   onRemovePlayer: (playerId: string) => void;
   onSetTrust: (playerId: string, trust: number) => void;
+  onSetCirclePosition: (playerId: string, x: number, y: number) => void;
+  onResetCirclePositions: () => void;
   choppingBlock: { nominations: Nomination[]; isTied: boolean };
   onExecuteFromBlock: () => void;
   onClearChoppingBlock: () => void;
@@ -2853,6 +2881,8 @@ function GameTrackerView({
           currentDay={game.currentDay}
           onSelectPlayer={(playerId) => setSelectedPlayerId(playerId)}
           onReorderPlayers={onReorderPlayers}
+          onSetCirclePosition={onSetCirclePosition}
+          onResetCirclePositions={onResetCirclePositions}
         />
       )}
       
@@ -3065,6 +3095,8 @@ export default function Game() {
     addPlayer,
     removePlayer,
     setTrust,
+    setCirclePosition,
+    resetCirclePositions,
     getChoppingBlock,
     executeFromBlock,
     clearChoppingBlock,
@@ -3119,6 +3151,8 @@ export default function Game() {
           onAddPlayer={addPlayer}
           onRemovePlayer={removePlayer}
           onSetTrust={setTrust}
+          onSetCirclePosition={setCirclePosition}
+          onResetCirclePositions={resetCirclePositions}
           choppingBlock={getChoppingBlock()}
           onExecuteFromBlock={executeFromBlock}
           onClearChoppingBlock={clearChoppingBlock}

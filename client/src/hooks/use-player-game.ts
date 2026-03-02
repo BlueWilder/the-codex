@@ -73,6 +73,8 @@ export interface GamePlayer {
   joinedAt?: string; // When traveler joined
   joinedDay?: number;
   trust?: number; // 0-100 scale, 50 = neutral
+  circleX?: number; // Normalized 0-1 position on circle canvas
+  circleY?: number;
 }
 
 export function isPlayerActive(player: GamePlayer): boolean {
@@ -695,6 +697,59 @@ export function usePlayerGame() {
     saveGame({ ...game, players: newPlayers });
   }, [game, saveGame]);
 
+  const getDefaultCirclePositions = useCallback((playerCount: number) => {
+    const gapDegrees = 60;
+    const arcDegrees = 360 - gapDegrees;
+    const startAngle = -90 + gapDegrees / 2;
+    const stTopRatio = 0.075;
+
+    return Array.from({ length: playerCount }, (_, index) => {
+      const angle = (startAngle + (index / (playerCount - 1 || 1)) * arcDegrees) * (Math.PI / 180);
+      const cx = 0.5 + 0.4 * Math.cos(angle);
+      const cy = (0.5 + stTopRatio) + 0.4 * Math.sin(angle);
+      return { x: cx, y: cy };
+    });
+  }, []);
+
+  const sortPlayersClockwise = useCallback((players: GamePlayer[]): GamePlayer[] => {
+    const centerX = 0.5;
+    const centerY = 0.55;
+    return [...players].sort((a, b) => {
+      const ax = a.circleX ?? centerX;
+      const ay = a.circleY ?? centerY;
+      const bx = b.circleX ?? centerX;
+      const by = b.circleY ?? centerY;
+      const angleA = Math.atan2(ax - centerX, -(ay - centerY));
+      const angleB = Math.atan2(bx - centerX, -(by - centerY));
+      const normA = angleA < 0 ? angleA + 2 * Math.PI : angleA;
+      const normB = angleB < 0 ? angleB + 2 * Math.PI : angleB;
+      return normA - normB;
+    });
+  }, []);
+
+  const setCirclePosition = useCallback((playerId: string, x: number, y: number) => {
+    if (!game) return;
+    const defaults = getDefaultCirclePositions(game.players.length);
+    const newPlayers = game.players.map((p, i) => {
+      if (p.id === playerId) return { ...p, circleX: x, circleY: y };
+      if (p.circleX === undefined || p.circleY === undefined) {
+        return { ...p, circleX: defaults[i].x, circleY: defaults[i].y };
+      }
+      return p;
+    });
+    const sorted = sortPlayersClockwise(newPlayers);
+    saveGame({ ...game, players: sorted });
+  }, [game, saveGame, sortPlayersClockwise, getDefaultCirclePositions]);
+
+  const resetCirclePositions = useCallback(() => {
+    if (!game) return;
+    const newPlayers = game.players.map(p => {
+      const { circleX, circleY, ...rest } = p;
+      return rest;
+    });
+    saveGame({ ...game, players: newPlayers });
+  }, [game, saveGame]);
+
   const clearScript = useCallback(() => {
     if (!game) return;
     saveGame({ ...game, script: null });
@@ -1005,5 +1060,7 @@ export function usePlayerGame() {
     addPlayer,
     removePlayer,
     setTrust,
+    setCirclePosition,
+    resetCirclePositions,
   };
 }
