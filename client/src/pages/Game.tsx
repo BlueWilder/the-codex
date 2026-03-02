@@ -2274,11 +2274,11 @@ function CircleSeatingChart({
       {hasCustomPositions && (
         <button
           onClick={onResetCirclePositions}
-          className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground mb-2 transition-colors"
+          className="flex items-center gap-1.5 text-sm px-3 py-1 rounded-full border border-amber-700/50 bg-amber-950/30 text-amber-400 hover:bg-amber-900/40 hover:border-amber-600/60 mb-2 transition-colors"
           data-testid="reset-circle-layout"
         >
-          <RotateCcw className="w-3 h-3" />
-          Reset Layout
+          <RotateCcw className="w-3.5 h-3.5" />
+          Circle Up
         </button>
       )}
       <DndContext

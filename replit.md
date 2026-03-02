@@ -89,7 +89,7 @@ A localStorage-based player tracking tool at `/game` for note-taking during game
   - Circle view features Storyteller box at top center with players in default U-shape arrangement (300° arc with 60° gap at top)
   - Free-drag positioning: players can be dragged anywhere on the circle canvas; custom positions saved as normalized `circleX`/`circleY` (0-1) on `GamePlayer`
   - Dragging a player re-sorts the players array clockwise from 12 o'clock (ST position), which also updates list view order
-  - "Reset Layout" button appears when custom positions exist; clears all `circleX`/`circleY` to restore default U-shape
+  - "Circle Up" button appears when custom positions exist; clears all `circleX`/`circleY` to restore default U-shape
 - **Persistence**: Game state saved to localStorage, survives page refresh
 - **Nomination system**: Dual recording modes:
   - **Full Vote Record**: Track individual player votes with auto ghost vote handling
