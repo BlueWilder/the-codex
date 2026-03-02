@@ -112,13 +112,13 @@ export function TrustSlider({ value, onChange, disabled }: TrustSliderProps) {
       <div
         ref={trackRef}
         className="relative w-full cursor-pointer"
-        style={{ height: "16px", padding: "5px 0" }}
+        style={{ height: "24px", padding: "7px 0" }}
         onClick={handleTrackClick}
       >
         <div
           style={{
-            height: "6px",
-            borderRadius: "3px",
+            height: "10px",
+            borderRadius: "5px",
             background: "linear-gradient(to right, #8B0000, #D4B896 50%, #228B22)",
           }}
         />
@@ -127,11 +127,11 @@ export function TrustSlider({ value, onChange, disabled }: TrustSliderProps) {
         className="absolute top-0 -translate-x-1/2"
         style={{
           left: `${value}%`,
-          width: "16px",
-          height: "16px",
+          width: "24px",
+          height: "24px",
           borderRadius: "50%",
           backgroundColor: "#C9A227",
-          boxShadow: "0 1px 3px rgba(0,0,0,0.4)",
+          boxShadow: "0 2px 4px rgba(0,0,0,0.4), 0 0 0 2px rgba(201,162,39,0.3)",
           cursor: disabled ? "default" : "grab",
           touchAction: "none",
         }}

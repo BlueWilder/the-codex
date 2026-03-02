@@ -1099,35 +1099,61 @@ function SortablePlayerCard({
       )}
       data-testid={`card-player-${player.id}`}
     >
-      <div className="flex items-start justify-between gap-2 mb-2">
-        <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 min-w-0 flex-1">
           <button
             {...attributes}
             {...listeners}
-            className="touch-none cursor-grab active:cursor-grabbing flex items-center justify-center w-9 h-9 -ml-2 -my-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 active:bg-muted"
+            className="touch-none cursor-grab active:cursor-grabbing flex items-center justify-center w-9 h-9 -ml-2 -my-1 shrink-0 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 active:bg-muted"
             data-testid={`button-drag-${player.id}`}
           >
             <GripVertical className="w-5 h-5" />
           </button>
-          {player.status === 'dead' && <Skull className="w-4 h-4 text-muted-foreground" />}
-          {player.status === 'exiled' && <Ban className="w-4 h-4 text-purple-400" />}
-          {player.status === 'left' && <LogOut className="w-4 h-4 text-muted-foreground" />}
+          {player.status === 'dead' && <Skull className="w-4 h-4 text-muted-foreground shrink-0" />}
+          {player.status === 'exiled' && <Ban className="w-4 h-4 text-purple-400 shrink-0" />}
+          {player.status === 'left' && <LogOut className="w-4 h-4 text-muted-foreground shrink-0" />}
           {player.isTraveler && (
-            <Badge variant="secondary" className="bg-purple-900/40 text-purple-300 border-purple-700 text-xs">
+            <Badge variant="secondary" className="bg-purple-900/40 text-purple-300 border-purple-700 text-xs shrink-0">
               T
             </Badge>
           )}
           <button
             onClick={onSelect}
             className={cn(
-              "font-bold text-lg text-left hover:underline",
+              "font-bold text-lg text-left hover:underline truncate min-w-0",
               isActive ? "text-amber-100" : "text-muted-foreground line-through"
             )}
           >
             {player.name}
           </button>
+          {claimedChars.length > 0 && (
+            <div className="flex gap-1 min-w-0 overflow-hidden">
+              {claimedChars.slice(0, 2).map(char => char && (
+                <Badge key={char.id} variant="secondary" className={cn("text-xs truncate max-w-[5.5rem]", TEAM_COLORS[char.team])}>
+                  {char.name}
+                </Badge>
+              ))}
+              {claimedChars.length > 2 && (
+                <Badge variant="secondary" className="text-xs shrink-0">
+                  +{claimedChars.length - 2}
+                </Badge>
+              )}
+            </div>
+          )}
         </div>
-        <div className="flex items-center gap-2 text-muted-foreground">
+        <div className="flex items-center gap-2 shrink-0 text-muted-foreground">
+          {nominationsReceived > 0 && (
+            <span className="flex items-center gap-1 text-amber-400 text-xs" data-testid={`text-nominated-${player.id}`}>
+              <GallowsIcon className="w-3.5 h-3.5" />
+              {nominationsReceived}
+            </span>
+          )}
+          {nominationsMade > 0 && (
+            <span className="flex items-center gap-1 text-purple-400 text-xs" data-testid={`text-nominations-made-${player.id}`}>
+              <PointingFingerIcon className="w-3.5 h-3.5" />
+              {nominationsMade}
+            </span>
+          )}
           {player.status === 'dead' && !player.isTraveler && (
             player.hasGhostVote ? (
               <Ghost className="w-5 h-5 text-purple-400" data-testid={`icon-ghost-vote-${player.id}`} />
@@ -1141,41 +1167,7 @@ function SortablePlayerCard({
           {hasNotes && <FileText className="w-4 h-4" />}
         </div>
       </div>
-      <div className="flex items-center justify-between gap-2">
-        {claimedChars.length > 0 ? (
-          <div className="flex flex-wrap gap-1 flex-1">
-            {claimedChars.slice(0, 3).map(char => char && (
-              <Badge key={char.id} variant="secondary" className={cn("text-xs", TEAM_COLORS[char.team])}>
-                {char.name}
-              </Badge>
-            ))}
-            {claimedChars.length > 3 && (
-              <Badge variant="secondary" className="text-xs">
-                +{claimedChars.length - 3}
-              </Badge>
-            )}
-          </div>
-        ) : (
-          <div className="flex-1" />
-        )}
-        <div className="flex items-center gap-2 shrink-0">
-          <div className="flex items-center gap-3 text-xs text-muted-foreground">
-            {nominationsReceived > 0 && (
-              <span className="flex items-center gap-1 text-amber-400" data-testid={`text-nominated-${player.id}`}>
-                <GallowsIcon className="w-3.5 h-3.5" />
-                {nominationsReceived}
-              </span>
-            )}
-            {nominationsMade > 0 && (
-              <span className="flex items-center gap-1 text-purple-400" data-testid={`text-nominations-made-${player.id}`}>
-                <PointingFingerIcon className="w-3.5 h-3.5" />
-                {nominationsMade}
-              </span>
-            )}
-          </div>
-        </div>
-      </div>
-      <div className="mt-2">
+      <div className="mt-3">
         <TrustSlider
           value={player.trust ?? 50}
           onChange={(val) => onSetTrust(player.id, val)}
