@@ -741,6 +741,22 @@ export function usePlayerGame() {
     saveGame({ ...game, players: sorted });
   }, [game, saveGame, sortPlayersClockwise, getDefaultCirclePositions]);
 
+  const setMultipleCirclePositions = useCallback((updates: { playerId: string; x: number; y: number }[]) => {
+    if (!game) return;
+    const updateMap = new Map(updates.map(u => [u.playerId, { x: u.x, y: u.y }]));
+    const defaults = getDefaultCirclePositions(game.players.length);
+    const newPlayers = game.players.map((p, i) => {
+      const update = updateMap.get(p.id);
+      if (update) return { ...p, circleX: update.x, circleY: update.y };
+      if (p.circleX === undefined || p.circleY === undefined) {
+        return { ...p, circleX: defaults[i].x, circleY: defaults[i].y };
+      }
+      return p;
+    });
+    const sorted = sortPlayersClockwise(newPlayers);
+    saveGame({ ...game, players: sorted });
+  }, [game, saveGame, sortPlayersClockwise, getDefaultCirclePositions]);
+
   const resetCirclePositions = useCallback(() => {
     if (!game) return;
     const newPlayers = game.players.map(p => {
@@ -1061,6 +1077,7 @@ export function usePlayerGame() {
     removePlayer,
     setTrust,
     setCirclePosition,
+    setMultipleCirclePositions,
     resetCirclePositions,
   };
 }

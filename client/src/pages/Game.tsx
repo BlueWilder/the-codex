@@ -2160,6 +2160,7 @@ function CircleSeatingChart({
   onSelectPlayer,
   onReorderPlayers,
   onSetCirclePosition,
+  onSetMultipleCirclePositions,
   onResetCirclePositions,
 }: {
   players: GamePlayer[];
@@ -2168,6 +2169,7 @@ function CircleSeatingChart({
   onSelectPlayer: (playerId: string) => void;
   onReorderPlayers: (activeId: string, overId: string) => void;
   onSetCirclePosition: (playerId: string, x: number, y: number) => void;
+  onSetMultipleCirclePositions: (updates: { playerId: string; x: number; y: number }[]) => void;
   onResetCirclePositions: () => void;
 }) {
   const [dimensions, setDimensions] = useState({ width: 300, height: 300 });
@@ -2258,11 +2260,43 @@ function CircleSeatingChart({
     const hasMoved = Math.abs(delta.x) > 3 || Math.abs(delta.y) > 3;
     if (hasMoved) {
       const currentPos = getPlayerPosition(players[playerIndex], playerIndex);
-      const newX = (currentPos.x + nodeSize / 2 + delta.x) / dimensions.width;
-      const newY = (currentPos.y + nodeSize / 2 + delta.y) / dimensions.height;
-      const clampedX = Math.max(0, Math.min(1, newX));
-      const clampedY = Math.max(0, Math.min(1, newY));
-      onSetCirclePosition(playerId, clampedX, clampedY);
+      const newCenterX = currentPos.x + nodeSize / 2 + delta.x;
+      const newCenterY = currentPos.y + nodeSize / 2 + delta.y;
+      const clampedX = Math.max(0, Math.min(1, newCenterX / dimensions.width));
+      const clampedY = Math.max(0, Math.min(1, newCenterY / dimensions.height));
+
+      const minDist = nodeSize * 0.8;
+      const updates: { playerId: string; x: number; y: number }[] = [
+        { playerId, x: clampedX, y: clampedY },
+      ];
+
+      players.forEach((other, i) => {
+        if (other.id === playerId) return;
+        const otherPos = getPlayerPosition(other, i);
+        const otherCenterX = otherPos.x + nodeSize / 2;
+        const otherCenterY = otherPos.y + nodeSize / 2;
+        const dx = otherCenterX - newCenterX;
+        const dy = otherCenterY - newCenterY;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (dist < minDist) {
+          const angle = dist > 1 ? Math.atan2(dy, dx) : Math.random() * Math.PI * 2;
+          const pushDist = (minDist * 1.2 - dist);
+          const nudgedX = (otherCenterX + Math.cos(angle) * pushDist) / dimensions.width;
+          const nudgedY = (otherCenterY + Math.sin(angle) * pushDist) / dimensions.height;
+          updates.push({
+            playerId: other.id,
+            x: Math.max(0, Math.min(1, nudgedX)),
+            y: Math.max(0, Math.min(1, nudgedY)),
+          });
+        }
+      });
+
+      if (updates.length > 1) {
+        onSetMultipleCirclePositions(updates);
+      } else {
+        onSetCirclePosition(playerId, clampedX, clampedY);
+      }
     }
 
     setActiveId(null);
@@ -2410,6 +2444,7 @@ function GameTrackerView({
   onRemovePlayer,
   onSetTrust,
   onSetCirclePosition,
+  onSetMultipleCirclePositions,
   onResetCirclePositions,
   choppingBlock,
   onExecuteFromBlock,
@@ -2445,6 +2480,7 @@ function GameTrackerView({
   onRemovePlayer: (playerId: string) => void;
   onSetTrust: (playerId: string, trust: number) => void;
   onSetCirclePosition: (playerId: string, x: number, y: number) => void;
+  onSetMultipleCirclePositions: (updates: { playerId: string; x: number; y: number }[]) => void;
   onResetCirclePositions: () => void;
   choppingBlock: { nominations: Nomination[]; isTied: boolean };
   onExecuteFromBlock: () => void;
@@ -2888,6 +2924,7 @@ function GameTrackerView({
           onSelectPlayer={(playerId) => setSelectedPlayerId(playerId)}
           onReorderPlayers={onReorderPlayers}
           onSetCirclePosition={onSetCirclePosition}
+          onSetMultipleCirclePositions={onSetMultipleCirclePositions}
           onResetCirclePositions={onResetCirclePositions}
         />
       )}
@@ -3102,6 +3139,7 @@ export default function Game() {
     removePlayer,
     setTrust,
     setCirclePosition,
+    setMultipleCirclePositions,
     resetCirclePositions,
     getChoppingBlock,
     executeFromBlock,
@@ -3158,6 +3196,7 @@ export default function Game() {
           onRemovePlayer={removePlayer}
           onSetTrust={setTrust}
           onSetCirclePosition={setCirclePosition}
+          onSetMultipleCirclePositions={setMultipleCirclePositions}
           onResetCirclePositions={resetCirclePositions}
           choppingBlock={getChoppingBlock()}
           onExecuteFromBlock={executeFromBlock}
