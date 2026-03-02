@@ -2103,8 +2103,8 @@ function CircleNodeContent({
     <div
       className={cn(
         "flex flex-col items-center justify-center rounded-full border-2 text-center",
-        isActive ? "bg-card border-border" : "bg-muted/50 border-muted",
-        player.isTraveler && "border-purple-700",
+        isActive ? "bg-card border-border" : "bg-muted/50 border-purple-600/70",
+        player.isTraveler && isActive && "border-purple-700",
         !isActive && "opacity-50",
         isOverlay && "shadow-2xl scale-110 border-amber-500 bg-card",
         isDragging && "opacity-40"
@@ -2112,7 +2112,6 @@ function CircleNodeContent({
       style={{ width: nodeSize, height: nodeSize }}
     >
       <div className="flex items-center gap-0.5 px-1">
-        {isDead && <Skull className="w-3 h-3 text-muted-foreground shrink-0" />}
         <span className={cn(
           "text-xs font-medium truncate max-w-[50px]",
           !isActive && "text-muted-foreground line-through"
