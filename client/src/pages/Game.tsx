@@ -6,7 +6,7 @@ import { useLocalScripts, type LocalScript } from "@/hooks/use-local-scripts";
 import { ScriptBuilderDialog } from "@/components/ScriptBuilderDialog";
 import { InlineGameLog } from "@/components/InlineGameLog";
 import { TrustSlider } from "@/components/TrustSlider";
-import { ChevronRight, ChevronLeft, Play, X, Plus, Check, Search, Moon, Sun, ChevronUp, ChevronDown, FileText, Vote, Loader2, GripVertical, UserPlus, ArrowRight, BookOpen, HandMetal, Ban, LogOut, Trash2, Pencil, MoreVertical, RotateCcw, Info, ExternalLink, Users, Skull, Ghost, Scroll, Hand, Target, Theater } from "lucide-react";
+import { ChevronRight, ChevronLeft, Play, X, Plus, Check, Search, Moon, Sun, ChevronUp, ChevronDown, FileText, Vote, Loader2, GripVertical, UserPlus, ArrowRight, BookOpen, HandMetal, Ban, LogOut, Trash2, Pencil, MoreVertical, RotateCcw, Info, ExternalLink, Users, Skull, Ghost, Scroll, Hand, Target, Theater, ArrowDownUp } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -2420,6 +2420,7 @@ function GameTrackerView({
   onNextDay,
   onPrevDay,
   onReorderPlayers,
+  onReversePlayers,
   hasBeenNominatedToday,
   hasNominatedToday,
   onCreateNomination,
@@ -2456,6 +2457,7 @@ function GameTrackerView({
   onNextDay: () => void;
   onPrevDay: () => void;
   onReorderPlayers: (activeId: string, overId: string) => void;
+  onReversePlayers: () => void;
   hasBeenNominatedToday: (playerId: string) => boolean;
   hasNominatedToday: (playerId: string) => boolean;
   onCreateNomination: (nomineeId: string, nominatorId: string, votes: PlayerVote[]) => void;
@@ -2892,6 +2894,18 @@ function GameTrackerView({
       {/* Tab Content */}
       {activeTab === 'list' && (
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <div className="flex justify-end mb-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onReversePlayers}
+              className="text-xs text-muted-foreground hover:text-foreground gap-1"
+              data-testid="button-reverse-order"
+            >
+              <ArrowDownUp className="w-3.5 h-3.5" />
+              Reverse Order
+            </Button>
+          </div>
           <SortableContext items={filteredPlayers.map(p => p.id)} strategy={rectSortingStrategy}>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {filteredPlayers.map((player) => (
@@ -3115,6 +3129,7 @@ export default function Game() {
     nextDay,
     prevDay,
     reorderPlayers,
+    reversePlayers,
     hasBeenNominatedToday,
     hasNominatedToday,
     createNomination,
@@ -3172,6 +3187,7 @@ export default function Game() {
           onNextDay={nextDay}
           onPrevDay={prevDay}
           onReorderPlayers={reorderPlayers}
+          onReversePlayers={reversePlayers}
           hasBeenNominatedToday={hasBeenNominatedToday}
           hasNominatedToday={hasNominatedToday}
           onCreateNomination={createNomination}

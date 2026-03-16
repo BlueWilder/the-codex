@@ -697,6 +697,11 @@ export function usePlayerGame() {
     saveGame({ ...game, players: newPlayers });
   }, [game, saveGame]);
 
+  const reversePlayers = useCallback(() => {
+    if (!game) return;
+    saveGame({ ...game, players: [...game.players].reverse() });
+  }, [game, saveGame]);
+
   const getDefaultCirclePositions = useCallback((playerCount: number) => {
     const gapDegrees = 60;
     const arcDegrees = 360 - gapDegrees;
@@ -1056,6 +1061,7 @@ export function usePlayerGame() {
     nextDay,
     prevDay,
     reorderPlayers,
+    reversePlayers,
     hasBeenNominatedToday,
     hasNominatedToday,
     getDayNominations,
