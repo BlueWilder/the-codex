@@ -281,6 +281,7 @@ const SCRIPTS = [
   { id: 'bmr', label: 'Bad Moon Rising' },
   { id: 'snv', label: 'Sects & Violets' },
   { id: 'twh', label: 'The Wild Hunt' },
+  { id: 'sot', label: 'The Ship of Theseus' },
 ];
 
 
