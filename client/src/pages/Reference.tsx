@@ -26,6 +26,7 @@ function CharacterCard({ char, isExpanded, onToggle }: {
       case 'minion': return 'text-red-400 border-red-900/30 bg-red-950/20';
       case 'demon': return 'text-red-600 border-red-900/50 bg-red-950/30';
       case 'traveler': return 'text-amber-400 border-amber-900/30 bg-amber-950/20';
+      case 'fabled': return 'text-violet-400 border-violet-900/30 bg-violet-950/20';
       default: return 'text-gray-400 border-gray-800';
     }
   };
@@ -311,28 +312,30 @@ export default function Reference() {
                           char.ability.toLowerCase().includes(search.toLowerCase());
     const matchesTeam = teamFilter === "all" || char.team === teamFilter;
     
-    // Travelers are always available regardless of script selection
-    const isTraveler = char.team === "traveler";
+    const isAlwaysAvailable = char.team === "traveler" || char.team === "fabled";
     let matchesScript = true;
     if (activeCustomScript) {
-      matchesScript = activeCustomScript.characterIds.includes(char.id) || isTraveler;
+      matchesScript = activeCustomScript.characterIds.includes(char.id) || isAlwaysAvailable;
     } else if (scriptFilter !== "all") {
       const officialScript = OFFICIAL_SCRIPTS.find(s => s.id === scriptFilter);
       if (officialScript) {
-        matchesScript = officialScript.characters.includes(char.id) || isTraveler;
+        matchesScript = officialScript.characters.includes(char.id) || isAlwaysAvailable;
       } else {
-        matchesScript = char.edition === scriptFilter || isTraveler;
+        matchesScript = char.edition === scriptFilter || isAlwaysAvailable;
       }
     }
     
     return matchesSearch && matchesTeam && matchesScript;
   }).sort((a, b) => {
-    // Travelers always sorted alphabetically and kept at the end
-    if (a.team === "traveler" && b.team === "traveler") {
+    const endTeams = ["traveler", "fabled"];
+    const aIsEnd = endTeams.includes(a.team);
+    const bIsEnd = endTeams.includes(b.team);
+    if (aIsEnd && bIsEnd) {
+      if (a.team !== b.team) return a.team === "traveler" ? -1 : 1;
       return a.name.localeCompare(b.name);
     }
-    if (a.team === "traveler" && b.team !== "traveler") return 1;
-    if (a.team !== "traveler" && b.team === "traveler") return -1;
+    if (aIsEnd && !bIsEnd) return 1;
+    if (!aIsEnd && bIsEnd) return -1;
     
     // Sort non-travelers based on selected sort order
     if (sortOrder === "alphabetical") {
@@ -345,9 +348,9 @@ export default function Reference() {
       return a.name.localeCompare(b.name);
     } else {
       // Sheet order: group by team, maintain original array order within team
-      const teamOrder = { townsfolk: 0, outsider: 1, minion: 2, demon: 3, traveler: 4 };
-      const aTeamOrder = teamOrder[a.team] ?? 5;
-      const bTeamOrder = teamOrder[b.team] ?? 5;
+      const teamOrder: Record<string, number> = { townsfolk: 0, outsider: 1, minion: 2, demon: 3, traveler: 4, fabled: 5 };
+      const aTeamOrder = teamOrder[a.team] ?? 6;
+      const bTeamOrder = teamOrder[b.team] ?? 6;
       if (aTeamOrder !== bTeamOrder) return aTeamOrder - bTeamOrder;
       // Within same team, maintain original array index order
       const aIndex = ALL_CHARACTERS.indexOf(a);
@@ -457,7 +460,7 @@ export default function Reference() {
 
           <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide items-center justify-between">
             <div className="flex gap-2 overflow-x-auto scrollbar-hide">
-              {['all', 'townsfolk', 'outsider', 'minion', 'demon', 'traveler'].map((f) => (
+              {['all', 'townsfolk', 'outsider', 'minion', 'demon', 'traveler', 'fabled'].map((f) => (
                 <button
                   key={f}
                   onClick={() => setTeamFilter(f)}

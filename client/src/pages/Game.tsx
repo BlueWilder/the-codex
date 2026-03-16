@@ -31,6 +31,7 @@ const TEAM_COLORS: Record<string, string> = {
   minion: "bg-orange-900/60 text-orange-200 border-orange-700",
   demon: "bg-red-900/60 text-red-200 border-red-700",
   traveler: "bg-purple-900/60 text-purple-200 border-purple-700",
+  fabled: "bg-violet-900/60 text-violet-200 border-violet-700",
 };
 
 function GallowsIcon({ className }: { className?: string }) {
@@ -420,13 +421,13 @@ function CharacterPicker({
         case 'minion': return 2;
         case 'demon': return 3;
         case 'traveler': return 4;
-        default: return 5;
+        case 'fabled': return 5;
+        default: return 6;
       }
     };
     return ALL_CHARACTERS.filter(c => {
       if (excludeIds.includes(c.id)) return false;
-      // Exclude Travelers from claims - they are always known before the game begins
-      if (c.team === 'traveler') return false;
+      if (c.team === 'traveler' || c.team === 'fabled') return false;
       if (scriptCharacterIds && scriptCharacterIds.length > 0 && !scriptCharacterIds.includes(c.id)) return false;
       return c.name.toLowerCase().includes(term) || c.team.toLowerCase().includes(term);
     }).sort((a, b) => {
@@ -1750,7 +1751,6 @@ function AddTravelerDialog({
   const [claimSearch, setClaimSearch] = useState("");
 
   const travelerCharacters = useMemo(() => {
-    // Travelers are never filtered by script - they can be added to any game
     let chars = ALL_CHARACTERS.filter(c => c.team === "traveler");
     if (claimSearch) {
       chars = chars.filter(c => c.name.toLowerCase().includes(claimSearch.toLowerCase()));

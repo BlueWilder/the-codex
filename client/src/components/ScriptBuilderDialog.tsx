@@ -22,6 +22,7 @@ const TEAM_COLORS: Record<string, string> = {
   minion: 'border-red-900/50 bg-red-950/30',
   demon: 'border-red-800/50 bg-red-950/40',
   traveler: 'border-amber-900/50 bg-amber-950/30',
+  fabled: 'border-violet-900/50 bg-violet-950/30',
 };
 
 export function ScriptBuilderDialog({
@@ -98,6 +99,7 @@ export function ScriptBuilderDialog({
     minion: Array.from(selectedCharacters).filter(id => ALL_CHARACTERS.find(c => c.id === id)?.team === 'minion').length,
     demon: Array.from(selectedCharacters).filter(id => ALL_CHARACTERS.find(c => c.id === id)?.team === 'demon').length,
     traveler: Array.from(selectedCharacters).filter(id => ALL_CHARACTERS.find(c => c.id === id)?.team === 'traveler').length,
+    fabled: Array.from(selectedCharacters).filter(id => ALL_CHARACTERS.find(c => c.id === id)?.team === 'fabled').length,
   };
 
   const hasDemon = teamCounts.demon > 0;
@@ -132,12 +134,13 @@ export function ScriptBuilderDialog({
               {teamCounts.demon} DM {!hasDemon && "(need 1+)"}
             </span>
             <span className="text-amber-400">{teamCounts.traveler} TR</span>
+            <span className="text-violet-400">{teamCounts.fabled} FB</span>
             <span className="ml-auto font-medium">{selectedCharacters.size} total</span>
           </div>
         </div>
         
         <div className="flex flex-wrap items-center gap-1 md:gap-2 pt-2">
-          {['all', 'townsfolk', 'outsider', 'minion', 'demon', 'traveler'].map((f) => (
+          {['all', 'townsfolk', 'outsider', 'minion', 'demon', 'traveler', 'fabled'].map((f) => (
             <button
               key={f}
               onClick={() => setTeamFilter(f)}

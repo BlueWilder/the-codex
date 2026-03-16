@@ -3,7 +3,7 @@ export interface Character {
   id: string;
   name: string;
   edition: 'tb' | 'snv' | 'bmr' | 'experimental' | 'traveler';
-  team: 'townsfolk' | 'outsider' | 'minion' | 'demon' | 'traveler';
+  team: 'townsfolk' | 'outsider' | 'minion' | 'demon' | 'traveler' | 'fabled';
   ability: string;
   firstNightOrder: number | null;  // null = doesn't wake
   otherNightOrder: number | null;
@@ -3282,7 +3282,7 @@ When their amigo is nominated, the Gnome may choose to kill the nominator immedi
     id: 'deusexfiasco',
     name: 'Deus ex Fiasco',
     edition: 'experimental',
-    team: 'traveler',
+    team: 'fabled',
     ability: 'At least once per game, the Storyteller will make a mistake, correct it, and publicly admit to it.',
     firstNightOrder: null,
     otherNightOrder: null,
@@ -3307,7 +3307,7 @@ The Storyteller may also deliberately break the rules and then correct them, dec
     id: 'ferryman',
     name: 'Ferryman',
     edition: 'experimental',
-    team: 'traveler',
+    team: 'fabled',
     ability: 'On the final day, all dead players regain their vote token.',
     firstNightOrder: null,
     otherNightOrder: null,
@@ -3332,7 +3332,7 @@ All dead players regain their vote tokens on the final day, regardless of alignm
     id: 'stormcatcher',
     name: 'Storm Catcher',
     edition: 'experimental',
-    team: 'traveler',
+    team: 'fabled',
     ability: 'Name a good character. If in play, they can only die by execution, but evil players learn which player it is.',
     firstNightOrder: null,
     otherNightOrder: null,
@@ -3357,7 +3357,7 @@ However, all evil players learn which player is protected.`,
     id: 'hellslibrarian',
     name: "Hell's Librarian",
     edition: 'experimental',
-    team: 'traveler',
+    team: 'fabled',
     ability: 'Something bad might happen to whoever talks when the Storyteller has asked for silence.',
     firstNightOrder: null,
     otherNightOrder: null,
