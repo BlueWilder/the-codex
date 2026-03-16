@@ -2762,6 +2762,28 @@ function GameTrackerView({
           )}
         </div>
 
+        {/* Role Count */}
+        {(() => {
+          const roleBreakdown = getBreakdown(regularPlayers.length);
+          return (
+            <div className="flex items-center justify-center gap-1.5 px-4 py-2 border-b border-border text-sm flex-wrap" data-testid="section-role-count">
+              <span className="text-blue-400 font-medium" data-testid="text-townsfolk-count">{roleBreakdown.townsfolk} Townsfolk</span>
+              <span className="text-muted-foreground">·</span>
+              <span className="text-green-400 font-medium" data-testid="text-outsiders-count">{roleBreakdown.outsiders} Outsider{roleBreakdown.outsiders !== 1 ? 's' : ''}</span>
+              <span className="text-muted-foreground">·</span>
+              <span className="text-red-400 font-medium" data-testid="text-minions-count">{roleBreakdown.minions} Minion{roleBreakdown.minions !== 1 ? 's' : ''}</span>
+              <span className="text-muted-foreground">·</span>
+              <span className="text-red-700 font-medium" data-testid="text-demon-count">{roleBreakdown.demons} Demon{roleBreakdown.demons !== 1 ? 's' : ''}</span>
+              {travelers.length > 0 && (
+                <>
+                  <span className="text-muted-foreground">·</span>
+                  <span className="text-purple-400 font-medium" data-testid="text-travelers-count">{travelers.length} Traveler{travelers.length !== 1 ? 's' : ''}</span>
+                </>
+              )}
+            </div>
+          );
+        })()}
+
         {/* Core Action Zone - Alive/Dead/Nominate as 3 main action buttons */}
         <div className="grid grid-cols-3 gap-3 px-3 py-3 border-b border-border">
           {/* Alive - Interactive Filter */}
