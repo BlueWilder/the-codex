@@ -2796,30 +2796,33 @@ One good player is told that a Widow is in play.`,
     name: 'Wizard',
     edition: 'experimental',
     team: 'minion',
-    ability: 'The Demon does not know which players are which Minion. On their 1st night, the Demon may choose a player: they die.',
-    firstNightOrder: 22,
+    ability: 'Once per game, choose to make a wish. If granted, it might have a price & leave a clue as to its nature.',
+    firstNightOrder: null,
     otherNightOrder: null,
     setup: false,
     reminders: [],
-    flavorQuote: "Abracadabra!",
-    extendedSummary: `The Wizard gives the Demon an extra first-night kill.
+    flavorQuote: "Every man and every woman is a star. Love is the law, love under will.",
+    extendedSummary: `The Wizard makes a wish - any wish - and the Storyteller decides whether to grant it. If granted, the wish may come with a price (a balancing mechanic adjustment) and leave a clue for the good team about what was wished.
 
-The Demon doesn't know specifically which players are which Minion - just that they exist. On the first night, the Demon may choose to kill a player.
+The Storyteller has full discretion over accepting or declining the wish, setting prices, and providing clues. The most fun games tend to have all wishes granted with both a price and a clue.
 
-This gives evil an early advantage.`,
+Even after the Wizard dies, the effects of the wish remain in play.`,
     tipsAndTricks: [
-      "Your Demon can kill on night 1 - coordinate who to eliminate.",
-      "Evil doesn't know which Minion is which - find each other carefully.",
-      "Use the extra kill to remove a powerful information character.",
-      "This puts evil ahead early in the game."
+      "Make your wish immediately! The sooner you wish, the quicker it can take effect and start wreaking havoc on the town.",
+      "Alternatively, wait a few days to hide that there is a Wizard in play, making the good team suspect different Minion abilities. A later-game wish can be much more targeted.",
+      "Be aware of how potent your wish is! Extremely powerful wishes should be expected to come with a hefty price. Inherently balanced wishes might not need a price or clue at all.",
+      "Keep it simple. Simple wishes can be incredibly strong, especially if used at the right time.",
+      "Sow as much chaos and distraction as you can. As long as you've made a wish, the effects stay in play even after you are dead."
     ],
     fightingThe: [
-      "There might be a death on night 1 - be prepared.",
-      "Evil doesn't know which Minion is which - they might seem confused.",
-      "The Wizard enables an aggressive evil start.",
-      "Watch for evil players testing who their teammates are."
+      "Pay close attention to unusual things the Storyteller says or does - these are likely clues to the Wizard's wish.",
+      "Use the clues to your advantage! If your character changes, find other players who have also changed. Talk about what you see and try to identify what the clue is telling you.",
+      "You might not recognize a clue as a clue. Spend a little time thinking carefully about unconventional phrases or behaviors the Storyteller uses.",
+      "Put attention on the wish at first, but remember your ultimate goal is to find and execute the Demon. Don't focus too much on the wish in the late game.",
+      "Trust your Storyteller to set an adequate price and provide an appropriate clue for the Wizard's wish.",
+      "Have fun! Let go of your expectations for what is possible, and focus on any clues or unconventional shenanigans to help your team."
     ],
-    howToRun: "During the first night, when waking the Demon, do not show them specifically which players are which Minions - just that Minions exist.\n\nDuring the first night, after waking the Demon normally, wake them again. They may point to a player. That player dies tonight."
+    howToRun: "When the Wizard makes a wish (verbally or via text), decide whether to accept or decline it. If declined, prompt them to wish again or tell them they have no more wishes.\n\nIf granted, signal acceptance. Now or later, you may set a price: make whatever mechanical adjustments you feel are necessary for balance. Now or later, you may declare publicly that the Wizard has made a wish and give the good team a clue about what was wished.\n\nOverall, the wish should tip the scales in favour of the Wizard, but still allow the good team a reasonable chance of winning."
   },
   {
     id: 'wraith',
