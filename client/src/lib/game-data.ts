@@ -3352,6 +3352,31 @@ However, all evil players learn which player is protected.`,
     ],
     bluffingAs: [],
     howToRun: "This is a Fabled (Storyteller tool). Name a good character. If that character is in play, mark that player with the PROTECTED reminder - they can only die by execution.\n\nDuring the first night (or when Storm Catcher enters play), wake each evil player. Point to the protected player."
+  },
+  {
+    id: 'hellslibrarian',
+    name: "Hell's Librarian",
+    edition: 'experimental',
+    team: 'traveler',
+    ability: 'Something bad might happen to whoever talks when the Storyteller has asked for silence.',
+    firstNightOrder: null,
+    otherNightOrder: null,
+    setup: false,
+    reminders: ['Something bad'],
+    flavorQuote: "Something bad might happen to whoever talks when the Storyteller has asked for silence.",
+    extendedSummary: `Hell's Librarian is a Fabled character that helps the Storyteller maintain order.
+
+When the Storyteller asks for silence (e.g. during night or important announcements), any player who talks or interrupts may suffer a consequence chosen by the Storyteller - such as being poisoned, losing their vote for the day, or becoming mad.
+
+This Fabled is useful for managing talkative groups or enforcing game etiquette.`,
+    tipsAndTricks: [
+      "This is a Fabled - a Storyteller tool, not a regular character.",
+      "It helps maintain order during important game moments.",
+      "The 'something bad' is up to the Storyteller - it could be poisoning, losing a vote, or other consequences.",
+      "Trust that the Storyteller uses it fairly and only when needed."
+    ],
+    bluffingAs: [],
+    howToRun: "At any time, declare that the Hell's Librarian is in play.\n\nAt any time, you can ask the group for silence for a particular period of time. Remind them that the Hell's Librarian is in play if needed. If a player talks or otherwise interrupts during that time, you can let them know that something bad happens to them - such as being poisoned, going mad, or losing their vote for the day."
   }
 ];
 
@@ -3391,6 +3416,14 @@ export const OFFICIAL_SCRIPTS = [
     description: 'A community script blending hunter and hunted. Features bounty hunters, exorcists, and lycanthropes alongside cunning demons and deadly minions.',
     isOfficial: false,
     characters: ['steward', 'knight', 'noble', 'bountyhunter', 'preacher', 'king', 'innkeeper', 'exorcist', 'lycanthrope', 'professor', 'fisherman', 'choirboy', 'banshee', 'ogre', 'lunatic', 'golem', 'moonchild', 'devilsadvocate', 'psychopath', 'wraith', 'goblin', 'mastermind', 'ojo', 'kazali', 'po'],
+  },
+  {
+    id: 'sot',
+    name: 'The Ship of Theseus',
+    author: 'TopazChicken',
+    description: 'A community script exploring identity and transformation. Features character-swapping, wish-granting, and summoning alongside deadly demons and cunning minions.',
+    isOfficial: false,
+    characters: ['bountyhunter', 'balloonist', 'snakecharmer', 'undertaker', 'savant', 'nightwatchman', 'professor', 'cannibal', 'sage', 'tealady', 'virgin', 'magician', 'drunk', 'golem', 'barber', 'hatter', 'witch', 'pitHag', 'wizard', 'summoner', 'boffin', 'noDashii', 'imp', 'vigormortis', 'fangGu', 'thief', 'cacklejack', 'gangster', 'apprentice', 'gnome', 'hellslibrarian'],
   },
 ];
 

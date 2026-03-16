@@ -61,8 +61,8 @@ Character data is stored client-side in `client/src/lib/game-data.ts` with full 
   - Experimental characters: 71 verified against wiki with fixes applied:
     - Jan 2026: Psychopath, Organ Grinder, Vizier, Riot, Alchemist, Lycanthrope, Nightwatchman, Boomdandy
     - Mar 2026: Wizard (completely wrong ability), Princess (completely wrong ability), Deus ex Fiasco (completely wrong ability), Damsel (wording), Snitch (wording), Al-Hadikhia (wording), Plague Doctor (wording), Yaggababble (wording)
-- **Built-in Scripts**: Trouble Brewing, Bad Moon Rising, Sects & Violets (official), The Wild Hunt (community, by Logan & Brad)
-  - The Wild Hunt uses experimental characters; Reference page filter uses `OFFICIAL_SCRIPTS` character lists instead of `edition` matching
+- **Built-in Scripts**: Trouble Brewing, Bad Moon Rising, Sects & Violets (official), The Wild Hunt (community, by Logan & Brad), The Ship of Theseus (community, by TopazChicken)
+  - Community scripts use experimental characters; Reference page filter uses `OFFICIAL_SCRIPTS` character lists instead of `edition` matching
 
 ### Introduction Page
 A beginner-friendly guide at `/introduction` explaining Blood on the Clocktower to new players:
