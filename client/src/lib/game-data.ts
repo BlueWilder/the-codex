@@ -1992,29 +1992,31 @@ The Preacher can choose the same player multiple times to keep them disabled.`,
     name: 'Princess',
     edition: 'experimental',
     team: 'townsfolk',
-    ability: 'You may nominate as many times as you wish, but if the Demon nominates you, you lose your ability.',
+    ability: 'On your 1st day, if you nominated & executed a player, the Demon doesn\'t kill tonight.',
     firstNightOrder: null,
     otherNightOrder: null,
     setup: false,
-    reminders: ['No ability'],
-    flavorQuote: "Off with their heads!",
-    extendedSummary: `The Princess can nominate multiple times per day.
+    reminders: ["Doesn't kill"],
+    flavorQuote: "On your 1st day, if you nominated & executed a player, the Demon doesn't kill tonight.",
+    extendedSummary: `The Princess can prevent the Demon from killing on the first night - if she acts quickly.
 
-The Princess may nominate as many players as they wish each day, unlike normal rules that limit nominations to once per day.
+If the Princess nominates a player on the first day and that player is executed, the Demon doesn't kill that night. This gives the good team a significant early advantage by saving a life.
 
-However, if the Demon nominates the Princess, the Princess loses their ability for the rest of the game.`,
+The ability only works on the first day, so the Princess needs to act fast and convince the group to follow her lead.`,
     tipsAndTricks: [
-      "Use your extra nominations to pressure suspicious players.",
-      "Be careful not to make yourself too obvious to the Demon.",
-      "Your ability is powerful for controlling the day phase.",
-      "If the Demon nominates you, you've identified them (but lost your ability)."
+      "Demand attention from your fellow players! If you want to be the one who nominates and executes a player, let everyone know your plan in advance so they'll vote with you.",
+      "On your 1st day, try to find a player who doesn't mind being executed. Nominate them and keep it casual, bluffing as if you are not the Princess.",
+      "Don't use your ability. Stay quiet, wait, and see if a different player tries to claim that they are the Princess.",
+      "Can you use your ability without killing a player? Look for reasons someone might not die to execution, like a Tea Lady or a Sailor.",
+      "Be kind! Pushing to get someone killed on the first day can be socially tricky.",
+      "Be honest and forthcoming. The more socially good you seem, the more people will believe you and choose to go forward with your plan."
     ],
     bluffingAs: [
-      "Claim Princess to justify nominating multiple times.",
-      "Be careful - if the Demon nominates you and you keep nominating, you're caught.",
-      "Use this bluff to aggressively push for executions."
+      "Claim Princess to push for a first-day execution, causing chaos.",
+      "Use this bluff to get a good player executed early.",
+      "Be careful - a real Princess in play will out you quickly."
     ],
-    howToRun: "The Princess may nominate as many times as they wish each day.\n\nIf the Demon nominates the Princess, mark the Princess with the NO ABILITY reminder. The Princess may only nominate once per day from now on, like other players."
+    howToRun: "If the Princess nominates and executes a player on the first day, mark the Demon with the DOESN'T KILL reminder. Tonight, if the Demon would wake to choose a player, wake them as normal. The Demon does not kill."
   },
   {
     id: 'shugenja',
@@ -2109,7 +2111,7 @@ This means Village Idiot information needs to be compared between multiple playe
     name: 'Damsel',
     edition: 'experimental',
     team: 'outsider',
-    ability: 'All Minions know you are in play. If a Minion publicly guesses you (once), your team loses.',
+    ability: 'All Minions know a Damsel is in play. If a Minion publicly guesses you (once), your team loses.',
     firstNightOrder: 30,
     otherNightOrder: null,
     setup: false,
@@ -2283,7 +2285,7 @@ The Ogre doesn't learn their new alignment. This works even if the Ogre is drunk
     name: 'Plague Doctor',
     edition: 'experimental',
     team: 'outsider',
-    ability: 'If you die, the Storyteller gains a Minion ability.',
+    ability: 'When you die, the Storyteller gains a Minion ability.',
     firstNightOrder: null,
     otherNightOrder: null,
     setup: false,
@@ -2370,7 +2372,7 @@ If they guess wrong, they get false information about the Demon.`,
     name: 'Snitch',
     edition: 'experimental',
     team: 'outsider',
-    ability: 'Minions start knowing 3 not-in-play characters.',
+    ability: 'Each Minion gets 3 bluffs.',
     firstNightOrder: 7,
     otherNightOrder: null,
     setup: false,
@@ -2890,7 +2892,7 @@ The Xaan can add any number of Outsiders during setup. The Xaan must be alive to
     name: 'Al-Hadikhia',
     edition: 'experimental',
     team: 'demon',
-    ability: 'Each night*, choose 3 players (all players learn who): each silently chooses to live or die, but if all 3 live, all 3 die.',
+    ability: 'Each night*, you may choose 3 players (all players learn who): each silently chooses to live or die, but if all live, all die.',
     firstNightOrder: null,
     otherNightOrder: 28,
     setup: false,
@@ -3162,7 +3164,7 @@ On day 3, Minions become Riot. Good wins if all Riot players are dead.`,
     name: 'Yaggababble',
     edition: 'experimental',
     team: 'demon',
-    ability: 'You start knowing a secret phrase. For each time you said it publicly today, a player might die tonight.',
+    ability: 'You start knowing a secret phrase. For each time you said it publicly today, a player might die.',
     firstNightOrder: 27,
     otherNightOrder: 35,
     setup: false,
@@ -3281,25 +3283,25 @@ When their amigo is nominated, the Gnome may choose to kill the nominator immedi
     name: 'Deus ex Fiasco',
     edition: 'experimental',
     team: 'traveler',
-    ability: 'Once per game, the Storyteller may choose a player: they die.',
+    ability: 'At least once per game, the Storyteller will make a mistake, correct it, and publicly admit to it.',
     firstNightOrder: null,
     otherNightOrder: null,
     setup: false,
-    reminders: ['Used'],
-    flavorQuote: "The gods are capricious.",
-    extendedSummary: `Deus ex Fiasco gives the Storyteller a one-time kill.
+    reminders: ['Whoopsie'],
+    flavorQuote: "At least once per game, the Storyteller will make a mistake, correct it, and publicly admit to it.",
+    extendedSummary: `Deus ex Fiasco is a Fabled character that gives the Storyteller permission to make mistakes.
 
-Once per game, the Storyteller may use this Fabled to kill a player of their choice.
+At the start of the game, the Storyteller declares that the Deus ex Fiasco is in play. At any time during the game, if the Storyteller makes a mistake, they correct it as best they can (bending the rules if needed) and publicly admit to it.
 
-This is typically used to correct game imbalances.`,
+The Storyteller may also deliberately break the rules and then correct them, declaring a mistake was made. This helps newer Storytellers feel comfortable running games.`,
     tipsAndTricks: [
-      "This is a Storyteller tool to fix game problems.",
-      "If things get too unbalanced, this might be used.",
-      "Trust that the Storyteller is using it fairly.",
-      "This death is outside normal rules."
+      "This is a Fabled - a Storyteller tool, not a regular character.",
+      "It gives the Storyteller a safety net for accidental mistakes.",
+      "If the Storyteller announces a mistake, trust that they've corrected it fairly.",
+      "This is especially useful for newer Storytellers learning the game."
     ],
     bluffingAs: [],
-    howToRun: "This is a Fabled (Storyteller tool). Once per game, you may choose a player to die. Use this to fix game imbalances or problematic situations."
+    howToRun: "At the start of the game, declare that the Deus ex Fiasco is in play.\n\nAt any time, if you make a mistake, correct it as best you can, bending the rules if needed. Afterwards, declare that you have made a mistake. Add the WHOOPSIE reminder to the Grimoire.\n\nAt any time, you may deliberately break the rules, then correct it. Afterwards, declare that you have made a mistake."
   },
   {
     id: 'ferryman',

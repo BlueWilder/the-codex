@@ -56,9 +56,11 @@ Character data is stored client-side in `client/src/lib/game-data.ts` with full 
 - Extended summaries, tips, and bluffing advice
 - Jinx interactions between characters
 - Storyteller "How to Run" instructions for all characters
-- **Data Verification (Jan 2026)**: Complete audit of all character editions against official wiki:
+- **Data Verification (Mar 2026)**: Complete audit of all character editions against official wiki:
   - Core editions (TB, BMR, S&V): 100% verified accurate
-  - Experimental characters: 57+ verified with 8 fixes applied - Psychopath, Organ Grinder, Vizier, Riot, Alchemist, Lycanthrope, Nightwatchman, Boomdandy
+  - Experimental characters: 71 verified against wiki with fixes applied:
+    - Jan 2026: Psychopath, Organ Grinder, Vizier, Riot, Alchemist, Lycanthrope, Nightwatchman, Boomdandy
+    - Mar 2026: Wizard (completely wrong ability), Princess (completely wrong ability), Deus ex Fiasco (completely wrong ability), Damsel (wording), Snitch (wording), Al-Hadikhia (wording), Plague Doctor (wording), Yaggababble (wording)
 - **Built-in Scripts**: Trouble Brewing, Bad Moon Rising, Sects & Violets (official), The Wild Hunt (community, by Logan & Brad)
   - The Wild Hunt uses experimental characters; Reference page filter uses `OFFICIAL_SCRIPTS` character lists instead of `edition` matching
 
