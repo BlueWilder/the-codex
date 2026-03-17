@@ -1070,12 +1070,16 @@ function SortablePlayerCard({
   player,
   game,
   onSelect,
-  onSetTrust,
+  onToggleAlive,
+  onToggleGhostVote,
+  onOpenClaimPicker,
 }: {
   player: GamePlayer;
   game: NonNullable<ReturnType<typeof usePlayerGame>["game"]>;
   onSelect: () => void;
-  onSetTrust: (playerId: string, trust: number) => void;
+  onToggleAlive: () => void;
+  onToggleGhostVote: () => void;
+  onOpenClaimPicker: () => void;
 }) {
   const {
     attributes,
@@ -1101,93 +1105,113 @@ function SortablePlayerCard({
 
   const isActive = player.status === 'alive';
   const isInactive = player.status !== 'alive';
+  const isDead = player.status === 'dead';
 
   return (
     <Card
       ref={setNodeRef}
       style={style}
       className={cn(
-        "p-4",
+        "p-3",
         isInactive && "opacity-60",
         isDragging && "opacity-80 shadow-lg z-50 scale-[1.02]",
         player.isTraveler && "border-purple-700/50"
       )}
       data-testid={`card-player-${player.id}`}
     >
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2 min-w-0 flex-1">
-          <button
-            {...attributes}
-            {...listeners}
-            className="touch-none cursor-grab active:cursor-grabbing flex items-center justify-center w-9 h-9 -ml-2 -my-1 shrink-0 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 active:bg-muted"
-            data-testid={`button-drag-${player.id}`}
-          >
-            <GripVertical className="w-5 h-5" />
-          </button>
-          {player.status === 'dead' && <Skull className="w-4 h-4 text-muted-foreground shrink-0" />}
-          {player.status === 'exiled' && <Ban className="w-4 h-4 text-purple-400 shrink-0" />}
-          {player.status === 'left' && <LogOut className="w-4 h-4 text-muted-foreground shrink-0" />}
-          {player.isTraveler && (
-            <Badge variant="secondary" className="bg-purple-900/40 text-purple-300 border-purple-700 text-xs shrink-0">
-              T
-            </Badge>
+      <div className="flex items-center gap-2">
+        <button
+          {...attributes}
+          {...listeners}
+          className="touch-none cursor-grab active:cursor-grabbing flex items-center justify-center w-9 h-9 -ml-1 shrink-0 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 active:bg-muted"
+          data-testid={`button-drag-${player.id}`}
+        >
+          <GripVertical className="w-5 h-5" />
+        </button>
+        {player.isTraveler && (
+          <Badge variant="secondary" className="bg-purple-900/40 text-purple-300 border-purple-700 text-xs shrink-0">
+            T
+          </Badge>
+        )}
+        <button
+          onClick={onSelect}
+          className={cn(
+            "font-bold text-lg text-left hover:underline truncate min-w-0",
+            isActive ? "text-amber-100" : "text-muted-foreground line-through"
           )}
-          <button
-            onClick={onSelect}
-            className={cn(
-              "font-bold text-lg text-left hover:underline truncate min-w-0",
-              isActive ? "text-amber-100" : "text-muted-foreground line-through"
-            )}
-          >
-            {player.name}
-          </button>
-          {claimedChars.length > 0 && (
-            <div className="flex gap-1 min-w-0 overflow-hidden">
-              {claimedChars.slice(0, 2).map(char => char && (
-                <Badge key={char.id} variant="secondary" className={cn("text-xs truncate max-w-[5.5rem]", TEAM_COLORS[char.team])}>
-                  {char.name}
-                </Badge>
-              ))}
-              {claimedChars.length > 2 && (
-                <Badge variant="secondary" className="text-xs shrink-0">
-                  +{claimedChars.length - 2}
-                </Badge>
-              )}
-            </div>
-          )}
-        </div>
-        <div className="flex items-center gap-2 shrink-0 text-muted-foreground">
+          data-testid={`button-player-name-${player.id}`}
+        >
+          {player.name}
+        </button>
+        <div className="flex items-center gap-1 shrink-0 ml-auto">
           {nominationsReceived > 0 && (
-            <span className="flex items-center gap-1 text-amber-400 text-xs" data-testid={`text-nominated-${player.id}`}>
+            <span className="flex items-center gap-0.5 text-amber-400 text-xs" data-testid={`text-nominated-${player.id}`}>
               <GallowsIcon className="w-3.5 h-3.5" />
               {nominationsReceived}
             </span>
           )}
           {nominationsMade > 0 && (
-            <span className="flex items-center gap-1 text-purple-400 text-xs" data-testid={`text-nominations-made-${player.id}`}>
+            <span className="flex items-center gap-0.5 text-purple-400 text-xs" data-testid={`text-nominations-made-${player.id}`}>
               <PointingFingerIcon className="w-3.5 h-3.5" />
               {nominationsMade}
             </span>
           )}
-          {player.status === 'dead' && !player.isTraveler && (
-            player.hasGhostVote ? (
-              <Ghost className="w-5 h-5 text-purple-400" data-testid={`icon-ghost-vote-${player.id}`} />
-            ) : (
-              <span className="relative" data-testid={`icon-ghost-spent-${player.id}`}>
-                <Ghost className="w-5 h-5 text-muted-foreground/40" />
-                <X className="w-3 h-3 text-red-500 absolute -bottom-0.5 -right-0.5" />
-              </span>
-            )
-          )}
-          {hasNotes && <FileText className="w-4 h-4" />}
+          {hasNotes && <FileText className="w-3.5 h-3.5 text-muted-foreground" />}
         </div>
       </div>
-      <div className="mt-3">
-        <TrustSlider
-          value={player.trust ?? 50}
-          onChange={(val) => onSetTrust(player.id, val)}
-          disabled={player.status !== 'alive'}
-        />
+
+      <div className="flex items-center gap-2 mt-2">
+        <div className="flex items-center gap-1.5 flex-1 min-w-0 overflow-x-auto">
+          {claimedChars.map(char => char && (
+            <Badge key={char.id} variant="secondary" className={cn("text-xs whitespace-nowrap shrink-0", TEAM_COLORS[char.team])}>
+              {char.name}
+            </Badge>
+          ))}
+          <button
+            onClick={onOpenClaimPicker}
+            className="flex items-center gap-1 px-3 rounded-full border border-dashed border-amber-700/60 text-amber-400 text-xs font-medium hover:bg-amber-900/20 hover:border-amber-600 transition-colors shrink-0 h-10"
+            data-testid={`button-add-claim-${player.id}`}
+          >
+            <Plus className="w-3.5 h-3.5" />
+            Claim
+          </button>
+        </div>
+
+        <div className="flex items-center gap-1.5 shrink-0">
+          {!player.isTraveler && (
+            <button
+              onClick={onToggleAlive}
+              className={cn(
+                "flex items-center justify-center w-11 h-11 rounded-lg border transition-colors",
+                isDead
+                  ? "bg-red-900/40 border-red-700/60 text-red-400 hover:bg-red-900/60"
+                  : "border-muted-foreground/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+              )}
+              title={isDead ? "Revive player" : "Mark as dead"}
+              data-testid={`button-toggle-dead-${player.id}`}
+            >
+              <Skull className="w-5 h-5" />
+            </button>
+          )}
+          {isDead && !player.isTraveler && (
+            <button
+              onClick={onToggleGhostVote}
+              className={cn(
+                "relative flex items-center justify-center w-11 h-11 rounded-lg border transition-colors",
+                player.hasGhostVote
+                  ? "bg-purple-900/40 border-purple-700/60 text-purple-400 hover:bg-purple-900/60"
+                  : "bg-muted/30 border-muted-foreground/30 text-muted-foreground/40 hover:bg-muted/50"
+              )}
+              title={player.hasGhostVote ? "Use ghost vote" : "Ghost vote spent"}
+              data-testid={`button-toggle-ghost-${player.id}`}
+            >
+              <Ghost className="w-5 h-5" />
+              {!player.hasGhostVote && (
+                <X className="w-3 h-3 text-red-500 absolute bottom-1 right-1" />
+              )}
+            </button>
+          )}
+        </div>
       </div>
     </Card>
   );
@@ -2495,6 +2519,7 @@ function GameTrackerView({
   const [showScriptBuilder, setShowScriptBuilder] = useState(false);
   const [editingScript, setEditingScript] = useState<LocalScript | null>(null);
   const [playerFilter, setPlayerFilter] = useState<'all' | 'alive' | 'dead'>('all');
+  const [claimPickerPlayerId, setClaimPickerPlayerId] = useState<string | null>(null);
   const { getScriptById, isLoading: scriptsLoading, allScripts, addCustomScript, updateCustomScript, customScripts } = useLocalScripts();
   
   const resolvedScript = game.script ? getScriptById(game.script.id) : null;
@@ -2936,7 +2961,9 @@ function GameTrackerView({
                   player={player}
                   game={game}
                   onSelect={() => setSelectedPlayerId(player.id)}
-                  onSetTrust={onSetTrust}
+                  onToggleAlive={() => onToggleAlive(player.id)}
+                  onToggleGhostVote={() => onToggleGhostVote(player.id)}
+                  onOpenClaimPicker={() => setClaimPickerPlayerId(player.id)}
                 />
               ))}
             </div>
@@ -3128,6 +3155,19 @@ function GameTrackerView({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {claimPickerPlayerId && (
+        <CharacterPicker
+          open={!!claimPickerPlayerId}
+          onClose={() => setClaimPickerPlayerId(null)}
+          onSelect={(characterIds) => {
+            onAddMultipleClaims(claimPickerPlayerId, characterIds);
+            setClaimPickerPlayerId(null);
+          }}
+          excludeIds={game.players.find(p => p.id === claimPickerPlayerId)?.claims || []}
+          scriptCharacterIds={scriptCharacterIds}
+        />
+      )}
 
     </div>
   );
