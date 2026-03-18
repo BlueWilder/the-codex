@@ -1121,7 +1121,7 @@ function SortablePlayerCard({
       )}
       data-testid={`card-player-${player.id}`}
     >
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1.5">
         <button
           {...attributes}
           {...listeners}
@@ -1145,32 +1145,7 @@ function SortablePlayerCard({
         >
           {player.name}
         </button>
-        <div className="flex items-center gap-1.5 flex-1 min-w-0 overflow-x-auto justify-end">
-          {claimedChars.map(char => char && (
-            <button
-              key={char.id}
-              onClick={() => onRemoveClaim(char.id)}
-              className={cn("inline-flex items-center gap-1 text-xs whitespace-nowrap shrink-0 rounded-full border px-2 py-0.5 font-semibold transition-colors hover:opacity-80", TEAM_COLORS[char.team])}
-              title={`Remove ${char.name} claim`}
-              data-testid={`button-claim-badge-${char.id}-${player.id}`}
-            >
-              {char.name}
-              <X className="w-3 h-3 opacity-60" />
-            </button>
-          ))}
-          <button
-            onClick={onOpenClaimPicker}
-            className="flex items-center gap-1 px-3 rounded-full border border-dashed border-amber-700/60 text-amber-400 text-sm font-medium hover:bg-amber-900/20 hover:border-amber-600 transition-colors shrink-0 h-10"
-            data-testid={`button-add-claim-${player.id}`}
-          >
-            <Plus className="w-4 h-4" />
-            Add Claim
-          </button>
-        </div>
-      </div>
-
-      <div className="flex items-center justify-between mt-2">
-        <div className="flex items-center gap-1.5 text-muted-foreground">
+        <div className="flex items-center gap-1 shrink-0 ml-auto">
           {nominationsReceived > 0 && (
             <span className="flex items-center gap-0.5 text-amber-400 text-xs" data-testid={`text-nominated-${player.id}`}>
               <GallowsIcon className="w-3.5 h-3.5" />
@@ -1183,10 +1158,15 @@ function SortablePlayerCard({
               {nominationsMade}
             </span>
           )}
-          {hasNotes && <FileText className="w-3.5 h-3.5" />}
-        </div>
-
-        <div className="flex items-center gap-1.5 shrink-0">
+          {hasNotes && <FileText className="w-3.5 h-3.5 text-muted-foreground" />}
+          <button
+            onClick={onOpenClaimPicker}
+            className="flex items-center gap-1 px-2.5 rounded-full border border-dashed border-amber-700/60 text-amber-400 text-xs font-medium hover:bg-amber-900/20 hover:border-amber-600 transition-colors shrink-0 h-10"
+            data-testid={`button-add-claim-${player.id}`}
+          >
+            <Plus className="w-4 h-4" />
+            Claim
+          </button>
           {!player.isTraveler && (
             <button
               onClick={onToggleAlive}
@@ -1222,6 +1202,23 @@ function SortablePlayerCard({
           )}
         </div>
       </div>
+
+      {claimedChars.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 mt-2 pl-8" data-testid={`claims-row-${player.id}`}>
+          {claimedChars.map(char => char && (
+            <button
+              key={char.id}
+              onClick={() => onRemoveClaim(char.id)}
+              className={cn("inline-flex items-center gap-1 text-xs whitespace-nowrap rounded-full border px-2.5 py-1 font-semibold transition-colors hover:opacity-80", TEAM_COLORS[char.team])}
+              title={`Remove ${char.name} claim`}
+              data-testid={`button-claim-badge-${char.id}-${player.id}`}
+            >
+              {char.name}
+              <X className="w-3 h-3 opacity-60" />
+            </button>
+          ))}
+        </div>
+      )}
     </Card>
   );
 }
