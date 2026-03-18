@@ -2111,54 +2111,76 @@ function ExileDialog({
   );
 }
 
+const TEAM_BORDER_INLINE: Record<string, string> = {
+  townsfolk: '#3b82f6',
+  outsider: '#14b8a6',
+  minion: '#f97316',
+  demon: '#dc2626',
+  traveler: '#9333ea',
+  fabled: '#f59e0b',
+};
+
 function CircleNodeContent({
   player,
   nodeSize,
   nominations,
   isDragging = false,
   isOverlay = false,
+  nameOutside = false,
 }: {
   player: GamePlayer;
   nodeSize: number;
   nominations: Nomination[];
   isDragging?: boolean;
   isOverlay?: boolean;
+  nameOutside?: boolean;
 }) {
   const firstClaim = player.claims[0];
   const claimChar = firstClaim ? ALL_CHARACTERS.find(c => c.id === firstClaim) : null;
   const isActive = player.status === 'alive';
   const isDead = player.status === 'dead';
 
+  const borderColor = claimChar
+    ? TEAM_BORDER_INLINE[claimChar.team] || undefined
+    : undefined;
+
   return (
     <div
       className={cn(
         "flex flex-col items-center justify-center rounded-full border-2 text-center",
-        isActive ? "bg-card border-border" : "bg-muted/50 border-purple-600/70",
-        player.isTraveler && isActive && "border-purple-700",
+        !borderColor && (isActive ? "border-border" : "border-purple-600/70"),
+        !borderColor && player.isTraveler && isActive && "border-purple-700",
+        isActive ? "bg-card" : "bg-muted/50",
         !isActive && "opacity-50",
         isOverlay && "shadow-2xl scale-110 border-amber-500 bg-card",
         isDragging && "opacity-40"
       )}
-      style={{ width: nodeSize, height: nodeSize }}
+      style={{
+        width: nodeSize,
+        height: nodeSize,
+        ...(borderColor && !isOverlay ? { borderColor } : {}),
+      }}
     >
-      <div className="flex items-center gap-0.5 px-1">
+      {nameOutside && claimChar ? (
         <span className={cn(
-          "text-xs font-medium truncate max-w-[50px]",
-          !isActive && "text-muted-foreground line-through"
-        )}>
-          {player.name.length > 8 ? player.name.slice(0, 7) + '...' : player.name}
-        </span>
-      </div>
-      
-      {claimChar && (
-        <span className={cn(
-          "text-[9px] truncate max-w-[55px] px-1",
+          "text-[10px] font-medium truncate px-1 leading-tight",
           TEAM_COLORS[claimChar.team]
-        )}>
-          {claimChar.name.length > 8 ? claimChar.name.slice(0, 7) + '...' : claimChar.name}
+        )}
+        style={{ maxWidth: nodeSize - 6 }}
+        >
+          {claimChar.name.length > 9 ? claimChar.name.slice(0, 8) + '…' : claimChar.name}
+        </span>
+      ) : (
+        <span className={cn(
+          "text-xs font-medium truncate px-1",
+          !isActive && "text-muted-foreground line-through"
+        )}
+        style={{ maxWidth: nodeSize - 6 }}
+        >
+          {player.name.length > 8 ? player.name.slice(0, 7) + '…' : player.name}
         </span>
       )}
-      
+
       {isDead && !player.isTraveler && (
         <div className="mt-0.5">
           {player.hasGhostVote ? (
@@ -2247,6 +2269,14 @@ function CircleSeatingChart({
     return getDefaultPosition(index);
   };
 
+  const getPlayerAngleDeg = (player: GamePlayer, index: number) => {
+    const pos = getPlayerPosition(player, index);
+    const px = pos.x + nodeSize / 2;
+    const py = pos.y + nodeSize / 2;
+    const deg = Math.atan2(py - centerY, px - centerX) * (180 / Math.PI);
+    return deg;
+  };
+
   const hasCustomPositions = players.some(p => p.circleX !== undefined);
 
   const handleDragStart = (event: DragStartEvent) => {
@@ -2318,7 +2348,7 @@ function CircleSeatingChart({
   };
 
   return (
-    <div className="flex flex-col items-center py-4">
+    <div className="flex flex-col items-center pt-4 pb-4 px-2">
       {hasCustomPositions && (
         <button
           onClick={onResetCirclePositions}
@@ -2336,7 +2366,7 @@ function CircleSeatingChart({
         onDragEnd={handleDragEnd}
       >
         <div
-          className="relative"
+          className="relative overflow-visible"
           style={{ width: dimensions.width, height: dimensions.height }}
         >
           {players.map((player, index) => {
@@ -2344,6 +2374,7 @@ function CircleSeatingChart({
             const isBeingDragged = activeId === player.id;
             const displayX = isBeingDragged ? pos.x + dragDelta.x : pos.x;
             const displayY = isBeingDragged ? pos.y + dragDelta.y : pos.y;
+            const angleDeg = getPlayerAngleDeg(player, index);
 
             return (
               <DraggableCircleNode
@@ -2354,6 +2385,7 @@ function CircleSeatingChart({
                 nominations={nominations}
                 onSelectPlayer={onSelectPlayer}
                 isDragging={isBeingDragged}
+                angleDeg={angleDeg}
               />
             );
           })}
@@ -2370,6 +2402,7 @@ function DraggableCircleNode({
   nominations,
   onSelectPlayer,
   isDragging,
+  angleDeg,
 }: {
   player: GamePlayer;
   position: { x: number; y: number };
@@ -2377,10 +2410,15 @@ function DraggableCircleNode({
   nominations: Nomination[];
   onSelectPlayer: (playerId: string) => void;
   isDragging: boolean;
+  angleDeg: number;
 }) {
   const { attributes, listeners, setNodeRef } = useDraggable({
     id: player.id,
   });
+
+  const isBottom = angleDeg > 0 && angleDeg < 180;
+  const isActive = player.status === 'alive';
+  const displayName = player.name.length > 9 ? player.name.slice(0, 8) + '…' : player.name;
 
   return (
     <button
@@ -2405,11 +2443,22 @@ function DraggableCircleNode({
       }}
       data-testid={`circle-node-${player.id}`}
     >
+      <span
+        className={cn(
+          "absolute left-1/2 -translate-x-1/2 text-[11px] font-medium whitespace-nowrap pointer-events-none",
+          !isActive && "text-muted-foreground line-through",
+          isActive && "text-foreground"
+        )}
+        style={isBottom ? { top: nodeSize + 2 } : { bottom: nodeSize + 2 }}
+      >
+        {displayName}
+      </span>
       <CircleNodeContent
         player={player}
         nodeSize={nodeSize}
         nominations={nominations}
         isDragging={isDragging}
+        nameOutside={true}
       />
     </button>
   );
