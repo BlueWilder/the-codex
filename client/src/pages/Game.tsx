@@ -2522,6 +2522,7 @@ function GameTrackerView({
   const [showDayChangePrompt, setShowDayChangePrompt] = useState(false);
   const [scriptPopoverOpen, setScriptPopoverOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'list' | 'circle' | 'log'>('list');
+  const [scoreboardCollapsed, setScoreboardCollapsed] = useState(false);
   const [showScriptBuilder, setShowScriptBuilder] = useState(false);
   const [editingScript, setEditingScript] = useState<LocalScript | null>(null);
   const [playerFilter, setPlayerFilter] = useState<'all' | 'alive' | 'dead'>('all');
@@ -2755,6 +2756,27 @@ function GameTrackerView({
           </DropdownMenu>
         </div>
 
+        {scoreboardCollapsed && (
+          <button
+            onClick={() => setScoreboardCollapsed(false)}
+            className="flex items-center justify-between w-full px-3 py-2 border-b border-border hover-elevate"
+            data-testid="button-expand-scoreboard"
+          >
+            <div className="flex items-center gap-3 text-sm">
+              <div className="flex items-center gap-1.5">
+                <Sun className="w-3.5 h-3.5 text-amber-400" />
+                <span className="text-amber-400 font-medium">Day {game.currentDay}</span>
+              </div>
+              <span className="text-muted-foreground">·</span>
+              <span className="text-emerald-400 font-medium">{aliveCount}A</span>
+              <span className="text-muted-foreground">/</span>
+              <span className="text-red-400/80 font-medium">{deadCount}D</span>
+            </div>
+            <ChevronDown className="w-4 h-4 text-muted-foreground" />
+          </button>
+        )}
+
+        <div className={cn(scoreboardCollapsed && "hidden")}>
         {/* Day Nav Zone - Arrows at edges, wide banner */}
         <div className="flex items-center justify-between gap-2 px-3 py-2.5 border-b border-border bg-amber-950/10">
           <Button
@@ -2903,12 +2925,14 @@ function GameTrackerView({
           </div>
         )}
 
+        </div>
+
         {/* View Nav Zone - List/Circle/Log as 3 navigation buttons */}
         <div className="grid grid-cols-3 gap-2 px-3 py-2 border-t border-border bg-muted/20">
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setActiveTab('list')}
+            onClick={() => { setActiveTab('list'); setScoreboardCollapsed(false); }}
             className={cn(
               "toggle-elevate",
               activeTab === 'list' && "toggle-elevated bg-background shadow-sm"
@@ -2920,7 +2944,7 @@ function GameTrackerView({
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setActiveTab('circle')}
+            onClick={() => { setActiveTab('circle'); setScoreboardCollapsed(true); }}
             className={cn(
               "toggle-elevate",
               activeTab === 'circle' && "toggle-elevated bg-background shadow-sm"
@@ -2932,7 +2956,7 @@ function GameTrackerView({
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setActiveTab('log')}
+            onClick={() => { setActiveTab('log'); setScoreboardCollapsed(false); }}
             className={cn(
               "toggle-elevate",
               activeTab === 'log' && "toggle-elevated bg-background shadow-sm"
