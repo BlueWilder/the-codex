@@ -2213,14 +2213,10 @@ function CircleSeatingChart({
     })
   );
 
-  const stBoxHeight = 34;
-  const stBoxWidth = 48;
-  const stTopPadding = stBoxHeight + 4;
-
   useEffect(() => {
     const updateDimensions = () => {
       const width = Math.min(window.innerWidth - 32, 500);
-      setDimensions({ width, height: width + stTopPadding });
+      setDimensions({ width, height: width });
     };
     updateDimensions();
     window.addEventListener('resize', updateDimensions);
@@ -2229,16 +2225,12 @@ function CircleSeatingChart({
 
   const playerCount = players.length;
   const centerX = dimensions.width / 2;
-  const centerY = (dimensions.height + stTopPadding) / 2;
-  const nodeSize = playerCount <= 8 ? 70 : playerCount <= 12 ? 60 : 50;
-  const radius = Math.min(centerX, (dimensions.height - stTopPadding) / 2) - nodeSize / 2 - 10;
-
-  const gapDegrees = 60;
-  const arcDegrees = 360 - gapDegrees;
-  const startAngle = -90 + gapDegrees / 2;
+  const centerY = dimensions.height / 2;
+  const nodeSize = playerCount <= 8 ? 76 : playerCount <= 12 ? 66 : playerCount <= 15 ? 56 : 50;
+  const radius = Math.min(centerX, centerY) - nodeSize / 2 - 8;
 
   const getDefaultPosition = (index: number) => {
-    const angle = (startAngle + (index / (playerCount - 1 || 1)) * arcDegrees) * (Math.PI / 180);
+    const angle = (-90 + (index / playerCount) * 360) * (Math.PI / 180);
     return {
       x: centerX + radius * Math.cos(angle) - nodeSize / 2,
       y: centerY + radius * Math.sin(angle) - nodeSize / 2,
@@ -2347,18 +2339,6 @@ function CircleSeatingChart({
           className="relative"
           style={{ width: dimensions.width, height: dimensions.height }}
         >
-          <div
-            className="absolute flex items-center justify-center rounded-md border-2 border-purple-500/50 bg-purple-950/30 text-purple-400 font-display text-base font-bold tracking-wider"
-            style={{
-              width: stBoxWidth,
-              height: stBoxHeight,
-              left: centerX - stBoxWidth / 2,
-              top: 0,
-            }}
-            data-testid="storyteller-box"
-          >
-            ST
-          </div>
           {players.map((player, index) => {
             const pos = getPlayerPosition(player, index);
             const isBeingDragged = activeId === player.id;

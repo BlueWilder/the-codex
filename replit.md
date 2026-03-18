@@ -88,10 +88,10 @@ A localStorage-based player tracking tool at `/game` for note-taking during game
 - **Trust slider**: Horizontal gradient bar (red→tan→green) on each player card with draggable brass knob (0-100 scale, 50=neutral). Disabled with reduced opacity for dead players. Component: `client/src/components/TrustSlider.tsx`
 - **Day tracker**: Scoreboard-style header with alive/dead counts, votes to execute, available votes, and script name badge
 - **View modes**: List view and Circle seating chart view (toggle in header)
-  - Circle view features Storyteller box at top center with players in default U-shape arrangement (300° arc with 60° gap at top)
+  - Circle view arranges players in a full 360° circle; scoreboard auto-collapses to a compact summary bar to maximize space
   - Free-drag positioning: players can be dragged anywhere on the circle canvas; custom positions saved as normalized `circleX`/`circleY` (0-1) on `GamePlayer`
-  - Dragging a player re-sorts the players array clockwise from 12 o'clock (ST position), which also updates list view order
-  - "Circle Up" button appears when custom positions exist; clears all `circleX`/`circleY` to restore default U-shape
+  - Dragging a player re-sorts the players array clockwise from 12 o'clock, which also updates list view order
+  - "Circle Up" button appears when custom positions exist; clears all `circleX`/`circleY` to restore default circle
 - **Persistence**: Game state saved to localStorage, survives page refresh
 - **Nomination system**: Dual recording modes:
   - **Full Vote Record**: Track individual player votes with auto ghost vote handling
