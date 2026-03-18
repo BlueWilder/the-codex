@@ -2274,7 +2274,7 @@ function CircleSeatingChart({
     const px = pos.x + nodeSize / 2;
     const py = pos.y + nodeSize / 2;
     const deg = Math.atan2(py - centerY, px - centerX) * (180 / Math.PI);
-    return deg;
+    return ((deg % 360) + 360) % 360;
   };
 
   const hasCustomPositions = players.some(p => p.circleX !== undefined);
