@@ -3377,6 +3377,31 @@ This Fabled is useful for managing talkative groups or enforcing game etiquette.
     ],
     bluffingAs: [],
     howToRun: "At any time, declare that the Hell's Librarian is in play.\n\nAt any time, you can ask the group for silence for a particular period of time. Remind them that the Hell's Librarian is in play if needed. If a player talks or otherwise interrupts during that time, you can let them know that something bad happens to them - such as being poisoned, going mad, or losing their vote for the day."
+  },
+  {
+    id: 'spiritofivory',
+    name: 'Spirit of Ivory',
+    edition: 'experimental',
+    team: 'fabled',
+    ability: "There can't be more than 1 extra evil player.",
+    firstNightOrder: null,
+    otherNightOrder: null,
+    setup: false,
+    reminders: ['No more evil'],
+    flavorQuote: "There can't be more than 1 extra evil player.",
+    extendedSummary: `Spirit of Ivory is a Fabled character that keeps the evil team balanced when the script includes characters that can turn good players evil (like the Fang Gu or other conversion roles).
+
+If one extra player turns evil beyond the normal count, mark the Spirit of Ivory with the "No more evil" reminder. If a second player would turn evil while marked, that player stays good instead.
+
+This prevents runaway scenarios where evil wins by sheer numbers instead of social deduction.`,
+    tipsAndTricks: [
+      "This is a Fabled - a Storyteller tool, not a regular character.",
+      "It limits the evil team to gaining at most 1 extra evil player beyond the starting count.",
+      "Useful on scripts with multiple conversion characters (Fang Gu, Pit-Hag, etc.).",
+      "If there is already 1 extra evil, any further conversion attempts fail - the player stays good."
+    ],
+    bluffingAs: [],
+    howToRun: "At the start of the game, declare that the Spirit of Ivory is in play. If a player would turn evil and there is already 1 more evil player than the game started with, that player does not turn evil. Mark the Spirit of Ivory with the 'No more evil' reminder when the first extra evil player is created."
   }
 ];
 
@@ -3423,7 +3448,7 @@ export const OFFICIAL_SCRIPTS = [
     author: 'TopazChicken',
     description: 'A community script exploring identity and transformation. Features character-swapping, wish-granting, and summoning alongside deadly demons and cunning minions.',
     isOfficial: false,
-    characters: ['bountyhunter', 'balloonist', 'snakecharmer', 'undertaker', 'savant', 'nightwatchman', 'professor', 'cannibal', 'sage', 'tealady', 'virgin', 'magician', 'drunk', 'golem', 'barber', 'hatter', 'witch', 'pitHag', 'wizard', 'summoner', 'boffin', 'noDashii', 'imp', 'vigormortis', 'fangGu', 'thief', 'cacklejack', 'gangster', 'apprentice', 'gnome', 'hellslibrarian'],
+    characters: ['bountyhunter', 'balloonist', 'snakecharmer', 'undertaker', 'savant', 'nightwatchman', 'professor', 'cannibal', 'sage', 'tealady', 'virgin', 'magician', 'drunk', 'saint', 'barber', 'zealot', 'witch', 'pitHag', 'wizard', 'summoner', 'boffin', 'imp', 'kazali', 'vigormortis', 'fangGu', 'cacklejack', 'matron', 'gangster', 'bonecollector', 'apprentice', 'gnome', 'spiritofivory'],
   },
 ];
 
