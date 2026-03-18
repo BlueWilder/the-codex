@@ -1125,7 +1125,7 @@ function SortablePlayerCard({
         <button
           {...attributes}
           {...listeners}
-          className="touch-none cursor-grab active:cursor-grabbing flex items-center justify-center w-9 h-9 -ml-1 shrink-0 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 active:bg-muted"
+          className="touch-none cursor-grab active:cursor-grabbing flex items-center justify-center w-10 h-10 -ml-1 shrink-0 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 active:bg-muted"
           data-testid={`button-drag-${player.id}`}
         >
           <GripVertical className="w-5 h-5" />
@@ -1204,7 +1204,7 @@ function SortablePlayerCard({
       </div>
 
       {claimedChars.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 mt-2 pl-8" data-testid={`claims-row-${player.id}`}>
+        <div className="flex flex-wrap gap-1.5 mt-2" data-testid={`claims-row-${player.id}`}>
           {claimedChars.map(char => char && (
             <button
               key={char.id}
