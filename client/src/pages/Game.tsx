@@ -2148,8 +2148,8 @@ function CircleNodeContent({
     <div
       className={cn(
         "flex flex-col items-center justify-center rounded-full border-2 text-center",
-        !borderColor && (isActive ? "border-border" : "border-purple-600/70"),
-        !borderColor && player.isTraveler && isActive && "border-purple-700",
+        !borderColor && "border-border",
+        !borderColor && player.isTraveler && "border-purple-700",
         isActive ? "bg-card" : "bg-muted/50",
         !isActive && "opacity-50",
         isOverlay && "shadow-2xl scale-110 border-amber-500 bg-card",
