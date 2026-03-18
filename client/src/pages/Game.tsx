@@ -2113,9 +2113,9 @@ function ExileDialog({
 
 const TEAM_BORDER_INLINE: Record<string, string> = {
   townsfolk: '#3b82f6',
-  outsider: '#14b8a6',
-  minion: '#f97316',
-  demon: '#dc2626',
+  outsider: '#22c55e',
+  minion: '#ef4444',
+  demon: '#991b1b',
   traveler: '#9333ea',
   fabled: '#f59e0b',
 };
