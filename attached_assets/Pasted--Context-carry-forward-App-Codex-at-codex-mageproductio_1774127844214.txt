@@ -1,0 +1,36 @@
+## Context (carry forward)
+- App: Codex at codex.mageproductions.com/game
+- Stack: React + TypeScript, static data in game-data.ts
+- Adding script synopses to the top of the Night Sheet screen (ST Step 4)
+- Synopses apply to the three built-in base scripts only
+
+## Task
+Add a collapsible synopsis block at the top of the Night Sheet screen, above the First Night / Other Nights tabs. Show it only when the selected script is one of the three base scripts. Hide it entirely for custom scripts.
+
+## Synopsis text — add these to BUILT_IN_SCRIPTS in game-data.ts as a `synopsis` field
+
+Trouble Brewing:
+"Clouds roll in over Ravenswood Bluff, engulfing this sleepy town and its superstitious inhabitants in foreboding shadow. Freshly-washed clothes dance eerily on lines strung between cottages. Chimneys cough plumes of smoke into the air. Exotic scents waft through cracks in windows and under doors, as hidden cauldrons lay bubbling. An unusually warm Autumn breeze wraps around vine-covered walls and whispers ominously to those brave enough to walk the cobbled streets. Anxious mothers call their children home from play, as thunder begins to clap on the horizon. If you listen more closely, however, noises stranger still can be heard echoing from the neighbouring forest. Under the watchful eye of a looming monastery, silhouetted figures skip from doorway to doorway. Those who can read the signs know there is... Trouble Brewing."
+
+Bad Moon Rising:
+"The sun is swallowed by a jagged horizon as another winter's day surrenders to the night. Flecks of orange and red decay into deeper browns, the forest transforming in silent anticipation of the coming snow. Ravenous wolves howl from the bowels of a rocky crevasse beyond the town borders, sending birds scattering from their cozy rooks. Travellers hurry into the inn, seeking shelter from the gathering chill. They warm themselves with hot tea, sweet strains of music and hearty ale, unaware that strange and nefarious eyes stalk them from the ruins of this once great city. Tonight, even the livestock know there is a... Bad Moon Rising."
+
+Sects & Violets:
+"Vibrant spring gives way to a warm and inviting summer. Flowers of every description blossom as far as the eye can see, tenderly nurtured in public gardens and window boxes overlooking the lavish promenade. Birds sing, artists paint, and philosophers ponder life's greatest mysteries inside a bustling tavern as a circus pitches its endearingly ragged tent on the edge of town. As the townsfolk bask in frivolity and mischief, indulging themselves in fine entertainment and even finer wine, dark and clandestine forces are assembling. Witches and cults lurk in majestic ruins on the fringes of the community, hosting secret meetings in underground caves and malevolently plotting the downfall of Ravenswood Bluff and its revelers. The time is ripe for... Sects & Violets."
+
+## UI behavior
+- Synopsis block appears above the First Night / Other Nights tab row
+- Displayed in italic text to match the flavour text style of the existing app
+- Collapsed by default — show just the script name and a "Read synopsis" toggle
+- Expanding reveals the full text
+- Use the existing expand/collapse pattern already in the app — do not build a new component
+
+## Stop conditions
+- STOP and ask before modifying any existing Night Sheet tab logic or character display
+- STOP and ask if no collapsible/expandable pattern already exists in the codebase
+
+## Forbidden
+- Do NOT add a synopsis field to custom scripts
+- Do NOT display the synopsis block for custom scripts
+- Do NOT change the layout of the First Night or Other Nights tabs
+- Do NOT add new dependencies

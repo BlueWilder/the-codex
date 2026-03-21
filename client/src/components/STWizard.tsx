@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { getCharacterById, type Character } from "@/lib/game-data";
+import { getCharacterById, OFFICIAL_SCRIPTS, type Character } from "@/lib/game-data";
 import { getBreakdown } from "@/hooks/use-player-game";
 import { useLocalScripts, type LocalScript } from "@/hooks/use-local-scripts";
 import { ScriptBuilderDialog } from "@/components/ScriptBuilderDialog";
@@ -127,6 +127,7 @@ export function STWizard({ playerCount, onBack }: STWizardProps) {
   const [lockedIds, setLockedIds] = useState<Set<string>>(new Set());
   const [finalBag, setFinalBag] = useState<string[]>([]);
   const [expandedCharId, setExpandedCharId] = useState<string | null>(null);
+  const [synopsisOpen, setSynopsisOpen] = useState(false);
   const [showScriptBuilder, setShowScriptBuilder] = useState(false);
   const [editingScript, setEditingScript] = useState<LocalScript | null>(null);
   const { allScripts, customScripts, addCustomScript, updateCustomScript } = useLocalScripts();
@@ -231,6 +232,7 @@ export function STWizard({ playerCount, onBack }: STWizardProps) {
     if (!selectedScript || !isExactMatch) return;
     setFinalBag(Array.from(lockedIds));
     setExpandedCharId(null);
+    setSynopsisOpen(false);
     setStep(4);
   };
 
@@ -488,6 +490,32 @@ export function STWizard({ playerCount, onBack }: STWizardProps) {
               <h2 className="text-xl font-display text-amber-100">Night Sheet</h2>
               <p className="text-muted-foreground text-sm">{selectedScript.name} · {finalBag.length} characters</p>
             </div>
+
+            {(() => {
+              const officialScript = OFFICIAL_SCRIPTS.find(s => s.id === selectedScript.id);
+              const synopsis = officialScript && 'synopsis' in officialScript ? (officialScript as { synopsis?: string }).synopsis ?? null : null;
+              if (!synopsis) return null;
+              return (
+                <div className="rounded-lg border border-amber-900/30 bg-amber-950/20 overflow-hidden">
+                  <button
+                    onClick={() => setSynopsisOpen(!synopsisOpen)}
+                    className="w-full flex items-center justify-between px-3 py-2 text-left hover:bg-amber-950/30 transition-colors"
+                    data-testid="button-toggle-synopsis"
+                  >
+                    <span className="text-sm text-amber-200/80 font-medium">{selectedScript.name}</span>
+                    <span className="flex items-center gap-1 text-xs text-amber-400/60">
+                      {synopsisOpen ? 'Hide' : 'Read synopsis'}
+                      <ChevronDown className={cn("w-3.5 h-3.5 transition-transform duration-200", synopsisOpen && "rotate-180")} />
+                    </span>
+                  </button>
+                  {synopsisOpen && (
+                    <div className="px-3 pb-3 pt-1 border-t border-amber-900/20">
+                      <p className="text-sm italic text-amber-100/60 leading-relaxed">{synopsis}</p>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
 
             <Tabs defaultValue="first" className="w-full">
               <TabsList className="w-full grid grid-cols-2">
