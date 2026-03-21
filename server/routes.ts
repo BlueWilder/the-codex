@@ -43,7 +43,7 @@ export async function registerRoutes(
         });
       }
       const { name, characterIds, synopsis } = parsed.data;
-      const script = await storage.createCustomScript({ userId, name, characterIds, ...(synopsis ? { synopsis } : {}) });
+      const script = await storage.createCustomScript({ userId, name, characterIds, synopsis: synopsis || null });
       res.status(201).json(script);
     } catch (error) {
       console.error("Error creating custom script:", error);
