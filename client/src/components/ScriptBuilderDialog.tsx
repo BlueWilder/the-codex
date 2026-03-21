@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Check, Search } from "lucide-react";
+import { Check, Search, Upload, FileText, AlertTriangle, CheckCircle2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ALL_CHARACTERS } from "@/lib/game-data";
 
@@ -41,6 +41,16 @@ export function ScriptBuilderDialog({
   const [selectedCharacters, setSelectedCharacters] = useState<Set<string>>(new Set(initialCharacters));
   const [teamFilter, setTeamFilter] = useState<string>("all");
   const [search, setSearch] = useState("");
+  const [showImport, setShowImport] = useState(false);
+  const [importJson, setImportJson] = useState("");
+  const [importMessage, setImportMessage] = useState<{ type: 'success' | 'warning' | 'error'; text: string } | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const charLookup = useMemo(() => {
+    const map = new Map<string, string>();
+    ALL_CHARACTERS.forEach(c => map.set(c.id.toLowerCase().replace(/[^a-z0-9]/g, ''), c.id));
+    return map;
+  }, []);
 
   useEffect(() => {
     if (open) {
@@ -48,8 +58,82 @@ export function ScriptBuilderDialog({
       setScriptName(initialName);
       setSynopsis(initialSynopsis);
       setSearch("");
+      setShowImport(false);
+      setImportJson("");
+      setImportMessage(null);
     }
   }, [open, initialCharacters, initialName, initialSynopsis]);
+
+  const processImportJson = (jsonText: string) => {
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(jsonText);
+    } catch {
+      setImportMessage({ type: 'error', text: 'Invalid JSON. Please check the format and try again.' });
+      return;
+    }
+
+    if (!Array.isArray(parsed)) {
+      setImportMessage({ type: 'error', text: 'Expected a JSON array. The BOTC Script Tool exports an array of character objects.' });
+      return;
+    }
+
+    let importedName: string | null = null;
+    const matched: string[] = [];
+    const unrecognized: string[] = [];
+
+    for (const item of parsed) {
+      if (typeof item !== 'object' || item === null || !('id' in item)) continue;
+      const rawId = String((item as { id: string }).id);
+
+      if (rawId === '_meta') {
+        if ('name' in item && typeof (item as { name?: string }).name === 'string') {
+          importedName = (item as { name: string }).name;
+        }
+        continue;
+      }
+
+      const normalizedId = rawId.toLowerCase().replace(/[^a-z0-9]/g, '');
+      const appId = charLookup.get(normalizedId);
+      if (appId) {
+        matched.push(appId);
+      } else {
+        unrecognized.push(rawId);
+      }
+    }
+
+    if (matched.length === 0) {
+      setImportMessage({ type: 'error', text: `No recognized characters found in the JSON. ${unrecognized.length > 0 ? `Unrecognized IDs: ${unrecognized.join(', ')}` : ''}` });
+      return;
+    }
+
+    if (importedName) {
+      setScriptName(importedName);
+    }
+    setSelectedCharacters(new Set(matched));
+    setShowImport(false);
+    setImportJson("");
+
+    if (unrecognized.length > 0) {
+      setImportMessage({ type: 'warning', text: `${matched.length} characters imported${importedName ? ` from "${importedName}"` : ''}. ${unrecognized.length} skipped: ${unrecognized.join(', ')}` });
+    } else {
+      setImportMessage({ type: 'success', text: `${matched.length} characters imported${importedName ? ` from "${importedName}"` : ''}.` });
+    }
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      const text = evt.target?.result;
+      if (typeof text === 'string') {
+        processImportJson(text);
+      }
+    };
+    reader.readAsText(file);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
 
   const toggleCharacter = (charId: string) => {
     const newSet = new Set(selectedCharacters);
@@ -141,6 +225,77 @@ export function ScriptBuilderDialog({
               className="w-full max-w-sm h-16 px-3 py-2 rounded-md border border-input bg-background text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background placeholder:text-muted-foreground"
               data-testid="input-script-synopsis"
             />
+          </div>
+
+          {importMessage && (
+            <div className={cn(
+              "flex items-start gap-2 px-3 py-2 rounded-md text-xs",
+              importMessage.type === 'success' && "bg-green-950/30 border border-green-900/40 text-green-300",
+              importMessage.type === 'warning' && "bg-amber-950/30 border border-amber-900/40 text-amber-300",
+              importMessage.type === 'error' && "bg-red-950/30 border border-red-900/40 text-red-300",
+            )} data-testid="import-message">
+              {importMessage.type === 'success' && <CheckCircle2 className="w-3.5 h-3.5 mt-0.5 shrink-0" />}
+              {importMessage.type === 'warning' && <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" />}
+              {importMessage.type === 'error' && <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" />}
+              <span className="flex-1">{importMessage.text}</span>
+              <button onClick={() => setImportMessage(null)} className="shrink-0 opacity-60 hover:opacity-100">
+                <X className="w-3 h-3" />
+              </button>
+            </div>
+          )}
+
+          <div>
+            {!showImport ? (
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-7 text-xs gap-1.5"
+                onClick={() => { setShowImport(true); setImportMessage(null); }}
+                data-testid="button-import-json"
+              >
+                <Upload className="w-3 h-3" /> Import JSON
+              </Button>
+            ) : (
+              <div className="border border-amber-900/30 rounded-lg p-3 space-y-2 bg-amber-950/10">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium text-amber-200/80">Import from BOTC Script Tool</span>
+                  <button onClick={() => { setShowImport(false); setImportJson(""); }} className="text-muted-foreground hover:text-foreground">
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+                <textarea
+                  value={importJson}
+                  onChange={(e) => setImportJson(e.target.value)}
+                  placeholder='Paste JSON here, e.g. [{"id":"_meta","name":"My Script"},{"id":"imp"},...]'
+                  className="w-full h-20 px-3 py-2 rounded-md border border-input bg-background text-xs font-mono resize-none focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background placeholder:text-muted-foreground"
+                  data-testid="input-import-json"
+                />
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    className="h-7 text-xs gap-1"
+                    onClick={() => processImportJson(importJson)}
+                    disabled={!importJson.trim()}
+                    data-testid="button-import-confirm"
+                  >
+                    <FileText className="w-3 h-3" /> Import
+                  </Button>
+                  <label className="cursor-pointer">
+                    <Button variant="outline" size="sm" className="h-7 text-xs gap-1 pointer-events-none" asChild>
+                      <span><Upload className="w-3 h-3" /> Upload .json</span>
+                    </Button>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept=".json"
+                      className="hidden"
+                      onChange={handleFileUpload}
+                      data-testid="input-import-file"
+                    />
+                  </label>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="flex flex-wrap items-center gap-2 text-xs">
