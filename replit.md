@@ -89,7 +89,8 @@ A Storyteller-specific setup flow forked from the New Game wizard:
 - **ST Step 4 — Night Sheet**: Two tabs (First Night / Other Nights)
   - Shows characters from finalized bag sorted by official night order
   - Each row: order number, character name, team badge (color-coded), ability text
-  - "Start Game" button creates game with default player names (Player 1, Player 2, etc.)
+  - Expandable rows: tap to reveal How to Run, Tips & Tricks, and Reminder tokens
+  - Night Sheet is the ST's home base — no game session launch (ST and player flows are fully separate)
 - **Component**: `client/src/components/STWizard.tsx`
 - **Back navigation**: Returns to Step 1 of the regular wizard
 - Player flow (Steps 1→2→3) is completely unchanged

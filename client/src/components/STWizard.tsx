@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { getCharacterById, type Character } from "@/lib/game-data";
-import { getBreakdown, type GameScriptRef } from "@/hooks/use-player-game";
+import { getBreakdown } from "@/hooks/use-player-game";
 import { useLocalScripts, type LocalScript } from "@/hooks/use-local-scripts";
 import { ScriptBuilderDialog } from "@/components/ScriptBuilderDialog";
 import { cn } from "@/lib/utils";
@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { ChevronLeft, ChevronRight, Scroll, BookOpen, Users, Lock, Shuffle, Trash2, Check, Plus, Pencil, FileText, Moon, Sun } from "lucide-react";
+import { ChevronLeft, ChevronRight, Scroll, BookOpen, Users, Lock, Shuffle, Trash2, Check, Plus, Pencil, FileText, Moon, Sun, ChevronDown, Lightbulb } from "lucide-react";
 
 const TEAM_COLORS: Record<string, string> = {
   townsfolk: "bg-blue-900/60 text-blue-200 border-blue-700",
@@ -27,17 +27,106 @@ const TEAM_LABELS: Record<string, string> = {
   demon: 'Demons',
 };
 
+function NightRow({ char, index, prefix, isExpanded, onToggle }: {
+  char: Character;
+  index: number;
+  prefix: string;
+  isExpanded: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <div
+      className={cn(
+        "rounded-lg border border-border bg-card transition-all",
+        isExpanded && "ring-1 ring-amber-600/30"
+      )}
+      data-testid={`night-row-${prefix}-${char.id}`}
+    >
+      <button
+        onClick={onToggle}
+        className="w-full text-left flex items-start gap-3 p-3"
+        data-testid={`button-expand-${prefix}-${char.id}`}
+      >
+        <span className="text-xs text-muted-foreground font-mono w-5 text-right shrink-0 mt-0.5">{index + 1}</span>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <span className="font-medium text-sm">{char.name}</span>
+            <Badge variant="secondary" className={cn("text-[10px] px-1.5 py-0", TEAM_COLORS[char.team])}>
+              {char.team}
+            </Badge>
+          </div>
+          <p className="text-xs text-muted-foreground mt-1">{char.ability}</p>
+        </div>
+        <ChevronDown className={cn(
+          "w-4 h-4 shrink-0 text-muted-foreground transition-transform mt-0.5",
+          isExpanded && "rotate-180"
+        )} />
+      </button>
+
+      {isExpanded && (
+        <div className="px-3 pb-3 pt-0 space-y-3 animate-in fade-in slide-in-from-top-1 duration-200">
+          <div className="border-t border-border/50 pt-3" />
+
+          {char.howToRun && (
+            <div className="space-y-1.5">
+              <h4 className="text-xs font-bold uppercase tracking-wider opacity-70 flex items-center gap-1.5">
+                <BookOpen className="w-3 h-3 text-purple-400" /> How to Run
+              </h4>
+              <div className="text-xs bg-purple-950/30 border border-purple-900/30 rounded-lg p-2">
+                <div className="space-y-1.5 opacity-90 leading-relaxed">
+                  {char.howToRun.split('\n\n').map((paragraph, idx) => (
+                    <p key={idx}>{paragraph.replace(/\n/g, ' ')}</p>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {char.tipsAndTricks && char.tipsAndTricks.length > 0 && (
+            <div className="space-y-1.5">
+              <h4 className="text-xs font-bold uppercase tracking-wider opacity-70 flex items-center gap-1.5">
+                <Lightbulb className="w-3 h-3 text-yellow-400" /> Tips & Tricks
+              </h4>
+              <ul className="text-xs space-y-1 opacity-90">
+                {char.tipsAndTricks.map((tip, idx) => (
+                  <li key={idx} className="flex gap-2">
+                    <span className="text-yellow-500/70 shrink-0">-</span>
+                    <span className="leading-relaxed">{tip}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {char.reminders.length > 0 && (
+            <div className="space-y-1.5">
+              <h4 className="text-xs font-bold uppercase tracking-wider opacity-70">Reminders</h4>
+              <div className="flex flex-wrap gap-1.5">
+                {char.reminders.map((reminder, idx) => (
+                  <span key={idx} className="text-xs bg-black/40 px-2 py-0.5 rounded-full border border-current/20">
+                    {reminder}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 interface STWizardProps {
   playerCount: number;
   onBack: () => void;
-  onComplete: (bag: string[], scriptRef: GameScriptRef) => void;
 }
 
-export function STWizard({ playerCount, onBack, onComplete }: STWizardProps) {
+export function STWizard({ playerCount, onBack }: STWizardProps) {
   const [step, setStep] = useState<2 | 3 | 4>(2);
   const [selectedScript, setSelectedScript] = useState<LocalScript | null>(null);
   const [lockedIds, setLockedIds] = useState<Set<string>>(new Set());
   const [finalBag, setFinalBag] = useState<string[]>([]);
+  const [expandedCharId, setExpandedCharId] = useState<string | null>(null);
   const [showScriptBuilder, setShowScriptBuilder] = useState(false);
   const [editingScript, setEditingScript] = useState<LocalScript | null>(null);
   const { allScripts, customScripts, addCustomScript, updateCustomScript } = useLocalScripts();
@@ -141,13 +230,8 @@ export function STWizard({ playerCount, onBack, onComplete }: STWizardProps) {
   const handleAcceptBag = () => {
     if (!selectedScript || !isExactMatch) return;
     setFinalBag(Array.from(lockedIds));
+    setExpandedCharId(null);
     setStep(4);
-  };
-
-  const handleStartGame = () => {
-    if (!selectedScript) return;
-    const scriptRef: GameScriptRef = { id: selectedScript.id };
-    onComplete(finalBag, scriptRef);
   };
 
   const handleSelectScript = (script: LocalScript) => {
@@ -416,28 +500,20 @@ export function STWizard({ playerCount, onBack, onComplete }: STWizardProps) {
               </TabsList>
 
               <TabsContent value="first">
-                <ScrollArea className="h-[320px] md:h-[380px]">
+                <ScrollArea className="h-[400px] md:h-[460px]">
                   {firstNightChars.length === 0 ? (
                     <p className="text-center text-muted-foreground text-sm py-8">No characters act on the first night.</p>
                   ) : (
                     <div className="space-y-1 pr-2">
                       {firstNightChars.map((char, i) => (
-                        <div
+                        <NightRow
                           key={char.id}
-                          className="flex items-start gap-3 p-3 rounded-lg border border-border bg-card"
-                          data-testid={`night-row-first-${char.id}`}
-                        >
-                          <span className="text-xs text-muted-foreground font-mono w-5 text-right shrink-0 mt-0.5">{i + 1}</span>
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-2">
-                              <span className="font-medium text-sm">{char.name}</span>
-                              <Badge variant="secondary" className={cn("text-[10px] px-1.5 py-0", TEAM_COLORS[char.team])}>
-                                {char.team}
-                              </Badge>
-                            </div>
-                            <p className="text-xs text-muted-foreground mt-1">{char.ability}</p>
-                          </div>
-                        </div>
+                          char={char}
+                          index={i}
+                          prefix="first"
+                          isExpanded={expandedCharId === `first-${char.id}`}
+                          onToggle={() => setExpandedCharId(expandedCharId === `first-${char.id}` ? null : `first-${char.id}`)}
+                        />
                       ))}
                     </div>
                   )}
@@ -445,28 +521,20 @@ export function STWizard({ playerCount, onBack, onComplete }: STWizardProps) {
               </TabsContent>
 
               <TabsContent value="other">
-                <ScrollArea className="h-[320px] md:h-[380px]">
+                <ScrollArea className="h-[400px] md:h-[460px]">
                   {otherNightChars.length === 0 ? (
                     <p className="text-center text-muted-foreground text-sm py-8">No characters act on other nights.</p>
                   ) : (
                     <div className="space-y-1 pr-2">
                       {otherNightChars.map((char, i) => (
-                        <div
+                        <NightRow
                           key={char.id}
-                          className="flex items-start gap-3 p-3 rounded-lg border border-border bg-card"
-                          data-testid={`night-row-other-${char.id}`}
-                        >
-                          <span className="text-xs text-muted-foreground font-mono w-5 text-right shrink-0 mt-0.5">{i + 1}</span>
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-2">
-                              <span className="font-medium text-sm">{char.name}</span>
-                              <Badge variant="secondary" className={cn("text-[10px] px-1.5 py-0", TEAM_COLORS[char.team])}>
-                                {char.team}
-                              </Badge>
-                            </div>
-                            <p className="text-xs text-muted-foreground mt-1">{char.ability}</p>
-                          </div>
-                        </div>
+                          char={char}
+                          index={i}
+                          prefix="other"
+                          isExpanded={expandedCharId === `other-${char.id}`}
+                          onToggle={() => setExpandedCharId(expandedCharId === `other-${char.id}` ? null : `other-${char.id}`)}
+                        />
                       ))}
                     </div>
                   )}
@@ -474,12 +542,9 @@ export function STWizard({ playerCount, onBack, onComplete }: STWizardProps) {
               </TabsContent>
             </Tabs>
 
-            <div className="flex justify-between pt-2">
+            <div className="flex justify-start pt-2">
               <Button variant="ghost" onClick={() => setStep(3)} data-testid="button-st-back-night">
                 <ChevronLeft className="w-4 h-4 mr-1" /> Bag
-              </Button>
-              <Button onClick={handleStartGame} data-testid="button-st-start-game">
-                <Check className="w-4 h-4 mr-2" /> Start Game
               </Button>
             </div>
           </div>

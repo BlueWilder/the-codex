@@ -113,17 +113,11 @@ function SetupWizard({ onStart }: { onStart: (count: number, names: string[], sc
     onStart(playerCount, finalNames, scriptRef);
   };
 
-  const handleSTComplete = (bag: string[], scriptRef: GameScriptRef) => {
-    const names = Array.from({ length: playerCount }, (_, i) => `Player ${i + 1}`);
-    onStart(playerCount, names, scriptRef);
-  };
-
   if (stMode) {
     return (
       <STWizard
         playerCount={playerCount}
         onBack={() => setStMode(false)}
-        onComplete={handleSTComplete}
       />
     );
   }
