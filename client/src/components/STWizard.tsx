@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { ALL_CHARACTERS, getCharacterById, type Character } from "@/lib/game-data";
+import { getCharacterById, type Character } from "@/lib/game-data";
 import { getBreakdown, type GameScriptRef } from "@/hooks/use-player-game";
 import { useLocalScripts, type LocalScript } from "@/hooks/use-local-scripts";
 import { ScriptBuilderDialog } from "@/components/ScriptBuilderDialog";
@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ChevronLeft, ChevronRight, Scroll, BookOpen, Users, Lock, Unlock, Shuffle, Trash2, Check, Plus, Pencil, FileText } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { ChevronLeft, ChevronRight, Scroll, BookOpen, Users, Lock, Shuffle, Trash2, Check, Plus, Pencil, FileText, Moon, Sun } from "lucide-react";
 
 const TEAM_COLORS: Record<string, string> = {
   townsfolk: "bg-blue-900/60 text-blue-200 border-blue-700",
@@ -33,10 +34,10 @@ interface STWizardProps {
 }
 
 export function STWizard({ playerCount, onBack, onComplete }: STWizardProps) {
-  const [step, setStep] = useState<2 | 3>(2);
+  const [step, setStep] = useState<2 | 3 | 4>(2);
   const [selectedScript, setSelectedScript] = useState<LocalScript | null>(null);
   const [lockedIds, setLockedIds] = useState<Set<string>>(new Set());
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [finalBag, setFinalBag] = useState<string[]>([]);
   const [showScriptBuilder, setShowScriptBuilder] = useState(false);
   const [editingScript, setEditingScript] = useState<LocalScript | null>(null);
   const { allScripts, customScripts, addCustomScript, updateCustomScript } = useLocalScripts();
@@ -67,14 +68,14 @@ export function STWizard({ playerCount, onBack, onComplete }: STWizardProps) {
 
   const tally = useMemo(() => {
     const counts = { townsfolk: 0, outsider: 0, minion: 0, demon: 0 };
-    selectedIds.forEach(id => {
+    lockedIds.forEach(id => {
       const char = getCharacterById(id);
       if (char && counts[char.team as keyof typeof counts] !== undefined) {
         counts[char.team as keyof typeof counts]++;
       }
     });
     return counts;
-  }, [selectedIds]);
+  }, [lockedIds]);
 
   const required = useMemo(() => ({
     townsfolk: breakdown.townsfolk,
@@ -85,26 +86,21 @@ export function STWizard({ playerCount, onBack, onComplete }: STWizardProps) {
 
   const isExactMatch = TEAM_ORDER.every(t => tally[t] === required[t]);
 
-  const toggleSelect = (id: string) => {
-    setSelectedIds(prev => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-        setLockedIds(locks => {
-          const nl = new Set(locks);
-          nl.delete(id);
-          return nl;
-        });
-      } else {
-        next.add(id);
-      }
-      return next;
-    });
-  };
+  const firstNightChars = useMemo(() => {
+    return finalBag
+      .map(id => getCharacterById(id))
+      .filter((c): c is Character => !!c && c.firstNightOrder !== null)
+      .sort((a, b) => (a.firstNightOrder ?? 0) - (b.firstNightOrder ?? 0));
+  }, [finalBag]);
 
-  const toggleLock = (id: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!selectedIds.has(id)) return;
+  const otherNightChars = useMemo(() => {
+    return finalBag
+      .map(id => getCharacterById(id))
+      .filter((c): c is Character => !!c && c.otherNightOrder !== null)
+      .sort((a, b) => (a.otherNightOrder ?? 0) - (b.otherNightOrder ?? 0));
+  }, [finalBag]);
+
+  const toggleLock = (id: string) => {
     setLockedIds(prev => {
       const next = new Set(prev);
       if (next.has(id)) {
@@ -118,7 +114,7 @@ export function STWizard({ playerCount, onBack, onComplete }: STWizardProps) {
 
   const shuffleBag = () => {
     const lockedArr = Array.from(lockedIds);
-    const newSelected = new Set(lockedArr);
+    const newBag = new Set(lockedArr);
 
     for (const team of TEAM_ORDER) {
       const lockedCount = lockedArr.filter(id => {
@@ -131,28 +127,32 @@ export function STWizard({ playerCount, onBack, onComplete }: STWizardProps) {
       const available = charactersByTeam[team].filter(c => !lockedIds.has(c.id));
       const shuffled = Array.from(available).sort(() => Math.random() - 0.5);
       for (let i = 0; i < Math.min(needed, shuffled.length); i++) {
-        newSelected.add(shuffled[i].id);
+        newBag.add(shuffled[i].id);
       }
     }
 
-    setSelectedIds(newSelected);
+    setLockedIds(newBag);
   };
 
   const clearAll = () => {
     setLockedIds(new Set());
-    setSelectedIds(new Set());
   };
 
   const handleAcceptBag = () => {
     if (!selectedScript || !isExactMatch) return;
+    setFinalBag(Array.from(lockedIds));
+    setStep(4);
+  };
+
+  const handleStartGame = () => {
+    if (!selectedScript) return;
     const scriptRef: GameScriptRef = { id: selectedScript.id };
-    onComplete(Array.from(selectedIds), scriptRef);
+    onComplete(finalBag, scriptRef);
   };
 
   const handleSelectScript = (script: LocalScript) => {
     setSelectedScript(script);
     setLockedIds(new Set());
-    setSelectedIds(new Set());
   };
 
   const handleScriptNext = () => {
@@ -166,16 +166,17 @@ export function STWizard({ playerCount, onBack, onComplete }: STWizardProps) {
       <p className="text-center text-muted-foreground text-sm mb-6">{playerCount} players</p>
 
       <div className="flex items-center justify-center mb-8 gap-4">
-        {[1, 2, 3].map((i) => (
+        {[1, 2, 3, 4].map((i) => (
           <div key={i} className="flex items-center">
             <div className={cn(
               "w-8 h-8 rounded-full flex items-center justify-center font-bold border-2 transition-colors",
               (i === 1 || step >= i) ? "bg-amber-600 border-amber-600 text-black" :
+              step > i ? "bg-amber-900/40 border-amber-600 text-amber-500" :
               "bg-transparent border-muted text-muted-foreground"
             )}>
-              {i === 1 ? <Check className="w-4 h-4" /> : i}
+              {step > i ? <Check className="w-4 h-4" /> : i}
             </div>
-            {i < 3 && <div className={cn("w-8 sm:w-12 h-0.5 mx-1 sm:mx-2", step >= (i + 1) ? "bg-amber-800" : "bg-muted")} />}
+            {i < 4 && <div className={cn("w-6 sm:w-10 h-0.5 mx-1 sm:mx-2", step > i ? "bg-amber-800" : "bg-muted")} />}
           </div>
         ))}
       </div>
@@ -333,7 +334,7 @@ export function STWizard({ playerCount, onBack, onComplete }: STWizardProps) {
 
             <div className="flex justify-center gap-2 flex-wrap">
               <Button size="sm" variant="outline" onClick={shuffleBag} data-testid="button-shuffle">
-                <Shuffle className="w-3.5 h-3.5 mr-1.5" /> {selectedIds.size > 0 ? 'Reshuffle' : 'Shuffle'}
+                <Shuffle className="w-3.5 h-3.5 mr-1.5" /> {lockedIds.size > 0 ? 'Reshuffle' : 'Shuffle'}
               </Button>
               <Button size="sm" variant="outline" onClick={clearAll} data-testid="button-clear-locks">
                 <Trash2 className="w-3.5 h-3.5 mr-1.5" /> Clear All
@@ -356,17 +357,15 @@ export function STWizard({ playerCount, onBack, onComplete }: STWizardProps) {
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       {charactersByTeam[team].map(char => {
-                        const isSelected = selectedIds.has(char.id);
                         const isLocked = lockedIds.has(char.id);
                         return (
                           <button
                             key={char.id}
-                            onClick={() => toggleSelect(char.id)}
+                            onClick={() => toggleLock(char.id)}
                             className={cn(
                               "text-left p-3 rounded-lg border transition-all relative group",
-                              isSelected && isLocked && "ring-2 ring-amber-500/70 border-amber-600 bg-amber-900/20",
-                              isSelected && !isLocked && "border-amber-600/50 bg-amber-900/10",
-                              !isSelected && "border-border bg-card hover:bg-muted/30",
+                              isLocked && "ring-2 ring-amber-500/70 border-amber-600 bg-amber-900/20",
+                              !isLocked && "border-border bg-card hover:bg-muted/30",
                             )}
                             data-testid={`card-char-${char.id}`}
                           >
@@ -375,26 +374,10 @@ export function STWizard({ playerCount, onBack, onComplete }: STWizardProps) {
                                 <div className="font-medium text-sm truncate">{char.name}</div>
                                 <div className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{char.ability}</div>
                               </div>
-                              {isSelected && (
-                                <button
-                                  onClick={(e) => toggleLock(char.id, e)}
-                                  className={cn(
-                                    "shrink-0 p-1 rounded transition-colors",
-                                    isLocked ? "text-amber-400 hover:text-amber-300" : "text-muted-foreground hover:text-amber-400"
-                                  )}
-                                  data-testid={`button-lock-${char.id}`}
-                                >
-                                  {isLocked ? <Lock className="w-4 h-4" /> : <Unlock className="w-4 h-4" />}
-                                </button>
+                              {isLocked && (
+                                <Lock className="w-4 h-4 shrink-0 text-amber-400" />
                               )}
                             </div>
-                            {isSelected && (
-                              <div className="absolute top-1 left-1">
-                                <div className="w-4 h-4 rounded-full bg-amber-600 flex items-center justify-center">
-                                  <Check className="w-3 h-3 text-black" />
-                                </div>
-                              </div>
-                            )}
                           </button>
                         );
                       })}
@@ -410,6 +393,93 @@ export function STWizard({ playerCount, onBack, onComplete }: STWizardProps) {
               </Button>
               <Button onClick={handleAcceptBag} disabled={!isExactMatch} data-testid="button-accept-bag">
                 <Check className="w-4 h-4 mr-2" /> Accept Bag
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {step === 4 && selectedScript && (
+          <div className="space-y-5 animate-in fade-in duration-300">
+            <div className="text-center space-y-1">
+              <h2 className="text-xl font-display text-amber-100">Night Sheet</h2>
+              <p className="text-muted-foreground text-sm">{selectedScript.name} · {finalBag.length} characters</p>
+            </div>
+
+            <Tabs defaultValue="first" className="w-full">
+              <TabsList className="w-full grid grid-cols-2">
+                <TabsTrigger value="first" data-testid="tab-first-night">
+                  <Moon className="w-3.5 h-3.5 mr-1.5" /> First Night
+                </TabsTrigger>
+                <TabsTrigger value="other" data-testid="tab-other-nights">
+                  <Sun className="w-3.5 h-3.5 mr-1.5" /> Other Nights
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="first">
+                <ScrollArea className="h-[320px] md:h-[380px]">
+                  {firstNightChars.length === 0 ? (
+                    <p className="text-center text-muted-foreground text-sm py-8">No characters act on the first night.</p>
+                  ) : (
+                    <div className="space-y-1 pr-2">
+                      {firstNightChars.map((char, i) => (
+                        <div
+                          key={char.id}
+                          className="flex items-start gap-3 p-3 rounded-lg border border-border bg-card"
+                          data-testid={`night-row-first-${char.id}`}
+                        >
+                          <span className="text-xs text-muted-foreground font-mono w-5 text-right shrink-0 mt-0.5">{i + 1}</span>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium text-sm">{char.name}</span>
+                              <Badge variant="secondary" className={cn("text-[10px] px-1.5 py-0", TEAM_COLORS[char.team])}>
+                                {char.team}
+                              </Badge>
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-1">{char.ability}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </ScrollArea>
+              </TabsContent>
+
+              <TabsContent value="other">
+                <ScrollArea className="h-[320px] md:h-[380px]">
+                  {otherNightChars.length === 0 ? (
+                    <p className="text-center text-muted-foreground text-sm py-8">No characters act on other nights.</p>
+                  ) : (
+                    <div className="space-y-1 pr-2">
+                      {otherNightChars.map((char, i) => (
+                        <div
+                          key={char.id}
+                          className="flex items-start gap-3 p-3 rounded-lg border border-border bg-card"
+                          data-testid={`night-row-other-${char.id}`}
+                        >
+                          <span className="text-xs text-muted-foreground font-mono w-5 text-right shrink-0 mt-0.5">{i + 1}</span>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium text-sm">{char.name}</span>
+                              <Badge variant="secondary" className={cn("text-[10px] px-1.5 py-0", TEAM_COLORS[char.team])}>
+                                {char.team}
+                              </Badge>
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-1">{char.ability}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </ScrollArea>
+              </TabsContent>
+            </Tabs>
+
+            <div className="flex justify-between pt-2">
+              <Button variant="ghost" onClick={() => setStep(3)} data-testid="button-st-back-night">
+                <ChevronLeft className="w-4 h-4 mr-1" /> Bag
+              </Button>
+              <Button onClick={handleStartGame} data-testid="button-st-start-game">
+                <Check className="w-4 h-4 mr-2" /> Start Game
               </Button>
             </div>
           </div>
@@ -432,7 +502,6 @@ export function STWizard({ playerCount, onBack, onComplete }: STWizardProps) {
             if (selectedScript?.id === editingScript.id) {
               setSelectedScript({ ...selectedScript, name, characterIds });
               setLockedIds(new Set());
-              setSelectedIds(new Set());
             }
           } else {
             const newScript = addCustomScript(name, characterIds);
