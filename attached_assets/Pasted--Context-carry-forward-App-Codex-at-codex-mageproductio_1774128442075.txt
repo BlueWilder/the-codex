@@ -1,0 +1,46 @@
+## Context (carry forward)
+- App: Codex at codex.mageproductions.com/game
+- Stack: React + TypeScript, PostgreSQL, hosted on Replit
+- Custom scripts stored in `customScripts` table (DB when logged in, localStorage when logged out)
+- Base scripts already have a `synopsis` field added to BUILT_IN_SCRIPTS in game-data.ts
+- Night Sheet screen already shows synopsis for base scripts with collapsible toggle
+- Custom script creation/editing UI already exists
+
+## Task
+Add optional synopsis support to custom scripts — a text field in the editor and display on the Night Sheet matching the existing base script synopsis behavior.
+
+## Step 1 — DB migration
+Add a nullable `synopsis` column (text, nullable) to the `customScripts` table.
+STOP and show me the migration SQL before executing it.
+
+## Step 2 — localStorage schema
+Update the localStorage fallback structure to include `synopsis` as an optional field.
+Default to empty string or null for any existing saved scripts that lack it.
+Must not break any existing localStorage scripts that were saved without this field.
+
+## Step 3 — Script editor UI
+Add a `synopsis` textarea field to the existing custom script creation/editing form.
+- Label: "Synopsis (optional)"
+- Placeholder: "A short atmospheric description of your script..."
+- No character limit enforcement, but show a soft character count
+- Place it below the script name field and above the character selection area
+- Use the existing form field styling — do not introduce new UI patterns
+
+## Step 4 — API
+Update the `/api/custom-scripts` POST and PUT endpoints to accept and persist the `synopsis` field.
+Update the GET response to include `synopsis` in the returned script object.
+
+## Step 5 — Night Sheet display
+On the Night Sheet screen, apply the same collapsible synopsis block behavior already built for base scripts to custom scripts — but only when the custom script has a non-empty synopsis value.
+If synopsis is empty or null, hide the block entirely (same as current behavior for custom scripts).
+
+## Stop conditions
+- STOP and show me the migration SQL before running it
+- STOP and ask before modifying any existing custom script fields or endpoints beyond adding `synopsis`
+- STOP and ask if the existing editor form structure is not what you expect
+
+## Forbidden
+- Do NOT make synopsis required — it must remain fully optional
+- Do NOT change the display behavior for base scripts
+- Do NOT modify character selection or any other part of the script editor
+- Do NOT add new dependencies
