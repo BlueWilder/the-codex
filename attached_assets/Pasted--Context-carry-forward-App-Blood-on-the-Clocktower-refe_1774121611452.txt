@@ -1,0 +1,51 @@
+## Context (carry forward)
+- App: Blood on the Clocktower reference tool "Codex" at codex.mageproductions.com/reference
+- Stack: React + TypeScript frontend, PostgreSQL database, hosted on Replit
+- All 18 Travellers are already in the database as type "Traveller" with no script association
+- Traveller-to-script mapping (official, from wiki):
+  - Trouble Brewing: Scapegoat, Gunslinger, Beggar, Bureaucrat, Thief
+  - Sects & Violets: Butcher, Bone Collector, Harlot, Barista, Deviant
+  - Bad Moon Rising: Apprentice, Matron, Voudon, Judge, Bishop
+  - Experimental: Cacklejack, Gangster, Gnome
+
+## Task
+Enable cross-filtering so that selecting a script filter + Traveller type filter together returns only the Travellers associated with that script. Selecting Traveller type alone (no script) continues to show all 18.
+
+## Step 1 — Audit
+Open the characters table schema and the active filter logic in the reference UI component.
+Identify:
+- Whether a script/edition association column already exists on characters
+- How the current type filter and script filter interact (AND vs OR logic)
+- How filters are stored in state (single value, array, etc.)
+Stop and show me both before proceeding.
+
+## Step 2 — Add script association to Travellers (DB)
+If no script association column exists, add a nullable `suggested_script` column (text or FK — match existing pattern).
+Update the 18 Traveller rows with the correct values:
+- "Trouble Brewing" → Scapegoat, Gunslinger, Beggar, Bureaucrat, Thief
+- "Sects & Violets" → Butcher, Bone Collector, Harlot, Barista, Deviant
+- "Bad Moon Rising" → Apprentice, Matron, Voudon, Judge, Bishop
+- "Experimental" → Cacklejack, Gangster, Gnome
+MUST NOT modify any non-Traveller character records.
+After updates, output: ✅ [count] Traveller rows updated
+
+## Step 3 — Update filter logic
+Modify the reference UI filter so that:
+- Script filter selected + NO type filter → existing behavior (show all characters on that script)
+- Type filter = Traveller + NO script filter → show all 18 Travellers
+- Type filter = Traveller + script filter selected → show only the 5 (or 3) Travellers for that script
+- Any other type filter + script filter → existing behavior unchanged
+This is additive logic only. Do NOT refactor the existing filter system.
+
+## Step 4 — Verify
+Run a quick check: simulate selecting "Trouble Brewing" + "Traveller" and confirm exactly 5 results return (Scapegoat, Gunslinger, Beggar, Bureaucrat, Thief).
+Output the result set before marking complete.
+
+## Stop conditions
+- STOP and ask before: altering any non-Traveller rows, changing existing filter behavior for non-Traveller types, adding new dependencies
+- STOP and show me the schema diff before executing any DB migration
+
+## Forbidden
+- Do NOT change how filters work for Townsfolk, Outsiders, Minions, or Demons
+- Do NOT add UI elements beyond what's needed to support the new filter logic
+- Do NOT refactor unrelated components

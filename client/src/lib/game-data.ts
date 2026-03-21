@@ -3279,6 +3279,258 @@ When their amigo is nominated, the Gnome may choose to kill the nominator immedi
   },
   // FABLED
   {
+    id: 'angel',
+    name: 'Angel',
+    edition: 'experimental',
+    team: 'fabled',
+    ability: 'Something bad might happen to whoever nominates or kills the protected player.',
+    firstNightOrder: null,
+    otherNightOrder: null,
+    setup: false,
+    reminders: ['Protected', 'Something bad'],
+    flavorQuote: "Take good care of the newcomers.",
+    extendedSummary: `The Angel protects new or disadvantaged players from being targeted.
+
+At the start of the game, the Storyteller declares the Angel is in play and identifies which player(s) it protects (with the player's consent). All players know who is protected, but not their alignment or character.
+
+If anyone nominates or kills the protected player, something bad happens to the responsible party — such as being poisoned, losing their vote, or dying. The consequence is the Storyteller's choice.`,
+    tipsAndTricks: [
+      "This is a Fabled - a Storyteller tool, not a regular character.",
+      "It protects new or disadvantaged players so they can learn the game without being targeted early.",
+      "The 'something bad' is up to the Storyteller — it could be poisoning, death, or losing a vote.",
+      "Everyone knows who is protected, so experienced players should avoid targeting them."
+    ],
+    bluffingAs: [],
+    howToRun: "At the start of the game, declare that the Angel is in play. Declare which player(s) it protects (with their consent). Mark them with the PROTECTED reminder.\n\nIf a protected player is nominated or killed, something bad happens to the most responsible player. Mark them with the SOMETHING BAD reminder. The consequence is your choice — poisoning, death, losing a vote, etc."
+  },
+  {
+    id: 'buddhist',
+    name: 'Buddhist',
+    edition: 'experimental',
+    team: 'fabled',
+    ability: 'For the first 2 minutes of each day, veteran players may not talk.',
+    firstNightOrder: null,
+    otherNightOrder: null,
+    setup: false,
+    reminders: [],
+    flavorQuote: "Shh. Listen.",
+    extendedSummary: `The Buddhist silences experienced players at the start of each day so newer players can speak first.
+
+The Storyteller declares which players are affected (veteran/experienced players). Those players cannot talk or whisper for the first 2 minutes of each day. They simply listen while newer players share information and discuss.
+
+After the 2-minute period ends, all players may speak freely.`,
+    tipsAndTricks: [
+      "This is a Fabled - a Storyteller tool, not a regular character.",
+      "It helps newer players find their voice without being overshadowed by experienced players.",
+      "Veteran players should use the quiet time to listen and observe body language.",
+      "The Storyteller decides who counts as a 'veteran player' — it's usually players with many games under their belt."
+    ],
+    bluffingAs: [],
+    howToRun: "At the start of the game, declare that the Buddhist is in play. Declare which players are affected (veteran players).\n\nAt the start of each day, remind players that the Buddhist is in play. Start a 2-minute timer (or use your best judgment). Affected players may not talk or whisper during this time. After the time is up, announce that all players may now speak freely."
+  },
+  {
+    id: 'doomsayer',
+    name: 'Doomsayer',
+    edition: 'experimental',
+    team: 'fabled',
+    ability: 'If 4 or more players live, each living player may publicly choose (once per game) that a player of their own alignment dies.',
+    firstNightOrder: null,
+    otherNightOrder: null,
+    setup: false,
+    reminders: ['Used'],
+    flavorQuote: "The end is nigh!",
+    extendedSummary: `The Doomsayer speeds up games by letting players sacrifice teammates.
+
+Each living player may use the Doomsayer once per game (while 4+ players are alive) to publicly declare they want a player of their own alignment to die. The Storyteller then chooses which aligned player dies — a good player kills a good player, an evil player kills an evil player.
+
+This creates information through sacrifice: if a player uses the Doomsayer and a particular player dies, that confirms they share an alignment.`,
+    tipsAndTricks: [
+      "This is a Fabled - a Storyteller tool, not a regular character.",
+      "It speeds up games that are dragging on by letting players sacrifice teammates for information.",
+      "Using it reveals alignment information — if you call it and someone specific dies, you share their alignment.",
+      "Evil players can use it too, but they'll kill one of their own team."
+    ],
+    bluffingAs: [],
+    howToRun: "At the start of the game, declare that the Doomsayer is in play.\n\nDuring the day, if 4 or more players are alive, a living player may publicly declare they wish to use the Doomsayer. Choose a living player of the same alignment as the declaring player — that player dies. Mark the declaring player with the USED reminder. Each player may only use this ability once per game."
+  },
+  {
+    id: 'fiddler',
+    name: 'Fiddler',
+    edition: 'experimental',
+    team: 'fabled',
+    ability: 'Once per game, the Demon secretly chooses an opposing player: all players vote between them, and the loser\'s team loses.',
+    firstNightOrder: null,
+    otherNightOrder: null,
+    setup: false,
+    reminders: [],
+    flavorQuote: "The Devil went down to Georgia...",
+    extendedSummary: `The Fiddler provides an alternate game-ending mechanism — the "fiddle contest."
+
+Once per game, when the Storyteller decides the game needs to end soon, they activate the Fiddler. All players close their eyes. The Demon wakes and secretly points at a good player. All players open their eyes, and the Storyteller announces the two contestants: the Demon and their chosen opponent.
+
+After a brief discussion period, all players vote on each contestant. The player with the most votes loses, and their entire team loses the game. On a tie, the good team wins.`,
+    tipsAndTricks: [
+      "This is a Fabled - a Storyteller tool, not a regular character.",
+      "It gives the Storyteller a way to end a game that's running too long.",
+      "The Demon picks who they think they can beat in a popularity contest.",
+      "On a tie, the good team wins — so evil needs a clear majority to win the fiddle contest."
+    ],
+    bluffingAs: [],
+    howToRun: "When you decide the game needs to end, declare you are using the Fiddler.\n\nPut all players to sleep. Wake the Demon — they point at a good player. Put the Demon to sleep. Wake all players.\n\nDeclare the Demon and the chosen player are in a fiddle contest. After a minute or two of discussion, run a show-of-hands vote for each contestant. The player with the most votes loses, and their team loses the game. On a tie, the good team wins."
+  },
+  {
+    id: 'revolutionary',
+    name: 'Revolutionary',
+    edition: 'experimental',
+    team: 'fabled',
+    ability: '2 neighbouring players are known to be the same alignment. Once per game, one of them registers falsely.',
+    firstNightOrder: null,
+    otherNightOrder: null,
+    setup: false,
+    reminders: ['Used', 'Register falsely'],
+    flavorQuote: "We stand together.",
+    extendedSummary: `The Revolutionary pairs two neighboring players who are guaranteed to be the same alignment.
+
+Before distributing character tokens, the Storyteller announces the Revolutionary is in play and identifies which two neighboring players are Revolutionaries. Both are guaranteed the same alignment (both good or both evil) and sit next to each other.
+
+Once per game, one of the paired players may register as the wrong alignment to abilities that detect alignment. This adds a layer of uncertainty so the pairing isn't too powerful.
+
+This Fabled helps disadvantaged players (deaf, non-native speakers, uncomfortable lying) participate fully by giving them a trusted ally.`,
+    tipsAndTricks: [
+      "This is a Fabled - a Storyteller tool, not a regular character.",
+      "It helps players who are disadvantaged participate by giving them a guaranteed ally.",
+      "The pair shares alignment but NOT character information — they still don't know each other's roles.",
+      "The false registration ability prevents the pair from being too confirmable."
+    ],
+    bluffingAs: [],
+    howToRun: "Before distributing tokens, declare the Revolutionary is in play. Identify which two neighboring players are paired. Ensure they are the same alignment.\n\nOnce per game, if an ability checks one of their alignments, you may have them register as the wrong alignment. Mark that player with the REGISTER FALSELY reminder."
+  },
+  {
+    id: 'toymaker',
+    name: 'Toymaker',
+    edition: 'experimental',
+    team: 'fabled',
+    ability: 'The Demon may choose not to attack & must do this at least once per game. Evil players get normal starting info.',
+    firstNightOrder: null,
+    otherNightOrder: null,
+    setup: false,
+    reminders: ['Final night: no attack'],
+    flavorQuote: "Let the games begin!",
+    extendedSummary: `The Toymaker extends small games (5-6 players) by forcing the Demon to skip at least one kill.
+
+In small games, the Demon would normally kill so quickly that the game only lasts 2 days. The Toymaker forces the Demon to skip attacking at least once per game, extending it to 3+ days.
+
+Additionally, evil players get their normal starting information (Demon bluffs, Minion/Demon identity reveal) even in games with fewer than 7 players where these would normally be skipped.`,
+    tipsAndTricks: [
+      "This is a Fabled - a Storyteller tool, not a regular character.",
+      "It's designed for small games (5-6 players) to extend gameplay.",
+      "The Demon must skip at least one attack, but can choose which night to skip.",
+      "Evil players get normal starting info even in small games — Demon bluffs, Minion reveals, etc."
+    ],
+    bluffingAs: [],
+    howToRun: "At the start of the game, declare the Toymaker is in play. Mark the Demon with the FINAL NIGHT: NO ATTACK reminder.\n\nEach night, the Demon may choose to attack or not. They must skip attacking at least once per game. If they have not skipped by the final night, they cannot attack that night.\n\nDuring setup, give the Demon 3 not-in-play character bluffs and let Minions/Demon learn each other, even if there are fewer than 7 players."
+  },
+  {
+    id: 'djinn',
+    name: 'Djinn',
+    edition: 'experimental',
+    team: 'fabled',
+    ability: "Use the Djinn's special rule. All players know what it is.",
+    firstNightOrder: null,
+    otherNightOrder: null,
+    setup: false,
+    reminders: [],
+    flavorQuote: "Grant me one wish.",
+    extendedSummary: `The Djinn resolves jinxes (conflicting character interactions) on custom scripts.
+
+When two characters on a script have a jinx (a mechanical conflict), the Djinn creates a special rule to make them work together. This rule is announced to all players at the start of the game, even if the jinxed characters aren't actually in play — this prevents information leaks.
+
+The Djinn is automatically added to any script that contains jinxed character pairs. Each jinx has its own unique, tailored rule defined by the game designers.`,
+    tipsAndTricks: [
+      "This is a Fabled - a Storyteller tool, not a regular character.",
+      "It's automatically added when your script has jinxed characters.",
+      "The special rule is announced publicly so all players know the interaction change.",
+      "Even if the jinxed characters aren't in play, the rule is still announced to prevent information leaks."
+    ],
+    bluffingAs: [],
+    howToRun: "When creating a script with jinxed characters, add the Djinn. At the start of the game, announce the Djinn's special rule for each jinx on the script.\n\nThe special rule for each jinx is defined on the official character sheet or Script Tool. Follow that rule throughout the game."
+  },
+  {
+    id: 'duchess',
+    name: 'Duchess',
+    edition: 'experimental',
+    team: 'fabled',
+    ability: 'Each day, 3 players may choose to visit you. At night*, each visitor learns how many visitors are evil, but 1 gets false info.',
+    firstNightOrder: null,
+    otherNightOrder: null,
+    setup: false,
+    reminders: ['Visitor', 'False info'],
+    flavorQuote: "Do come in. I have so much to tell you.",
+    extendedSummary: `The Duchess provides an information source for custom scripts that lack information-gathering characters.
+
+Each day, exactly 3 players volunteer to visit the Duchess. That night, each visitor learns how many of the 3 visitors are evil (including themselves). However, one of the three visitors gets false information — the Storyteller chooses which one.
+
+If exactly 3 volunteers can't be agreed upon, the Duchess doesn't activate that night. Visiting the Duchess doesn't interfere with a player's normal character ability.`,
+    tipsAndTricks: [
+      "This is a Fabled - a Storyteller tool, not a regular character.",
+      "It adds an information channel to scripts that don't have many info-gathering characters.",
+      "Exactly 3 players must visit — no more, no less. If players can't agree, it doesn't work.",
+      "One visitor always gets wrong info, so cross-reference with other visitors."
+    ],
+    bluffingAs: [],
+    howToRun: "At the start of the game, declare the Duchess is in play.\n\nEach day, players decide which 3 will visit. If exactly 3 cannot be agreed upon, the Duchess does not act. Mark the 3 visitors with VISITOR reminders. Choose 1 visitor to mark with FALSE INFO.\n\nThat night, wake each visitor individually. Show them fingers for how many of the 3 visitors are evil. The player marked FALSE INFO gets incorrect information."
+  },
+  {
+    id: 'fibbin',
+    name: 'Fibbin',
+    edition: 'experimental',
+    team: 'fabled',
+    ability: 'Once per game, 1 good player might get incorrect information.',
+    firstNightOrder: null,
+    otherNightOrder: null,
+    setup: false,
+    reminders: ['Used'],
+    flavorQuote: "A little white lie never hurt anyone... right?",
+    extendedSummary: `The Fibbin adds the possibility of misinformation to scripts that lack characters causing drunkenness or poisoning.
+
+Once per game, the Storyteller may give one good player incorrect information from their ability. This only affects information-giving abilities (not character powers that cause effects).
+
+The Fibbin helps evil players bluff more effectively on custom scripts where all good information would otherwise be reliable. Players can never be 100% certain their information is correct.`,
+    tipsAndTricks: [
+      "This is a Fabled - a Storyteller tool, not a regular character.",
+      "It introduces doubt into good players' information on scripts with no drunk/poison.",
+      "Only affects information abilities — not powers that cause game effects.",
+      "The Storyteller can choose to never use it, keeping the 'might' ambiguity alive."
+    ],
+    bluffingAs: [],
+    howToRun: "At the start of the game, declare the Fibbin is in play.\n\nOnce per game, when a good player's ability gives them information, you may give them incorrect information instead. Mark the Fibbin with the USED reminder. This can only affect abilities that provide information, not abilities that cause effects."
+  },
+  {
+    id: 'sentinel',
+    name: 'Sentinel',
+    edition: 'experimental',
+    team: 'fabled',
+    ability: 'There might be 1 extra or 1 fewer Outsider in play.',
+    firstNightOrder: null,
+    otherNightOrder: null,
+    setup: false,
+    reminders: [],
+    flavorQuote: "Who goes there?",
+    extendedSummary: `The Sentinel makes the Outsider count uncertain on custom scripts.
+
+Official scripts are carefully designed so the number of Outsiders is never fully predictable. Custom scripts often lack this uncertainty, which makes it easy for players to confirm or deny Outsider claims.
+
+With the Sentinel in play, there might be 1 extra or 1 fewer Outsider than expected. This ambiguity helps evil players bluff as Outsiders and makes real Outsiders harder to confirm, maintaining the social deduction tension.`,
+    tipsAndTricks: [
+      "This is a Fabled - a Storyteller tool, not a regular character.",
+      "It makes Outsider counts uncertain on custom scripts.",
+      "Evil players can more safely bluff as Outsiders since the count is flexible.",
+      "Real Outsiders can't be easily confirmed or denied by counting."
+    ],
+    bluffingAs: [],
+    howToRun: "At the start of the game, declare the Sentinel is in play.\n\nDuring setup, you may add 1 extra Outsider (replacing a Townsfolk) or remove 1 Outsider (replacing with a Townsfolk). You may also choose to keep the normal Outsider count — the 'might' keeps players uncertain."
+  },
+  {
     id: 'deusexfiasco',
     name: 'Deus ex Fiasco',
     edition: 'experimental',
