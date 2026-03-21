@@ -510,7 +510,9 @@ export function STWizard({ playerCount, onBack }: STWizardProps) {
                   </button>
                   {synopsisOpen && (
                     <div className="px-3 pb-3 pt-1 border-t border-amber-900/20">
-                      <p className="text-sm italic text-amber-100/60 leading-relaxed">{synopsis}</p>
+                      {synopsis.split('\n\n').map((para, i) => (
+                        <p key={i} className={cn("text-sm italic text-amber-100/60 leading-relaxed", i > 0 && "mt-3")}>{para}</p>
+                      ))}
                     </div>
                   )}
                 </div>
