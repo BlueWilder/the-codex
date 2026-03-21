@@ -12,6 +12,7 @@ export const customScripts = pgTable("custom_scripts", {
   userId: varchar("user_id").notNull(),
   name: text("name").notNull(),
   characterIds: text("character_ids").array().notNull(),
+  synopsis: text("synopsis"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -50,6 +51,7 @@ export const insertCustomScriptSchema = createInsertSchema(customScripts).omit({
 export const updateCustomScriptSchema = z.object({
   name: z.string().min(1).optional(),
   characterIds: z.array(z.string()).optional(),
+  synopsis: z.string().nullable().optional(),
 });
 
 export const insertScriptSchema = createInsertSchema(scripts).omit({ 

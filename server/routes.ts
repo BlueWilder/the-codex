@@ -9,6 +9,7 @@ import { updateCustomScriptSchema } from "@shared/schema";
 const createCustomScriptSchema = z.object({
   name: z.string().min(1, "Name is required"),
   characterIds: z.array(z.string()).min(1, "At least one character is required"),
+  synopsis: z.string().nullable().optional(),
 });
 
 export async function registerRoutes(
@@ -41,8 +42,8 @@ export async function registerRoutes(
           field: parsed.error.errors[0].path.join('.')
         });
       }
-      const { name, characterIds } = parsed.data;
-      const script = await storage.createCustomScript({ userId, name, characterIds });
+      const { name, characterIds, synopsis } = parsed.data;
+      const script = await storage.createCustomScript({ userId, name, characterIds, ...(synopsis ? { synopsis } : {}) });
       res.status(201).json(script);
     } catch (error) {
       console.error("Error creating custom script:", error);

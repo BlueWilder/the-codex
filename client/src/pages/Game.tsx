@@ -393,15 +393,16 @@ function SetupWizard({ onStart }: { onStart: (count: number, names: string[], sc
         onOpenChange={setShowScriptBuilder}
         initialCharacters={editingScript ? new Set(editingScript.characterIds) : new Set()}
         initialName={editingScript?.name || ""}
+        initialSynopsis={editingScript?.synopsis || ""}
         title={editingScript ? "Edit Custom Script" : "Create Custom Script"}
         editMode={!!editingScript}
-        onSave={(name, characterIds) => {
+        onSave={(name, characterIds, synopsis) => {
           if (editingScript) {
-            updateCustomScript(editingScript.id, name, characterIds);
+            updateCustomScript(editingScript.id, name, characterIds, synopsis);
             const updated = getScriptById(editingScript.id);
             if (updated) setSelectedScript(updated);
           } else {
-            const newScript = addCustomScript(name, characterIds);
+            const newScript = addCustomScript(name, characterIds, synopsis);
             setSelectedScript(newScript);
           }
         }}
@@ -3133,13 +3134,14 @@ function GameTrackerView({
         onOpenChange={setShowScriptBuilder}
         initialCharacters={editingScript ? new Set(editingScript.characterIds) : new Set()}
         initialName={editingScript?.name || ""}
+        initialSynopsis={editingScript?.synopsis || ""}
         title={editingScript ? "Edit Custom Script" : "Create Custom Script"}
         editMode={!!editingScript}
-        onSave={(name, characterIds) => {
+        onSave={(name, characterIds, synopsis) => {
           if (editingScript) {
-            updateCustomScript(editingScript.id, name, characterIds);
+            updateCustomScript(editingScript.id, name, characterIds, synopsis);
           } else {
-            const newScript = addCustomScript(name, characterIds);
+            const newScript = addCustomScript(name, characterIds, synopsis);
             onSetScript({ id: newScript.id });
           }
         }}

@@ -493,7 +493,7 @@ export function STWizard({ playerCount, onBack }: STWizardProps) {
 
             {(() => {
               const officialScript = OFFICIAL_SCRIPTS.find(s => s.id === selectedScript.id);
-              const synopsis = officialScript && 'synopsis' in officialScript ? (officialScript as { synopsis?: string }).synopsis ?? null : null;
+              const synopsis = (officialScript && 'synopsis' in officialScript ? (officialScript as { synopsis?: string }).synopsis : null) || selectedScript.synopsis || null;
               if (!synopsis) return null;
               return (
                 <div className="rounded-lg border border-amber-900/30 bg-amber-950/20 overflow-hidden">
@@ -589,17 +589,18 @@ export function STWizard({ playerCount, onBack }: STWizardProps) {
         }}
         initialCharacters={editingScript ? new Set(editingScript.characterIds) : new Set()}
         initialName={editingScript?.name || ""}
+        initialSynopsis={editingScript?.synopsis || ""}
         title={editingScript ? "Edit Custom Script" : "Create Custom Script"}
         editMode={!!editingScript}
-        onSave={(name, characterIds) => {
+        onSave={(name, characterIds, synopsis) => {
           if (editingScript) {
-            updateCustomScript(editingScript.id, name, characterIds);
+            updateCustomScript(editingScript.id, name, characterIds, synopsis);
             if (selectedScript?.id === editingScript.id) {
               setSelectedScript({ ...selectedScript, name, characterIds });
               setLockedIds(new Set());
             }
           } else {
-            const newScript = addCustomScript(name, characterIds);
+            const newScript = addCustomScript(name, characterIds, synopsis);
             setSelectedScript(newScript);
           }
         }}

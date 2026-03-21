@@ -11,7 +11,8 @@ interface ScriptBuilderDialogProps {
   onOpenChange: (open: boolean) => void;
   initialCharacters?: Set<string>;
   initialName?: string;
-  onSave: (name: string, characterIds: string[]) => void;
+  initialSynopsis?: string;
+  onSave: (name: string, characterIds: string[], synopsis?: string) => void;
   title?: string;
   editMode?: boolean;
 }
@@ -30,11 +31,13 @@ export function ScriptBuilderDialog({
   onOpenChange,
   initialCharacters = new Set(),
   initialName = "",
+  initialSynopsis = "",
   onSave,
   title = "Create Custom Script",
   editMode = false,
 }: ScriptBuilderDialogProps) {
   const [scriptName, setScriptName] = useState(initialName);
+  const [synopsis, setSynopsis] = useState(initialSynopsis);
   const [selectedCharacters, setSelectedCharacters] = useState<Set<string>>(new Set(initialCharacters));
   const [teamFilter, setTeamFilter] = useState<string>("all");
   const [search, setSearch] = useState("");
@@ -43,9 +46,10 @@ export function ScriptBuilderDialog({
     if (open) {
       setSelectedCharacters(new Set(initialCharacters));
       setScriptName(initialName);
+      setSynopsis(initialSynopsis);
       setSearch("");
     }
-  }, [open, initialCharacters, initialName]);
+  }, [open, initialCharacters, initialName, initialSynopsis]);
 
   const toggleCharacter = (charId: string) => {
     const newSet = new Set(selectedCharacters);
@@ -59,7 +63,7 @@ export function ScriptBuilderDialog({
 
   const handleSave = () => {
     if (!scriptName.trim() || selectedCharacters.size === 0) return;
-    onSave(scriptName.trim(), Array.from(selectedCharacters));
+    onSave(scriptName.trim(), Array.from(selectedCharacters), synopsis.trim() || undefined);
     onOpenChange(false);
   };
 
@@ -122,6 +126,20 @@ export function ScriptBuilderDialog({
               placeholder="e.g., My Custom Script"
               className="max-w-sm"
               data-testid="input-script-name"
+            />
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-sm text-muted-foreground">Synopsis (optional)</label>
+              <span className="text-[10px] text-muted-foreground/60">{synopsis.length} chars</span>
+            </div>
+            <textarea
+              value={synopsis}
+              onChange={(e) => setSynopsis(e.target.value)}
+              placeholder="A short atmospheric description of your script..."
+              className="w-full max-w-sm h-16 px-3 py-2 rounded-md border border-input bg-background text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background placeholder:text-muted-foreground"
+              data-testid="input-script-synopsis"
             />
           </div>
 

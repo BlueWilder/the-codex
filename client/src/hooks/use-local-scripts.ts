@@ -10,6 +10,7 @@ export interface LocalScript {
   isOfficial: boolean;
   isCommunity?: boolean;
   characterIds: string[];
+  synopsis?: string;
 }
 
 interface DbScript {
@@ -17,6 +18,7 @@ interface DbScript {
   userId: string;
   name: string;
   characterIds: string[];
+  synopsis?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -55,7 +57,7 @@ export function useLocalScripts() {
   });
 
   const createMutation = useMutation({
-    mutationFn: async (data: { name: string; characterIds: string[] }) => {
+    mutationFn: async (data: { name: string; characterIds: string[]; synopsis?: string }) => {
       const res = await apiRequest("POST", "/api/custom-scripts", data);
       return res.json();
     },
@@ -65,8 +67,8 @@ export function useLocalScripts() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: async ({ id, name, characterIds }: { id: number; name: string; characterIds: string[] }) => {
-      const res = await apiRequest("PUT", `/api/custom-scripts/${id}`, { name, characterIds });
+    mutationFn: async ({ id, name, characterIds, synopsis }: { id: number; name: string; characterIds: string[]; synopsis?: string }) => {
+      const res = await apiRequest("PUT", `/api/custom-scripts/${id}`, { name, characterIds, synopsis: synopsis || null });
       return res.json();
     },
     onSuccess: () => {
@@ -116,21 +118,23 @@ export function useLocalScripts() {
         name: s.name,
         isOfficial: false,
         characterIds: s.characterIds,
+        ...(s.synopsis ? { synopsis: s.synopsis } : {}),
       }))
     : localScripts;
 
   const isLoading = authLoading || (user ? dbLoading : localLoading);
 
-  const addCustomScript = useCallback((name: string, characterIds: string[]): LocalScript => {
+  const addCustomScript = useCallback((name: string, characterIds: string[], synopsis?: string): LocalScript => {
     if (user) {
-      createMutation.mutate({ name, characterIds });
-      return { id: `db-pending`, name, isOfficial: false, characterIds };
+      createMutation.mutate({ name, characterIds, synopsis });
+      return { id: `db-pending`, name, isOfficial: false, characterIds, ...(synopsis ? { synopsis } : {}) };
     } else {
       const newScript: LocalScript = {
         id: `custom-${Date.now()}`,
         name,
         isOfficial: false,
         characterIds,
+        ...(synopsis ? { synopsis } : {}),
       };
       const updated = [...localScripts, newScript];
       setLocalScripts(updated);
@@ -139,16 +143,17 @@ export function useLocalScripts() {
     }
   }, [user, localScripts, createMutation]);
 
-  const addCustomScriptAsync = useCallback(async (name: string, characterIds: string[]): Promise<LocalScript> => {
+  const addCustomScriptAsync = useCallback(async (name: string, characterIds: string[], synopsis?: string): Promise<LocalScript> => {
     if (user) {
-      const dbScript = await createMutation.mutateAsync({ name, characterIds });
-      return { id: `db-${dbScript.id}`, name: dbScript.name, isOfficial: false, characterIds: dbScript.characterIds };
+      const dbScript = await createMutation.mutateAsync({ name, characterIds, synopsis });
+      return { id: `db-${dbScript.id}`, name: dbScript.name, isOfficial: false, characterIds: dbScript.characterIds, ...(dbScript.synopsis ? { synopsis: dbScript.synopsis } : {}) };
     } else {
       const newScript: LocalScript = {
         id: `custom-${Date.now()}`,
         name,
         isOfficial: false,
         characterIds,
+        ...(synopsis ? { synopsis } : {}),
       };
       const updated = [...localScripts, newScript];
       setLocalScripts(updated);
@@ -157,17 +162,17 @@ export function useLocalScripts() {
     }
   }, [user, localScripts, createMutation]);
 
-  const updateCustomScript = useCallback((id: string, name: string, characterIds: string[]) => {
+  const updateCustomScript = useCallback((id: string, name: string, characterIds: string[], synopsis?: string) => {
     if (id === "db-pending") {
       console.warn("Cannot update script that is still being created");
       return;
     }
     if (user && id.startsWith("db-")) {
       const dbId = parseInt(id.replace("db-", ""));
-      updateMutation.mutate({ id: dbId, name, characterIds });
+      updateMutation.mutate({ id: dbId, name, characterIds, synopsis });
     } else {
       const updated = localScripts.map(s => 
-        s.id === id ? { ...s, name, characterIds } : s
+        s.id === id ? { ...s, name, characterIds, synopsis: synopsis || undefined } : s
       );
       setLocalScripts(updated);
       saveToLocalStorage(updated);
