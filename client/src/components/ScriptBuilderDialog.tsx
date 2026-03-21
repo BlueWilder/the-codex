@@ -102,7 +102,9 @@ export function ScriptBuilderDialog({
       }
     }
 
-    if (matched.length === 0) {
+    const uniqueMatched = [...new Set(matched)];
+
+    if (uniqueMatched.length === 0) {
       setImportMessage({ type: 'error', text: `No recognized characters found in the JSON. ${unrecognized.length > 0 ? `Unrecognized IDs: ${unrecognized.join(', ')}` : ''}` });
       return;
     }
@@ -110,14 +112,14 @@ export function ScriptBuilderDialog({
     if (importedName) {
       setScriptName(importedName);
     }
-    setSelectedCharacters(new Set(matched));
+    setSelectedCharacters(new Set(uniqueMatched));
     setShowImport(false);
     setImportJson("");
 
     if (unrecognized.length > 0) {
-      setImportMessage({ type: 'warning', text: `${matched.length} characters imported${importedName ? ` from "${importedName}"` : ''}. ${unrecognized.length} skipped: ${unrecognized.join(', ')}` });
+      setImportMessage({ type: 'warning', text: `${uniqueMatched.length} characters imported${importedName ? ` from "${importedName}"` : ''}. ${unrecognized.length} skipped: ${unrecognized.join(', ')}` });
     } else {
-      setImportMessage({ type: 'success', text: `${matched.length} characters imported${importedName ? ` from "${importedName}"` : ''}.` });
+      setImportMessage({ type: 'success', text: `${uniqueMatched.length} characters imported${importedName ? ` from "${importedName}"` : ''}.` });
     }
   };
 
@@ -293,6 +295,15 @@ export function ScriptBuilderDialog({
                       data-testid="input-import-file"
                     />
                   </label>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 text-xs"
+                    onClick={() => { setShowImport(false); setImportJson(""); }}
+                    data-testid="button-import-cancel"
+                  >
+                    Cancel
+                  </Button>
                 </div>
               </div>
             )}
