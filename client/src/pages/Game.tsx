@@ -4,6 +4,7 @@ import { usePlayerGame, getBreakdown, isPlayerActive, canPlayerVote, canPlayerVo
 import { ALL_CHARACTERS, OFFICIAL_SCRIPTS } from "@/lib/game-data";
 import { useLocalScripts, type LocalScript } from "@/hooks/use-local-scripts";
 import { ScriptBuilderDialog } from "@/components/ScriptBuilderDialog";
+import { STWizard } from "@/components/STWizard";
 import { InlineGameLog } from "@/components/InlineGameLog";
 import { TrustSlider } from "@/components/TrustSlider";
 import { ChevronRight, ChevronLeft, Play, X, Plus, Check, Search, Moon, Sun, ChevronUp, ChevronDown, FileText, Vote, Loader2, GripVertical, UserPlus, ArrowRight, BookOpen, HandMetal, Ban, LogOut, Trash2, Pencil, MoreVertical, RotateCcw, Info, ExternalLink, Users, Skull, Ghost, Scroll, Hand, Target, Theater, ArrowDownUp } from "lucide-react";
@@ -77,6 +78,7 @@ function SetupWizard({ onStart }: { onStart: (count: number, names: string[], sc
   const [selectedScript, setSelectedScript] = useState<LocalScript | null>(null);
   const [showScriptBuilder, setShowScriptBuilder] = useState(false);
   const [editingScript, setEditingScript] = useState<LocalScript | null>(null);
+  const [stMode, setStMode] = useState(false);
   const { allScripts, customScripts, addCustomScript, updateCustomScript, getScriptById } = useLocalScripts();
 
   const breakdown = getBreakdown(playerCount);
@@ -110,6 +112,21 @@ function SetupWizard({ onStart }: { onStart: (count: number, names: string[], sc
     const finalNames = playerNames.map((name, i) => name.trim() || getDefaultName(i));
     onStart(playerCount, finalNames, scriptRef);
   };
+
+  const handleSTComplete = (bag: string[], scriptRef: GameScriptRef) => {
+    const names = Array.from({ length: playerCount }, (_, i) => `Player ${i + 1}`);
+    onStart(playerCount, names, scriptRef);
+  };
+
+  if (stMode) {
+    return (
+      <STWizard
+        playerCount={playerCount}
+        onBack={() => setStMode(false)}
+        onComplete={handleSTComplete}
+      />
+    );
+  }
 
   return (
     <div className="max-w-2xl mx-auto py-8">
@@ -185,7 +202,10 @@ function SetupWizard({ onStart }: { onStart: (count: number, names: string[], sc
               </div>
             </div>
 
-            <div className="flex justify-end">
+            <div className="flex justify-between">
+              <Button variant="outline" onClick={() => setStMode(true)} data-testid="button-storyteller">
+                <Theater className="w-4 h-4 mr-2" /> Storyteller
+              </Button>
               <Button onClick={handleCountConfirm} data-testid="button-next-step">
                 Next <ChevronRight className="w-4 h-4 ml-1" />
               </Button>

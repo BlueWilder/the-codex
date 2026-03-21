@@ -75,6 +75,21 @@ A beginner-friendly guide at `/introduction` explaining Blood on the Clocktower 
 - **First Game Mindset**: Encouragement for new players
 - **CTA**: Links to Character Reference
 
+### Storyteller Mode (Bag Builder)
+A Storyteller-specific setup flow forked from the New Game wizard:
+- **Entry point**: "Storyteller" button on Step 1 (player count) of the regular setup wizard
+- **ST Step 2 — Script Selection**: Reuses the same script selector UI (official, community, custom scripts)
+- **ST Step 3 — Bag Builder**: Character grid grouped by team (Townsfolk, Outsiders, Minions, Demons)
+  - Cards show name + ability text, click to select/deselect
+  - Lock/unlock selected characters (gold ring = locked, stays through shuffle)
+  - Live running tally: green = exact count, red = over, default = under
+  - Shuffle button: randomly fills unlocked slots to meet required counts
+  - Clear All: resets all selections and locks
+  - Accept Bag: enabled only when all tallies are exactly met
+- **Component**: `client/src/components/STWizard.tsx`
+- **Back navigation**: Returns to Step 1 of the regular wizard
+- Player flow (Steps 1→2→3) is completely unchanged
+
 ### Game Mode (Player Tracker)
 A localStorage-based player tracking tool at `/game` for note-taking during games:
 - **Setup wizard**: 3-step flow with player count selection (5-20), player name inputs, and optional script selection
