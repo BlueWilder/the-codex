@@ -1,5 +1,5 @@
 import { Layout } from "@/components/ui/Layout";
-import { ALL_CHARACTERS, OFFICIAL_SCRIPTS, getJinxesForCharacter, type Character, type Jinx } from "@/lib/game-data";
+import { ALL_CHARACTERS, OFFICIAL_SCRIPTS, TRAVELLER_SCRIPT_MAP, getJinxesForCharacter, type Character, type Jinx } from "@/lib/game-data";
 import { useState, useEffect } from "react";
 import { Search, Moon, Sun, Settings, AlertTriangle, ChevronDown, Quote, Lightbulb, Sword, Eye, Check, BookOpen, Plus, Minus, Trash2, Pencil, ArrowDownAZ, LayoutList, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -313,16 +313,28 @@ export default function Reference() {
                           char.ability.toLowerCase().includes(search.toLowerCase());
     const matchesTeam = teamFilter === "all" || char.team === teamFilter;
     
-    const isAlwaysAvailable = char.team === "traveler" || char.team === "fabled";
+    const isFabled = char.team === "fabled";
+    const isTraveler = char.team === "traveler";
     let matchesScript = true;
     if (activeCustomScript) {
-      matchesScript = activeCustomScript.characterIds.includes(char.id) || isAlwaysAvailable;
+      matchesScript = activeCustomScript.characterIds.includes(char.id) || isFabled;
     } else if (scriptFilter !== "all") {
       const officialScript = OFFICIAL_SCRIPTS.find(s => s.id === scriptFilter);
       if (officialScript) {
-        matchesScript = officialScript.characters.includes(char.id) || isAlwaysAvailable;
+        if (isTraveler) {
+          const inCharacterList = officialScript.characters.includes(char.id);
+          const scriptTravellers = TRAVELLER_SCRIPT_MAP[officialScript.id];
+          matchesScript = inCharacterList || (scriptTravellers ? scriptTravellers.includes(char.id) : false);
+        } else {
+          matchesScript = officialScript.characters.includes(char.id) || isFabled;
+        }
       } else {
-        matchesScript = char.edition === scriptFilter || isAlwaysAvailable;
+        if (isTraveler) {
+          const scriptTravellers = TRAVELLER_SCRIPT_MAP[scriptFilter];
+          matchesScript = scriptTravellers ? scriptTravellers.includes(char.id) : false;
+        } else {
+          matchesScript = char.edition === scriptFilter || isFabled;
+        }
       }
     }
     

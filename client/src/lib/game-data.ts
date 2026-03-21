@@ -1189,6 +1189,12 @@ export const TRAVELLERS: Character[] = [
   { id: 'deviant', name: 'Deviant', edition: 'traveler', team: 'traveler', ability: 'If you were funny today, you can\'t die by exile.', firstNightOrder: null, otherNightOrder: null, setup: false, reminders: [], flavorQuote: '"Ha ha ha!"', extendedSummary: 'If you made people laugh today (Storyteller judges), you cannot be exiled. Humor protects you.', tipsAndTricks: ['Be entertaining to survive', 'Exile protection through comedy', 'Storyteller judges humor'], bluffingAs: ['Traveller role'] },
 ];
 
+export const TRAVELLER_SCRIPT_MAP: Record<string, string[]> = {
+  tb: ['scapegoat', 'gunslinger', 'beggar', 'bureaucrat', 'thief'],
+  bmr: ['apprentice', 'matron', 'voudon', 'judge', 'bishop'],
+  snv: ['barista', 'harlot', 'butcher', 'bonecollector', 'deviant'],
+};
+
 // ===================
 // JINXES
 // ===================
