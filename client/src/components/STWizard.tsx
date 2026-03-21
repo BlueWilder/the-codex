@@ -596,7 +596,7 @@ export function STWizard({ playerCount, onBack }: STWizardProps) {
           if (editingScript) {
             updateCustomScript(editingScript.id, name, characterIds, synopsis);
             if (selectedScript?.id === editingScript.id) {
-              setSelectedScript({ ...selectedScript, name, characterIds });
+              setSelectedScript({ ...selectedScript, name, characterIds, synopsis });
               setLockedIds(new Set());
             }
           } else {
