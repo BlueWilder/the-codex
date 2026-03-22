@@ -44,7 +44,15 @@ export function getStoredSTSession(): STSession | null {
     const stored = localStorage.getItem(ST_STORAGE_KEY);
     if (!stored) return null;
     const parsed = JSON.parse(stored);
-    if (parsed && parsed.scriptId && Array.isArray(parsed.bagIds)) {
+    if (
+      parsed &&
+      typeof parsed.playerCount === 'number' &&
+      typeof parsed.scriptId === 'string' &&
+      typeof parsed.scriptName === 'string' &&
+      Array.isArray(parsed.scriptCharacterIds) &&
+      Array.isArray(parsed.bagIds) &&
+      Array.isArray(parsed.activeIds)
+    ) {
       return parsed as STSession;
     }
     return null;
@@ -188,7 +196,7 @@ export function STWizard({ playerCount, onBack }: STWizardProps) {
   const [synopsisOpen, setSynopsisOpen] = useState(false);
   const [showScriptBuilder, setShowScriptBuilder] = useState(false);
   const [editingScript, setEditingScript] = useState<LocalScript | null>(null);
-  const [restoredFromStorage, setRestoredFromStorage] = useState(false);
+  const [restoredPlayerCount, setRestoredPlayerCount] = useState<number | null>(null);
   const { allScripts, customScripts, addCustomScript, updateCustomScript } = useLocalScripts();
 
   useEffect(() => {
@@ -204,16 +212,12 @@ export function STWizard({ playerCount, onBack }: STWizardProps) {
       setBagIds(new Set(session.bagIds));
       setActiveIds(new Set(session.activeIds));
       setLockedIds(new Set(session.bagIds));
+      setRestoredPlayerCount(session.playerCount);
       setStep(4);
-      setRestoredFromStorage(true);
     }
   }, []);
 
-  const effectivePlayerCount = useMemo(() => {
-    const session = getStoredSTSession();
-    if (restoredFromStorage && session) return session.playerCount;
-    return playerCount;
-  }, [playerCount, restoredFromStorage]);
+  const effectivePlayerCount = restoredPlayerCount ?? playerCount;
 
   const breakdown = getBreakdown(effectivePlayerCount);
 
@@ -357,7 +361,7 @@ export function STWizard({ playerCount, onBack }: STWizardProps) {
     setActiveIds(new Set());
     setLockedIds(new Set());
     setSelectedScript(null);
-    setRestoredFromStorage(false);
+    setRestoredPlayerCount(null);
     setStep(2);
   };
 
