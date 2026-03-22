@@ -472,7 +472,7 @@ export default function Reference() {
           </div>
 
           <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide items-center justify-between">
-            <div className="flex gap-2 overflow-x-auto scrollbar-hide">
+            <div className="flex gap-2 scrollbar-hide">
               {['all', 'townsfolk', 'outsider', 'minion', 'demon', 'traveler', 'fabled'].map((f) => (
                 <button
                   key={f}

@@ -683,7 +683,7 @@ function PlayerDetailDrawer({
             </div>
           </DrawerHeader>
 
-          <ScrollArea className="flex-1 overflow-auto">
+          <ScrollArea className="flex-1">
             <div className="p-4">
             <div className="space-y-6">
               {/* Status Controls - Different for Travelers vs Regular Players */}
