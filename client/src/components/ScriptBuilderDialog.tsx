@@ -83,13 +83,21 @@ export function ScriptBuilderDialog({
     const unrecognized: string[] = [];
 
     for (const item of parsed) {
-      if (typeof item !== 'object' || item === null || !('id' in item)) continue;
-      const rawId = String((item as { id: string }).id);
+      let rawId: string;
 
-      if (rawId === '_meta') {
-        if ('name' in item && typeof (item as { name?: string }).name === 'string') {
-          importedName = (item as { name: string }).name;
+      if (typeof item === 'string') {
+        if (item === '_meta') continue;
+        rawId = item;
+      } else if (typeof item === 'object' && item !== null && 'id' in item) {
+        rawId = String((item as { id: string }).id);
+
+        if (rawId === '_meta') {
+          if ('name' in item && typeof (item as { name?: string }).name === 'string') {
+            importedName = (item as { name: string }).name;
+          }
+          continue;
         }
+      } else {
         continue;
       }
 
