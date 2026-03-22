@@ -14,8 +14,11 @@ import {
   Target,
   ArrowLeft,
   BookOpen,
-  Gamepad2
+  Gamepad2,
+  Play,
+  ChevronDown
 } from "lucide-react";
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,12 +27,56 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { cn } from "@/lib/utils";
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
   animate: { opacity: 1, y: 0 },
   transition: { duration: 0.5 }
 };
+
+function VideoSection() {
+  const [showVideo, setShowVideo] = useState(false);
+
+  return (
+    <motion.section
+      {...fadeInUp}
+      transition={{ delay: 0.8 }}
+      className="w-full"
+    >
+      <Card className="bg-stone-900/60 border-amber-900/30 overflow-hidden">
+        <button
+          onClick={() => setShowVideo(!showVideo)}
+          className="w-full flex items-center justify-between px-6 py-4 hover:bg-white/5 transition-colors"
+          data-testid="button-toggle-video"
+        >
+          <div className="flex items-center gap-3">
+            <Play className="w-5 h-5 text-red-500" />
+            <span className="font-display text-lg text-amber-100">Watch: How to Play</span>
+          </div>
+          <ChevronDown className={cn(
+            "w-5 h-5 text-amber-100/60 transition-transform duration-200",
+            showVideo && "rotate-180"
+          )} />
+        </button>
+        {showVideo && (
+          <div className="px-6 pb-6">
+            <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+              <iframe
+                className="absolute inset-0 w-full h-full rounded-lg"
+                src="https://www.youtube.com/embed/7OjT5aLmhVQ"
+                title="How to Play Blood on the Clocktower"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                data-testid="iframe-youtube-video"
+              />
+            </div>
+          </div>
+        )}
+      </Card>
+    </motion.section>
+  );
+}
 
 export default function Introduction() {
   return (
@@ -357,6 +404,8 @@ export default function Introduction() {
             </Button>
           </Link>
         </motion.section>
+
+        <VideoSection />
       </div>
     </Layout>
   );
