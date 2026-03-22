@@ -3711,6 +3711,14 @@ export const OFFICIAL_SCRIPTS = [
     isOfficial: false,
     characters: ['bountyhunter', 'balloonist', 'snakecharmer', 'undertaker', 'savant', 'nightwatchman', 'professor', 'cannibal', 'sage', 'tealady', 'virgin', 'magician', 'drunk', 'saint', 'barber', 'zealot', 'witch', 'pitHag', 'wizard', 'summoner', 'boffin', 'imp', 'kazali', 'vigormortis', 'fangGu', 'cacklejack', 'matron', 'gangster', 'bonecollector', 'apprentice', 'gnome', 'spiritofivory'],
   },
+  {
+    id: 'la',
+    name: 'Leviathan Awakens',
+    author: 'TopazChicken',
+    description: '',
+    isOfficial: false,
+    characters: ['steward', 'investigator', 'washerwoman', 'pixie', 'empath', 'dreamer', 'fortuneteller', 'flowergirl', 'oracle', 'gossip', 'artist', 'slayer', 'recluse', 'klutz', 'mutant', 'politician', 'cerenovus', 'psychopath', 'assassin', 'goblin', 'leviathan', 'thief', 'bureaucrat', 'apprentice', 'beggar', 'gnome'],
+  },
 ];
 
 // ===================

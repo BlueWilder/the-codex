@@ -282,6 +282,7 @@ const SCRIPTS = [
   { id: 'snv', label: 'Sects & Violets', isCommunity: false },
   { id: 'twh', label: 'The Wild Hunt', isCommunity: true },
   { id: 'sot', label: 'The Ship of Theseus', isCommunity: true },
+  { id: 'la', label: 'Leviathan Awakens', isCommunity: true },
 ];
 
 
