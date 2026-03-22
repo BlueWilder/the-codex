@@ -203,6 +203,7 @@ export function STWizard({ playerCount, onBack }: STWizardProps) {
       });
       setBagIds(new Set(session.bagIds));
       setActiveIds(new Set(session.activeIds));
+      setLockedIds(new Set(session.bagIds));
       setStep(4);
       setRestoredFromStorage(true);
     }
@@ -358,7 +359,6 @@ export function STWizard({ playerCount, onBack }: STWizardProps) {
     setSelectedScript(null);
     setRestoredFromStorage(false);
     setStep(2);
-    onBack();
   };
 
   const handleSelectScript = (script: LocalScript) => {
