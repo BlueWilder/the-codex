@@ -87,12 +87,16 @@ A Storyteller-specific setup flow forked from the New Game wizard:
   - Shuffle button: randomly fills unlocked slots to meet required counts
   - Clear All: resets all selections and locks
   - Accept Bag: enabled only when all tallies are exactly met
-- **ST Step 4 — Night Sheet**: Two tabs (First Night / Other Nights)
-  - Shows characters from finalized bag sorted by official night order
+- **Night Sheet** (post-Accept Bag): Two tabs (First Night / Other Nights)
+  - Shows ALL characters from the script sorted by official night order (roles can swap/enter mid-game)
+  - Bag characters highlighted with solid border and amber dot indicator; non-bag characters dimmed with dashed border
+  - Active/inactive toggle: power icon on left side of each row; inactive characters get reduced opacity and strikethrough name
+  - Wizard header (step indicators, title) hidden — Night Sheet is the ST's standalone home base
   - Each row: order number, character name, team badge (color-coded), ability text
   - Expandable rows: tap to reveal How to Run, Tips & Tricks, and Reminder tokens
-  - Night Sheet is the ST's home base — no game session launch (ST and player flows are fully separate)
-- **Component**: `client/src/components/STWizard.tsx`
+  - "End Session" button clears state and returns to setup
+- **Persistence**: ST session saved to localStorage (`clocktower_st_session` key) with script info, bag IDs, and active/inactive IDs; survives browser refresh; Game.tsx auto-enters ST mode if session exists
+- **Component**: `client/src/components/STWizard.tsx`; exports `getStoredSTSession()` and `clearSTSession()` helpers
 - **Back navigation**: Returns to Step 1 of the regular wizard
 - Player flow (Steps 1→2→3) is completely unchanged
 

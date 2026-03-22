@@ -4,7 +4,7 @@ import { usePlayerGame, getBreakdown, isPlayerActive, canPlayerVote, canPlayerVo
 import { ALL_CHARACTERS, OFFICIAL_SCRIPTS } from "@/lib/game-data";
 import { useLocalScripts, type LocalScript } from "@/hooks/use-local-scripts";
 import { ScriptBuilderDialog } from "@/components/ScriptBuilderDialog";
-import { STWizard } from "@/components/STWizard";
+import { STWizard, getStoredSTSession } from "@/components/STWizard";
 import { InlineGameLog } from "@/components/InlineGameLog";
 import { TrustSlider } from "@/components/TrustSlider";
 import { ChevronRight, ChevronLeft, Play, X, Plus, Check, Search, Moon, Sun, ChevronUp, ChevronDown, FileText, Vote, Loader2, GripVertical, UserPlus, ArrowRight, BookOpen, HandMetal, Ban, LogOut, Trash2, Pencil, MoreVertical, RotateCcw, Info, ExternalLink, Users, Skull, Ghost, Scroll, Hand, Target, Theater, ArrowDownUp } from "lucide-react";
@@ -78,7 +78,7 @@ function SetupWizard({ onStart }: { onStart: (count: number, names: string[], sc
   const [selectedScript, setSelectedScript] = useState<LocalScript | null>(null);
   const [showScriptBuilder, setShowScriptBuilder] = useState(false);
   const [editingScript, setEditingScript] = useState<LocalScript | null>(null);
-  const [stMode, setStMode] = useState(false);
+  const [stMode, setStMode] = useState(() => !!getStoredSTSession());
   const { allScripts, customScripts, addCustomScript, updateCustomScript, getScriptById } = useLocalScripts();
 
   const breakdown = getBreakdown(playerCount);

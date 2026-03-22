@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { getCharacterById, OFFICIAL_SCRIPTS, type Character } from "@/lib/game-data";
 import { getBreakdown } from "@/hooks/use-player-game";
 import { useLocalScripts, type LocalScript } from "@/hooks/use-local-scripts";
@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { ChevronLeft, ChevronRight, Scroll, BookOpen, Users, Lock, Shuffle, Trash2, Check, Plus, Pencil, FileText, Moon, Sun, ChevronDown, Lightbulb } from "lucide-react";
+import { ChevronLeft, ChevronRight, Scroll, BookOpen, Users, Lock, Shuffle, Trash2, Check, Plus, Pencil, FileText, Moon, Sun, ChevronDown, Lightbulb, Power, XCircle } from "lucide-react";
 
 const TEAM_COLORS: Record<string, string> = {
   townsfolk: "bg-blue-900/60 text-blue-200 border-blue-700",
@@ -27,44 +27,101 @@ const TEAM_LABELS: Record<string, string> = {
   demon: 'Demons',
 };
 
-function NightRow({ char, index, prefix, isExpanded, onToggle }: {
+export const ST_STORAGE_KEY = "clocktower_st_session";
+
+interface STSession {
+  playerCount: number;
+  scriptId: string;
+  scriptName: string;
+  scriptCharacterIds: string[];
+  bagIds: string[];
+  activeIds: string[];
+  synopsis?: string;
+}
+
+export function getStoredSTSession(): STSession | null {
+  try {
+    const stored = localStorage.getItem(ST_STORAGE_KEY);
+    if (!stored) return null;
+    const parsed = JSON.parse(stored);
+    if (parsed && parsed.scriptId && Array.isArray(parsed.bagIds)) {
+      return parsed as STSession;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+export function clearSTSession() {
+  localStorage.removeItem(ST_STORAGE_KEY);
+}
+
+function NightRow({ char, index, prefix, isExpanded, onToggle, isInBag, isActive, onToggleActive }: {
   char: Character;
   index: number;
   prefix: string;
   isExpanded: boolean;
   onToggle: () => void;
+  isInBag: boolean;
+  isActive: boolean;
+  onToggleActive: () => void;
 }) {
   return (
     <div
       className={cn(
-        "rounded-lg border border-border bg-card transition-all",
-        isExpanded && "ring-1 ring-amber-600/30"
+        "rounded-lg border transition-all",
+        !isActive && "opacity-40",
+        isActive && isInBag && "border-amber-700/50 bg-card",
+        isActive && !isInBag && "border-border/50 bg-card/50 border-dashed",
+        !isActive && "border-border/30 bg-card/30",
+        isExpanded && isActive && "ring-1 ring-amber-600/30"
       )}
       data-testid={`night-row-${prefix}-${char.id}`}
     >
-      <button
-        onClick={onToggle}
-        className="w-full text-left flex items-start gap-3 p-3"
-        data-testid={`button-expand-${prefix}-${char.id}`}
-      >
-        <span className="text-xs text-muted-foreground font-mono w-5 text-right shrink-0 mt-0.5">{index + 1}</span>
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
-            <span className="font-medium text-sm">{char.name}</span>
-            <Badge variant="secondary" className={cn("text-[10px] px-1.5 py-0", TEAM_COLORS[char.team])}>
-              {char.team}
-            </Badge>
+      <div className="flex items-start">
+        <button
+          onClick={(e) => { e.stopPropagation(); onToggleActive(); }}
+          className={cn(
+            "shrink-0 flex items-center justify-center w-10 self-stretch rounded-l-lg transition-colors",
+            isActive ? "hover:bg-green-900/20" : "hover:bg-red-900/20"
+          )}
+          data-testid={`button-toggle-active-${prefix}-${char.id}`}
+          title={isActive ? "Mark inactive" : "Mark active"}
+        >
+          <Power className={cn(
+            "w-3.5 h-3.5 transition-colors",
+            isActive ? "text-green-500" : "text-red-500/60"
+          )} />
+        </button>
+
+        <button
+          onClick={onToggle}
+          className="flex-1 text-left flex items-start gap-3 p-3 min-w-0"
+          data-testid={`button-expand-${prefix}-${char.id}`}
+        >
+          <span className="text-xs text-muted-foreground font-mono w-5 text-right shrink-0 mt-0.5">{index + 1}</span>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+              <span className={cn("font-medium text-sm", !isActive && "line-through")}>{char.name}</span>
+              <Badge variant="secondary" className={cn("text-[10px] px-1.5 py-0", TEAM_COLORS[char.team])}>
+                {char.team}
+              </Badge>
+              {isInBag && isActive && (
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" title="In bag" />
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">{char.ability}</p>
           </div>
-          <p className="text-xs text-muted-foreground mt-1">{char.ability}</p>
-        </div>
-        <ChevronDown className={cn(
-          "w-4 h-4 shrink-0 text-muted-foreground transition-transform mt-0.5",
-          isExpanded && "rotate-180"
-        )} />
-      </button>
+          <ChevronDown className={cn(
+            "w-4 h-4 shrink-0 text-muted-foreground transition-transform mt-0.5",
+            isExpanded && "rotate-180"
+          )} />
+        </button>
+      </div>
 
       {isExpanded && (
-        <div className="px-3 pb-3 pt-0 space-y-3 animate-in fade-in slide-in-from-top-1 duration-200">
+        <div className="px-3 pb-3 pt-0 space-y-3 animate-in fade-in slide-in-from-top-1 duration-200 ml-10">
           <div className="border-t border-border/50 pt-3" />
 
           {char.howToRun && (
@@ -125,13 +182,39 @@ export function STWizard({ playerCount, onBack }: STWizardProps) {
   const [step, setStep] = useState<2 | 3 | 4>(2);
   const [selectedScript, setSelectedScript] = useState<LocalScript | null>(null);
   const [lockedIds, setLockedIds] = useState<Set<string>>(new Set());
+  const [bagIds, setBagIds] = useState<Set<string>>(new Set());
+  const [activeIds, setActiveIds] = useState<Set<string>>(new Set());
   const [expandedCharId, setExpandedCharId] = useState<string | null>(null);
   const [synopsisOpen, setSynopsisOpen] = useState(false);
   const [showScriptBuilder, setShowScriptBuilder] = useState(false);
   const [editingScript, setEditingScript] = useState<LocalScript | null>(null);
+  const [restoredFromStorage, setRestoredFromStorage] = useState(false);
   const { allScripts, customScripts, addCustomScript, updateCustomScript } = useLocalScripts();
 
-  const breakdown = getBreakdown(playerCount);
+  useEffect(() => {
+    const session = getStoredSTSession();
+    if (session) {
+      setSelectedScript({
+        id: session.scriptId,
+        name: session.scriptName,
+        characterIds: session.scriptCharacterIds,
+        isOfficial: false,
+        synopsis: session.synopsis,
+      });
+      setBagIds(new Set(session.bagIds));
+      setActiveIds(new Set(session.activeIds));
+      setStep(4);
+      setRestoredFromStorage(true);
+    }
+  }, []);
+
+  const effectivePlayerCount = useMemo(() => {
+    const session = getStoredSTSession();
+    if (restoredFromStorage && session) return session.playerCount;
+    return playerCount;
+  }, [playerCount, restoredFromStorage]);
+
+  const breakdown = getBreakdown(effectivePlayerCount);
 
   const scriptCharacters = useMemo(() => {
     if (!selectedScript) return [];
@@ -187,6 +270,26 @@ export function STWizard({ playerCount, onBack }: STWizardProps) {
       .sort((a, b) => (a.otherNightOrder ?? 0) - (b.otherNightOrder ?? 0));
   }, [scriptCharacters]);
 
+  const toggleActive = useCallback((id: string) => {
+    setActiveIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      try {
+        const stored = localStorage.getItem(ST_STORAGE_KEY);
+        if (stored) {
+          const session = JSON.parse(stored) as STSession;
+          session.activeIds = Array.from(next);
+          localStorage.setItem(ST_STORAGE_KEY, JSON.stringify(session));
+        }
+      } catch {}
+      return next;
+    });
+  }, []);
+
   const toggleLock = (id: string) => {
     setLockedIds(prev => {
       const next = new Set(prev);
@@ -227,9 +330,35 @@ export function STWizard({ playerCount, onBack }: STWizardProps) {
 
   const handleAcceptBag = () => {
     if (!selectedScript || !isExactMatch) return;
+    const newBagIds = new Set(lockedIds);
+    const newActiveIds = new Set(lockedIds);
+    setBagIds(newBagIds);
+    setActiveIds(newActiveIds);
     setExpandedCharId(null);
     setSynopsisOpen(false);
     setStep(4);
+
+    const session: STSession = {
+      playerCount: effectivePlayerCount,
+      scriptId: selectedScript.id,
+      scriptName: selectedScript.name,
+      scriptCharacterIds: selectedScript.characterIds,
+      bagIds: Array.from(newBagIds),
+      activeIds: Array.from(newActiveIds),
+      synopsis: selectedScript.synopsis,
+    };
+    localStorage.setItem(ST_STORAGE_KEY, JSON.stringify(session));
+  };
+
+  const handleEndSession = () => {
+    clearSTSession();
+    setBagIds(new Set());
+    setActiveIds(new Set());
+    setLockedIds(new Set());
+    setSelectedScript(null);
+    setRestoredFromStorage(false);
+    setStep(2);
+    onBack();
   };
 
   const handleSelectScript = (script: LocalScript) => {
@@ -242,23 +371,138 @@ export function STWizard({ playerCount, onBack }: STWizardProps) {
     setStep(3);
   };
 
+  if (step === 4 && selectedScript) {
+    return (
+      <div className="max-w-2xl mx-auto py-6">
+        <Card className="p-4 md:p-6">
+          <div className="space-y-4 animate-in fade-in duration-300">
+            <div className="text-center space-y-1">
+              <h2 className="text-xl font-display text-amber-100">Night Sheet</h2>
+              <p className="text-muted-foreground text-sm">{selectedScript.name} · {scriptCharacters.length} characters</p>
+            </div>
+
+            {(() => {
+              const officialScript = OFFICIAL_SCRIPTS.find(s => s.id === selectedScript.id);
+              const synopsis = (officialScript && 'synopsis' in officialScript ? (officialScript as { synopsis?: string }).synopsis : null) || selectedScript.synopsis || null;
+              if (!synopsis) return null;
+              return (
+                <div className="rounded-lg border border-amber-900/30 bg-amber-950/20 overflow-hidden">
+                  <button
+                    onClick={() => setSynopsisOpen(!synopsisOpen)}
+                    className="w-full flex items-center justify-between px-3 py-2 text-left hover:bg-amber-950/30 transition-colors"
+                    data-testid="button-toggle-synopsis"
+                  >
+                    <span className="text-sm text-amber-200/80 font-medium">{selectedScript.name}</span>
+                    <span className="flex items-center gap-1 text-xs text-amber-400/60">
+                      {synopsisOpen ? 'Hide' : 'Read synopsis'}
+                      <ChevronDown className={cn("w-3.5 h-3.5 transition-transform duration-200", synopsisOpen && "rotate-180")} />
+                    </span>
+                  </button>
+                  {synopsisOpen && (
+                    <div className="px-3 pb-3 pt-1 border-t border-amber-900/20">
+                      {synopsis.split('\n\n').map((para, i) => (
+                        <p key={i} className={cn("text-sm italic text-amber-100/60 leading-relaxed", i > 0 && "mt-3")}>{para}</p>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
+            <Tabs defaultValue="first" className="w-full">
+              <TabsList className="w-full grid grid-cols-2">
+                <TabsTrigger value="first" data-testid="tab-first-night">
+                  <Moon className="w-3.5 h-3.5 mr-1.5" /> First Night
+                </TabsTrigger>
+                <TabsTrigger value="other" data-testid="tab-other-nights">
+                  <Sun className="w-3.5 h-3.5 mr-1.5" /> Other Nights
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="first">
+                <ScrollArea className="h-[calc(100vh-320px)] min-h-[300px]">
+                  {firstNightChars.length === 0 ? (
+                    <p className="text-center text-muted-foreground text-sm py-8">No characters act on the first night.</p>
+                  ) : (
+                    <div className="space-y-1 pr-2">
+                      {firstNightChars.map((char, i) => (
+                        <NightRow
+                          key={char.id}
+                          char={char}
+                          index={i}
+                          prefix="first"
+                          isExpanded={expandedCharId === `first-${char.id}`}
+                          onToggle={() => setExpandedCharId(expandedCharId === `first-${char.id}` ? null : `first-${char.id}`)}
+                          isInBag={bagIds.has(char.id)}
+                          isActive={activeIds.has(char.id)}
+                          onToggleActive={() => toggleActive(char.id)}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </ScrollArea>
+              </TabsContent>
+
+              <TabsContent value="other">
+                <ScrollArea className="h-[calc(100vh-320px)] min-h-[300px]">
+                  {otherNightChars.length === 0 ? (
+                    <p className="text-center text-muted-foreground text-sm py-8">No characters act on other nights.</p>
+                  ) : (
+                    <div className="space-y-1 pr-2">
+                      {otherNightChars.map((char, i) => (
+                        <NightRow
+                          key={char.id}
+                          char={char}
+                          index={i}
+                          prefix="other"
+                          isExpanded={expandedCharId === `other-${char.id}`}
+                          onToggle={() => setExpandedCharId(expandedCharId === `other-${char.id}` ? null : `other-${char.id}`)}
+                          isInBag={bagIds.has(char.id)}
+                          isActive={activeIds.has(char.id)}
+                          onToggleActive={() => toggleActive(char.id)}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </ScrollArea>
+              </TabsContent>
+            </Tabs>
+
+            <div className="flex justify-between pt-2">
+              <Button variant="ghost" onClick={() => setStep(3)} data-testid="button-st-back-night">
+                <ChevronLeft className="w-4 h-4 mr-1" /> Bag
+              </Button>
+              <Button
+                variant="outline"
+                className="text-red-400 border-red-900/50 hover:bg-red-950/30 hover:text-red-300"
+                onClick={handleEndSession}
+                data-testid="button-end-session"
+              >
+                <XCircle className="w-4 h-4 mr-1.5" /> End Session
+              </Button>
+            </div>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-2xl mx-auto py-8">
       <h1 className="text-3xl md:text-4xl font-display text-amber-500 mb-2 text-center">Storyteller Setup</h1>
-      <p className="text-center text-muted-foreground text-sm mb-6">{playerCount} players</p>
+      <p className="text-center text-muted-foreground text-sm mb-6">{effectivePlayerCount} players</p>
 
       <div className="flex items-center justify-center mb-8 gap-4">
-        {[1, 2, 3, 4].map((i) => (
+        {[1, 2, 3].map((i) => (
           <div key={i} className="flex items-center">
             <div className={cn(
               "w-8 h-8 rounded-full flex items-center justify-center font-bold border-2 transition-colors",
-              (i === 1 || step >= i) ? "bg-amber-600 border-amber-600 text-black" :
-              step > i ? "bg-amber-900/40 border-amber-600 text-amber-500" :
+              (i === 1 || step >= (i + 1)) ? "bg-amber-600 border-amber-600 text-black" :
               "bg-transparent border-muted text-muted-foreground"
             )}>
-              {step > i ? <Check className="w-4 h-4" /> : i}
+              {(i === 1 || step > (i + 1)) ? <Check className="w-4 h-4" /> : i}
             </div>
-            {i < 4 && <div className={cn("w-6 sm:w-10 h-0.5 mx-1 sm:mx-2", step > i ? "bg-amber-800" : "bg-muted")} />}
+            {i < 3 && <div className={cn("w-6 sm:w-10 h-0.5 mx-1 sm:mx-2", step > (i + 1) ? "bg-amber-800" : "bg-muted")} />}
           </div>
         ))}
       </div>
@@ -389,7 +633,7 @@ export function STWizard({ playerCount, onBack }: STWizardProps) {
           <div className="space-y-5 animate-in fade-in duration-300">
             <div className="text-center space-y-1">
               <h2 className="text-xl font-display text-amber-100">Build the Bag</h2>
-              <p className="text-muted-foreground text-sm">{selectedScript.name} · {playerCount} players</p>
+              <p className="text-muted-foreground text-sm">{selectedScript.name} · {effectivePlayerCount} players</p>
             </div>
 
             <div className="flex flex-wrap justify-center gap-2" data-testid="st-tally">
@@ -475,102 +719,6 @@ export function STWizard({ playerCount, onBack }: STWizardProps) {
               </Button>
               <Button onClick={handleAcceptBag} disabled={!isExactMatch} data-testid="button-accept-bag">
                 <Check className="w-4 h-4 mr-2" /> Accept Bag
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {step === 4 && selectedScript && (
-          <div className="space-y-5 animate-in fade-in duration-300">
-            <div className="text-center space-y-1">
-              <h2 className="text-xl font-display text-amber-100">Night Sheet</h2>
-              <p className="text-muted-foreground text-sm">{selectedScript.name} · {scriptCharacters.length} characters</p>
-            </div>
-
-            {(() => {
-              const officialScript = OFFICIAL_SCRIPTS.find(s => s.id === selectedScript.id);
-              const synopsis = (officialScript && 'synopsis' in officialScript ? (officialScript as { synopsis?: string }).synopsis : null) || selectedScript.synopsis || null;
-              if (!synopsis) return null;
-              return (
-                <div className="rounded-lg border border-amber-900/30 bg-amber-950/20 overflow-hidden">
-                  <button
-                    onClick={() => setSynopsisOpen(!synopsisOpen)}
-                    className="w-full flex items-center justify-between px-3 py-2 text-left hover:bg-amber-950/30 transition-colors"
-                    data-testid="button-toggle-synopsis"
-                  >
-                    <span className="text-sm text-amber-200/80 font-medium">{selectedScript.name}</span>
-                    <span className="flex items-center gap-1 text-xs text-amber-400/60">
-                      {synopsisOpen ? 'Hide' : 'Read synopsis'}
-                      <ChevronDown className={cn("w-3.5 h-3.5 transition-transform duration-200", synopsisOpen && "rotate-180")} />
-                    </span>
-                  </button>
-                  {synopsisOpen && (
-                    <div className="px-3 pb-3 pt-1 border-t border-amber-900/20">
-                      {synopsis.split('\n\n').map((para, i) => (
-                        <p key={i} className={cn("text-sm italic text-amber-100/60 leading-relaxed", i > 0 && "mt-3")}>{para}</p>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              );
-            })()}
-
-            <Tabs defaultValue="first" className="w-full">
-              <TabsList className="w-full grid grid-cols-2">
-                <TabsTrigger value="first" data-testid="tab-first-night">
-                  <Moon className="w-3.5 h-3.5 mr-1.5" /> First Night
-                </TabsTrigger>
-                <TabsTrigger value="other" data-testid="tab-other-nights">
-                  <Sun className="w-3.5 h-3.5 mr-1.5" /> Other Nights
-                </TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="first">
-                <ScrollArea className="h-[400px] md:h-[460px]">
-                  {firstNightChars.length === 0 ? (
-                    <p className="text-center text-muted-foreground text-sm py-8">No characters act on the first night.</p>
-                  ) : (
-                    <div className="space-y-1 pr-2">
-                      {firstNightChars.map((char, i) => (
-                        <NightRow
-                          key={char.id}
-                          char={char}
-                          index={i}
-                          prefix="first"
-                          isExpanded={expandedCharId === `first-${char.id}`}
-                          onToggle={() => setExpandedCharId(expandedCharId === `first-${char.id}` ? null : `first-${char.id}`)}
-                        />
-                      ))}
-                    </div>
-                  )}
-                </ScrollArea>
-              </TabsContent>
-
-              <TabsContent value="other">
-                <ScrollArea className="h-[400px] md:h-[460px]">
-                  {otherNightChars.length === 0 ? (
-                    <p className="text-center text-muted-foreground text-sm py-8">No characters act on other nights.</p>
-                  ) : (
-                    <div className="space-y-1 pr-2">
-                      {otherNightChars.map((char, i) => (
-                        <NightRow
-                          key={char.id}
-                          char={char}
-                          index={i}
-                          prefix="other"
-                          isExpanded={expandedCharId === `other-${char.id}`}
-                          onToggle={() => setExpandedCharId(expandedCharId === `other-${char.id}` ? null : `other-${char.id}`)}
-                        />
-                      ))}
-                    </div>
-                  )}
-                </ScrollArea>
-              </TabsContent>
-            </Tabs>
-
-            <div className="flex justify-start pt-2">
-              <Button variant="ghost" onClick={() => setStep(3)} data-testid="button-st-back-night">
-                <ChevronLeft className="w-4 h-4 mr-1" /> Bag
               </Button>
             </div>
           </div>
