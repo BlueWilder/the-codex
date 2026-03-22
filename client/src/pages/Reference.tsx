@@ -276,12 +276,12 @@ function CharacterCard({ char, isExpanded, onToggle }: {
 }
 
 const SCRIPTS = [
-  { id: 'all', label: 'All Scripts' },
-  { id: 'tb', label: 'Trouble Brewing' },
-  { id: 'bmr', label: 'Bad Moon Rising' },
-  { id: 'snv', label: 'Sects & Violets' },
-  { id: 'twh', label: 'The Wild Hunt' },
-  { id: 'sot', label: 'The Ship of Theseus' },
+  { id: 'all', label: 'All Scripts', isCommunity: false },
+  { id: 'tb', label: 'Trouble Brewing', isCommunity: false },
+  { id: 'bmr', label: 'Bad Moon Rising', isCommunity: false },
+  { id: 'snv', label: 'Sects & Violets', isCommunity: false },
+  { id: 'twh', label: 'The Wild Hunt', isCommunity: true },
+  { id: 'sot', label: 'The Ship of Theseus', isCommunity: true },
 ];
 
 
@@ -293,7 +293,8 @@ export default function Reference() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showScriptBuilder, setShowScriptBuilder] = useState(false);
   const [editingScript, setEditingScript] = useState<LocalScript | null>(null);
-  const { customScripts, addCustomScript, updateCustomScript, deleteCustomScript } = useLocalScripts();
+  const [copyingCommunityScript, setCopyingCommunityScript] = useState<{ name: string; characterIds: string[]; synopsis?: string } | null>(null);
+  const { customScripts, addCustomScript, addCustomScriptAsync, updateCustomScript, deleteCustomScript } = useLocalScripts();
 
   // Update sort order based on script filter
   useEffect(() => {
@@ -397,19 +398,42 @@ export default function Reference() {
         <div className="space-y-3">
           <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide items-center">
             {SCRIPTS.map((script) => (
-              <button
-                key={script.id}
-                onClick={() => setScriptFilter(script.id)}
-                className={cn(
-                  "px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all border whitespace-nowrap",
-                  scriptFilter === script.id 
-                    ? "bg-red-900/50 text-red-100 border-red-600" 
-                    : "bg-transparent text-muted-foreground border-transparent hover:bg-white/5"
+              <div key={script.id} className="flex items-center">
+                <button
+                  onClick={() => setScriptFilter(script.id)}
+                  className={cn(
+                    "px-4 py-1.5 text-xs font-bold uppercase tracking-wider transition-all border whitespace-nowrap",
+                    script.isCommunity ? "rounded-l-full" : "rounded-full",
+                    scriptFilter === script.id 
+                      ? "bg-red-900/50 text-red-100 border-red-600" 
+                      : "bg-transparent text-muted-foreground border-transparent hover:bg-white/5"
+                  )}
+                  data-testid={`button-script-${script.id}`}
+                >
+                  {script.label}
+                </button>
+                {script.isCommunity && (
+                  <button
+                    onClick={() => {
+                      const officialScript = OFFICIAL_SCRIPTS.find(s => s.id === script.id);
+                      if (officialScript) {
+                        setCopyingCommunityScript({
+                          name: `${officialScript.name} (Copy)`,
+                          characterIds: officialScript.characters,
+                          synopsis: officialScript.description,
+                        });
+                        setEditingScript(null);
+                        setShowScriptBuilder(true);
+                      }
+                    }}
+                    className="px-1.5 py-1.5 rounded-r-full text-xs text-muted-foreground hover:bg-white/10 transition-colors"
+                    title="Copy & edit script"
+                    data-testid={`button-copy-script-${script.id}`}
+                  >
+                    <Pencil className="w-3 h-3" />
+                  </button>
                 )}
-                data-testid={`button-script-${script.id}`}
-              >
-                {script.label}
-              </button>
+              </div>
             ))}
             
             {customScripts.length > 0 && (
@@ -529,19 +553,35 @@ export default function Reference() {
 
         <ScriptBuilderDialog
           open={showScriptBuilder}
-          onOpenChange={setShowScriptBuilder}
-          initialCharacters={editingScript ? new Set(editingScript.characterIds) : new Set()}
-          initialName={editingScript?.name || ""}
-          initialSynopsis={editingScript?.synopsis || ""}
-          title={editingScript ? "Edit Custom Script" : "Create Custom Script"}
+          onOpenChange={(open) => {
+            setShowScriptBuilder(open);
+            if (!open) setCopyingCommunityScript(null);
+          }}
+          initialCharacters={
+            editingScript
+              ? new Set(editingScript.characterIds)
+              : copyingCommunityScript
+                ? new Set(copyingCommunityScript.characterIds)
+                : new Set()
+          }
+          initialName={editingScript?.name || copyingCommunityScript?.name || ""}
+          initialSynopsis={editingScript?.synopsis || copyingCommunityScript?.synopsis || ""}
+          title={
+            editingScript
+              ? "Edit Custom Script"
+              : copyingCommunityScript
+                ? "Copy & Edit Script"
+                : "Create Custom Script"
+          }
           editMode={!!editingScript}
-          onSave={(name, characterIds, synopsis) => {
+          onSave={async (name, characterIds, synopsis) => {
             if (editingScript) {
               updateCustomScript(editingScript.id, name, characterIds, synopsis);
             } else {
-              const newScript = addCustomScript(name, characterIds, synopsis);
+              const newScript = await addCustomScriptAsync(name, characterIds, synopsis);
               setScriptFilter(`custom:${newScript.id}`);
             }
+            setCopyingCommunityScript(null);
           }}
         />
 

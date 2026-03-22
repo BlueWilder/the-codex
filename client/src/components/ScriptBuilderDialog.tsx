@@ -12,7 +12,7 @@ interface ScriptBuilderDialogProps {
   initialCharacters?: Set<string>;
   initialName?: string;
   initialSynopsis?: string;
-  onSave: (name: string, characterIds: string[], synopsis?: string) => void;
+  onSave: (name: string, characterIds: string[], synopsis?: string) => void | Promise<void>;
   title?: string;
   editMode?: boolean;
 }
