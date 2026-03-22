@@ -13,7 +13,6 @@ import {
   Eye,
   Target,
   ArrowLeft,
-  BookOpen,
   Gamepad2,
   Play,
   ChevronDown
@@ -396,13 +395,7 @@ export default function Introduction() {
           transition={{ delay: 0.7 }}
           className="text-center"
         >
-          <p className="text-lg text-amber-100/70 mb-6 font-serif">Ready to play?</p>
-          <Link href="/reference">
-            <Button size="lg" className="bg-amber-600 hover:bg-amber-700 text-white" data-testid="button-goto-codex">
-              <BookOpen className="w-5 h-5 mr-2" />
-              Explore the Character Reference
-            </Button>
-          </Link>
+          <p className="text-lg text-amber-100/70 mb-6 font-serif">Still Not Sure?</p>
         </motion.section>
 
         <VideoSection />
