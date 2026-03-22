@@ -222,7 +222,7 @@ function SetupWizard({ onStart }: { onStart: (count: number, names: string[], sc
               <p className="text-muted-foreground text-sm">Enter names or leave defaults</p>
             </div>
 
-            <div className="grid gap-3 max-h-[400px] overflow-y-auto pr-2">
+            <div className="grid gap-3">
               {playerNames.map((name, i) => (
                 <div key={i} className="flex items-center gap-3">
                   <span className="text-muted-foreground text-sm w-6 text-right">{i + 1}.</span>
@@ -261,7 +261,7 @@ function SetupWizard({ onStart }: { onStart: (count: number, names: string[], sc
               <p className="text-muted-foreground text-sm">Optional: Choose a script to filter character claims</p>
             </div>
 
-            <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2">
+            <div className="space-y-3">
               <button
                 onClick={() => setSelectedScript(null)}
                 className={cn(

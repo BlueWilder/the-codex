@@ -7,7 +7,6 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ChevronLeft, ChevronRight, Scroll, BookOpen, Users, Lock, Shuffle, Trash2, Check, Plus, Pencil, FileText, Moon, Sun, ChevronDown, Lightbulb, Power, XCircle } from "lucide-react";
 
@@ -523,7 +522,7 @@ export function STWizard({ playerCount, onBack }: STWizardProps) {
               <p className="text-muted-foreground text-sm">Choose a script to build the character bag from</p>
             </div>
 
-            <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2">
+            <div className="space-y-3">
               <div className="pt-2 pb-1">
                 <span className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Official Scripts</span>
               </div>
@@ -674,7 +673,7 @@ export function STWizard({ playerCount, onBack }: STWizardProps) {
               </Button>
             </div>
 
-            <ScrollArea className="h-[350px] md:h-[400px] pr-2">
+            <div>
               <div className="space-y-5">
                 {TEAM_ORDER.map(team => (
                   <div key={team}>
@@ -718,7 +717,7 @@ export function STWizard({ playerCount, onBack }: STWizardProps) {
                   </div>
                 ))}
               </div>
-            </ScrollArea>
+            </div>
 
             <div className="flex justify-between pt-2">
               <Button variant="ghost" onClick={() => setStep(2)} data-testid="button-st-back-bag">
