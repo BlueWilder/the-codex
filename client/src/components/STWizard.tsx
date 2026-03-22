@@ -125,7 +125,6 @@ export function STWizard({ playerCount, onBack }: STWizardProps) {
   const [step, setStep] = useState<2 | 3 | 4>(2);
   const [selectedScript, setSelectedScript] = useState<LocalScript | null>(null);
   const [lockedIds, setLockedIds] = useState<Set<string>>(new Set());
-  const [finalBag, setFinalBag] = useState<string[]>([]);
   const [expandedCharId, setExpandedCharId] = useState<string | null>(null);
   const [synopsisOpen, setSynopsisOpen] = useState(false);
   const [showScriptBuilder, setShowScriptBuilder] = useState(false);
@@ -177,18 +176,16 @@ export function STWizard({ playerCount, onBack }: STWizardProps) {
   const isExactMatch = TEAM_ORDER.every(t => tally[t] === required[t]);
 
   const firstNightChars = useMemo(() => {
-    return finalBag
-      .map(id => getCharacterById(id))
-      .filter((c): c is Character => !!c && c.firstNightOrder !== null)
+    return scriptCharacters
+      .filter(c => c.firstNightOrder !== null)
       .sort((a, b) => (a.firstNightOrder ?? 0) - (b.firstNightOrder ?? 0));
-  }, [finalBag]);
+  }, [scriptCharacters]);
 
   const otherNightChars = useMemo(() => {
-    return finalBag
-      .map(id => getCharacterById(id))
-      .filter((c): c is Character => !!c && c.otherNightOrder !== null)
+    return scriptCharacters
+      .filter(c => c.otherNightOrder !== null)
       .sort((a, b) => (a.otherNightOrder ?? 0) - (b.otherNightOrder ?? 0));
-  }, [finalBag]);
+  }, [scriptCharacters]);
 
   const toggleLock = (id: string) => {
     setLockedIds(prev => {
@@ -230,7 +227,6 @@ export function STWizard({ playerCount, onBack }: STWizardProps) {
 
   const handleAcceptBag = () => {
     if (!selectedScript || !isExactMatch) return;
-    setFinalBag(Array.from(lockedIds));
     setExpandedCharId(null);
     setSynopsisOpen(false);
     setStep(4);
@@ -488,7 +484,7 @@ export function STWizard({ playerCount, onBack }: STWizardProps) {
           <div className="space-y-5 animate-in fade-in duration-300">
             <div className="text-center space-y-1">
               <h2 className="text-xl font-display text-amber-100">Night Sheet</h2>
-              <p className="text-muted-foreground text-sm">{selectedScript.name} · {finalBag.length} characters</p>
+              <p className="text-muted-foreground text-sm">{selectedScript.name} · {scriptCharacters.length} characters</p>
             </div>
 
             {(() => {
