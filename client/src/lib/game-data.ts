@@ -3715,7 +3715,7 @@ export const OFFICIAL_SCRIPTS = [
     id: 'la',
     name: 'Leviathan Awakens',
     author: 'TopazChicken',
-    description: '',
+    description: 'The coastal waters of Ravenswood Bluff are churning with a restless energy that defies the moon. Beneath the crashing waves, a gargantuan shadow stirs; an ancient terror now rising from the abyssal depths. The air grows thick with the brine of old graves, and the villagers, trapped between the sea and their own terror, find their minds fracturing under the weight of the inevitable. The tide is rising, and the town can only watch in horror as the Leviathan Awakens.',
     isOfficial: false,
     characters: ['steward', 'investigator', 'washerwoman', 'pixie', 'empath', 'dreamer', 'fortuneteller', 'flowergirl', 'oracle', 'gossip', 'artist', 'slayer', 'recluse', 'klutz', 'mutant', 'politician', 'cerenovus', 'psychopath', 'assassin', 'goblin', 'leviathan', 'thief', 'bureaucrat', 'apprentice', 'beggar', 'gnome'],
   },
