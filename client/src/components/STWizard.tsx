@@ -186,6 +186,13 @@ interface STWizardProps {
   onBack: () => void;
 }
 
+function countPlayableCharacters(characterIds: string[]): number {
+  return characterIds.filter(id => {
+    const c = getCharacterById(id);
+    return c && c.team !== 'traveler' && c.team !== 'fabled';
+  }).length;
+}
+
 export function STWizard({ playerCount, onBack }: STWizardProps) {
   const [step, setStep] = useState<2 | 3 | 4>(2);
   const [selectedScript, setSelectedScript] = useState<LocalScript | null>(null);
@@ -382,7 +389,7 @@ export function STWizard({ playerCount, onBack }: STWizardProps) {
           <div className="space-y-4 animate-in fade-in duration-300">
             <div className="text-center space-y-1">
               <h2 className="text-xl font-display text-amber-100">Night Sheet</h2>
-              <p className="text-muted-foreground text-sm">{selectedScript.name} · {scriptCharacters.length} characters</p>
+              <p className="text-muted-foreground text-sm">{selectedScript.name} · {countPlayableCharacters(selectedScript.characterIds)} characters</p>
             </div>
 
             {(() => {
@@ -540,7 +547,7 @@ export function STWizard({ playerCount, onBack }: STWizardProps) {
                     <BookOpen className="w-5 h-5 text-amber-500/70" />
                     <div>
                       <div className="font-medium">{script.name}</div>
-                      <div className="text-sm text-muted-foreground">{script.characterIds.length} characters</div>
+                      <div className="text-sm text-muted-foreground">{countPlayableCharacters(script.characterIds)} characters</div>
                     </div>
                   </div>
                 </button>
@@ -565,7 +572,7 @@ export function STWizard({ playerCount, onBack }: STWizardProps) {
                     <Users className="w-5 h-5 text-teal-500/70" />
                     <div>
                       <div className="font-medium">{script.name}</div>
-                      <div className="text-sm text-muted-foreground">{script.characterIds.length} characters</div>
+                      <div className="text-sm text-muted-foreground">{countPlayableCharacters(script.characterIds)} characters</div>
                     </div>
                   </div>
                 </button>
@@ -592,7 +599,7 @@ export function STWizard({ playerCount, onBack }: STWizardProps) {
                     <FileText className="w-5 h-5 text-purple-500/70" />
                     <div>
                       <div className="font-medium">{script.name}</div>
-                      <div className="text-sm text-muted-foreground">{script.characterIds.length} characters</div>
+                      <div className="text-sm text-muted-foreground">{countPlayableCharacters(script.characterIds)} characters</div>
                     </div>
                   </button>
                   <Button
