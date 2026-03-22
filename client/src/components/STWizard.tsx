@@ -431,51 +431,47 @@ export function STWizard({ playerCount, onBack }: STWizardProps) {
               </TabsList>
 
               <TabsContent value="first">
-                <ScrollArea className="h-[calc(100vh-320px)] min-h-[300px]">
-                  {firstNightChars.length === 0 ? (
-                    <p className="text-center text-muted-foreground text-sm py-8">No characters act on the first night.</p>
-                  ) : (
-                    <div className="space-y-1 pr-2">
-                      {firstNightChars.map((char, i) => (
-                        <NightRow
-                          key={char.id}
-                          char={char}
-                          index={i}
-                          prefix="first"
-                          isExpanded={expandedCharId === `first-${char.id}`}
-                          onToggle={() => setExpandedCharId(expandedCharId === `first-${char.id}` ? null : `first-${char.id}`)}
-                          isInBag={bagIds.has(char.id)}
-                          isActive={activeIds.has(char.id)}
-                          onToggleActive={() => toggleActive(char.id)}
-                        />
-                      ))}
-                    </div>
-                  )}
-                </ScrollArea>
+                {firstNightChars.length === 0 ? (
+                  <p className="text-center text-muted-foreground text-sm py-8">No characters act on the first night.</p>
+                ) : (
+                  <div className="space-y-1">
+                    {firstNightChars.map((char, i) => (
+                      <NightRow
+                        key={char.id}
+                        char={char}
+                        index={i}
+                        prefix="first"
+                        isExpanded={expandedCharId === `first-${char.id}`}
+                        onToggle={() => setExpandedCharId(expandedCharId === `first-${char.id}` ? null : `first-${char.id}`)}
+                        isInBag={bagIds.has(char.id)}
+                        isActive={activeIds.has(char.id)}
+                        onToggleActive={() => toggleActive(char.id)}
+                      />
+                    ))}
+                  </div>
+                )}
               </TabsContent>
 
               <TabsContent value="other">
-                <ScrollArea className="h-[calc(100vh-320px)] min-h-[300px]">
-                  {otherNightChars.length === 0 ? (
-                    <p className="text-center text-muted-foreground text-sm py-8">No characters act on other nights.</p>
-                  ) : (
-                    <div className="space-y-1 pr-2">
-                      {otherNightChars.map((char, i) => (
-                        <NightRow
-                          key={char.id}
-                          char={char}
-                          index={i}
-                          prefix="other"
-                          isExpanded={expandedCharId === `other-${char.id}`}
-                          onToggle={() => setExpandedCharId(expandedCharId === `other-${char.id}` ? null : `other-${char.id}`)}
-                          isInBag={bagIds.has(char.id)}
-                          isActive={activeIds.has(char.id)}
-                          onToggleActive={() => toggleActive(char.id)}
-                        />
-                      ))}
-                    </div>
-                  )}
-                </ScrollArea>
+                {otherNightChars.length === 0 ? (
+                  <p className="text-center text-muted-foreground text-sm py-8">No characters act on other nights.</p>
+                ) : (
+                  <div className="space-y-1">
+                    {otherNightChars.map((char, i) => (
+                      <NightRow
+                        key={char.id}
+                        char={char}
+                        index={i}
+                        prefix="other"
+                        isExpanded={expandedCharId === `other-${char.id}`}
+                        onToggle={() => setExpandedCharId(expandedCharId === `other-${char.id}` ? null : `other-${char.id}`)}
+                        isInBag={bagIds.has(char.id)}
+                        isActive={activeIds.has(char.id)}
+                        onToggleActive={() => toggleActive(char.id)}
+                      />
+                    ))}
+                  </div>
+                )}
               </TabsContent>
             </Tabs>
 
