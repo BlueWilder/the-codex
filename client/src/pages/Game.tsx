@@ -196,12 +196,20 @@ function SetupWizard({ onStart }: { onStart: (count: number, names: string[], sc
               </div>
             </div>
 
-            <div className="flex justify-between">
-              <Button variant="outline" onClick={() => setStMode(true)} data-testid="button-storyteller">
+            <div className="grid grid-cols-2 gap-3">
+              <Button
+                className="bg-purple-700 hover:bg-purple-600 text-white border-purple-600"
+                onClick={() => setStMode(true)}
+                data-testid="button-storyteller"
+              >
                 <Theater className="w-4 h-4 mr-2" /> Storyteller
               </Button>
-              <Button onClick={handleCountConfirm} data-testid="button-next-step">
-                Next <ChevronRight className="w-4 h-4 ml-1" />
+              <Button
+                className="bg-blue-700 hover:bg-blue-600 text-white border-blue-600"
+                onClick={handleCountConfirm}
+                data-testid="button-next-step"
+              >
+                <Users className="w-4 h-4 mr-2" /> Player
               </Button>
             </div>
           </div>
