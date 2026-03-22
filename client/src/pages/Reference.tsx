@@ -313,9 +313,9 @@ export default function Reference() {
   const filtered = ALL_CHARACTERS.filter(char => {
     const matchesSearch = char.name.toLowerCase().includes(search.toLowerCase()) || 
                           char.ability.toLowerCase().includes(search.toLowerCase());
-    const matchesTeam = teamFilter === "all" || char.team === teamFilter;
-    
     const isFabled = char.team === "fabled";
+    const hideFabledByDefault = isFabled && teamFilter === "all" && scriptFilter !== "all";
+    const matchesTeam = (teamFilter === "all" && !hideFabledByDefault) || char.team === teamFilter;
     const isTraveler = char.team === "traveler";
     let matchesScript = true;
     if (activeCustomScript) {
