@@ -3707,7 +3707,7 @@ export const OFFICIAL_SCRIPTS = [
     id: 'sot',
     name: 'The Ship of Theseus',
     author: 'TopazChicken',
-    description: 'A community script exploring identity and transformation. Features character-swapping, wish-granting, and summoning alongside deadly demons and cunning minions.',
+    description: 'The future offers no sanctuary for the weary souls of Ravenswood Bluff. In a desperate bid for salvation, a vessel is wrought from the wreckage of the past, its decks crowded with volunteers from across the town. But as the shore fades into the mist, the wood begins to groan with a different intent. Masks slip, the benevolent twist into the malevolent, and the crew from the docks is no longer the one that stalks the galley. When every voice has changed its tune, does the mission remain, or is it merely the reincarnation of The Ship of Theseus?',
     isOfficial: false,
     characters: ['bountyhunter', 'balloonist', 'snakecharmer', 'undertaker', 'savant', 'nightwatchman', 'professor', 'cannibal', 'sage', 'tealady', 'virgin', 'magician', 'drunk', 'saint', 'barber', 'zealot', 'witch', 'pitHag', 'wizard', 'summoner', 'boffin', 'imp', 'kazali', 'vigormortis', 'fangGu', 'cacklejack', 'matron', 'gangster', 'bonecollector', 'apprentice', 'gnome', 'spiritofivory'],
   },
