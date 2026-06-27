@@ -456,11 +456,17 @@ function SetupWizard({ onStart }: { onStart: (count: number, names: string[], sc
               />
             </div>
 
+            {scanning && (
+              <div className="flex items-center gap-2 pt-2 text-sm text-amber-400" data-testid="status-scanning">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Reading your photo… the review screen will open in a moment.
+              </div>
+            )}
             <div className="flex justify-between pt-4">
-              <Button variant="ghost" onClick={() => setStep(2)} data-testid="button-back-2">
+              <Button variant="ghost" onClick={() => setStep(2)} disabled={scanning} data-testid="button-back-2">
                 Back
               </Button>
-              <Button onClick={handleStartGame} data-testid="button-start-game">
+              <Button onClick={handleStartGame} disabled={scanning} data-testid="button-start-game">
                 <Play className="w-4 h-4 mr-2" /> Start Game
               </Button>
             </div>
