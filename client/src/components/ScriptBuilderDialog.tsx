@@ -46,6 +46,7 @@ export function ScriptBuilderDialog({
   const [importJson, setImportJson] = useState("");
   const [importMessage, setImportMessage] = useState<{ type: 'success' | 'warning' | 'error'; text: string } | null>(null);
   const [scanning, setScanning] = useState(false);
+  const [saving, setSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const scanInputRef = useRef<HTMLInputElement>(null);
 
@@ -65,6 +66,7 @@ export function ScriptBuilderDialog({
       setImportJson("");
       setImportMessage(null);
       setScanning(false);
+      setSaving(false);
     }
   }, [open, initialCharacters, initialName, initialSynopsis]);
 
@@ -188,10 +190,17 @@ export function ScriptBuilderDialog({
     setSelectedCharacters(newSet);
   };
 
-  const handleSave = () => {
-    if (!scriptName.trim() || selectedCharacters.size === 0) return;
-    onSave(scriptName.trim(), Array.from(selectedCharacters), synopsis.trim() || undefined);
-    onOpenChange(false);
+  const handleSave = async () => {
+    if (!scriptName.trim() || selectedCharacters.size === 0 || saving) return;
+    setSaving(true);
+    try {
+      await onSave(scriptName.trim(), Array.from(selectedCharacters), synopsis.trim() || undefined);
+      onOpenChange(false);
+    } catch (err) {
+      setImportMessage({ type: 'error', text: err instanceof Error ? err.message : 'Could not save the script. Please try again.' });
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleSelectAll = () => {
@@ -454,16 +463,17 @@ export function ScriptBuilderDialog({
         </div>
 
         <DialogFooter className="pt-2 gap-2">
-          <Button variant="outline" size="sm" onClick={() => onOpenChange(false)} data-testid="button-cancel-builder">
+          <Button variant="outline" size="sm" onClick={() => onOpenChange(false)} disabled={saving} data-testid="button-cancel-builder">
             Cancel
           </Button>
           <Button 
             size="sm" 
             onClick={handleSave} 
-            disabled={!scriptName.trim() || selectedCharacters.size === 0}
+            disabled={!scriptName.trim() || selectedCharacters.size === 0 || saving}
             data-testid="button-save-script"
           >
-            {editMode ? "Update Script" : "Save Script"}
+            {saving && <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />}
+            {saving ? "Saving..." : editMode ? "Update Script" : "Save Script"}
           </Button>
         </DialogFooter>
       </DialogContent>

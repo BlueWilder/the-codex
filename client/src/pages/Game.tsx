@@ -84,7 +84,7 @@ function SetupWizard({ onStart }: { onStart: (count: number, names: string[], sc
   const [scanning, setScanning] = useState(false);
   const scanInputRef = useRef<HTMLInputElement>(null);
   const [stMode, setStMode] = useState(() => !!getStoredSTSession());
-  const { allScripts, customScripts, addCustomScript, updateCustomScript, getScriptById } = useLocalScripts();
+  const { allScripts, customScripts, addCustomScriptAsync, updateCustomScript, getScriptById } = useLocalScripts();
   const { toast } = useToast();
 
   const breakdown = getBreakdown(playerCount);
@@ -483,13 +483,13 @@ function SetupWizard({ onStart }: { onStart: (count: number, names: string[], sc
         initialSynopsis={editingScript?.synopsis || ""}
         title={editingScript ? "Edit Custom Script" : scannedCharacters ? "Review Scanned Script" : "Create Custom Script"}
         editMode={!!editingScript}
-        onSave={(name, characterIds, synopsis) => {
+        onSave={async (name, characterIds, synopsis) => {
           if (editingScript) {
             updateCustomScript(editingScript.id, name, characterIds, synopsis);
             const updated = getScriptById(editingScript.id);
             if (updated) setSelectedScript(updated);
           } else {
-            const newScript = addCustomScript(name, characterIds, synopsis);
+            const newScript = await addCustomScriptAsync(name, characterIds, synopsis);
             setSelectedScript(newScript);
           }
         }}
