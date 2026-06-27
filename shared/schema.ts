@@ -28,6 +28,13 @@ export const scripts = pgTable("scripts", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Scan rate limiting (shared across servers/restarts)
+export const scanRateLimits = pgTable("scan_rate_limits", {
+  ip: varchar("ip").primaryKey(),
+  count: integer("count").notNull().default(0),
+  resetAt: timestamp("reset_at").notNull(),
+});
+
 // Saved Games / Grimoire States
 export const games = pgTable("games", {
   id: serial("id").primaryKey(),

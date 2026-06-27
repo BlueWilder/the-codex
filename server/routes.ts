@@ -23,28 +23,12 @@ const scanScriptSchema = z.object({
   mediaType: z.enum(["image/jpeg", "image/png", "image/webp", "image/gif"]),
 });
 
-// Lightweight in-memory rate limiter for the scan endpoint. The route calls a
-// paid external API and is public, so we cap how often any one IP can hit it.
+// Rate limiter config for the scan endpoint. The route calls a paid external
+// API and is public, so we cap how often any one IP can hit it. The counter is
+// stored in PostgreSQL (see storage.checkScanRateLimit) so the limit holds
+// across server restarts and is shared across multiple servers.
 const SCAN_RATE_WINDOW_MS = 5 * 60 * 1000;
 const SCAN_RATE_MAX = 15;
-const scanRateHits = new Map<string, { count: number; resetAt: number }>();
-
-function checkScanRateLimit(ip: string): boolean {
-  const now = Date.now();
-  if (scanRateHits.size > 5000) {
-    scanRateHits.forEach((entry, key) => {
-      if (now > entry.resetAt) scanRateHits.delete(key);
-    });
-  }
-  const entry = scanRateHits.get(ip);
-  if (!entry || now > entry.resetAt) {
-    scanRateHits.set(ip, { count: 1, resetAt: now + SCAN_RATE_WINDOW_MS });
-    return true;
-  }
-  if (entry.count >= SCAN_RATE_MAX) return false;
-  entry.count += 1;
-  return true;
-}
 
 // Registers the public photo-to-script scanning endpoint. Extracted so it can
 // be mounted in isolation (without auth/DB setup) by integration tests.
@@ -52,7 +36,8 @@ export function registerScanScriptRoute(app: Express): void {
   // === Scan paper script (Claude vision) ===
   app.post("/api/scan-script", async (req, res) => {
     const ip = req.ip || req.socket.remoteAddress || "unknown";
-    if (!checkScanRateLimit(ip)) {
+    const allowed = await storage.checkScanRateLimit(ip, SCAN_RATE_MAX, SCAN_RATE_WINDOW_MS);
+    if (!allowed) {
       return res.status(429).json({ message: "Too many scans. Please wait a few minutes and try again." });
     }
     const parsed = scanScriptSchema.safeParse(req.body);

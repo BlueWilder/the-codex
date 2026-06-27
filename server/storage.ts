@@ -3,6 +3,7 @@ import {
   scripts,
   games,
   customScripts,
+  scanRateLimits,
   type InsertScript,
   type InsertGame,
   type InsertCustomScript,
@@ -11,7 +12,7 @@ import {
   type CustomScript,
   type UpdateGameRequest
 } from "@shared/schema";
-import { eq, and } from "drizzle-orm";
+import { eq, and, sql } from "drizzle-orm";
 
 export interface IStorage {
   // Scripts
@@ -31,6 +32,9 @@ export interface IStorage {
   createGame(game: InsertGame): Promise<Game>;
   updateGame(id: number, updates: UpdateGameRequest): Promise<Game>;
   deleteGame(id: number): Promise<void>;
+
+  // Rate limiting
+  checkScanRateLimit(ip: string, max: number, windowMs: number): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -99,6 +103,37 @@ export class DatabaseStorage implements IStorage {
 
   async deleteGame(id: number): Promise<void> {
     await db.delete(games).where(eq(games.id, id));
+  }
+
+  // Rate limiting (atomic, shared across servers/restarts via PostgreSQL)
+  async checkScanRateLimit(ip: string, max: number, windowMs: number): Promise<boolean> {
+    const resetAt = new Date(Date.now() + windowMs);
+    // Single atomic upsert: start a fresh window when the previous one has
+    // expired, otherwise increment (capped at max+1 so denied requests don't
+    // grow the counter without bound). Allowed when the resulting count <= max.
+    const result = await db.execute(sql`
+      INSERT INTO scan_rate_limits (ip, count, reset_at)
+      VALUES (${ip}, 1, ${resetAt})
+      ON CONFLICT (ip) DO UPDATE SET
+        count = CASE
+          WHEN scan_rate_limits.reset_at < now() THEN 1
+          ELSE LEAST(scan_rate_limits.count + 1, ${max + 1})
+        END,
+        reset_at = CASE
+          WHEN scan_rate_limits.reset_at < now() THEN ${resetAt}
+          ELSE scan_rate_limits.reset_at
+        END
+      RETURNING count
+    `);
+    const row = (result.rows?.[0] ?? {}) as { count?: number };
+
+    // Opportunistically clean up expired rows so the table doesn't accumulate
+    // entries for IPs that never return.
+    if (Math.random() < 0.01) {
+      void db.delete(scanRateLimits).where(sql`${scanRateLimits.resetAt} < now()`);
+    }
+
+    return Number(row.count ?? max + 1) <= max;
   }
 }
 
