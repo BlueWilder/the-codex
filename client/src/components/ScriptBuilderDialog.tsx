@@ -2,9 +2,10 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Check, Search, Upload, FileText, AlertTriangle, CheckCircle2, X } from "lucide-react";
+import { Check, Search, Upload, FileText, AlertTriangle, CheckCircle2, X, Camera, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ALL_CHARACTERS } from "@/lib/game-data";
+import { scanScriptFile } from "@/lib/scan-script";
 
 interface ScriptBuilderDialogProps {
   open: boolean;
@@ -44,7 +45,9 @@ export function ScriptBuilderDialog({
   const [showImport, setShowImport] = useState(false);
   const [importJson, setImportJson] = useState("");
   const [importMessage, setImportMessage] = useState<{ type: 'success' | 'warning' | 'error'; text: string } | null>(null);
+  const [scanning, setScanning] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const scanInputRef = useRef<HTMLInputElement>(null);
 
   const charLookup = useMemo(() => {
     const map = new Map<string, string>();
@@ -61,8 +64,38 @@ export function ScriptBuilderDialog({
       setShowImport(false);
       setImportJson("");
       setImportMessage(null);
+      setScanning(false);
     }
   }, [open, initialCharacters, initialName, initialSynopsis]);
+
+  const handleScanUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (scanInputRef.current) scanInputRef.current.value = '';
+    if (!file) return;
+    setScanning(true);
+    setImportMessage(null);
+    try {
+      const { matchedIds, unmatchedNames } = await scanScriptFile(file);
+      if (matchedIds.length === 0) {
+        setImportMessage({ type: 'error', text: 'No characters were recognized in that photo. Try a clearer, well-lit shot.' });
+        return;
+      }
+      setSelectedCharacters(prev => {
+        const next = new Set(prev);
+        matchedIds.forEach(id => next.add(id));
+        return next;
+      });
+      if (unmatchedNames.length > 0) {
+        setImportMessage({ type: 'warning', text: `Added ${matchedIds.length} character${matchedIds.length === 1 ? '' : 's'} from the photo. Couldn't match: ${unmatchedNames.join(', ')}.` });
+      } else {
+        setImportMessage({ type: 'success', text: `Added ${matchedIds.length} character${matchedIds.length === 1 ? '' : 's'} from the photo. Review and edit below.` });
+      }
+    } catch (err) {
+      setImportMessage({ type: 'error', text: err instanceof Error ? err.message : 'Could not scan that photo. Please try again.' });
+    } finally {
+      setScanning(false);
+    }
+  };
 
   const processImportJson = (jsonText: string) => {
     let parsed: unknown;
@@ -256,15 +289,37 @@ export function ScriptBuilderDialog({
 
           <div>
             {!showImport ? (
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-7 text-xs gap-1.5"
-                onClick={() => { setShowImport(true); setImportMessage(null); }}
-                data-testid="button-import-json"
-              >
-                <Upload className="w-3 h-3" /> Import JSON
-              </Button>
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-xs gap-1.5"
+                  onClick={() => { setShowImport(true); setImportMessage(null); }}
+                  data-testid="button-import-json"
+                >
+                  <Upload className="w-3 h-3" /> Import JSON
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-xs gap-1.5"
+                  disabled={scanning}
+                  onClick={() => scanInputRef.current?.click()}
+                  data-testid="button-scan-photo"
+                >
+                  {scanning ? <Loader2 className="w-3 h-3 animate-spin" /> : <Camera className="w-3 h-3" />}
+                  {scanning ? "Scanning..." : "Scan Photo"}
+                </Button>
+                <input
+                  ref={scanInputRef}
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  className="hidden"
+                  onChange={handleScanUpload}
+                  data-testid="input-scan-file"
+                />
+              </div>
             ) : (
               <div className="border border-amber-900/30 rounded-lg p-3 space-y-2 bg-amber-950/10">
                 <div className="flex items-center justify-between">

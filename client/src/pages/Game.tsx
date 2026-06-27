@@ -7,7 +7,9 @@ import { ScriptBuilderDialog } from "@/components/ScriptBuilderDialog";
 import { STWizard, getStoredSTSession } from "@/components/STWizard";
 import { InlineGameLog } from "@/components/InlineGameLog";
 import { TrustSlider } from "@/components/TrustSlider";
-import { ChevronRight, ChevronLeft, Play, X, Plus, Check, Search, Moon, Sun, ChevronUp, ChevronDown, FileText, Vote, Loader2, GripVertical, UserPlus, ArrowRight, BookOpen, HandMetal, Ban, LogOut, Trash2, Pencil, MoreVertical, RotateCcw, Info, ExternalLink, Users, Skull, Ghost, Scroll, Hand, Target, Theater, ArrowDownUp } from "lucide-react";
+import { scanScriptFile } from "@/lib/scan-script";
+import { useToast } from "@/hooks/use-toast";
+import { ChevronRight, ChevronLeft, Play, X, Plus, Check, Search, Moon, Sun, ChevronUp, ChevronDown, FileText, Vote, Loader2, GripVertical, UserPlus, ArrowRight, BookOpen, HandMetal, Ban, LogOut, Trash2, Pencil, MoreVertical, RotateCcw, Info, ExternalLink, Users, Skull, Ghost, Scroll, Hand, Target, Theater, ArrowDownUp, Camera } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -78,10 +80,54 @@ function SetupWizard({ onStart }: { onStart: (count: number, names: string[], sc
   const [selectedScript, setSelectedScript] = useState<LocalScript | null>(null);
   const [showScriptBuilder, setShowScriptBuilder] = useState(false);
   const [editingScript, setEditingScript] = useState<LocalScript | null>(null);
+  const [scannedCharacters, setScannedCharacters] = useState<Set<string> | null>(null);
+  const [scanning, setScanning] = useState(false);
+  const scanInputRef = useRef<HTMLInputElement>(null);
   const [stMode, setStMode] = useState(() => !!getStoredSTSession());
   const { allScripts, customScripts, addCustomScript, updateCustomScript, getScriptById } = useLocalScripts();
+  const { toast } = useToast();
 
   const breakdown = getBreakdown(playerCount);
+
+  const handleScanScript = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (scanInputRef.current) scanInputRef.current.value = '';
+    if (!file) return;
+    setScanning(true);
+    try {
+      const { matchedIds, unmatchedNames } = await scanScriptFile(file);
+      if (matchedIds.length === 0) {
+        toast({
+          title: "No characters recognized",
+          description: "Couldn't read any characters from that photo. Try a clearer, well-lit shot.",
+          variant: "destructive",
+        });
+        return;
+      }
+      setEditingScript(null);
+      setScannedCharacters(new Set(matchedIds));
+      setShowScriptBuilder(true);
+      if (unmatchedNames.length > 0) {
+        toast({
+          title: `Found ${matchedIds.length} characters`,
+          description: `Couldn't match: ${unmatchedNames.join(', ')}. Review and edit before saving.`,
+        });
+      } else {
+        toast({
+          title: `Found ${matchedIds.length} characters`,
+          description: "Review and edit your scanned script before saving.",
+        });
+      }
+    } catch (err) {
+      toast({
+        title: "Scan failed",
+        description: err instanceof Error ? err.message : "Could not scan that photo. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setScanning(false);
+    }
+  };
 
   const handleCountConfirm = () => {
     // Initialize with empty strings - placeholder text shows default names
@@ -374,6 +420,7 @@ function SetupWizard({ onStart }: { onStart: (count: number, names: string[], sc
               <button
                 onClick={() => {
                   setEditingScript(null);
+                  setScannedCharacters(null);
                   setShowScriptBuilder(true);
                 }}
                 className="w-full text-left p-4 rounded-lg border border-dashed border-purple-700/50 hover-elevate transition-colors flex items-center gap-3"
@@ -382,6 +429,31 @@ function SetupWizard({ onStart }: { onStart: (count: number, names: string[], sc
                 <Plus className="w-5 h-5 text-purple-500/70" />
                 <div className="font-medium text-purple-400">Create Custom Script</div>
               </button>
+              <button
+                onClick={() => scanInputRef.current?.click()}
+                disabled={scanning}
+                className="w-full text-left p-4 rounded-lg border border-dashed border-amber-700/50 hover-elevate transition-colors flex items-center gap-3 disabled:opacity-60"
+                data-testid="button-scan-paper-script"
+              >
+                {scanning ? (
+                  <Loader2 className="w-5 h-5 text-amber-500/70 animate-spin" />
+                ) : (
+                  <Camera className="w-5 h-5 text-amber-500/70" />
+                )}
+                <div>
+                  <div className="font-medium text-amber-400">{scanning ? "Scanning photo..." : "Scan Paper Script"}</div>
+                  <div className="text-sm text-muted-foreground">Take a photo of a printed script to build it automatically</div>
+                </div>
+              </button>
+              <input
+                ref={scanInputRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                className="hidden"
+                onChange={handleScanScript}
+                data-testid="input-scan-paper-script"
+              />
             </div>
 
             <div className="flex justify-between pt-4">
@@ -398,11 +470,18 @@ function SetupWizard({ onStart }: { onStart: (count: number, names: string[], sc
 
       <ScriptBuilderDialog
         open={showScriptBuilder}
-        onOpenChange={setShowScriptBuilder}
-        initialCharacters={editingScript ? new Set(editingScript.characterIds) : new Set()}
-        initialName={editingScript?.name || ""}
+        onOpenChange={(o) => {
+          setShowScriptBuilder(o);
+          if (!o) setScannedCharacters(null);
+        }}
+        initialCharacters={
+          editingScript
+            ? new Set(editingScript.characterIds)
+            : scannedCharacters ?? new Set()
+        }
+        initialName={editingScript?.name || (scannedCharacters ? "Scanned Script" : "")}
         initialSynopsis={editingScript?.synopsis || ""}
-        title={editingScript ? "Edit Custom Script" : "Create Custom Script"}
+        title={editingScript ? "Edit Custom Script" : scannedCharacters ? "Review Scanned Script" : "Create Custom Script"}
         editMode={!!editingScript}
         onSave={(name, characterIds, synopsis) => {
           if (editingScript) {

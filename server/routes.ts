@@ -5,12 +5,46 @@ import { api } from "@shared/routes";
 import { z } from "zod";
 import { setupAuth, registerAuthRoutes, isAuthenticated } from "./replit_integrations/auth";
 import { updateCustomScriptSchema } from "@shared/schema";
+import { scanScriptImage } from "./anthropic";
+import { VALID_CHARACTER_NAMES } from "./character-names";
 
 const createCustomScriptSchema = z.object({
   name: z.string().min(1, "Name is required"),
   characterIds: z.array(z.string()).min(1, "At least one character is required"),
   synopsis: z.string().nullable().optional(),
 });
+
+// ~11MB of base64 keeps us under the 12MB body limit while allowing a
+// reasonably sized photo. The client downscales to ~1600px JPEG anyway.
+const MAX_IMAGE_BASE64_LENGTH = 11_000_000;
+
+const scanScriptSchema = z.object({
+  image: z.string().min(1, "Image is required").max(MAX_IMAGE_BASE64_LENGTH, "Image is too large"),
+  mediaType: z.enum(["image/jpeg", "image/png", "image/webp", "image/gif"]),
+});
+
+// Lightweight in-memory rate limiter for the scan endpoint. The route calls a
+// paid external API and is public, so we cap how often any one IP can hit it.
+const SCAN_RATE_WINDOW_MS = 5 * 60 * 1000;
+const SCAN_RATE_MAX = 15;
+const scanRateHits = new Map<string, { count: number; resetAt: number }>();
+
+function checkScanRateLimit(ip: string): boolean {
+  const now = Date.now();
+  if (scanRateHits.size > 5000) {
+    scanRateHits.forEach((entry, key) => {
+      if (now > entry.resetAt) scanRateHits.delete(key);
+    });
+  }
+  const entry = scanRateHits.get(ip);
+  if (!entry || now > entry.resetAt) {
+    scanRateHits.set(ip, { count: 1, resetAt: now + SCAN_RATE_WINDOW_MS });
+    return true;
+  }
+  if (entry.count >= SCAN_RATE_MAX) return false;
+  entry.count += 1;
+  return true;
+}
 
 export async function registerRoutes(
   httpServer: Server,
@@ -19,6 +53,30 @@ export async function registerRoutes(
   
   await setupAuth(app);
   registerAuthRoutes(app);
+
+  // === Scan paper script (Claude vision) ===
+  app.post("/api/scan-script", async (req, res) => {
+    const ip = req.ip || req.socket.remoteAddress || "unknown";
+    if (!checkScanRateLimit(ip)) {
+      return res.status(429).json({ message: "Too many scans. Please wait a few minutes and try again." });
+    }
+    const parsed = scanScriptSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ message: parsed.error.errors[0].message });
+    }
+    if (!process.env.ANTHROPIC_API_KEY) {
+      return res.status(503).json({ message: "Scanning is not configured. Missing Anthropic API key." });
+    }
+    try {
+      const { image, mediaType } = parsed.data;
+      const result = await scanScriptImage(image, mediaType, VALID_CHARACTER_NAMES);
+      res.json(result);
+    } catch (error) {
+      console.error("Error scanning script:", error);
+      const message = error instanceof Error ? error.message : "Failed to scan the script. Please try again.";
+      res.status(502).json({ message });
+    }
+  });
 
   // === Custom Scripts (user-specific) ===
   app.get("/api/custom-scripts", isAuthenticated, async (req: any, res) => {
