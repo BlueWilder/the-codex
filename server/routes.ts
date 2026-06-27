@@ -24,22 +24,55 @@ const scanScriptSchema = z.object({
 });
 
 // Rate limiter config for the scan endpoint. The route calls a paid external
-// API and is public, so we cap how often any one IP can hit it. The counter is
-// stored in PostgreSQL (see storage.checkScanRateLimit) so the limit holds
-// across server restarts and is shared across multiple servers.
-const SCAN_RATE_WINDOW_MS = 5 * 60 * 1000;
-const SCAN_RATE_MAX = 15;
+// API and is public, so we cap how often it can be hit. Counters are stored in
+// PostgreSQL (see storage.checkScanRateLimit) so the limits hold across server
+// restarts and are shared across multiple servers.
+//
+// Two layers of protection:
+//  1. Per-client cap: keyed by user id for logged-in users (so rotating IPs
+//     behind one account can't bypass it) and by IP otherwise.
+//  2. Global backstop: a site-wide cap across ALL clients per window. This
+//     guards the paid endpoint against an abuser rotating through many IPs,
+//     which would otherwise defeat any per-IP limit.
+//
+// Limits are read dynamically (with defaults) so tests can tune them.
+const GLOBAL_SCAN_KEY = "__global__";
+
+function getScanLimits() {
+  return {
+    perMax: Number(process.env.SCAN_RATE_MAX ?? 15),
+    perWindowMs: Number(process.env.SCAN_RATE_WINDOW_MS ?? 5 * 60 * 1000),
+    globalMax: Number(process.env.SCAN_GLOBAL_MAX ?? 500),
+    globalWindowMs: Number(process.env.SCAN_GLOBAL_WINDOW_MS ?? 60 * 60 * 1000),
+  };
+}
 
 // Registers the public photo-to-script scanning endpoint. Extracted so it can
 // be mounted in isolation (without auth/DB setup) by integration tests.
 export function registerScanScriptRoute(app: Express): void {
   // === Scan paper script (Claude vision) ===
   app.post("/api/scan-script", async (req, res) => {
-    const ip = req.ip || req.socket.remoteAddress || "unknown";
-    const allowed = await storage.checkScanRateLimit(ip, SCAN_RATE_MAX, SCAN_RATE_WINDOW_MS);
-    if (!allowed) {
+    const { perMax, perWindowMs, globalMax, globalWindowMs } = getScanLimits();
+
+    // Prefer the authenticated user id so a single account can't dodge the cap
+    // by switching networks/IPs; fall back to the client IP for anonymous users.
+    const userId = (req.user as any)?.claims?.sub as string | undefined;
+    const clientKey = userId
+      ? `user:${userId}`
+      : `ip:${req.ip || req.socket.remoteAddress || "unknown"}`;
+
+    const clientAllowed = await storage.checkScanRateLimit(clientKey, perMax, perWindowMs);
+    if (!clientAllowed) {
       return res.status(429).json({ message: "Too many scans. Please wait a few minutes and try again." });
     }
+
+    // Global backstop: only counts requests that already passed the per-client
+    // cap, so an abuser rotating IPs still drains a shared site-wide budget.
+    const globalAllowed = await storage.checkScanRateLimit(GLOBAL_SCAN_KEY, globalMax, globalWindowMs);
+    if (!globalAllowed) {
+      return res.status(429).json({ message: "The scanner is busy right now. Please try again in a little while." });
+    }
+
     const parsed = scanScriptSchema.safeParse(req.body);
     if (!parsed.success) {
       return res.status(400).json({ message: parsed.error.errors[0].message });

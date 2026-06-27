@@ -33,8 +33,9 @@ export interface IStorage {
   updateGame(id: number, updates: UpdateGameRequest): Promise<Game>;
   deleteGame(id: number): Promise<void>;
 
-  // Rate limiting
-  checkScanRateLimit(ip: string, max: number, windowMs: number): Promise<boolean>;
+  // Rate limiting. `key` identifies the bucket to count against: a per-client
+  // key (user id or IP) or a shared site-wide key for the global backstop.
+  checkScanRateLimit(key: string, max: number, windowMs: number): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -106,14 +107,14 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Rate limiting (atomic, shared across servers/restarts via PostgreSQL)
-  async checkScanRateLimit(ip: string, max: number, windowMs: number): Promise<boolean> {
+  async checkScanRateLimit(key: string, max: number, windowMs: number): Promise<boolean> {
     const resetAt = new Date(Date.now() + windowMs);
     // Single atomic upsert: start a fresh window when the previous one has
     // expired, otherwise increment (capped at max+1 so denied requests don't
     // grow the counter without bound). Allowed when the resulting count <= max.
     const result = await db.execute(sql`
       INSERT INTO scan_rate_limits (ip, count, reset_at)
-      VALUES (${ip}, 1, ${resetAt})
+      VALUES (${key}, 1, ${resetAt})
       ON CONFLICT (ip) DO UPDATE SET
         count = CASE
           WHEN scan_rate_limits.reset_at < now() THEN 1

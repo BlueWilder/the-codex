@@ -6,6 +6,12 @@ import { createServer } from "http";
 const app = express();
 const httpServer = createServer(app);
 
+// Replit serves the app behind a reverse proxy, so the real client IP arrives
+// in the X-Forwarded-For header. Trusting the proxy makes `req.ip` reflect the
+// actual client instead of the proxy's address, which the scan rate limiter
+// relies on to key requests per real client.
+app.set("trust proxy", true);
+
 declare module "http" {
   interface IncomingMessage {
     rawBody: unknown;

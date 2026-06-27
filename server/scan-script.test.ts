@@ -18,8 +18,10 @@ process.env.ANTHROPIC_API_KEY = "test-key";
 
 let app: Express;
 let VALID_CHARACTER_NAMES: string[];
+let db: typeof import("./db").db;
+let scanRateLimits: typeof import("@shared/schema").scanRateLimits;
 
-// Each test uses a distinct client IP so the in-memory rate limiter state does
+// Each test uses a distinct client IP so the per-client rate limiter state does
 // not bleed between tests. `trust proxy` makes Express honour X-Forwarded-For.
 let ipCounter = 0;
 function freshIp(): string {
@@ -36,6 +38,8 @@ function modelReturns(names: unknown): void {
 beforeAll(async () => {
   const { registerScanScriptRoute } = await import("./routes");
   ({ VALID_CHARACTER_NAMES } = await import("./character-names"));
+  ({ db } = await import("./db"));
+  ({ scanRateLimits } = await import("@shared/schema"));
 
   app = express();
   app.use(express.json({ limit: "12mb" }));
@@ -43,8 +47,14 @@ beforeAll(async () => {
   registerScanScriptRoute(app);
 });
 
-beforeEach(() => {
+beforeEach(async () => {
   createMock.mockReset();
+  // Clear persisted rate-limit counters (per-client AND the shared global
+  // backstop) so tests are deterministic and don't bleed across runs.
+  await db.delete(scanRateLimits);
+  // Default the global backstop high so per-client tests aren't affected by it;
+  // individual tests override SCAN_GLOBAL_MAX when exercising the backstop.
+  process.env.SCAN_GLOBAL_MAX = "10000";
 });
 
 const TINY_IMAGE = "aGVsbG8="; // base64 of "hello"
@@ -132,5 +142,32 @@ describe("POST /api/scan-script", () => {
       .set("X-Forwarded-For", freshIp())
       .send({ image: TINY_IMAGE, mediaType: "image/jpeg" });
     expect(otherIp.status).toBe(200);
+  });
+
+  it("enforces a site-wide global budget even across many distinct IPs", async () => {
+    modelReturns([VALID_CHARACTER_NAMES[0]]);
+
+    // Tighten the global backstop so it trips well before any per-client cap.
+    const GLOBAL_MAX = 5;
+    process.env.SCAN_GLOBAL_MAX = String(GLOBAL_MAX);
+
+    // Each request comes from a brand-new IP, so the per-client cap never fires;
+    // only the shared global budget can stop them.
+    for (let i = 0; i < GLOBAL_MAX; i += 1) {
+      const ok = await request(app)
+        .post("/api/scan-script")
+        .set("X-Forwarded-For", freshIp())
+        .send({ image: TINY_IMAGE, mediaType: "image/jpeg" });
+      expect(ok.status).toBe(200);
+    }
+
+    // The next request from yet another fresh IP is blocked by the global cap.
+    const blocked = await request(app)
+      .post("/api/scan-script")
+      .set("X-Forwarded-For", freshIp())
+      .send({ image: TINY_IMAGE, mediaType: "image/jpeg" });
+
+    expect(blocked.status).toBe(429);
+    expect(blocked.body.message).toMatch(/scanner is busy/i);
   });
 });
