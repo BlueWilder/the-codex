@@ -46,14 +46,9 @@ function checkScanRateLimit(ip: string): boolean {
   return true;
 }
 
-export async function registerRoutes(
-  httpServer: Server,
-  app: Express
-): Promise<Server> {
-  
-  await setupAuth(app);
-  registerAuthRoutes(app);
-
+// Registers the public photo-to-script scanning endpoint. Extracted so it can
+// be mounted in isolation (without auth/DB setup) by integration tests.
+export function registerScanScriptRoute(app: Express): void {
   // === Scan paper script (Claude vision) ===
   app.post("/api/scan-script", async (req, res) => {
     const ip = req.ip || req.socket.remoteAddress || "unknown";
@@ -77,6 +72,17 @@ export async function registerRoutes(
       res.status(502).json({ message });
     }
   });
+}
+
+export async function registerRoutes(
+  httpServer: Server,
+  app: Express
+): Promise<Server> {
+  
+  await setupAuth(app);
+  registerAuthRoutes(app);
+
+  registerScanScriptRoute(app);
 
   // === Custom Scripts (user-specific) ===
   app.get("/api/custom-scripts", isAuthenticated, async (req: any, res) => {
