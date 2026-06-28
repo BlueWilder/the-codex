@@ -14,10 +14,10 @@ export default function Home() {
           className="space-y-4"
         >
           <h1 className="text-5xl md:text-7xl font-bold bg-gradient-to-b from-amber-400 to-amber-700 bg-clip-text text-transparent drop-shadow-sm font-display">
-            Blood on the Clocktower Codex
+            Codex
           </h1>
-          <p className="text-xl text-amber-100/60 font-serif max-w-2xl mx-auto">
-            A complete character reference, beginner guide, and game-tracking tool for Blood on the Clocktower — covering all official scripts and 70+ experimental characters.
+          <p className="text-xl text-amber-100/60 font-serif max-w-2xl mx-auto italic">
+            "Do not dare to hope, for the demon devours hope before all else."
           </p>
         </motion.div>
 
