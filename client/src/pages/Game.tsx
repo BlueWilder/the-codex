@@ -27,7 +27,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, TouchSensor, useSensor, useSensors, DragEndEvent, DragOverlay, DragStartEvent, useDraggable } from "@dnd-kit/core";
 import { SortableContext, sortableKeyboardCoordinates, useSortable, rectSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { teamBadge } from "@/lib/team-style";
+import { teamBadge, teamInputAccent } from "@/lib/team-style";
 
 function GallowsIcon({ className }: { className?: string }) {
   return (
@@ -214,20 +214,20 @@ function SetupWizard({ onStart }: { onStart: (count: number, names: string[], sc
             <div className="bg-muted/30 p-4 rounded-lg text-center space-y-2">
               <p className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Character Breakdown</p>
               <div className="flex flex-wrap justify-center gap-2" data-testid="text-breakdown">
-                <Badge variant="secondary" className="bg-blue-900/40 text-blue-300 border-blue-700">
+                <Badge variant="secondary" className={teamBadge('townsfolk')}>
                   {breakdown.townsfolk} Townsfolk
                 </Badge>
-                <Badge variant="secondary" className="bg-teal-900/40 text-teal-300 border-teal-700">
+                <Badge variant="secondary" className={teamBadge('outsider')}>
                   {breakdown.outsiders} Outsiders
                 </Badge>
-                <Badge variant="secondary" className="bg-orange-900/40 text-orange-300 border-orange-700">
+                <Badge variant="secondary" className={teamBadge('minion')}>
                   {breakdown.minions} Minions
                 </Badge>
-                <Badge variant="secondary" className="bg-red-900/40 text-red-300 border-red-700">
+                <Badge variant="secondary" className={teamBadge('demon')}>
                   {breakdown.demons} Demon
                 </Badge>
                 {'travelers' in breakdown && breakdown.travelers > 0 && (
-                  <Badge variant="secondary" className="bg-purple-900/40 text-purple-300 border-purple-700">
+                  <Badge variant="secondary" className={teamBadge('traveler')}>
                     + {breakdown.travelers} {breakdown.travelers === 1 ? 'Traveler' : 'Travelers'}
                   </Badge>
                 )}
@@ -269,10 +269,10 @@ function SetupWizard({ onStart }: { onStart: (count: number, names: string[], sc
                     onChange={(e) => handleNameChange(i, e.target.value)}
                     placeholder={getDefaultName(i)}
                     data-testid={`input-player-name-${i}`}
-                    className={playerCount > 15 && i >= 15 ? "border-purple-700/50" : ""}
+                    className={playerCount > 15 && i >= 15 ? teamInputAccent('traveler') : ""}
                   />
                   {playerCount > 15 && i >= 15 && (
-                    <Badge variant="secondary" className="bg-purple-900/40 text-purple-300 border-purple-700 shrink-0">
+                    <Badge variant="secondary" className={cn(teamBadge('traveler'), "shrink-0")}>
                       Traveler
                     </Badge>
                   )}
