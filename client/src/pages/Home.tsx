@@ -1,7 +1,8 @@
 import { Layout } from "@/components/ui/Layout";
 import { Link } from "wouter";
-import { BookOpen, Gamepad2, HelpCircle } from "lucide-react";
+import { Gamepad2 } from "lucide-react";
 import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
 
 export default function Home() {
   return (
@@ -25,37 +26,21 @@ export default function Home() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.5 }}
-          className="grid gap-6 md:grid-cols-3 max-w-4xl mx-auto"
+          className="flex flex-col items-center gap-3"
         >
-          <Link href="/introduction" className="group block" data-testid="link-introduction-card">
-            <div className="bg-card hover:bg-card/80 border border-amber-900/30 hover:border-amber-600/50 p-8 rounded-xl transition-all duration-300 shadow-lg hover:shadow-amber-900/20 group-hover:-translate-y-1 h-full">
-              <div className="w-16 h-16 rounded-full bg-emerald-900/20 flex items-center justify-center mx-auto mb-6 group-hover:bg-emerald-900/40 transition-colors">
-                <HelpCircle className="w-8 h-8 text-emerald-400" />
-              </div>
-              <h2 className="text-2xl font-bold text-amber-500 mb-3 font-display">Blood on the Clocktower</h2>
-              <p className="text-muted-foreground">Quick introduction and overview of the game and base mechanics.</p>
-            </div>
-          </Link>
-
-          <Link href="/reference" className="group block" data-testid="link-reference-card">
-            <div className="bg-card hover:bg-card/80 border border-amber-900/30 hover:border-amber-600/50 p-8 rounded-xl transition-all duration-300 shadow-lg hover:shadow-amber-900/20 group-hover:-translate-y-1 h-full">
-              <div className="w-16 h-16 rounded-full bg-blue-900/20 flex items-center justify-center mx-auto mb-6 group-hover:bg-blue-900/40 transition-colors">
-                <BookOpen className="w-8 h-8 text-blue-400" />
-              </div>
-              <h2 className="text-2xl font-bold text-amber-500 mb-3 font-display">Character Reference</h2>
-              <p className="text-muted-foreground">Browse characters by script, view abilities, tips, and strategies.</p>
-            </div>
-          </Link>
-
-          <Link href="/game" className="group block" data-testid="link-game-card">
-            <div className="bg-card hover:bg-card/80 border border-amber-900/30 hover:border-amber-600/50 p-8 rounded-xl transition-all duration-300 shadow-lg hover:shadow-amber-900/20 group-hover:-translate-y-1 h-full">
-              <div className="w-16 h-16 rounded-full bg-purple-900/20 flex items-center justify-center mx-auto mb-6 group-hover:bg-purple-900/40 transition-colors">
-                <Gamepad2 className="w-8 h-8 text-purple-400" />
-              </div>
-              <h2 className="text-2xl font-bold text-amber-500 mb-3 font-display">Game Mode</h2>
-              <p className="text-muted-foreground">Track players, notes, claims, and votes during your games.</p>
-            </div>
-          </Link>
+          <Button
+            asChild
+            size="lg"
+            className="bg-amber-600 hover:bg-amber-500 text-black font-semibold text-base px-8 py-6 rounded-xl shadow-lg shadow-amber-900/30 transition-all duration-300 hover:-translate-y-0.5"
+          >
+            <Link href="/game" data-testid="link-enter-game-mode">
+              <Gamepad2 className="w-5 h-5 mr-2" />
+              Enter Game Mode
+            </Link>
+          </Button>
+          <p className="text-sm text-muted-foreground">
+            Track players, claims, and votes during your live games.
+          </p>
         </motion.div>
       </div>
     </Layout>
