@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400&family=Homemade+Apple&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400&family=Fraunces:ital,opsz,wght@0,9..144,400..900;1,9..144,400..900&family=Homemade+Apple&family=Plus+Jakarta+Sans:ital,wght@0,400..800;1,400..800&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -9,6 +9,10 @@
   --font-display: 'Cinzel Decorative', cursive;
   --font-body: 'Crimson Text', serif;
   --font-handwriting: 'Homemade Apple', cursive;
+  --font-fraunces: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --font-serif: 'Crimson Text', Georgia, serif;
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-mono: ui-monospace, 'SFMono-Regular', Menlo, monospace;
 
   /* Dark, rich base */
   --background: 240 10% 8%;      /* Deep charcoal/black */
@@ -85,5 +89,9 @@
   .parchment-text {
     font-family: var(--font-handwriting);
     @apply text-amber-100/80 -rotate-1;
+  }
+
+  .font-fraunces {
+    font-family: var(--font-fraunces);
   }
 }

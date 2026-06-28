@@ -1,7 +1,7 @@
 import { Layout } from "@/components/ui/Layout";
 import { ALL_CHARACTERS, OFFICIAL_SCRIPTS, TRAVELLER_SCRIPT_MAP, getJinxesForCharacter, type Character, type Jinx } from "@/lib/game-data";
 import { useState, useEffect } from "react";
-import { Search, Moon, Sun, Settings, AlertTriangle, ChevronDown, Quote, Lightbulb, Sword, Eye, Check, BookOpen, Plus, Minus, Trash2, Pencil, ArrowDownAZ, LayoutList, Clock } from "lucide-react";
+import { Search, Moon, Sun, Settings, AlertTriangle, ChevronDown, Quote, Lightbulb, Sword, Eye, Check, Wand2, Plus, Minus, Trash2, Pencil, ArrowDownAZ, LayoutList, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -25,8 +25,8 @@ function CharacterCard({ char, isExpanded, onToggle }: {
       case 'outsider': return 'text-blue-200 border-blue-800/30 bg-blue-900/10';
       case 'minion': return 'text-red-400 border-red-900/30 bg-red-950/20';
       case 'demon': return 'text-red-600 border-red-900/50 bg-red-950/30';
-      case 'traveler': return 'text-amber-400 border-amber-900/30 bg-amber-950/20';
-      case 'fabled': return 'text-violet-400 border-violet-900/30 bg-violet-950/20';
+      case 'traveler': return 'text-slate-300 border-slate-600/40 bg-slate-800/20';
+      case 'fabled': return 'text-[#efc344] border-[#efc344]/30 bg-[#efc344]/10';
       default: return 'text-gray-400 border-gray-800';
     }
   };
@@ -50,7 +50,7 @@ function CharacterCard({ char, isExpanded, onToggle }: {
       data-testid={`card-character-${char.id}`}
     >
       <div className="flex items-start justify-between mb-2">
-        <h3 className="font-display text-lg font-bold">
+        <h3 className="font-fraunces text-xl font-bold tracking-normal">
           <a href={`#${char.id}`} onClick={(e) => e.stopPropagation()} className="hover:underline decoration-current/40">
             {char.name}
           </a>
@@ -66,7 +66,7 @@ function CharacterCard({ char, isExpanded, onToggle }: {
         </div>
       </div>
       
-      <p className="text-sm font-serif leading-relaxed opacity-90">{char.ability}</p>
+      <p className="text-base font-serif leading-[1.58] opacity-90 pl-3 border-l-2 border-amber-500/40">{char.ability}</p>
       
       <div className="mt-3 flex flex-wrap gap-2">
         {char.firstNightOrder !== null && (
@@ -100,10 +100,10 @@ function CharacterCard({ char, isExpanded, onToggle }: {
             transition={{ duration: 0.2, ease: "easeInOut" }}
             className="overflow-hidden"
           >
-            <div className="mt-4 pt-4 border-t border-current/20 space-y-5 md:space-y-4">
+            <div className="mt-4 pt-4 border-t border-current/20 space-y-6 md:space-y-5">
               {(char.firstNightOrder !== null || char.otherNightOrder !== null) && (
                 <div className="space-y-2">
-                  <h4 className="text-sm md:text-xs font-bold uppercase tracking-wider opacity-70 flex items-center gap-1.5">
+                  <h4 className="text-sm md:text-xs font-fraunces font-semibold uppercase tracking-wider opacity-80 flex items-center gap-1.5">
                     <Moon className="w-4 h-4 md:w-3 md:h-3" /> Night Order
                   </h4>
                   <div className="flex flex-wrap gap-3 text-base md:text-sm">
@@ -125,7 +125,7 @@ function CharacterCard({ char, isExpanded, onToggle }: {
 
               {char.reminders.length > 0 && (
                 <div className="space-y-2">
-                  <h4 className="text-sm md:text-xs font-bold uppercase tracking-wider opacity-70">Reminder Tokens</h4>
+                  <h4 className="text-sm md:text-xs font-fraunces font-semibold uppercase tracking-wider opacity-80">Reminder Tokens</h4>
                   <div className="flex flex-wrap gap-2">
                     {char.reminders.map((reminder, idx) => (
                       <span 
@@ -141,7 +141,7 @@ function CharacterCard({ char, isExpanded, onToggle }: {
 
               {jinxes.length > 0 && (
                 <div className="space-y-2">
-                  <h4 className="text-sm md:text-xs font-bold uppercase tracking-wider opacity-70 flex items-center gap-1.5">
+                  <h4 className="text-sm md:text-xs font-fraunces font-semibold uppercase tracking-wider opacity-80 flex items-center gap-1.5">
                     <AlertTriangle className="w-4 h-4 md:w-3 md:h-3 text-orange-400" /> Jinxes
                   </h4>
                   <div className="space-y-2">
@@ -160,7 +160,7 @@ function CharacterCard({ char, isExpanded, onToggle }: {
 
               {char.setup && (
                 <div className="space-y-2">
-                  <h4 className="text-sm md:text-xs font-bold uppercase tracking-wider opacity-70 flex items-center gap-1.5">
+                  <h4 className="text-sm md:text-xs font-fraunces font-semibold uppercase tracking-wider opacity-80 flex items-center gap-1.5">
                     <Settings className="w-4 h-4 md:w-3 md:h-3 text-purple-400" /> Setup Effect
                   </h4>
                   <p className="text-sm md:text-xs opacity-80">
@@ -172,7 +172,7 @@ function CharacterCard({ char, isExpanded, onToggle }: {
               {/* Flavor Quote */}
               {char.flavorQuote && (
                 <div className="space-y-2">
-                  <h4 className="text-sm md:text-xs font-bold uppercase tracking-wider opacity-70 flex items-center gap-1.5">
+                  <h4 className="text-sm md:text-xs font-fraunces font-semibold uppercase tracking-wider opacity-80 flex items-center gap-1.5">
                     <Quote className="w-4 h-4 md:w-3 md:h-3 text-amber-400" /> Flavor
                   </h4>
                   <p className="text-base md:text-sm font-serif italic opacity-80 pl-4 md:pl-3 border-l-2 border-amber-700/50">
@@ -184,7 +184,7 @@ function CharacterCard({ char, isExpanded, onToggle }: {
               {/* Extended Summary */}
               {char.extendedSummary && (
                 <div className="space-y-2">
-                  <h4 className="text-sm md:text-xs font-bold uppercase tracking-wider opacity-70 flex items-center gap-1.5">
+                  <h4 className="text-sm md:text-xs font-fraunces font-semibold uppercase tracking-wider opacity-80 flex items-center gap-1.5">
                     <Eye className="w-4 h-4 md:w-3 md:h-3 text-blue-400" /> How It Works
                   </h4>
                   <div className="text-base md:text-sm font-serif opacity-90 space-y-3 md:space-y-2 leading-relaxed">
@@ -198,7 +198,7 @@ function CharacterCard({ char, isExpanded, onToggle }: {
               {/* Tips and Tricks */}
               {char.tipsAndTricks && char.tipsAndTricks.length > 0 && (
                 <div className="space-y-2">
-                  <h4 className="text-sm md:text-xs font-bold uppercase tracking-wider opacity-70 flex items-center gap-1.5">
+                  <h4 className="text-sm md:text-xs font-fraunces font-semibold uppercase tracking-wider opacity-80 flex items-center gap-1.5">
                     <Lightbulb className="w-4 h-4 md:w-3 md:h-3 text-yellow-400" /> Tips & Tricks
                   </h4>
                   <ul className="text-sm md:text-xs space-y-2.5 md:space-y-1.5 opacity-90">
@@ -215,7 +215,7 @@ function CharacterCard({ char, isExpanded, onToggle }: {
               {/* Bluffing As (for good characters to bluff) */}
               {char.bluffingAs && char.bluffingAs.length > 0 && (
                 <div className="space-y-2">
-                  <h4 className="text-sm md:text-xs font-bold uppercase tracking-wider opacity-70 flex items-center gap-1.5">
+                  <h4 className="text-sm md:text-xs font-fraunces font-semibold uppercase tracking-wider opacity-80 flex items-center gap-1.5">
                     <Sword className="w-4 h-4 md:w-3 md:h-3 text-red-400" /> Bluffing as {char.name}
                   </h4>
                   <ul className="text-sm md:text-xs space-y-2.5 md:space-y-1.5 opacity-90">
@@ -232,7 +232,7 @@ function CharacterCard({ char, isExpanded, onToggle }: {
               {/* Fighting The (for good characters fighting evil) */}
               {char.fightingThe && char.fightingThe.length > 0 && (
                 <div className="space-y-2">
-                  <h4 className="text-sm md:text-xs font-bold uppercase tracking-wider opacity-70 flex items-center gap-1.5">
+                  <h4 className="text-sm md:text-xs font-fraunces font-semibold uppercase tracking-wider opacity-80 flex items-center gap-1.5">
                     <Sword className="w-4 h-4 md:w-3 md:h-3 text-green-400" /> Fighting the {char.name}
                   </h4>
                   <ul className="text-sm md:text-xs space-y-2.5 md:space-y-1.5 opacity-90">
@@ -254,15 +254,16 @@ function CharacterCard({ char, isExpanded, onToggle }: {
                       className="py-2 hover:no-underline [&>svg]:hidden"
                       data-testid={`accordion-how-to-run-${char.id}`}
                     >
-                      <h4 className="text-sm md:text-xs font-bold uppercase tracking-wider opacity-70 flex items-center gap-1.5">
-                        <BookOpen className="w-4 h-4 md:w-3 md:h-3 text-purple-400" /> How to Run
-                        <Plus className="w-4 h-4 md:w-3 md:h-3 text-purple-400 transition-transform [[data-state=open]_&]:hidden" />
-                        <Minus className="w-4 h-4 md:w-3 md:h-3 text-purple-400 transition-transform [[data-state=closed]_&]:hidden" />
+                      <h4 className="text-sm md:text-xs font-fraunces font-semibold uppercase tracking-wider flex items-center gap-1.5 text-[#c79fe6]">
+                        <Wand2 className="w-4 h-4 md:w-3 md:h-3 text-[#c79fe6]" /> How to Run
+                        <span className="font-sans text-[9px] font-semibold normal-case tracking-wide px-1.5 py-0.5 rounded-full bg-[#3d2f57]/50 border border-[#3d2f57] text-[#c79fe6]">Storyteller</span>
+                        <Plus className="w-4 h-4 md:w-3 md:h-3 text-[#c79fe6] transition-transform [[data-state=open]_&]:hidden" />
+                        <Minus className="w-4 h-4 md:w-3 md:h-3 text-[#c79fe6] transition-transform [[data-state=closed]_&]:hidden" />
                       </h4>
                     </AccordionTrigger>
                     <AccordionContent>
-                      <div className="text-sm md:text-xs bg-purple-950/30 border border-purple-900/30 rounded-lg p-3 md:p-2">
-                        <div className="space-y-2 opacity-90 leading-relaxed">
+                      <div className="text-sm md:text-xs rounded-lg p-3 md:p-3 bg-[#1b1626] border border-[#3d2f57]">
+                        <div className="space-y-2 leading-[1.58] text-[#c79fe6]">
                           {char.howToRun.split('\n\n').map((paragraph, idx) => (
                             <p key={idx}>{paragraph.replace(/\n/g, ' ')}</p>
                           ))}
