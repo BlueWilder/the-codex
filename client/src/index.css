@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400&family=Fraunces:ital,opsz,wght@0,9..144,400..900;1,9..144,400..900&family=Homemade+Apple&family=Plus+Jakarta+Sans:ital,wght@0,400..800;1,400..800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400&family=Fraunces:ital,opsz,wght@0,9..144,400..900;1,9..144,400..900&family=Homemade+Apple&family=Plus+Jakarta+Sans:ital,wght@0,400..800;1,400..800&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,7 +6,7 @@
 
 :root {
   /* Grimoire Palette */
-  --font-display: 'Cinzel Decorative', cursive;
+  --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
   --font-body: 'Crimson Text', serif;
   --font-handwriting: 'Homemade Apple', cursive;
   --font-fraunces: 'Fraunces', Georgia, 'Times New Roman', serif;

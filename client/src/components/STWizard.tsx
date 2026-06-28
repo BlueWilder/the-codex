@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { ChevronLeft, ChevronRight, Scroll, BookOpen, Users, Lock, Shuffle, Trash2, Check, Plus, Pencil, FileText, Moon, Sun, ChevronDown, Lightbulb, Power, XCircle } from "lucide-react";
+import { ChevronLeft, ChevronRight, Scroll, BookOpen, Users, Lock, Shuffle, Trash2, Check, Plus, Pencil, FileText, Moon, Sun, ChevronDown, Lightbulb, Power, XCircle, Wand2 } from "lucide-react";
 
 const TEAM_COLORS: Record<string, string> = {
   townsfolk: "bg-blue-900/60 text-blue-200 border-blue-700",
@@ -133,11 +133,12 @@ function NightRow({ char, index, prefix, isExpanded, onToggle, isInBag, isActive
 
           {char.howToRun && (
             <div className="space-y-1.5">
-              <h4 className="text-xs font-bold uppercase tracking-wider opacity-70 flex items-center gap-1.5">
-                <BookOpen className="w-3 h-3 text-purple-400" /> How to Run
+              <h4 className="text-xs font-fraunces font-semibold uppercase tracking-wider flex items-center gap-1.5 text-[#c79fe6]">
+                <Wand2 className="w-3 h-3 text-[#c79fe6]" /> How to Run
+                <span className="font-sans text-[9px] font-semibold normal-case tracking-wide px-1.5 py-0.5 rounded-full bg-[#3d2f57]/50 border border-[#3d2f57] text-[#c79fe6]">Storyteller</span>
               </h4>
-              <div className="text-xs bg-purple-950/30 border border-purple-900/30 rounded-lg p-2">
-                <div className="space-y-1.5 opacity-90 leading-relaxed">
+              <div className="text-xs rounded-lg p-2 bg-[#1b1626] border border-[#3d2f57]">
+                <div className="space-y-1.5 leading-relaxed text-[#c79fe6]">
                   {char.howToRun.split('\n\n').map((paragraph, idx) => (
                     <p key={idx}>{paragraph.replace(/\n/g, ' ')}</p>
                   ))}
