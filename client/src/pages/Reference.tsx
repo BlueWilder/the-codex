@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { useLocalScripts, type LocalScript } from "@/hooks/use-local-scripts";
 import { ScriptBuilderDialog } from "@/components/ScriptBuilderDialog";
 import { teamCard } from "@/lib/team-style";
-import { nightOrderValue } from "@/lib/night-order";
+import { nightOrderValue, compareEndTeams, compareSheetOrder } from "@/lib/night-order";
 
 function CharacterCard({ char, isExpanded, onToggle }: { 
   char: Character; 
@@ -340,15 +340,8 @@ export default function Reference() {
     
     return matchesSearch && matchesTeam && matchesScript;
   }).sort((a, b) => {
-    const endTeams = ["traveler", "fabled"];
-    const aIsEnd = endTeams.includes(a.team);
-    const bIsEnd = endTeams.includes(b.team);
-    if (aIsEnd && bIsEnd) {
-      if (a.team !== b.team) return a.team === "traveler" ? -1 : 1;
-      return a.name.localeCompare(b.name);
-    }
-    if (aIsEnd && !bIsEnd) return 1;
-    if (!aIsEnd && bIsEnd) return -1;
+    const endComparison = compareEndTeams(a, b);
+    if (endComparison !== null) return endComparison;
     
     // Sort non-travelers based on selected sort order
     if (sortOrder === "alphabetical") {
@@ -361,14 +354,7 @@ export default function Reference() {
       return a.name.localeCompare(b.name);
     } else {
       // Sheet order: group by team, maintain original array order within team
-      const teamOrder: Record<string, number> = { townsfolk: 0, outsider: 1, minion: 2, demon: 3, traveler: 4, fabled: 5 };
-      const aTeamOrder = teamOrder[a.team] ?? 6;
-      const bTeamOrder = teamOrder[b.team] ?? 6;
-      if (aTeamOrder !== bTeamOrder) return aTeamOrder - bTeamOrder;
-      // Within same team, maintain original array index order
-      const aIndex = ALL_CHARACTERS.indexOf(a);
-      const bIndex = ALL_CHARACTERS.indexOf(b);
-      return aIndex - bIndex;
+      return compareSheetOrder(a, b, ALL_CHARACTERS);
     }
   });
 
