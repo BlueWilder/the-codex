@@ -8,6 +8,7 @@ import { STWizard, getStoredSTSession } from "@/components/STWizard";
 import { InlineGameLog } from "@/components/InlineGameLog";
 import { TrustSlider } from "@/components/TrustSlider";
 import { scanScriptFile } from "@/lib/scan-script";
+import { resolveScriptCharacters } from "@/lib/script-resolve";
 import { useToast } from "@/hooks/use-toast";
 import { ChevronRight, ChevronLeft, Play, X, Plus, Check, Search, Moon, Sun, ChevronUp, ChevronDown, FileText, Vote, Loader2, GripVertical, UserPlus, ArrowRight, BookOpen, HandMetal, Ban, LogOut, Trash2, Pencil, MoreVertical, RotateCcw, Info, ExternalLink, Users, Skull, Ghost, Scroll, Hand, Target, Theater, ArrowDownUp, Camera } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -2678,7 +2679,17 @@ function GameTrackerView({
   const { getScriptById, isLoading: scriptsLoading, allScripts, addCustomScript, updateCustomScript, customScripts } = useLocalScripts();
   
   const resolvedScript = game.script ? getScriptById(game.script.id) : null;
-  const scriptCharacterIds = resolvedScript?.characterIds;
+  const scriptCharacterIds = useMemo(
+    () =>
+      resolvedScript
+        ? resolveScriptCharacters(resolvedScript, {
+            includeTravellers: true,
+            includeFabled: true,
+          }).map(c => c.id)
+        : undefined,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [resolvedScript?.id, resolvedScript?.characterIds],
+  );
 
   useEffect(() => {
     if (!scriptsLoading && game.script && !resolvedScript) {

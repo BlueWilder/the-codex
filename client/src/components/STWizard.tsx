@@ -11,6 +11,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ChevronLeft, ChevronRight, Scroll, BookOpen, Users, Lock, Shuffle, Trash2, Check, Plus, Pencil, FileText, Moon, Sun, ChevronDown, Lightbulb, Power, XCircle, Wand2 } from "lucide-react";
 import { teamBadge } from "@/lib/team-style";
 import { getFirstNightChars, getOtherNightChars } from "@/lib/night-order";
+import { resolveScriptCharacters } from "@/lib/script-resolve";
 import { TeamBadge } from "@/components/character/TeamBadge";
 
 const TEAM_ORDER = ['townsfolk', 'outsider', 'minion', 'demon'] as const;
@@ -224,9 +225,8 @@ export function STWizard({ playerCount, onBack }: STWizardProps) {
 
   const scriptCharacters = useMemo(() => {
     if (!selectedScript) return [];
-    return selectedScript.characterIds
-      .map(id => getCharacterById(id))
-      .filter((c): c is Character => !!c && c.team !== 'traveler' && c.team !== 'fabled');
+    return resolveScriptCharacters(selectedScript)
+      .filter(c => c.team !== 'traveler' && c.team !== 'fabled');
   }, [selectedScript]);
 
   const charactersByTeam = useMemo(() => {
