@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Allow: /reference
+Allow: /introduction
+Disallow: /game
+Disallow: /api/
+
+Sitemap: https://thecodex.replit.app/sitemap.xml

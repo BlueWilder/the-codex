@@ -1,0 +1,23 @@
+# The Codex — Blood on the Clocktower Character Reference
+
+## What this site is
+
+The Codex is a comprehensive character reference for Blood on the Clocktower, a social deduction tabletop game published by The Pandemonium Institute. It covers all characters across the official editions (Trouble Brewing, Bad Moon Rising, Sects & Violets) plus 70+ experimental characters from the Carousel edition.
+
+## Public pages
+
+- / — Home / landing page
+- /reference — Full character reference with filtering by script and team type; includes abilities, night order, tips, bluffing strategies, jinx interactions, and Storyteller how-to-run notes
+- /introduction — Beginner-friendly guide explaining Blood on the Clocktower to new players
+
+## What the app provides
+
+- Character abilities and night-order position for every official and experimental character
+- Tips & tricks, bluffing strategies, and Storyteller run notes for each character
+- Jinx interaction lookup between characters
+- Script builder for custom games
+- Player tracker / note-taking tool for games in progress (requires login, not indexed)
+
+## Attribution
+
+Blood on the Clocktower is a trademark of The Pandemonium Institute. Character names, abilities, and game rules are the intellectual property of their respective owners. This reference tool is a fan resource and is not affiliated with or endorsed by The Pandemonium Institute.
