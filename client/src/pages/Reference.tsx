@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { useLocalScripts, type LocalScript } from "@/hooks/use-local-scripts";
 import { ScriptBuilderDialog } from "@/components/ScriptBuilderDialog";
 import { teamCard } from "@/lib/team-style";
+import { nightOrderValue } from "@/lib/night-order";
 
 function CharacterCard({ char, isExpanded, onToggle }: { 
   char: Character; 
@@ -354,8 +355,8 @@ export default function Reference() {
       return a.name.localeCompare(b.name);
     } else if (sortOrder === "night") {
       // Night order sorting - use firstNightOrder, fall back to otherNightOrder
-      const aOrder = a.firstNightOrder ?? a.otherNightOrder ?? 999;
-      const bOrder = b.firstNightOrder ?? b.otherNightOrder ?? 999;
+      const aOrder = nightOrderValue(a);
+      const bOrder = nightOrderValue(b);
       if (aOrder !== bOrder) return aOrder - bOrder;
       return a.name.localeCompare(b.name);
     } else {

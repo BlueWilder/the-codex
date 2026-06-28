@@ -10,6 +10,7 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ChevronLeft, ChevronRight, Scroll, BookOpen, Users, Lock, Shuffle, Trash2, Check, Plus, Pencil, FileText, Moon, Sun, ChevronDown, Lightbulb, Power, XCircle, Wand2 } from "lucide-react";
 import { teamBadge } from "@/lib/team-style";
+import { getFirstNightChars, getOtherNightChars } from "@/lib/night-order";
 
 const TEAM_ORDER = ['townsfolk', 'outsider', 'minion', 'demon'] as const;
 
@@ -264,17 +265,9 @@ export function STWizard({ playerCount, onBack }: STWizardProps) {
 
   const isExactMatch = TEAM_ORDER.every(t => tally[t] === required[t]);
 
-  const firstNightChars = useMemo(() => {
-    return scriptCharacters
-      .filter(c => c.firstNightOrder !== null)
-      .sort((a, b) => (a.firstNightOrder ?? 0) - (b.firstNightOrder ?? 0));
-  }, [scriptCharacters]);
+  const firstNightChars = useMemo(() => getFirstNightChars(scriptCharacters), [scriptCharacters]);
 
-  const otherNightChars = useMemo(() => {
-    return scriptCharacters
-      .filter(c => c.otherNightOrder !== null)
-      .sort((a, b) => (a.otherNightOrder ?? 0) - (b.otherNightOrder ?? 0));
-  }, [scriptCharacters]);
+  const otherNightChars = useMemo(() => getOtherNightChars(scriptCharacters), [scriptCharacters]);
 
   const toggleActive = useCallback((id: string) => {
     setActiveIds(prev => {
