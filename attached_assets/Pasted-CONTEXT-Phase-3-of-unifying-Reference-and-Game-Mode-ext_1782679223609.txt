@@ -1,0 +1,53 @@
+CONTEXT /
+Phase 3 of unifying Reference and Game Mode: extract the small display primitives that the future shared ScriptView will need, so Reference and the Storyteller wizard stop hand-rolling them. The night badges, the jinx badge and jinx list, and the team label currently live inline in Reference's CharacterCard, and STWizard's NightRow renders the team badge its own way. This is the first visually-sensitive phase, so everything must render byte-identical to today. Color and night-order helpers already exist (team-style.ts, night-order.ts) and these primitives should build on them.
+
+TASK /
+A. AUDIT-FIRST GATE (do this and report before changing anything). Inspect and report the exact current markup for each, then propose the component API and confirm byte-identical output:
+   - The "First Night" / "Other Nights" small badges in Reference CharacterCard (~Reference.tsx:64-77; Moon/Sun icon, amber pill).
+   - The Setup badge and the "N Jinx/Jinxes" count badge (~:82-90).
+   - The expanded Jinxes list (~:134-150; pair name + rule).
+   - The team label as Reference renders it (the uppercase team text on the card) AND the team badge as STWizard NightRow renders it (~STWizard.tsx:113-115, shadcn Badge with teamBadge(char.team)). These two differ, so the shared TeamBadge must expose variants that reproduce BOTH exactly.
+   If you judge the visual risk is lower split across two tasks, say so and propose the split. Then WAIT for approval.
+B. Create shared primitives (suggest client/src/components/character/):
+   - NightBadges (or FirstNightBadge / OtherNightsBadge): the amber Moon/Sun pills.
+   - JinxBadge (the orange count pill) and JinxList (the expanded pair+rule list).
+   - TeamBadge with named variants (e.g., "label" for Reference's uppercase text, "pill" for STWizard's shadcn Badge) so each call site stays byte-identical.
+   Keep Setup badge handling consistent (extract or leave inline, your call, but report it).
+C. Point the call sites at the primitives:
+   - Reference.tsx CharacterCard consumes NightBadges, JinxBadge, JinxList, TeamBadge(label variant).
+   - STWizard.tsx NightRow consumes TeamBadge(pill variant).
+
+DATA MODEL / No schema changes.
+ACCESS / New files under client/src/components/character/, client/src/pages/Reference.tsx, client/src/components/STWizard.tsx. Nothing else.
+
+CONSTRAINTS /
+- Byte-identical rendering. Reference cards (night badges, setup badge, jinx badge, expanded jinx list, team label) and STWizard NightRow (team pill) must look exactly the same as today.
+- Do NOT change layout, spacing, behavior, expand/collapse, or animation.
+- Do NOT alter the color or night-order helpers; consume them.
+- Do NOT silently fix adjacent issues, including the 2 known pre-existing TS errors (ScriptBuilderDialog.tsx, GameTracker.tsx). Report under Other observations only.
+- Dark gothic theme only.
+- Any new interactive element gets a data-testid; preserve existing data-testid values on NightRow.
+
+EXPECTED RESULT /
+Shared NightBadges, JinxBadge, JinxList, and a variant-based TeamBadge; Reference CharacterCard and STWizard NightRow consume them; every surface unchanged visually.
+
+VERIFICATION CHECKLIST /
+1. New primitive components exist with typed props and consume team-style / night-order helpers where relevant.
+2. Reference CharacterCard renders byte-identical: First Night / Other Nights badges, Setup badge, "N Jinxes" badge, expanded Jinxes list, team label.
+3. STWizard NightRow renders byte-identical: team pill (correct per-team color), name, ability, expand chevron, existing data-testid values intact.
+4. No inline duplicate of the extracted markup remains in Reference or STWizard.
+5. TeamBadge label and pill variants each match their original surface exactly.
+6. tsc compiles with no new type errors (the 2 known pre-existing errors stay out of scope).
+7. Load and eyeball: Reference (collapsed + expanded card) and the Storyteller Night Sheet.
+8. No file outside the listed set changed.
+
+OUT-OF-SCOPE FILE CHANGES /
+List every file changed. Flag any system file (.replit, .gitignore) touched as a side effect.
+
+ON COMPLETION, end with exactly:
+
+Task: [one line]
+Files changed: [list]
+Verified: [how: built, loaded page, ran test]
+Deferred / out of scope found: [any, or none]
+Pushed commit: [sha]
