@@ -1,7 +1,7 @@
 import { Layout } from "@/components/ui/Layout";
 import { useState, useMemo, useEffect, useRef } from "react";
 import { usePlayerGame, getBreakdown, isPlayerActive, canPlayerVote, canPlayerVoteOnExile, type GamePlayer, type Nomination, type PlayerVote, type GameScriptRef, type ExileVote, type PlayerStatus, type NominationResult } from "@/hooks/use-player-game";
-import { ALL_CHARACTERS, OFFICIAL_SCRIPTS } from "@/lib/game-data";
+import { ALL_CHARACTERS, OFFICIAL_SCRIPTS, getJinxesForCharacter } from "@/lib/game-data";
 import { useLocalScripts, type LocalScript } from "@/hooks/use-local-scripts";
 import { ScriptBuilderDialog } from "@/components/ScriptBuilderDialog";
 import { STWizard, getStoredSTSession } from "@/components/STWizard";
@@ -28,6 +28,10 @@ import { DndContext, closestCenter, KeyboardSensor, PointerSensor, TouchSensor, 
 import { SortableContext, sortableKeyboardCoordinates, useSortable, rectSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { teamBadge, teamInputAccent } from "@/lib/team-style";
+import { TeamBadge } from "@/components/character/TeamBadge";
+import { NightBadges } from "@/components/character/NightBadges";
+import { JinxBadge } from "@/components/character/JinxBadge";
+import { JinxList } from "@/components/character/JinxList";
 
 function GallowsIcon({ className }: { className?: string }) {
   return (
@@ -1092,17 +1096,27 @@ function PlayerDetailDrawer({
             <>
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-3">
-                  <span className={cn(
-                    "px-2 py-0.5 rounded text-xs uppercase tracking-wider",
-                    teamBadge(previewCharacter.team)
-                  )}>
-                    {previewCharacter.team}
-                  </span>
+                  <TeamBadge team={previewCharacter.team} variant="pill" />
                   <span className="text-amber-400 font-display">{previewCharacter.name}</span>
                 </DialogTitle>
               </DialogHeader>
               
               <div className="space-y-4 mt-4">
+                {/* Night order & jinx badges */}
+                {(() => {
+                  const previewJinxes = getJinxesForCharacter(previewCharacter.id);
+                  const hasBadges =
+                    previewCharacter.firstNightOrder !== null ||
+                    previewCharacter.otherNightOrder !== null ||
+                    previewJinxes.length > 0;
+                  return hasBadges ? (
+                    <div className="flex flex-wrap gap-2">
+                      <NightBadges char={previewCharacter} />
+                      <JinxBadge count={previewJinxes.length} />
+                    </div>
+                  ) : null;
+                })()}
+
                 {/* Ability */}
                 <div className="space-y-2">
                   <h4 className="text-xs uppercase tracking-wider text-muted-foreground font-bold">Ability</h4>
@@ -1131,6 +1145,9 @@ function PlayerDetailDrawer({
                     </ul>
                   </div>
                 )}
+
+                {/* Jinxes */}
+                <JinxList char={previewCharacter} jinxes={getJinxesForCharacter(previewCharacter.id)} />
 
                 {/* Action buttons */}
                 <div className="flex gap-2 pt-4 border-t border-border">
