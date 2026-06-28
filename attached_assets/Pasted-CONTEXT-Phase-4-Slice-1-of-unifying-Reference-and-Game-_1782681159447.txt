@@ -1,0 +1,51 @@
+CONTEXT /
+Phase 4, Slice 1 of unifying Reference and Game Mode. Extract Reference's script-resolution logic (which characters belong to a given script) into one shared pure function, so the future ScriptView and the Game flow resolve scripts the same way Reference does. This is a behavior-preserving extraction: Reference's character SET and ORDER must stay byte-identical across every script and every sort mode. Build on existing helpers; the sort comparators already live in night-order.ts (nightOrderValue, compareEndTeams, compareSheetOrder).
+
+TASK /
+A. AUDIT-FIRST GATE (do this and report before changing anything). Inspect and report:
+   - Reference's current resolution paths (~Reference.tsx:279-310): "all"/no-filter, official core (tb/bmr/snv) via OFFICIAL_SCRIPTS[].characters, community (twh/sot/la) via the same id list, custom (custom:<id> via characterIds), the edition fallback (char.edition === scriptFilter), travelers via TRAVELLER_SCRIPT_MAP, and always-include fabled.
+   - The exact resolveScriptCharacters signature you will use. The recommended shape is resolveScriptCharacters(script: LocalScript | null, opts?: { includeTravellers?: boolean; includeFabled?: boolean }): Character[], where null = all characters, and sort is left to the caller. Confirm this signature can reproduce ALL the paths above byte-identically (including the edition fallback and the all/null case), or propose the minimal signature that can. Report how each Reference path maps into it, then WAIT for approval.
+B. Create client/src/lib/script-resolve.ts exporting the pure resolver:
+   - Resolves official/community/custom via the script's characterIds (id-list, NOT edition matching), matching Reference today.
+   - Layers in TRAVELLER_SCRIPT_MAP travelers for core scripts when includeTravellers is on.
+   - Always appends fabled when includeFabled is on.
+   - Preserves the edition fallback path so behavior is identical (do not drop it in this slice; flag it for a later cleanup if you find it unreachable).
+   - Pure function: takes the already-resolved LocalScript (or characterIds), does NOT re-implement db fetching.
+C. Adopt it in Reference.tsx: replace the inline resolution with resolveScriptCharacters(...), passing includeTravellers: true and includeFabled: true so the resolved set is byte-identical. Leave Reference's sorting (alphabetical / night / sheet) exactly as it is, using the existing night-order helpers.
+
+DATA MODEL / No schema changes.
+ACCESS / client/src/lib/script-resolve.ts (new), client/src/pages/Reference.tsx. Nothing else.
+
+CONSTRAINTS /
+- Byte-identical: for every script (tb, bmr, snv, twh, sot, la, a custom script, and "all") and every sort mode (alphabetical, night, sheet), Reference must show the exact same characters in the exact same order as before.
+- Pure function only; no db fetching inside the resolver.
+- Do NOT change any UI, layout, sort logic, or behavior.
+- Do NOT touch Game.tsx, STWizard, ScriptBuilderDialog, or the primitives in this slice.
+- Do NOT silently fix adjacent issues, including the 2 known pre-existing TS errors. Report under Other observations only.
+- Dark gothic theme only.
+
+EXPECTED RESULT /
+One shared resolveScriptCharacters in script-resolve.ts; Reference consumes it; Reference's character set and order are unchanged everywhere.
+
+VERIFICATION CHECKLIST /
+1. script-resolve.ts exports resolveScriptCharacters with the agreed signature and traveller/fabled flags.
+2. Reference no longer resolves scripts inline; it calls the shared function.
+3. For tb, bmr, snv: the character roster shown is identical to before (count and membership), travelers included, fabled appended.
+4. For a community script (twh) and a custom script: roster identical to before (resolved by id list).
+5. "All characters" view identical to before.
+6. All three sort modes (alphabetical, night, sheet) produce identical ordering, with travelers and fabled at the end via compareEndTeams.
+7. The edition fallback path is preserved (not dropped).
+8. tsc compiles with no new type errors (the 2 known pre-existing errors stay out of scope).
+9. No new interactive elements, so no new data-testid.
+10. No file outside the 2 listed changed.
+
+OUT-OF-SCOPE FILE CHANGES /
+List every file changed. Expected: the 2 listed only. Flag any system file (.replit, .gitignore) touched as a side effect.
+
+ON COMPLETION, end with exactly:
+
+Task: [one line]
+Files changed: [list]
+Verified: [how: built, loaded page, ran test]
+Deferred / out of scope found: [any, or none]
+Pushed commit: [sha]
