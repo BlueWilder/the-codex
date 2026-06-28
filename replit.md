@@ -8,6 +8,8 @@ The Codex is a character reference application for Blood on the Clocktower, a so
 
 Preferred communication style: Simple, everyday language.
 
+No em dashes in user-facing copy. Use commas, periods, or parentheses.
+
 ## System Architecture
 
 ### Frontend Architecture
@@ -18,7 +20,12 @@ Preferred communication style: Simple, everyday language.
 - **UI Components**: shadcn/ui component library with Radix UI primitives
 - **Animations**: Framer Motion for page transitions and UI interactions
 - **Drag & Drop**: @dnd-kit for sortable lists and token manipulation
-- **Typography**: Custom fonts (Cinzel Decorative for display, Crimson Text for body, Homemade Apple for handwriting)
+- **Typography**: Fraunces (display and all headings, replaced Cinzel Decorative app-wide 2026-06-28), Crimson Text (serif body), Plus Jakarta Sans (UI labels, counts, pills), Homemade Apple (handwriting accent). Font CSS variables in index.css: --font-display (Fraunces), --font-serif (Crimson Text), --font-sans (Plus Jakarta Sans), --font-mono (system mono), --font-handwriting (Homemade Apple).
+
+### Design System
+- **Theme**: dark gothic only. There is NO light mode. Do not add light-mode styling or apply any external brand palette. The Codex has its own identity: charcoal background, parchment text, antique gold and amber accents, crimson primary.
+- **Team color system**: driven by `getTeamColor` in `client/src/pages/Reference.tsx`. Each team tints the card text, border, and background. Values: Townsfolk `text-blue-400`, Outsider `text-blue-200`, Minion `text-red-400`, Demon `text-red-600`, Traveler `text-slate-300`, Fabled `text-[#efc344]` (gold). Preserve this per-team tinting on any card surface.
+- **Storyteller accent**: the "How to Run" host instructions use a fixed amethyst (`#c79fe6`) regardless of team, inside a panel with border `#3d2f57`, a Wand2 icon, and a small "Storyteller" tag. Applied in `Reference.tsx` and `STWizard.tsx`. Keep host-facing content visually distinct from player-facing content.
 
 ### Backend Architecture
 - **Runtime**: Node.js with Express
