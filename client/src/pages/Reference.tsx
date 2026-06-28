@@ -1,7 +1,7 @@
 import { Layout } from "@/components/ui/Layout";
-import { ALL_CHARACTERS, OFFICIAL_SCRIPTS, TRAVELLER_SCRIPT_MAP, getJinxesForCharacter, type Character, type Jinx } from "@/lib/game-data";
+import { ALL_CHARACTERS, OFFICIAL_SCRIPTS, TRAVELLER_SCRIPT_MAP, getJinxesForCharacter, type Character } from "@/lib/game-data";
 import { useState, useEffect } from "react";
-import { Search, Moon, Sun, Settings, AlertTriangle, ChevronDown, Quote, Lightbulb, Sword, Eye, Check, Wand2, Plus, Minus, Trash2, Pencil, ArrowDownAZ, LayoutList, Clock } from "lucide-react";
+import { Search, Moon, Settings, ChevronDown, Quote, Lightbulb, Sword, Eye, Check, Wand2, Plus, Minus, Trash2, Pencil, ArrowDownAZ, LayoutList, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -13,6 +13,10 @@ import { useLocalScripts, type LocalScript } from "@/hooks/use-local-scripts";
 import { ScriptBuilderDialog } from "@/components/ScriptBuilderDialog";
 import { teamCard } from "@/lib/team-style";
 import { nightOrderValue, compareEndTeams, compareSheetOrder } from "@/lib/night-order";
+import { NightBadges } from "@/components/character/NightBadges";
+import { JinxBadge } from "@/components/character/JinxBadge";
+import { JinxList } from "@/components/character/JinxList";
+import { TeamBadge } from "@/components/character/TeamBadge";
 
 function CharacterCard({ char, isExpanded, onToggle }: { 
   char: Character; 
@@ -22,12 +26,6 @@ function CharacterCard({ char, isExpanded, onToggle }: {
   const jinxes = getJinxesForCharacter(char.id);
   
   const getTeamColor = (team: string) => teamCard(team);
-
-  const getJinxedCharacterName = (jinx: Jinx) => {
-    const otherId = jinx.character1 === char.id ? jinx.character2 : jinx.character1;
-    const otherChar = ALL_CHARACTERS.find(c => c.id === otherId);
-    return otherChar?.name || otherId;
-  };
 
   return (
     <motion.div 
@@ -48,7 +46,7 @@ function CharacterCard({ char, isExpanded, onToggle }: {
           </a>
         </h3>
         <div className="flex items-center gap-2">
-          <span className="text-[10px] uppercase tracking-wider opacity-60 font-bold">{char.team}</span>
+          <TeamBadge team={char.team} variant="label" />
           <motion.div
             animate={{ rotate: isExpanded ? 180 : 0 }}
             transition={{ duration: 0.2 }}
@@ -61,26 +59,13 @@ function CharacterCard({ char, isExpanded, onToggle }: {
       <p className="text-base font-serif leading-[1.58] opacity-90 pl-3 border-l-2 border-amber-500/40">{char.ability}</p>
       
       <div className="mt-3 flex flex-wrap gap-2">
-        {char.firstNightOrder !== null && (
-          <span className="text-[10px] bg-black/40 px-2 py-0.5 rounded text-amber-200/70 border border-amber-900/20 flex items-center gap-1">
-            <Moon className="w-3 h-3" /> First Night
-          </span>
-        )}
-        {char.otherNightOrder !== null && (
-          <span className="text-[10px] bg-black/40 px-2 py-0.5 rounded text-amber-200/70 border border-amber-900/20 flex items-center gap-1">
-            <Sun className="w-3 h-3" /> Other Nights
-          </span>
-        )}
+        <NightBadges char={char} />
         {char.setup && (
           <span className="text-[10px] bg-purple-900/40 px-2 py-0.5 rounded text-purple-300 border border-purple-700/30 flex items-center gap-1">
             <Settings className="w-3 h-3" /> Setup
           </span>
         )}
-        {jinxes.length > 0 && (
-          <span className="text-[10px] bg-orange-900/40 px-2 py-0.5 rounded text-orange-300 border border-orange-700/30 flex items-center gap-1">
-            <AlertTriangle className="w-3 h-3" /> {jinxes.length} Jinx{jinxes.length > 1 ? 'es' : ''}
-          </span>
-        )}
+        <JinxBadge count={jinxes.length} />
       </div>
 
       <AnimatePresence>
@@ -131,24 +116,7 @@ function CharacterCard({ char, isExpanded, onToggle }: {
                 </div>
               )}
 
-              {jinxes.length > 0 && (
-                <div className="space-y-2">
-                  <h4 className="text-sm md:text-xs font-fraunces font-semibold uppercase tracking-wider opacity-80 flex items-center gap-1.5">
-                    <AlertTriangle className="w-4 h-4 md:w-3 md:h-3 text-orange-400" /> Jinxes
-                  </h4>
-                  <div className="space-y-2">
-                    {jinxes.map((jinx, idx) => (
-                      <div 
-                        key={idx}
-                        className="text-sm md:text-xs bg-orange-950/30 border border-orange-900/30 rounded-lg p-3 md:p-2"
-                      >
-                        <span className="font-bold text-orange-300">{getJinxedCharacterName(jinx)}:</span>
-                        <span className="ml-1 opacity-90">{jinx.reason}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+              <JinxList char={char} jinxes={jinxes} />
 
               {char.setup && (
                 <div className="space-y-2">

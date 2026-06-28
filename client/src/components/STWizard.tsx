@@ -11,6 +11,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ChevronLeft, ChevronRight, Scroll, BookOpen, Users, Lock, Shuffle, Trash2, Check, Plus, Pencil, FileText, Moon, Sun, ChevronDown, Lightbulb, Power, XCircle, Wand2 } from "lucide-react";
 import { teamBadge } from "@/lib/team-style";
 import { getFirstNightChars, getOtherNightChars } from "@/lib/night-order";
+import { TeamBadge } from "@/components/character/TeamBadge";
 
 const TEAM_ORDER = ['townsfolk', 'outsider', 'minion', 'demon'] as const;
 
@@ -106,9 +107,7 @@ function NightRow({ char, index, prefix, isExpanded, onToggle, isInBag, isActive
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
               <span className={cn("font-medium text-sm", !isActive && "line-through")}>{char.name}</span>
-              <Badge variant="secondary" className={cn("text-[10px] px-1.5 py-0", teamBadge(char.team))}>
-                {char.team}
-              </Badge>
+              <TeamBadge team={char.team} variant="pill" />
               {isInBag && isActive && (
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" title="In bag" />
               )}
