@@ -35,15 +35,16 @@ export function Navigation() {
               <Link
                 key={item.href}
                 href={item.href}
+                aria-label={item.label}
                 className={cn(
-                  "flex items-center space-x-1 md:space-x-2 px-3 py-2 rounded-lg transition-all duration-300",
+                  "flex items-center md:space-x-2 px-2.5 md:px-3 py-2 rounded-lg transition-all duration-300",
                   location === item.href
                     ? "text-amber-500 bg-amber-950/30 shadow-[0_0_10px_rgba(245,158,11,0.1)]"
                     : "text-muted-foreground hover:text-amber-200 hover:bg-white/5"
                 )}
               >
                 <item.icon className="w-5 h-5 md:w-6 md:h-6" />
-                <span className="text-xs md:text-sm font-medium">{item.label}</span>
+                <span className="hidden md:inline text-sm font-medium">{item.label}</span>
               </Link>
             ))}
 
