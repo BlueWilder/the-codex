@@ -1925,12 +1925,10 @@ function AddTravelerDialog({
   open,
   onClose,
   onAddTraveler,
-  scriptCharacterIds,
 }: {
   open: boolean;
   onClose: () => void;
   onAddTraveler: (name: string, initialClaims?: string[]) => void;
-  scriptCharacterIds?: string[];
 }) {
   const [name, setName] = useState("");
   const [selectedClaim, setSelectedClaim] = useState<string | null>(null);
@@ -3272,7 +3270,6 @@ function GameTrackerView({
         open={showAddTravelerDialog}
         onClose={() => setShowAddTravelerDialog(false)}
         onAddTraveler={onAddTraveler}
-        scriptCharacterIds={scriptCharacterIds}
       />
 
       <AddPlayerDialog
