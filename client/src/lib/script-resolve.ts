@@ -43,16 +43,18 @@ export function resolveScriptCharacters(
 }
 
 /**
- * Reference-facing resolver that reproduces the page's full filter branching
- * from a raw `scriptFilter` string, including the legacy edition fallback.
- * Prefer `resolveScriptCharacters` for new code.
+ * Reference-facing resolver that maps a raw `scriptFilter` string onto
+ * `resolveScriptCharacters`. Prefer `resolveScriptCharacters` for new code.
  *
  * Branches, mirroring Reference exactly:
  * - an active custom script -> resolve by its characterIds (+ fabled).
- * - "all" -> every character.
+ * - "all" (or any unrecognized filter) -> every character.
  * - an id found in OFFICIAL_SCRIPTS -> resolve by its character list (+ traveler
  *   map + fabled).
- * - otherwise -> the legacy edition fallback below.
+ *
+ * Note: every SCRIPTS chip id exists in OFFICIAL_SCRIPTS and custom scripts use
+ * the `custom:` prefix (resolved via activeCustomScript), so the only filter
+ * that reaches the "all" default is the literal "all".
  */
 export function resolveCharactersForScriptFilter(
   scriptFilter: string,
@@ -61,10 +63,6 @@ export function resolveCharactersForScriptFilter(
 ): Character[] {
   if (activeCustomScript) {
     return resolveScriptCharacters(activeCustomScript, opts);
-  }
-
-  if (scriptFilter === "all") {
-    return [...ALL_CHARACTERS];
   }
 
   const officialScript = OFFICIAL_SCRIPTS.find(s => s.id === scriptFilter);
@@ -81,19 +79,5 @@ export function resolveCharactersForScriptFilter(
     );
   }
 
-  // Legacy edition fallback. Unreachable from the current Reference UI (every
-  // SCRIPTS chip id exists in OFFICIAL_SCRIPTS, and custom scripts use the
-  // `custom:` prefix resolved via activeCustomScript). Preserved for
-  // byte-identical behavior; candidate for removal in a later cleanup slice.
-  const { includeTravellers = false, includeFabled = false } = opts;
-  const travellers = includeTravellers ? TRAVELLER_SCRIPT_MAP[scriptFilter] : undefined;
-
-  return ALL_CHARACTERS.filter(c => {
-    if (c.team === "traveler") {
-      return travellers ? travellers.includes(c.id) : false;
-    }
-    if (c.edition === scriptFilter) return true;
-    if (includeFabled && c.team === "fabled") return true;
-    return false;
-  });
+  return resolveScriptCharacters(null);
 }

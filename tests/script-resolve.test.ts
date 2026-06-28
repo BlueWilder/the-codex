@@ -85,11 +85,11 @@ describe("resolveCharactersForScriptFilter", () => {
     for (const id of fabledIds) expect(ids.has(id)).toBe(true);
   });
 
-  it("legacy edition fallback: unknown filter matches only fabled (and edition/traveler-map)", () => {
-    const ids = new Set(
-      resolveCharactersForScriptFilter("custom:missing", null, { includeTravellers: true, includeFabled: true }).map(c => c.id),
-    );
-    for (const id of fabledIds) expect(ids.has(id)).toBe(true);
-    expect(ids.has("washerwoman")).toBe(false);
+  it("falls back to all characters for an unrecognized filter with no custom script", () => {
+    const ids = resolveCharactersForScriptFilter("custom:missing", null, {
+      includeTravellers: true,
+      includeFabled: true,
+    }).map(c => c.id);
+    expect(ids).toEqual(ALL_CHARACTERS.map(c => c.id));
   });
 });
