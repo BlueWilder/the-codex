@@ -1,0 +1,49 @@
+CONTEXT /
+Phase 4 follow-up fix. A prior task wired the Game claim picker to the shared resolver with includeTravellers: true and includeFabled: true (Game.tsx ~:2682, the scriptCharacterIds memo that feeds CharacterPicker). That made Fabled and every individual Traveller role claimable. Fabled are storyteller-side and cannot be claimed by a player, and individual travellers should collapse into a single generic "Traveller" entry. Reference and the Storyteller bag builder are correct as-is and must NOT change.
+
+Desired claim-picker behavior: show the selected script's core characters (townsfolk, outsider, minion, demon) plus ONE generic "Traveller" entry. No Fabled. No individual traveller roles.
+
+TASK /
+A. AUDIT-FIRST GATE (do this and report before changing anything). Inspect and report:
+   - Confirm scriptCharacterIds (~Game.tsx:2682) feeds ONLY the claim picker (CharacterPicker, filter at ~:536), or also any character preview/reference view. If it feeds a preview that should still show everything, say so and scope the change to the claim path only.
+   - How claims are stored and displayed: player.claims is a list of character ids (display at ~:688 and ~:888 map ids to ALL_CHARACTERS).
+   - Propose the cleanest way to add a single generic "Traveller" option to the picker and to record/display a generic traveller claim, without breaking existing stored claims or the ids-based model. Then WAIT for approval.
+B. Change the claim-picker character resolution to core-only: resolveScriptCharacters(resolvedScript, { includeTravellers: false, includeFabled: false }).
+C. Add a single generic "Traveller" entry to the claim picker (e.g., a synthetic option), so a player can be recorded as a Traveller without choosing a specific traveller role. Display a recorded Traveller claim cleanly (it should render with the traveler team color via the shared TeamBadge).
+
+DATA MODEL / No schema migration. If a sentinel value is needed for the generic Traveller claim, choose one that does not collide with real character ids and is backward-compatible with existing saved claims.
+ACCESS / client/src/pages/Game.tsx (claim picker and claim display). Touch the resolver only if a shared helper is genuinely needed; prefer keeping the change in Game.
+
+CONSTRAINTS /
+- Do NOT change Reference or the Storyteller bag builder resolution. Only the Game claim picker.
+- Do NOT break existing saved claims (character-id claims must still display).
+- Do NOT include Fabled or individual traveller roles in the claim picker.
+- Do NOT silently fix adjacent issues, including the 2 known pre-existing TS errors. Report under Other observations only.
+- Dark gothic theme only.
+- Any new interactive element gets a data-testid.
+
+EXPECTED RESULT /
+Claim picker shows core characters plus one "Traveller" entry; no Fabled, no individual travellers; recording and displaying a Traveller claim works; existing claims unaffected.
+
+VERIFICATION CHECKLIST /
+1. With a script selected, the claim picker lists only core characters plus a single "Traveller" entry.
+2. No Fabled appear in the claim picker.
+3. No individual traveller roles (Apprentice, Bishop, etc.) appear; just the one "Traveller".
+4. Selecting "Traveller" records a claim that displays correctly (traveler team color via shared TeamBadge).
+5. Existing character-id claims still display correctly.
+6. Reference still shows fabled and individual travellers (unchanged).
+7. Storyteller bag builder roster unchanged.
+8. tsc compiles, no new errors (2 known pre-existing errors out of scope).
+9. New interactive element has a data-testid.
+10. No file outside scope changed.
+
+OUT-OF-SCOPE FILE CHANGES /
+List every file changed. Flag any system file (.replit, .gitignore) touched as a side effect.
+
+ON COMPLETION, end with exactly:
+
+Task: [one line]
+Files changed: [list]
+Verified: [how: built, loaded page, ran test]
+Deferred / out of scope found: [any, or none]
+Pushed commit: [sha]
