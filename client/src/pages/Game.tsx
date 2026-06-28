@@ -607,7 +607,9 @@ function CharacterPicker({
                       data-testid={`checkbox-character-${char.id}`}
                     />
                     <span className="font-medium">{char.name}</span>
-                    <span className="text-xs opacity-70 capitalize ml-auto">{char.team}</span>
+                    <span className="ml-auto">
+                      <TeamBadge team={char.team} variant="label" />
+                    </span>
                   </button>
                 );
               })}
