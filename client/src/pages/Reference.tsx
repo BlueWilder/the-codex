@@ -1,6 +1,6 @@
 import { Layout } from "@/components/ui/Layout";
-import { ALL_CHARACTERS, OFFICIAL_SCRIPTS, TRAVELLER_SCRIPT_MAP, getJinxesForCharacter, type Character } from "@/lib/game-data";
-import { useState, useEffect } from "react";
+import { ALL_CHARACTERS, OFFICIAL_SCRIPTS, getJinxesForCharacter, type Character } from "@/lib/game-data";
+import { useState, useEffect, useMemo } from "react";
 import { Search, Moon, Settings, ChevronDown, Quote, Lightbulb, Sword, Eye, Check, Wand2, Plus, Minus, Trash2, Pencil, ArrowDownAZ, LayoutList, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
@@ -13,6 +13,7 @@ import { useLocalScripts, type LocalScript } from "@/hooks/use-local-scripts";
 import { ScriptBuilderDialog } from "@/components/ScriptBuilderDialog";
 import { teamCard } from "@/lib/team-style";
 import { nightOrderValue, compareEndTeams, compareSheetOrder } from "@/lib/night-order";
+import { resolveCharactersForScriptFilter } from "@/lib/script-resolve";
 import { NightBadges } from "@/components/character/NightBadges";
 import { JinxBadge } from "@/components/character/JinxBadge";
 import { JinxList } from "@/components/character/JinxList";
@@ -276,36 +277,25 @@ export default function Reference() {
     ? customScripts.find(s => s.id === scriptFilter.replace('custom:', ''))
     : null;
 
+  const scriptCharacterIds = useMemo(
+    () =>
+      new Set(
+        resolveCharactersForScriptFilter(scriptFilter, activeCustomScript, {
+          includeTravellers: true,
+          includeFabled: true,
+        }).map(c => c.id),
+      ),
+    [scriptFilter, activeCustomScript],
+  );
+
   const filtered = ALL_CHARACTERS.filter(char => {
     const matchesSearch = char.name.toLowerCase().includes(search.toLowerCase()) || 
                           char.ability.toLowerCase().includes(search.toLowerCase());
     const isFabled = char.team === "fabled";
     const hideFabledByDefault = isFabled && teamFilter === "all" && scriptFilter !== "all";
     const matchesTeam = (teamFilter === "all" && !hideFabledByDefault) || char.team === teamFilter;
-    const isTraveler = char.team === "traveler";
-    let matchesScript = true;
-    if (activeCustomScript) {
-      matchesScript = activeCustomScript.characterIds.includes(char.id) || isFabled;
-    } else if (scriptFilter !== "all") {
-      const officialScript = OFFICIAL_SCRIPTS.find(s => s.id === scriptFilter);
-      if (officialScript) {
-        if (isTraveler) {
-          const inCharacterList = officialScript.characters.includes(char.id);
-          const scriptTravellers = TRAVELLER_SCRIPT_MAP[officialScript.id];
-          matchesScript = inCharacterList || (scriptTravellers ? scriptTravellers.includes(char.id) : false);
-        } else {
-          matchesScript = officialScript.characters.includes(char.id) || isFabled;
-        }
-      } else {
-        if (isTraveler) {
-          const scriptTravellers = TRAVELLER_SCRIPT_MAP[scriptFilter];
-          matchesScript = scriptTravellers ? scriptTravellers.includes(char.id) : false;
-        } else {
-          matchesScript = char.edition === scriptFilter || isFabled;
-        }
-      }
-    }
-    
+    const matchesScript = scriptCharacterIds.has(char.id);
+
     return matchesSearch && matchesTeam && matchesScript;
   }).sort((a, b) => {
     const endComparison = compareEndTeams(a, b);
