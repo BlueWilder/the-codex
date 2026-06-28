@@ -39,6 +39,7 @@ function CharacterCard({ char, isExpanded, onToggle }: {
 
   return (
     <motion.div 
+      id={char.id}
       layout
       onClick={onToggle}
       className={cn(
@@ -49,7 +50,11 @@ function CharacterCard({ char, isExpanded, onToggle }: {
       data-testid={`card-character-${char.id}`}
     >
       <div className="flex items-start justify-between mb-2">
-        <h3 className="font-display text-lg font-bold">{char.name}</h3>
+        <h3 className="font-display text-lg font-bold">
+          <a href={`#${char.id}`} onClick={(e) => e.stopPropagation()} className="hover:underline decoration-current/40">
+            {char.name}
+          </a>
+        </h3>
         <div className="flex items-center gap-2">
           <span className="text-[10px] uppercase tracking-wider opacity-60 font-bold">{char.team}</span>
           <motion.div

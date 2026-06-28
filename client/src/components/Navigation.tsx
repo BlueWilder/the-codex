@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { BookOpen, Gamepad2, LogIn, LogOut, User } from "lucide-react";
+import { BookOpen, Gamepad2, HelpCircle, LogIn, LogOut, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import logoImage from "@assets/logo.png";
 import { useAuth } from "@/hooks/use-auth";
@@ -16,6 +16,7 @@ export function Navigation() {
   const { user, isLoading } = useAuth();
 
   const navItems = [
+    { href: "/introduction", icon: HelpCircle, label: "Guide" },
     { href: "/reference", icon: BookOpen, label: "Reference" },
     { href: "/game", icon: Gamepad2, label: "Game" },
   ];

@@ -13,6 +13,7 @@ import {
   Eye,
   Target,
   ArrowLeft,
+  BookOpen,
   Gamepad2,
   Play,
   ChevronDown
@@ -399,6 +400,27 @@ export default function Introduction() {
         </motion.section>
 
         <VideoSection />
+
+        <motion.section
+          {...fadeInUp}
+          transition={{ delay: 0.9 }}
+          className="mt-12 grid gap-4 sm:grid-cols-2"
+        >
+          <Link href="/reference" data-testid="link-cta-reference">
+            <div className="group bg-card hover:bg-card/80 border border-amber-900/30 hover:border-amber-600/50 p-6 rounded-xl transition-all duration-300 shadow-lg hover:shadow-amber-900/20 group-hover:-translate-y-1 text-center h-full">
+              <BookOpen className="w-8 h-8 text-blue-400 mx-auto mb-3" />
+              <h2 className="text-lg font-bold text-amber-400 font-display mb-1">Browse the Character Reference</h2>
+              <p className="text-sm text-muted-foreground">Abilities, tips, strategies, and jinx interactions for every character across all official scripts.</p>
+            </div>
+          </Link>
+          <Link href="/game" data-testid="link-cta-game">
+            <div className="group bg-card hover:bg-card/80 border border-amber-900/30 hover:border-amber-600/50 p-6 rounded-xl transition-all duration-300 shadow-lg hover:shadow-amber-900/20 group-hover:-translate-y-1 text-center h-full">
+              <Gamepad2 className="w-8 h-8 text-purple-400 mx-auto mb-3" />
+              <h2 className="text-lg font-bold text-amber-400 font-display mb-1">Open the Game Tracker</h2>
+              <p className="text-sm text-muted-foreground">Track players, record claims and notes, and manage nominations during your game.</p>
+            </div>
+          </Link>
+        </motion.section>
       </div>
     </Layout>
   );
