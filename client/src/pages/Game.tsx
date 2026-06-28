@@ -501,6 +501,22 @@ function SetupWizard({ onStart }: { onStart: (count: number, names: string[], sc
   );
 }
 
+const GENERIC_TRAVELLER_ID = 'generic-traveller';
+
+interface ClaimDescriptor {
+  id: string;
+  name: string;
+  team: string;
+}
+
+function resolveClaimDescriptor(id: string): ClaimDescriptor | null {
+  if (id === GENERIC_TRAVELLER_ID) {
+    return { id: GENERIC_TRAVELLER_ID, name: 'Traveller', team: 'traveler' };
+  }
+  const char = ALL_CHARACTERS.find(c => c.id === id);
+  return char ? { id: char.id, name: char.name, team: char.team } : null;
+}
+
 function CharacterPicker({ 
   open, 
   onClose, 
@@ -541,6 +557,22 @@ function CharacterPicker({
       return a.name.localeCompare(b.name);
     });
   }, [search, excludeIds, scriptCharacterIds]);
+
+  const pickerOptions = useMemo<ClaimDescriptor[]>(() => {
+    const opts: ClaimDescriptor[] = filteredCharacters.map(c => ({
+      id: c.id,
+      name: c.name,
+      team: c.team,
+    }));
+    const term = search.toLowerCase();
+    const travellerAlreadyClaimed = excludeIds.includes(GENERIC_TRAVELLER_ID);
+    const matchesSearch =
+      !term || "traveller".includes(term) || "traveler".includes(term);
+    if (!travellerAlreadyClaimed && matchesSearch) {
+      opts.push({ id: GENERIC_TRAVELLER_ID, name: "Traveller", team: "traveler" });
+    }
+    return opts;
+  }, [filteredCharacters, search, excludeIds]);
 
   const toggleCharacter = (charId: string) => {
     setSelected(prev => {
@@ -588,7 +620,7 @@ function CharacterPicker({
           </div>
           <div className="flex-1 overflow-y-auto -mx-2 px-2">
             <div className="space-y-1 pb-4">
-              {filteredCharacters.map(char => {
+              {pickerOptions.map(char => {
                 const isSelected = selected.has(char.id);
                 return (
                   <button
@@ -614,7 +646,7 @@ function CharacterPicker({
                   </button>
                 );
               })}
-              {filteredCharacters.length === 0 && (
+              {pickerOptions.length === 0 && (
                 <p className="text-center text-muted-foreground py-8">No characters found</p>
               )}
             </div>
@@ -685,7 +717,7 @@ function PlayerDetailDrawer({
 
   if (!player) return null;
 
-  const claimedCharacters = player.claims.map(id => ALL_CHARACTERS.find(c => c.id === id)).filter(Boolean);
+  const claimedCharacters = player.claims.map(id => resolveClaimDescriptor(id)).filter(Boolean);
   
   const playerNominations = nominations.filter(n => 
     n.nomineeId === player.id || n.nominatorId === player.id || (n.votes && n.votes.some(v => v.playerId === player.id))
@@ -889,14 +921,18 @@ function PlayerDetailDrawer({
                       <Badge
                         key={char.id}
                         className={cn(
-                          "cursor-pointer gap-1.5 text-base",
+                          "gap-1.5 text-base",
+                          char.id !== GENERIC_TRAVELLER_ID && "cursor-pointer",
                           teamBadge(char.team)
                         )}
-                        onClick={() => setPreviewCharacter(char)}
+                        onClick={char.id === GENERIC_TRAVELLER_ID ? undefined : () => {
+                          const full = ALL_CHARACTERS.find(c => c.id === char.id);
+                          if (full) setPreviewCharacter(full);
+                        }}
                         data-testid={`badge-claim-${char.id}`}
                       >
                         {char.name}
-                        <Info className="w-3.5 h-3.5 opacity-60" />
+                        {char.id !== GENERIC_TRAVELLER_ID && <Info className="w-3.5 h-3.5 opacity-60" />}
                       </Badge>
                     ))}
                   </div>
@@ -1219,7 +1255,7 @@ function SortablePlayerCard({
       : transition || 'transform 200ms cubic-bezier(0.22, 1, 0.36, 1)',
   };
 
-  const claimedChars = player.claims.map(id => ALL_CHARACTERS.find(c => c.id === id)).filter(Boolean);
+  const claimedChars = player.claims.map(id => resolveClaimDescriptor(id)).filter(Boolean);
   const hasNotes = player.notes.trim().length > 0;
   
   const nominationsReceived = game.nominations.filter(n => n.nomineeId === player.id).length;
@@ -2156,9 +2192,18 @@ function ExileDialog({
                   {player.claims.length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-1">
                       {player.claims.map(claimId => {
-                        const char = ALL_CHARACTERS.find(c => c.id === claimId);
+                        const char = resolveClaimDescriptor(claimId);
                         return char && (
-                          <Badge key={claimId} variant="secondary" className="text-xs bg-purple-900/40 text-purple-300 border-purple-700">
+                          <Badge
+                            key={claimId}
+                            variant="secondary"
+                            className={cn(
+                              "text-xs",
+                              char.id === GENERIC_TRAVELLER_ID
+                                ? teamBadge(char.team)
+                                : "bg-purple-900/40 text-purple-300 border-purple-700"
+                            )}
+                          >
                             {char.name}
                           </Badge>
                         );
@@ -2256,7 +2301,7 @@ function CircleNodeContent({
   nameOutside?: boolean;
 }) {
   const firstClaim = player.claims[0];
-  const claimChar = firstClaim ? ALL_CHARACTERS.find(c => c.id === firstClaim) : null;
+  const claimChar = firstClaim ? resolveClaimDescriptor(firstClaim) : null;
   const isActive = player.status === 'alive';
   const isDead = player.status === 'dead';
 
@@ -2683,8 +2728,8 @@ function GameTrackerView({
     () =>
       resolvedScript
         ? resolveScriptCharacters(resolvedScript, {
-            includeTravellers: true,
-            includeFabled: true,
+            includeTravellers: false,
+            includeFabled: false,
           }).map(c => c.id)
         : undefined,
     // eslint-disable-next-line react-hooks/exhaustive-deps
