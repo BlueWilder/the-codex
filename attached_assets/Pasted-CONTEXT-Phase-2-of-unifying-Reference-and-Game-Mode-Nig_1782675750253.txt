@@ -1,0 +1,50 @@
+CONTEXT /
+Phase 2 of unifying Reference and Game Mode. Night-order logic is duplicated: STWizard builds two separate ordered lists (firstNightChars / otherNightChars), and Reference computes a combined night-order sort value inline. This task extracts pure shared helpers and points both at them. Behavior must be byte-identical, no ordering or visual change anywhere. This is pure logic, low risk.
+
+TASK /
+A. AUDIT-FIRST GATE (do this and report before changing anything). Inspect and report:
+   - STWizard's two-list construction (around STWizard.tsx:273-282): the exact filter predicate and sort comparator for firstNightChars and otherNightChars.
+   - Reference's combined night sort (around Reference.tsx:364-369): the exact expression (expected: firstNightOrder ?? otherNightOrder ?? 999) and confirm it sits inside a larger sort that ALSO does team grouping (end-teams), which must be preserved.
+   - The helper signatures you will expose and confirm each call site produces byte-identical output. Then WAIT for approval.
+B. Create shared pure helpers (suggest client/src/lib/night-order.ts):
+   - getFirstNightChars(chars): filter to firstNightOrder != null, sorted ascending by firstNightOrder. Match STWizard's exact predicate and comparator.
+   - getOtherNightChars(chars): same for otherNightOrder.
+   - nightOrderValue(char) or sortByNightOrder(chars): the combined key firstNightOrder ?? otherNightOrder ?? 999, matching Reference exactly.
+C. Point both files at the helpers:
+   - STWizard.tsx: replace the inline firstNightChars / otherNightChars construction (~:273-282) with getFirstNightChars / getOtherNightChars. The two-column Night Sheet must render in the identical order.
+   - Reference.tsx: replace ONLY the inline night-order value computation (~:364-369) with the shared helper. Preserve the surrounding sort exactly, including the team-grouping (end-teams) logic. Do NOT change how Reference groups or orders anything else.
+
+DATA MODEL / No schema changes.
+ACCESS / client/src/lib/night-order.ts (new), client/src/components/STWizard.tsx, client/src/pages/Reference.tsx. Nothing else.
+
+CONSTRAINTS /
+- Output must be byte-identical to today. Do NOT change ordering, the ?? 999 fallback, the null predicates, or Reference's team-grouping.
+- Do NOT alter any UI, layout, or component logic beyond swapping the inline computation for the helper call.
+- Do NOT silently fix adjacent issues (including the known pre-existing TS errors in ScriptBuilderDialog.tsx and GameTracker.tsx). Report them under Other observations only.
+- Dark gothic theme only. No light-mode styling.
+
+EXPECTED RESULT /
+One night-order helper module; STWizard and Reference both consume it; First Night and Other Nights orders, and Reference's sorted view, are unchanged.
+
+VERIFICATION CHECKLIST /
+1. night-order.ts exports the helpers with Character-typed signatures.
+2. STWizard firstNightChars / otherNightChars now call the helpers; no inline filter/sort remains for them.
+3. STWizard's two-column Night Sheet renders the identical order as before (spot-check Trouble Brewing: First Night and Other Nights sequences match).
+4. Reference's night-order value now comes from the helper; the ?? 999 fallback and != null predicate are preserved.
+5. Reference's team-grouping (end-teams) sort is intact; characters group and order exactly as before.
+6. Reference sorted-by-night view is unchanged (spot-check the same script before/after).
+7. tsc compiles with no new type errors (the 2 known pre-existing errors are out of scope, do not fix).
+8. No new interactive elements, so no new data-testid needed.
+9. Load Reference (sorted) and the Storyteller Night Sheet and eyeball order.
+10. No file outside the 3 listed changed.
+
+OUT-OF-SCOPE FILE CHANGES /
+List every file changed. Expected: the 3 listed only. Flag any system file (.replit, .gitignore) touched as a side effect.
+
+ON COMPLETION, end with exactly:
+
+Task: [one line]
+Files changed: [list]
+Verified: [how: built, loaded page, ran test]
+Deferred / out of scope found: [any, or none]
+Pushed commit: [sha]
