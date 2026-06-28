@@ -1,0 +1,30 @@
+CONTEXT /
+We want Reference and Game Mode to become two doors into one shared "Script View" of the same character data, instead of separate implementations. Before any build, we want your read-only assessment of the current code and the proposed approach. Plan mode, no code changes.
+
+Product decisions already made (for your context, not for you to build yet):
+- One unified script-centric flow. Game Mode entry becomes "Select a Script" (Base scripts / Saved custom scripts / Scan a photo), then shows the Script View, then player count, then the live tracker.
+- The old Storyteller Bag Builder wizard is being retired; the storyteller's real needs (night order + jinxes) are served by the Script View.
+- Script View = a script-scoped character list with a sort toggle (By Team, the written order, or By Night order), sticky on mobile. Able to show First Night and Other Nights together (two columns on desktop; stacked or per-card badges on mobile). Jinxes surfaced.
+
+What I (Brad's planning copilot) found in the repo, please CONFIRM or CORRECT each against the live code with exact paths and line numbers:
+1. Data is already shared: Reference.tsx, Game.tsx, and STWizard.tsx all import characters/scripts/jinxes from @/lib/game-data (ALL_CHARACTERS, OFFICIAL_SCRIPTS, getJinxesForCharacter) and from @/hooks/use-local-scripts.
+2. Views are NOT shared: CharacterCard is defined locally inside Reference.tsx (around lines 15 and 597) and used nowhere else.
+3. Team colors are duplicated in 4 places with inconsistent values: Reference.tsx getTeamColor (~lines 22-31; current scheme includes traveler slate-300, fabled #efc344 gold); Game.tsx TEAM_COLORS (~line 31; outsider teal, minion orange, traveler purple, fabled violet); STWizard.tsx TEAM_COLORS (~line 13); ScriptBuilderDialog.tsx TEAM_COLORS (~line 21; traveler amber, fabled violet). A recent team-color change only updated Reference, so the other three are stale and divergent.
+4. Night-order sorting exists in at least two places: STWizard.tsx computes firstNightChars / otherNightChars (~lines 273-282) with its own NightRow component; Reference.tsx renders firstNightOrder / otherNightOrder separately inside CharacterCard.
+5. Game.tsx (~3447 lines) already imports and embeds STWizard, ScriptBuilderDialog, and scanScriptFile.
+
+TASK / (read-only assessment, report findings only)
+A. Confirm or correct findings 1-5 with exact file paths and line numbers.
+B. Assess the proposed unification: one shared team-color source; CharacterCard lifted into a shared component; night-order sorting consolidated into one shared utility/component; a shared ScriptView that both Reference and Game render. Is this the right seam? Propose a better approach if you see one.
+C. Map how Game.tsx currently uses STWizard and ScriptBuilderDialog, and what retiring the Storyteller Bag Builder wizard would touch. Is the retirement safe, or does Game depend on the wizard for anything beyond bag-building?
+D. Identify risks: anything in Game.tsx, the use-player-game hook, or localStorage session persistence that a shared ScriptView refactor could break.
+E. Propose a phased plan, smallest safe slices first. My suggested first slice is "single team-color source + shared CharacterCard," since it fixes the color inconsistency and is low-risk. Give the file list per phase.
+
+DATA MODEL / No schema changes.
+ACCESS / Read-only. Do NOT modify any code.
+CONSTRAINTS /
+- Plan-mode investigation only. Do NOT write or change code, do NOT refactor anything.
+- Stay within the question. If you spot unrelated issues, list them under "Other observations," do not act on them.
+
+EXPECTED RESULT /
+Report your findings in this plan-mode response for Brad to paste back to his planning copilot. Cover A through E, specific with file paths and line numbers. End with your recommended first slice and any open questions you need answered before a build prompt is written. Do NOT write findings to a file.
