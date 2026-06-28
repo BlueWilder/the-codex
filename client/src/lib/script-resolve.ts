@@ -43,6 +43,19 @@ export function resolveScriptCharacters(
 }
 
 /**
+ * Canonical character count for a script card. Derives the count from
+ * `resolveScriptCharacters` so every flow (Game, Storyteller) shows the same
+ * number for the same script, consistent with what the resolver considers part
+ * of the script.
+ */
+export function countScriptCharacters(
+  script: LocalScript | null,
+  opts: ResolveScriptOpts = {},
+): number {
+  return resolveScriptCharacters(script, opts).length;
+}
+
+/**
  * Reference-facing resolver that maps a raw `scriptFilter` string onto
  * `resolveScriptCharacters`. Prefer `resolveScriptCharacters` for new code.
  *

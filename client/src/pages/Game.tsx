@@ -8,7 +8,7 @@ import { STWizard, getStoredSTSession } from "@/components/STWizard";
 import { InlineGameLog } from "@/components/InlineGameLog";
 import { TrustSlider } from "@/components/TrustSlider";
 import { scanScriptFile } from "@/lib/scan-script";
-import { resolveScriptCharacters } from "@/lib/script-resolve";
+import { resolveScriptCharacters, countScriptCharacters } from "@/lib/script-resolve";
 import { useToast } from "@/hooks/use-toast";
 import { ChevronRight, ChevronLeft, Play, X, Plus, Check, Search, Moon, Sun, ChevronUp, ChevronDown, FileText, Vote, Loader2, GripVertical, UserPlus, ArrowRight, BookOpen, HandMetal, Ban, LogOut, Trash2, Pencil, MoreVertical, RotateCcw, Info, ExternalLink, Users, Skull, Ghost, Scroll, Hand, Target, Theater, ArrowDownUp, Camera } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -344,7 +344,7 @@ function SetupWizard({ onStart }: { onStart: (count: number, names: string[], sc
                     <Scroll className="w-5 h-5 text-amber-500/70" />
                     <div>
                       <div className="font-medium">{script.name}</div>
-                      <div className="text-sm text-muted-foreground">{script.characterIds.length} characters</div>
+                      <div className="text-sm text-muted-foreground">{countScriptCharacters(script)} characters</div>
                     </div>
                   </div>
                 </button>
@@ -370,7 +370,7 @@ function SetupWizard({ onStart }: { onStart: (count: number, names: string[], sc
                     <Users className="w-5 h-5 text-teal-500/70" />
                     <div>
                       <div className="font-medium">{script.name}</div>
-                      <div className="text-sm text-muted-foreground">{script.characterIds.length} characters</div>
+                      <div className="text-sm text-muted-foreground">{countScriptCharacters(script)} characters</div>
                     </div>
                   </div>
                 </button>
@@ -397,7 +397,7 @@ function SetupWizard({ onStart }: { onStart: (count: number, names: string[], sc
                     <Scroll className="w-5 h-5 text-purple-500/70" />
                     <div>
                       <div className="font-medium">{script.name}</div>
-                      <div className="text-sm text-muted-foreground">{script.characterIds.length} characters</div>
+                      <div className="text-sm text-muted-foreground">{countScriptCharacters(script)} characters</div>
                     </div>
                   </button>
                   <Button
