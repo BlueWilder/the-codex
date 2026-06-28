@@ -30,6 +30,15 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          "vendor-react": ["react", "react-dom"],
+          "vendor-ui": ["framer-motion", "@radix-ui/react-dialog", "@radix-ui/react-tooltip"],
+          "game-data": [path.resolve(import.meta.dirname, "client/src/lib/game-data.ts")],
+        },
+      },
+    },
   },
   server: {
     fs: {
