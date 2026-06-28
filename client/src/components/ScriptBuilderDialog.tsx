@@ -6,6 +6,7 @@ import { Check, Search, Upload, FileText, AlertTriangle, CheckCircle2, X, Camera
 import { cn } from "@/lib/utils";
 import { ALL_CHARACTERS } from "@/lib/game-data";
 import { scanScriptFile } from "@/lib/scan-script";
+import { teamSurface } from "@/lib/team-style";
 
 interface ScriptBuilderDialogProps {
   open: boolean;
@@ -17,15 +18,6 @@ interface ScriptBuilderDialogProps {
   title?: string;
   editMode?: boolean;
 }
-
-const TEAM_COLORS: Record<string, string> = {
-  townsfolk: 'border-blue-900/50 bg-blue-950/30',
-  outsider: 'border-blue-800/50 bg-blue-900/20',
-  minion: 'border-red-900/50 bg-red-950/30',
-  demon: 'border-red-800/50 bg-red-950/40',
-  traveler: 'border-amber-900/50 bg-amber-950/30',
-  fabled: 'border-violet-900/50 bg-violet-950/30',
-};
 
 export function ScriptBuilderDialog({
   open,
@@ -440,7 +432,7 @@ export function ScriptBuilderDialog({
                 onClick={() => toggleCharacter(char.id)}
                 className={cn(
                   "p-1.5 md:p-2 rounded-lg border text-left transition-all",
-                  TEAM_COLORS[char.team] || 'border-gray-800 bg-gray-900/20',
+                  teamSurface(char.team),
                   selectedCharacters.has(char.id) 
                     ? "ring-2 ring-amber-500" 
                     : "opacity-60 hover:opacity-100"

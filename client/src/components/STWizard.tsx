@@ -9,13 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ChevronLeft, ChevronRight, Scroll, BookOpen, Users, Lock, Shuffle, Trash2, Check, Plus, Pencil, FileText, Moon, Sun, ChevronDown, Lightbulb, Power, XCircle, Wand2 } from "lucide-react";
-
-const TEAM_COLORS: Record<string, string> = {
-  townsfolk: "bg-blue-900/60 text-blue-200 border-blue-700",
-  outsider: "bg-teal-900/60 text-teal-200 border-teal-700",
-  minion: "bg-orange-900/60 text-orange-200 border-orange-700",
-  demon: "bg-red-900/60 text-red-200 border-red-700",
-};
+import { teamBadge } from "@/lib/team-style";
 
 const TEAM_ORDER = ['townsfolk', 'outsider', 'minion', 'demon'] as const;
 
@@ -111,7 +105,7 @@ function NightRow({ char, index, prefix, isExpanded, onToggle, isInBag, isActive
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
               <span className={cn("font-medium text-sm", !isActive && "line-through")}>{char.name}</span>
-              <Badge variant="secondary" className={cn("text-[10px] px-1.5 py-0", TEAM_COLORS[char.team])}>
+              <Badge variant="secondary" className={cn("text-[10px] px-1.5 py-0", teamBadge(char.team))}>
                 {char.team}
               </Badge>
               {isInBag && isActive && (
@@ -655,7 +649,7 @@ export function STWizard({ playerCount, onBack }: STWizardProps) {
                       "text-xs transition-colors",
                       status === 'exact' && "bg-green-900/50 text-green-300 border-green-600",
                       status === 'over' && "bg-red-900/50 text-red-300 border-red-600",
-                      status === 'under' && TEAM_COLORS[team],
+                      status === 'under' && teamBadge(team),
                     )}
                     data-testid={`tally-${team}`}
                   >

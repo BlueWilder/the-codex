@@ -27,15 +27,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, TouchSensor, useSensor, useSensors, DragEndEvent, DragOverlay, DragStartEvent, useDraggable } from "@dnd-kit/core";
 import { SortableContext, sortableKeyboardCoordinates, useSortable, rectSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-
-const TEAM_COLORS: Record<string, string> = {
-  townsfolk: "bg-blue-900/60 text-blue-200 border-blue-700",
-  outsider: "bg-teal-900/60 text-teal-200 border-teal-700",
-  minion: "bg-orange-900/60 text-orange-200 border-orange-700",
-  demon: "bg-red-900/60 text-red-200 border-red-700",
-  traveler: "bg-purple-900/60 text-purple-200 border-purple-700",
-  fabled: "bg-violet-900/60 text-violet-200 border-violet-700",
-};
+import { teamBadge } from "@/lib/team-style";
 
 function GallowsIcon({ className }: { className?: string }) {
   return (
@@ -600,7 +592,7 @@ function CharacterPicker({
                     className={cn(
                       "w-full text-left p-3 rounded-lg border transition-colors flex items-center gap-3",
                       "hover-elevate active-elevate-2",
-                      TEAM_COLORS[char.team],
+                      teamBadge(char.team),
                       isSelected && "ring-2 ring-amber-500 ring-offset-1 ring-offset-background"
                     )}
                     data-testid={`button-select-character-${char.id}`}
@@ -891,7 +883,7 @@ function PlayerDetailDrawer({
                         key={char.id}
                         className={cn(
                           "cursor-pointer gap-1.5 text-base",
-                          TEAM_COLORS[char.team]
+                          teamBadge(char.team)
                         )}
                         onClick={() => setPreviewCharacter(char)}
                         data-testid={`badge-claim-${char.id}`}
@@ -1102,7 +1094,7 @@ function PlayerDetailDrawer({
                 <DialogTitle className="flex items-center gap-3">
                   <span className={cn(
                     "px-2 py-0.5 rounded text-xs uppercase tracking-wider",
-                    TEAM_COLORS[previewCharacter.team]
+                    teamBadge(previewCharacter.team)
                   )}>
                     {previewCharacter.team}
                   </span>
@@ -1317,7 +1309,7 @@ function SortablePlayerCard({
             <button
               key={char.id}
               onClick={() => onRemoveClaim(char.id)}
-              className={cn("inline-flex items-center gap-1 text-xs whitespace-nowrap rounded-full border px-2.5 py-1 font-semibold transition-colors hover:opacity-80", TEAM_COLORS[char.team])}
+              className={cn("inline-flex items-center gap-1 text-xs whitespace-nowrap rounded-full border px-2.5 py-1 font-semibold transition-colors hover:opacity-80", teamBadge(char.team))}
               title={`Remove ${char.name} claim`}
               data-testid={`button-claim-badge-${char.id}-${player.id}`}
             >
@@ -2272,7 +2264,7 @@ function CircleNodeContent({
       {nameOutside && claimChar ? (
         <span className={cn(
           "text-[10px] font-medium truncate px-1 leading-tight",
-          TEAM_COLORS[claimChar.team]
+          teamBadge(claimChar.team)
         )}
         style={{ maxWidth: nodeSize - 6 }}
         >

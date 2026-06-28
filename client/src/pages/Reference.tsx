@@ -11,6 +11,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Input } from "@/components/ui/input";
 import { useLocalScripts, type LocalScript } from "@/hooks/use-local-scripts";
 import { ScriptBuilderDialog } from "@/components/ScriptBuilderDialog";
+import { teamCard } from "@/lib/team-style";
 
 function CharacterCard({ char, isExpanded, onToggle }: { 
   char: Character; 
@@ -19,17 +20,7 @@ function CharacterCard({ char, isExpanded, onToggle }: {
 }) {
   const jinxes = getJinxesForCharacter(char.id);
   
-  const getTeamColor = (team: string) => {
-    switch(team) {
-      case 'townsfolk': return 'text-blue-400 border-blue-900/30 bg-blue-950/20';
-      case 'outsider': return 'text-blue-200 border-blue-800/30 bg-blue-900/10';
-      case 'minion': return 'text-red-400 border-red-900/30 bg-red-950/20';
-      case 'demon': return 'text-red-600 border-red-900/50 bg-red-950/30';
-      case 'traveler': return 'text-slate-300 border-slate-600/40 bg-slate-800/20';
-      case 'fabled': return 'text-[#efc344] border-[#efc344]/30 bg-[#efc344]/10';
-      default: return 'text-gray-400 border-gray-800';
-    }
-  };
+  const getTeamColor = (team: string) => teamCard(team);
 
   const getJinxedCharacterName = (jinx: Jinx) => {
     const otherId = jinx.character1 === char.id ? jinx.character2 : jinx.character1;
