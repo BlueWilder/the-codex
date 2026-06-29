@@ -1,7 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { BookOpen, Gamepad2, HelpCircle, LogIn, LogOut, User } from "lucide-react";
 import { cn } from "@/lib/utils";
-import logoImage from "@assets/logo.png";
+import logoImage from "@/assets/logo.png";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import {

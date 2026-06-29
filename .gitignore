@@ -4,6 +4,7 @@ dist
 server/public
 vite.config.ts.*
 *.tar.gz
+attached_assets/
 
 # Secrets / environment files (keep secrets in Replit Secrets, never in the repo)
 .env
