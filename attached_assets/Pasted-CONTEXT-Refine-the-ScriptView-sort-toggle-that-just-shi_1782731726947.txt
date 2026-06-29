@@ -1,0 +1,48 @@
+CONTEXT /
+Refine the ScriptView sort toggle that just shipped (Task #62). Today it has three options (A-Z, By Team, By Night) and By Night is a single combined sort (firstNightOrder falling back to otherNightOrder). Two changes: (1) remove A-Z entirely and default to By Team, since the Reference search bar already handles finding a character by name; (2) make By Night a true night sheet by adding a First Night / Other Nights sub-toggle that shows ONLY the characters who wake that night, in that night's order. The helpers exist: night-order.ts getFirstNightChars and getOtherNightChars.
+
+TASK /
+A. AUDIT-FIRST GATE (do this and report before changing anything). Inspect and report:
+   - ScriptView's current SORT_OPTIONS, the sortCharacters helper (especially the "night" branch), and the controlled/internal sortOrder state.
+   - Reference's auto-default effect (today: All Scripts -> alphabetical, specific script -> team).
+   - The Task #64 tests that pin sort order.
+   - Propose: removing the A-Z option, defaulting to team, adding a First/Other sub-toggle (internal state, default First Night) shown only in By Night mode, rendering getFirstNightChars/getOtherNightChars (wakers-only) in night mode, and how you will update the tests. Then WAIT for approval.
+B. Remove A-Z: drop the alphabetical option from the toggle and from default logic. Default sortOrder = team everywhere (update Reference's auto-default so it no longer selects alphabetical). Keep By Team and By Night.
+C. Add a First Night / Other Nights sub-toggle, shown ONLY when By Night is active, in the same sticky bar (top-16 md:top-24). Default First Night. data-testids: button-night-first, button-night-other.
+D. In By Night mode, render only the characters who wake the selected night, ordered by that night's order: getFirstNightChars for First Night, getOtherNightChars for Other Nights. By Team is unchanged (all characters, grouped/ordered as today).
+E. Update the Task #64 tests: remove A-Z assertions; replace the night assertions with the new wakers-only First/Other behavior; keep the By Team assertions.
+
+DATA MODEL / No schema changes.
+ACCESS / client/src/components/character/ScriptView.tsx, client/src/pages/Reference.tsx, and the Task #64 test file. Touch night-order.ts only if a tiny helper is genuinely needed.
+
+CONSTRAINTS /
+- By Team ordering must stay identical to today.
+- Do NOT touch Game.tsx, STWizard, the resolver, CharacterCard, or the primitives (Game/Storyteller toggle reuse is the separate open #63).
+- Do NOT silently fix adjacent issues, including the 2 known pre-existing TS errors. Report under Other observations only.
+- Dark gothic theme only. New controls get data-testids.
+
+EXPECTED RESULT /
+Two-option By Team / By Night toggle (no A-Z), default By Team; By Night reveals a First Night / Other Nights sub-toggle showing only that night's wakers in that night's order; tests updated to match.
+
+VERIFICATION CHECKLIST /
+1. Toggle shows only By Team and By Night; A-Z is gone everywhere.
+2. Default is By Team for both All Scripts and a specific script.
+3. By Night reveals the First Night / Other Nights sub-toggle, default First Night, sticky with the bar.
+4. By Night + First Night: only first-night wakers, in first-night order. Spot-check Trouble Brewing: Poisoner, Washerwoman, Librarian, Investigator, Chef, Empath, Fortune Teller, Butler, Spy.
+5. By Night + Other Nights: only other-night wakers, in other-night order. Spot-check TB: Poisoner, Monk, Scarlet Woman, Imp, Ravenkeeper, Empath, Fortune Teller, Undertaker, Butler, Spy.
+6. By Team unchanged from today (travelers then fabled at the end).
+7. data-testids present on the new sub-toggle.
+8. Tests updated and passing; A-Z assertions removed.
+9. tsc clean (2 known pre-existing errors out of scope).
+10. No file outside scope changed.
+
+OUT-OF-SCOPE FILE CHANGES /
+List every file changed. Flag any system file (.replit, .gitignore) touched as a side effect.
+
+ON COMPLETION, end with exactly:
+
+Task: [one line]
+Files changed: [list]
+Verified: [how: built, loaded page, ran test]
+Deferred / out of scope found: [any, or none]
+Pushed commit: [sha]
