@@ -3,7 +3,6 @@ import { ALL_CHARACTERS, OFFICIAL_SCRIPTS, type Character } from "@/lib/game-dat
 import { useState, useEffect, useMemo } from "react";
 import { Search, Moon, Plus, Check, Trash2, Pencil, ArrowDownAZ, LayoutList, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -12,7 +11,7 @@ import { useLocalScripts, type LocalScript } from "@/hooks/use-local-scripts";
 import { ScriptBuilderDialog } from "@/components/ScriptBuilderDialog";
 import { nightOrderValue, compareEndTeams, compareSheetOrder } from "@/lib/night-order";
 import { resolveCharactersForScriptFilter } from "@/lib/script-resolve";
-import { CharacterCard } from "@/components/character/CharacterCard";
+import { ScriptView } from "@/components/character/ScriptView";
 
 const SCRIPTS = [
   { id: 'all', label: 'All Scripts', isCommunity: false },
@@ -30,7 +29,6 @@ export default function Reference() {
   const [teamFilter, setTeamFilter] = useState<string>("all");
   const [scriptFilter, setScriptFilter] = useState<string>("all");
   const [sortOrder, setSortOrder] = useState<"alphabetical" | "sheet" | "night">("alphabetical");
-  const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showScriptBuilder, setShowScriptBuilder] = useState(false);
   const [editingScript, setEditingScript] = useState<LocalScript | null>(null);
   const [copyingCommunityScript, setCopyingCommunityScript] = useState<{ name: string; characterIds: string[]; synopsis?: string } | null>(null);
@@ -87,10 +85,6 @@ export default function Reference() {
       return compareSheetOrder(a, b, ALL_CHARACTERS);
     }
   });
-
-  const handleToggle = (charId: string) => {
-    setExpandedId(prev => prev === charId ? null : charId);
-  };
 
   return (
     <Layout>
@@ -300,22 +294,7 @@ export default function Reference() {
           }}
         />
 
-        <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filtered.map((char) => (
-            <CharacterCard 
-              key={char.id}
-              char={char}
-              isExpanded={expandedId === char.id}
-              onToggle={() => handleToggle(char.id)}
-            />
-          ))}
-          
-          {filtered.length === 0 && (
-            <div className="col-span-full py-12 text-center text-muted-foreground font-serif italic">
-              No souls found matching your inquiry.
-            </div>
-          )}
-        </motion.div>
+        <ScriptView characters={filtered} />
       </div>
     </Layout>
   );
