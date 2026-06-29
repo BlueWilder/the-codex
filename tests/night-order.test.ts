@@ -141,7 +141,7 @@ describe("sortCharacters", () => {
       makeSortChar({ id: "alpha" }),
     ];
     const before = chars.map(c => c.id);
-    sortCharacters(chars, "alphabetical");
+    sortCharacters(chars, "team");
     expect(chars.map(c => c.id)).toEqual(before);
   });
 
@@ -153,7 +153,7 @@ describe("sortCharacters", () => {
         makeSortChar({ id: "townie", team: "townsfolk" }),
         makeSortChar({ id: "demon", team: "demon" }),
       ];
-      for (const mode of ["alphabetical", "team", "night"] as const) {
+      for (const mode of ["team", "night"] as const) {
         const result = sortCharacters(chars, mode).map(c => c.id);
         expect(result.slice(-2)).toEqual(["trav", "fab"]);
         expect(result.indexOf("trav")).toBeGreaterThan(result.indexOf("townie"));
@@ -169,23 +169,8 @@ describe("sortCharacters", () => {
         makeSortChar({ id: "t-abe", name: "Abe", team: "traveler" }),
         makeSortChar({ id: "townie", name: "Townie", team: "townsfolk" }),
       ];
-      const result = sortCharacters(chars, "alphabetical").map(c => c.id);
+      const result = sortCharacters(chars, "team").map(c => c.id);
       expect(result).toEqual(["townie", "t-abe", "t-zane", "f-amy", "f-zoe"]);
-    });
-  });
-
-  describe("alphabetical mode", () => {
-    it("sorts non-tail characters by name", () => {
-      const chars = [
-        makeSortChar({ id: "c", name: "Charlie" }),
-        makeSortChar({ id: "a", name: "Alpha" }),
-        makeSortChar({ id: "b", name: "Bravo" }),
-      ];
-      expect(sortCharacters(chars, "alphabetical").map(c => c.id)).toEqual([
-        "a",
-        "b",
-        "c",
-      ]);
     });
   });
 
@@ -216,6 +201,42 @@ describe("sortCharacters", () => {
         "other",
         "sleeps",
       ]);
+    });
+  });
+
+  describe("night sheet (wakers-only via getFirstNightChars/getOtherNightChars)", () => {
+    const TB_FIRST_NIGHT = [
+      "Poisoner",
+      "Washerwoman",
+      "Librarian",
+      "Investigator",
+      "Chef",
+      "Empath",
+      "Fortune Teller",
+      "Butler",
+      "Spy",
+    ];
+    const TB_OTHER_NIGHT = [
+      "Poisoner",
+      "Monk",
+      "Scarlet Woman",
+      "Imp",
+      "Ravenkeeper",
+      "Empath",
+      "Fortune Teller",
+      "Undertaker",
+      "Butler",
+      "Spy",
+    ];
+
+    const tbChars = ALL_CHARACTERS.filter(c => c.edition === "tb");
+
+    it("First Night shows only first-night wakers in first-night order (Trouble Brewing)", () => {
+      expect(getFirstNightChars(tbChars).map(c => c.name)).toEqual(TB_FIRST_NIGHT);
+    });
+
+    it("Other Nights shows only other-night wakers in other-night order (Trouble Brewing)", () => {
+      expect(getOtherNightChars(tbChars).map(c => c.name)).toEqual(TB_OTHER_NIGHT);
     });
   });
 

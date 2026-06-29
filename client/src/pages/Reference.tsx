@@ -1,6 +1,6 @@
 import { Layout } from "@/components/ui/Layout";
 import { ALL_CHARACTERS, OFFICIAL_SCRIPTS, type Character } from "@/lib/game-data";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { Search, Moon, Plus, Check, Trash2, Pencil } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -28,20 +28,11 @@ export default function Reference() {
   const [search, setSearch] = useState("");
   const [teamFilter, setTeamFilter] = useState<string>("all");
   const [scriptFilter, setScriptFilter] = useState<string>("all");
-  const [sortOrder, setSortOrder] = useState<ScriptSort>("alphabetical");
+  const [sortOrder, setSortOrder] = useState<ScriptSort>("team");
   const [showScriptBuilder, setShowScriptBuilder] = useState(false);
   const [editingScript, setEditingScript] = useState<LocalScript | null>(null);
   const [copyingCommunityScript, setCopyingCommunityScript] = useState<{ name: string; characterIds: string[]; synopsis?: string } | null>(null);
   const { customScripts, addCustomScript, addCustomScriptAsync, updateCustomScript, deleteCustomScript } = useLocalScripts();
-
-  // Update sort order based on script filter
-  useEffect(() => {
-    if (scriptFilter === "all") {
-      setSortOrder("alphabetical");
-    } else {
-      setSortOrder("team");
-    }
-  }, [scriptFilter]);
 
   const activeCustomScript = scriptFilter.startsWith('custom:') 
     ? customScripts.find(s => s.id === scriptFilter.replace('custom:', ''))

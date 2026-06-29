@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowDownAZ, LayoutList, Clock } from "lucide-react";
+import { LayoutList, Clock, Sunrise, Moon } from "lucide-react";
 import { type Character } from "@/lib/game-data";
 import { cn } from "@/lib/utils";
 import { CharacterCard } from "@/components/character/CharacterCard";
-import { sortCharacters, type ScriptSort } from "@/lib/night-order";
+import { sortCharacters, getFirstNightChars, getOtherNightChars, type ScriptSort } from "@/lib/night-order";
 
 /**
  * Shared, script-scoped character view. Renders a grid of the shared
@@ -18,17 +18,23 @@ import { sortCharacters, type ScriptSort } from "@/lib/night-order";
  * each can be controlled (`sortOrder` + `onSortChange`, `expandedId` +
  * `onToggle`) for surfaces that need to drive them.
  */
-const SORT_OPTIONS: { value: ScriptSort; label: string; icon: typeof ArrowDownAZ; testId: string }[] = [
-  { value: "alphabetical", label: "A-Z", icon: ArrowDownAZ, testId: "button-sort-az" },
+const SORT_OPTIONS: { value: ScriptSort; label: string; icon: typeof LayoutList; testId: string }[] = [
   { value: "team", label: "By Team", icon: LayoutList, testId: "button-sort-team" },
   { value: "night", label: "By Night", icon: Clock, testId: "button-sort-night" },
+];
+
+type NightView = "first" | "other";
+
+const NIGHT_VIEW_OPTIONS: { value: NightView; label: string; icon: typeof LayoutList; testId: string }[] = [
+  { value: "first", label: "First Night", icon: Sunrise, testId: "button-night-first" },
+  { value: "other", label: "Other Nights", icon: Moon, testId: "button-night-other" },
 ];
 
 export function ScriptView({
   characters,
   sortOrder: controlledSortOrder,
   onSortChange,
-  defaultSortOrder = "alphabetical",
+  defaultSortOrder = "team",
   expandedId: controlledExpandedId,
   onToggle: controlledOnToggle,
   className,
@@ -45,6 +51,7 @@ export function ScriptView({
 }) {
   const [internalExpandedId, setInternalExpandedId] = useState<string | null>(null);
   const [internalSortOrder, setInternalSortOrder] = useState<ScriptSort>(defaultSortOrder);
+  const [nightView, setNightView] = useState<NightView>("first");
 
   const isControlled = controlledOnToggle !== undefined;
   const expandedId = isControlled ? controlledExpandedId ?? null : internalExpandedId;
@@ -68,11 +75,37 @@ export function ScriptView({
     }
   };
 
-  const sorted = sortCharacters(characters, sortOrder);
+  const sorted =
+    sortOrder === "night"
+      ? nightView === "first"
+        ? getFirstNightChars(characters)
+        : getOtherNightChars(characters)
+      : sortCharacters(characters, "team");
 
   return (
     <div className={className}>
-      <div className="sticky top-16 md:top-24 z-10 -mx-1 mb-4 flex justify-end bg-background/80 backdrop-blur-sm px-1 py-2">
+      <div className="sticky top-16 md:top-24 z-10 -mx-1 mb-4 flex flex-wrap justify-end gap-2 bg-background/80 backdrop-blur-sm px-1 py-2">
+        {sortOrder === "night" && (
+          <div className="inline-flex items-center gap-1 rounded-full border border-amber-900/30 bg-black/20 p-1">
+            {NIGHT_VIEW_OPTIONS.map(({ value, label, icon: Icon, testId }) => (
+              <button
+                key={value}
+                onClick={() => setNightView(value)}
+                className={cn(
+                  "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold tracking-wider transition-all whitespace-nowrap",
+                  nightView === value
+                    ? "bg-amber-900/50 text-amber-100"
+                    : "bg-transparent text-muted-foreground hover:bg-white/5",
+                )}
+                title={label}
+                data-testid={testId}
+              >
+                <Icon className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">{label}</span>
+              </button>
+            ))}
+          </div>
+        )}
         <div className="inline-flex items-center gap-1 rounded-full border border-amber-900/30 bg-black/20 p-1">
           {SORT_OPTIONS.map(({ value, label, icon: Icon, testId }) => (
             <button

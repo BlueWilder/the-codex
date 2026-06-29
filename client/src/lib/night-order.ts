@@ -1,6 +1,6 @@
 import { ALL_CHARACTERS, type Character } from "@/lib/game-data";
 
-export type ScriptSort = "alphabetical" | "team" | "night";
+export type ScriptSort = "team" | "night";
 
 export function getFirstNightChars(chars: Character[]): Character[] {
   return chars
@@ -48,9 +48,6 @@ export function sortCharacters(chars: Character[], sort: ScriptSort): Character[
     const endComparison = compareEndTeams(a, b);
     if (endComparison !== null) return endComparison;
 
-    if (sort === "alphabetical") {
-      return a.name.localeCompare(b.name);
-    }
     if (sort === "night") {
       const aOrder = nightOrderValue(a);
       const bOrder = nightOrderValue(b);
