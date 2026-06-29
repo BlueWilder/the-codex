@@ -39,7 +39,7 @@ Durable rules for every build/update prompt on this repo. Prompts may reference 
 ### Design System
 - **Theme**: dark gothic only. There is NO light mode. Do not add light-mode styling or apply any external brand palette. The Codex has its own identity: charcoal background, parchment text, antique gold and amber accents, crimson primary.
 - **Team color system**: driven by `getTeamColor` in `client/src/pages/Reference.tsx`. Each team tints the card text, border, and background. Values: Townsfolk `text-blue-400`, Outsider `text-blue-200`, Minion `text-red-400`, Demon `text-red-600`, Traveler `text-slate-300`, Fabled `text-[#efc344]` (gold). Preserve this per-team tinting on any card surface.
-- **Storyteller accent**: the "How to Run" host instructions use a fixed amethyst (`#c79fe6`) regardless of team, inside a panel with border `#3d2f57`, a Wand2 icon, and a small "Storyteller" tag. Applied in `Reference.tsx` and `STWizard.tsx`. Keep host-facing content visually distinct from player-facing content.
+- **Storyteller accent**: the "How to Run" host instructions use a fixed amethyst (`#c79fe6`) regardless of team, inside a panel with border `#3d2f57`, a Wand2 icon, and a small "Storyteller" tag. Applied in `CharacterCard.tsx`. Keep host-facing content visually distinct from player-facing content.
 
 ### Backend Architecture
 - **Runtime**: Node.js with Express
@@ -96,32 +96,6 @@ A beginner-friendly guide at `/introduction` explaining Blood on the Clocktower 
 - **Quick Tips**: Two-column layout with tips for good vs evil players
 - **First Game Mindset**: Encouragement for new players
 - **CTA**: Links to Character Reference
-
-### Storyteller Mode (Bag Builder)
-> DEPRECATED, slated for removal in S5
-
-A Storyteller-specific setup flow forked from the New Game wizard:
-- **Entry point**: "Storyteller" button on Step 1 (player count) of the regular setup wizard
-- **ST Step 2 — Script Selection**: Reuses the same script selector UI (official, community, custom scripts)
-- **ST Step 3 — Bag Builder**: Character grid grouped by team (Townsfolk, Outsiders, Minions, Demons)
-  - Cards show name + ability text, click to select/deselect
-  - Lock/unlock selected characters (gold ring = locked, stays through shuffle)
-  - Live running tally: green = exact count, red = over, default = under
-  - Shuffle button: randomly fills unlocked slots to meet required counts
-  - Clear All: resets all selections and locks
-  - Accept Bag: enabled only when all tallies are exactly met
-- **Night Sheet** (post-Accept Bag): Two tabs (First Night / Other Nights)
-  - Shows ALL characters from the script sorted by official night order (roles can swap/enter mid-game)
-  - Bag characters highlighted with solid border and amber dot indicator; non-bag characters dimmed with dashed border
-  - Active/inactive toggle: power icon on left side of each row; inactive characters get reduced opacity and strikethrough name
-  - Wizard header (step indicators, title) hidden — Night Sheet is the ST's standalone home base
-  - Each row: order number, character name, team badge (color-coded), ability text
-  - Expandable rows: tap to reveal How to Run, Tips & Tricks, and Reminder tokens
-  - "End Session" button clears state and returns to setup
-- **Persistence**: ST session saved to localStorage (`clocktower_st_session` key) with script info, bag IDs, and active/inactive IDs; survives browser refresh; Game.tsx auto-enters ST mode if session exists
-- **Component**: `client/src/components/STWizard.tsx`; exports `getStoredSTSession()` and `clearSTSession()` helpers
-- **Back navigation**: Returns to Step 1 of the regular wizard
-- Player flow (Steps 1→2→3) is completely unchanged
 
 ### Game Mode (Player Tracker)
 A localStorage-based player tracking tool at `/game` for note-taking during games:

@@ -4,7 +4,6 @@ import { usePlayerGame, getBreakdown, isPlayerActive, canPlayerVote, canPlayerVo
 import { ALL_CHARACTERS, OFFICIAL_SCRIPTS, getJinxesForCharacter } from "@/lib/game-data";
 import { useLocalScripts, type LocalScript } from "@/hooks/use-local-scripts";
 import { ScriptBuilderDialog } from "@/components/ScriptBuilderDialog";
-import { STWizard, getStoredSTSession } from "@/components/STWizard";
 import { InlineGameLog } from "@/components/InlineGameLog";
 import { TrustSlider } from "@/components/TrustSlider";
 import { scanScriptFile } from "@/lib/scan-script";
@@ -81,9 +80,12 @@ export function SetupWizard({ onStart }: { onStart: (count: number, names: strin
   const [scannedCharacters, setScannedCharacters] = useState<Set<string> | null>(null);
   const [scanning, setScanning] = useState(false);
   const scanInputRef = useRef<HTMLInputElement>(null);
-  const [stMode, setStMode] = useState(() => !!getStoredSTSession());
   const { allScripts, customScripts, addCustomScriptAsync, updateCustomScript, getScriptById } = useLocalScripts();
   const { toast } = useToast();
+
+  useEffect(() => {
+    localStorage.removeItem("clocktower_st_session");
+  }, []);
 
   const breakdown = getBreakdown(playerCount);
 
@@ -157,15 +159,6 @@ export function SetupWizard({ onStart }: { onStart: (count: number, names: strin
     const finalNames = playerNames.map((name, i) => name.trim() || getDefaultName(i));
     onStart(playerCount, finalNames, scriptRef);
   };
-
-  if (stMode) {
-    return (
-      <STWizard
-        playerCount={playerCount}
-        onBack={() => setStMode(false)}
-      />
-    );
-  }
 
   return (
     <div className="max-w-2xl mx-auto py-8">
