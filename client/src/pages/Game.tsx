@@ -9,6 +9,7 @@ import { InlineGameLog } from "@/components/InlineGameLog";
 import { TrustSlider } from "@/components/TrustSlider";
 import { scanScriptFile } from "@/lib/scan-script";
 import { resolveScriptCharacters, countScriptCharacters } from "@/lib/script-resolve";
+import { ScriptView } from "@/components/character/ScriptView";
 import { useToast } from "@/hooks/use-toast";
 import { ChevronRight, ChevronLeft, Play, X, Plus, Check, Search, Moon, Sun, ChevronUp, ChevronDown, FileText, Vote, Loader2, GripVertical, UserPlus, ArrowRight, BookOpen, HandMetal, Ban, LogOut, Trash2, Pencil, MoreVertical, RotateCcw, Info, ExternalLink, Users, Skull, Ghost, Scroll, Hand, Target, Theater, ArrowDownUp, Camera } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -70,7 +71,7 @@ function PointingFingerIcon({ className }: { className?: string }) {
   );
 }
 
-function SetupWizard({ onStart }: { onStart: (count: number, names: string[], script?: GameScriptRef | null) => void }) {
+export function SetupWizard({ onStart }: { onStart: (count: number, names: string[], script?: GameScriptRef | null) => void }) {
   const [step, setStep] = useState(1);
   const [playerCount, setPlayerCount] = useState(8);
   const [playerNames, setPlayerNames] = useState<string[]>([]);
@@ -127,9 +128,10 @@ function SetupWizard({ onStart }: { onStart: (count: number, names: string[], sc
   };
 
   const handleCountConfirm = () => {
-    // Initialize with empty strings - placeholder text shows default names
-    setPlayerNames(Array(playerCount).fill(""));
-    setStep(2);
+    // Idempotent: only (re)initialize names when the count changed, so
+    // back-navigation does not wipe names the user already typed.
+    setPlayerNames(prev => prev.length === playerCount ? prev : Array(playerCount).fill(""));
+    setStep(4);
   };
   
   const getDefaultName = (index: number) => {
@@ -170,7 +172,7 @@ function SetupWizard({ onStart }: { onStart: (count: number, names: string[], sc
       <h1 className="text-3xl md:text-4xl font-display text-amber-500 mb-8 text-center">New Game</h1>
 
       <div className="flex items-center justify-center mb-8 gap-4">
-        {[1, 2, 3].map((i) => (
+        {[1, 2, 3, 4].map((i) => (
           <div key={i} className="flex items-center">
             <div className={cn(
               "w-8 h-8 rounded-full flex items-center justify-center font-bold border-2 transition-colors",
@@ -180,13 +182,13 @@ function SetupWizard({ onStart }: { onStart: (count: number, names: string[], sc
             )}>
               {i}
             </div>
-            {i < 3 && <div className={cn("w-8 sm:w-12 h-0.5 mx-1 sm:mx-2", step > i ? "bg-amber-800" : "bg-muted")} />}
+            {i < 4 && <div className={cn("w-8 sm:w-12 h-0.5 mx-1 sm:mx-2", step > i ? "bg-amber-800" : "bg-muted")} />}
           </div>
         ))}
       </div>
 
       <Card className="p-6 md:p-8">
-        {step === 1 && (
+        {step === 3 && (
           <div className="space-y-8 animate-in fade-in duration-300">
             <div className="text-center space-y-2">
               <Users className="w-12 h-12 mx-auto text-amber-500 mb-4" />
@@ -239,26 +241,18 @@ function SetupWizard({ onStart }: { onStart: (count: number, names: string[], sc
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <Button
-                className="bg-purple-700 hover:bg-purple-600 text-white border-purple-600"
-                onClick={() => setStMode(true)}
-                data-testid="button-storyteller"
-              >
-                <Theater className="w-4 h-4 mr-2" /> Storyteller
+            <div className="flex justify-between pt-4">
+              <Button variant="ghost" onClick={() => setStep(2)} data-testid="button-back">
+                <ChevronLeft className="w-4 h-4 mr-1" /> Back
               </Button>
-              <Button
-                className="bg-blue-700 hover:bg-blue-600 text-white border-blue-600"
-                onClick={handleCountConfirm}
-                data-testid="button-next-step"
-              >
-                <Users className="w-4 h-4 mr-2" /> Player
+              <Button onClick={handleCountConfirm} data-testid="button-count-next">
+                Next <ChevronRight className="w-4 h-4 ml-1" />
               </Button>
             </div>
           </div>
         )}
 
-        {step === 2 && (
+        {step === 4 && (
           <div className="space-y-6 animate-in fade-in duration-300">
             <div className="text-center space-y-2">
               <h2 className="text-2xl font-display text-amber-100">Player Names</h2>
@@ -286,17 +280,17 @@ function SetupWizard({ onStart }: { onStart: (count: number, names: string[], sc
             </div>
 
             <div className="flex justify-between pt-4">
-              <Button variant="ghost" onClick={() => setStep(1)} data-testid="button-back">
-                Back
+              <Button variant="ghost" onClick={() => setStep(3)} data-testid="button-back-names">
+                <ChevronLeft className="w-4 h-4 mr-1" /> Back
               </Button>
-              <Button onClick={() => setStep(3)} data-testid="button-next-step-2">
-                Next <ChevronRight className="w-4 h-4 ml-1" />
+              <Button onClick={handleStartGame} data-testid="button-start-game">
+                <Play className="w-4 h-4 mr-2" /> Start Game
               </Button>
             </div>
           </div>
         )}
 
-        {step === 3 && (
+        {step === 1 && (
           <div className="space-y-6 animate-in fade-in duration-300">
             <div className="text-center space-y-2">
               <Scroll className="w-12 h-12 mx-auto text-amber-500 mb-4" />
@@ -459,12 +453,46 @@ function SetupWizard({ onStart }: { onStart: (count: number, names: string[], sc
                 Reading your photo… the review screen will open in a moment.
               </div>
             )}
-            <div className="flex justify-between pt-4">
-              <Button variant="ghost" onClick={() => setStep(2)} disabled={scanning} data-testid="button-back-2">
-                Back
+            <div className="flex justify-end pt-4">
+              <Button onClick={() => setStep(2)} disabled={scanning} data-testid="button-next-step">
+                Next <ChevronRight className="w-4 h-4 ml-1" />
               </Button>
-              <Button onClick={handleStartGame} disabled={scanning} data-testid="button-start-game">
-                <Play className="w-4 h-4 mr-2" /> Start Game
+            </div>
+          </div>
+        )}
+
+        {step === 2 && (
+          <div className="space-y-6 animate-in fade-in duration-300" data-testid="step-script-preview">
+            <div className="text-center space-y-2">
+              <BookOpen className="w-12 h-12 mx-auto text-amber-500 mb-4" />
+              <h2 className="text-2xl font-display text-amber-100">
+                {selectedScript ? selectedScript.name : "All Characters"}
+              </h2>
+              <p className="text-muted-foreground text-sm">
+                {selectedScript
+                  ? "Review the characters on this script before you start."
+                  : "No script selected. Every character will be available when claiming."}
+              </p>
+            </div>
+
+            {selectedScript ? (
+              <div className="max-h-[60vh] overflow-y-auto rounded-lg border border-border/60 p-2">
+                <ScriptView
+                  characters={resolveScriptCharacters(selectedScript, { includeTravellers: false, includeFabled: false })}
+                />
+              </div>
+            ) : (
+              <div className="bg-muted/30 p-6 rounded-lg text-center text-sm text-muted-foreground" data-testid="text-preview-all-characters">
+                You picked All Characters, so there is nothing to preview here. You can claim any character once the game starts.
+              </div>
+            )}
+
+            <div className="flex justify-between pt-4">
+              <Button variant="ghost" onClick={() => setStep(1)} data-testid="button-preview-back">
+                <ChevronLeft className="w-4 h-4 mr-1" /> Back
+              </Button>
+              <Button onClick={() => setStep(3)} data-testid="button-preview-next">
+                Next <ChevronRight className="w-4 h-4 ml-1" />
               </Button>
             </div>
           </div>
