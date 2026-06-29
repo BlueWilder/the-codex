@@ -19,6 +19,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerClose } from "@/components/ui/drawer";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
@@ -71,10 +72,10 @@ function PointingFingerIcon({ className }: { className?: string }) {
 }
 
 export function SetupWizard({ onStart }: { onStart: (count: number, names: string[], script?: GameScriptRef | null) => void }) {
-  const [step, setStep] = useState(1);
   const [playerCount, setPlayerCount] = useState(8);
-  const [playerNames, setPlayerNames] = useState<string[]>([]);
   const [selectedScript, setSelectedScript] = useState<LocalScript | null>(null);
+  const [scriptDrawerOpen, setScriptDrawerOpen] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
   const [showScriptBuilder, setShowScriptBuilder] = useState(false);
   const [editingScript, setEditingScript] = useState<LocalScript | null>(null);
   const [scannedCharacters, setScannedCharacters] = useState<Set<string> | null>(null);
@@ -88,6 +89,12 @@ export function SetupWizard({ onStart }: { onStart: (count: number, names: strin
   }, []);
 
   const breakdown = getBreakdown(playerCount);
+
+  const handleSelectScript = (script: LocalScript | null) => {
+    setSelectedScript(script);
+    setPreviewOpen(false);
+    setScriptDrawerOpen(false);
+  };
 
   const handleScanScript = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -106,6 +113,7 @@ export function SetupWizard({ onStart }: { onStart: (count: number, names: strin
       }
       setEditingScript(null);
       setScannedCharacters(new Set(matchedIds));
+      setScriptDrawerOpen(false);
       setShowScriptBuilder(true);
       if (unmatchedNames.length > 0) {
         toast({
@@ -129,13 +137,6 @@ export function SetupWizard({ onStart }: { onStart: (count: number, names: strin
     }
   };
 
-  const handleCountConfirm = () => {
-    // Idempotent: only (re)initialize names when the count changed, so
-    // back-navigation does not wipe names the user already typed.
-    setPlayerNames(prev => prev.length === playerCount ? prev : Array(playerCount).fill(""));
-    setStep(4);
-  };
-  
   const getDefaultName = (index: number) => {
     if (playerCount > 15 && index >= 15) {
       return `Traveler ${index - 14}`;
@@ -143,302 +144,306 @@ export function SetupWizard({ onStart }: { onStart: (count: number, names: strin
     return `Player ${index + 1}`;
   };
 
-  const handleNameChange = (index: number, name: string) => {
-    setPlayerNames(prev => {
-      const newNames = [...prev];
-      newNames[index] = name;
-      return newNames;
-    });
-  };
-
   const handleStartGame = () => {
     const scriptRef: GameScriptRef | null = selectedScript ? {
       id: selectedScript.id,
     } : null;
-    // Use default names for any empty inputs
-    const finalNames = playerNames.map((name, i) => name.trim() || getDefaultName(i));
+    const finalNames = Array.from({ length: playerCount }, (_, i) => getDefaultName(i));
     onStart(playerCount, finalNames, scriptRef);
   };
+
+  const previewCharacters = selectedScript
+    ? resolveScriptCharacters(selectedScript, { includeTravellers: false, includeFabled: false })
+    : [];
 
   return (
     <div className="max-w-2xl mx-auto py-8">
       <h1 className="text-3xl md:text-4xl font-display text-amber-500 mb-8 text-center">New Game</h1>
 
-      <div className="flex items-center justify-center mb-8 gap-4">
-        {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="flex items-center">
-            <div className={cn(
-              "w-8 h-8 rounded-full flex items-center justify-center font-bold border-2 transition-colors",
-              step === i ? "bg-amber-600 border-amber-600 text-black" :
-              step > i ? "bg-amber-900/40 border-amber-600 text-amber-500" :
-              "bg-transparent border-muted text-muted-foreground"
-            )}>
-              {i}
-            </div>
-            {i < 4 && <div className={cn("w-8 sm:w-12 h-0.5 mx-1 sm:mx-2", step > i ? "bg-amber-800" : "bg-muted")} />}
+      <Card className="p-6 md:p-8 space-y-8">
+        <div className="space-y-3">
+          <div className="space-y-1">
+            <h2 className="text-2xl font-display text-amber-100">Script</h2>
+            <p className="text-muted-foreground text-sm">Choose a script to filter character claims, or start with all characters.</p>
           </div>
-        ))}
-      </div>
 
-      <Card className="p-6 md:p-8">
-        {step === 3 && (
-          <div className="space-y-8 animate-in fade-in duration-300">
-            <div className="text-center space-y-2">
-              <Users className="w-12 h-12 mx-auto text-amber-500 mb-4" />
-              <h2 className="text-2xl font-display text-amber-100">How many players?</h2>
-              <p className="text-muted-foreground text-sm">Select the number of players in your game</p>
+          <button
+            onClick={() => setScriptDrawerOpen(true)}
+            className={cn(
+              "w-full text-left p-4 rounded-lg border transition-colors flex items-center gap-3",
+              selectedScript
+                ? "bg-card border-border hover-elevate"
+                : "bg-amber-900/20 border-amber-600 ring-1 ring-amber-500/40 hover-elevate"
+            )}
+            data-testid="button-script-selector"
+          >
+            {selectedScript ? (
+              <Scroll className="w-5 h-5 text-amber-500/70 shrink-0" />
+            ) : (
+              <BookOpen className="w-5 h-5 text-amber-400 shrink-0" />
+            )}
+            <div className="flex-1 min-w-0">
+              {selectedScript ? (
+                <>
+                  <div className="font-medium truncate">{selectedScript.name}</div>
+                  <div className="text-sm text-muted-foreground">{countScriptCharacters(selectedScript)} characters</div>
+                </>
+              ) : (
+                <>
+                  <div className="font-medium text-amber-100">Select a script</div>
+                  <div className="text-sm text-muted-foreground">Tap to choose, or start with all characters</div>
+                </>
+              )}
             </div>
+            <ChevronRight className="w-5 h-5 text-muted-foreground shrink-0" />
+          </button>
 
-            <div className="flex items-center justify-center gap-6 py-4">
-              <Button
-                size="icon"
-                variant="outline"
-                onClick={() => setPlayerCount(Math.max(5, playerCount - 1))}
-                data-testid="button-decrease-players"
-              >
-                <ChevronDown className="w-5 h-5" />
-              </Button>
-              <div className="text-5xl md:text-6xl font-display text-amber-100 w-20 text-center" data-testid="text-player-count">
-                {playerCount}
-              </div>
-              <Button
-                size="icon"
-                variant="outline"
-                onClick={() => setPlayerCount(Math.min(20, playerCount + 1))}
-                data-testid="button-increase-players"
-              >
-                <ChevronUp className="w-5 h-5" />
-              </Button>
-            </div>
-
-            <div className="bg-muted/30 p-4 rounded-lg text-center space-y-2">
-              <p className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Character Breakdown</p>
-              <div className="flex flex-wrap justify-center gap-2" data-testid="text-breakdown">
-                <Badge variant="secondary" className={teamBadge('townsfolk')}>
-                  {breakdown.townsfolk} Townsfolk
-                </Badge>
-                <Badge variant="secondary" className={teamBadge('outsider')}>
-                  {breakdown.outsiders} Outsiders
-                </Badge>
-                <Badge variant="secondary" className={teamBadge('minion')}>
-                  {breakdown.minions} Minions
-                </Badge>
-                <Badge variant="secondary" className={teamBadge('demon')}>
-                  {breakdown.demons} Demon
-                </Badge>
-                {'travelers' in breakdown && breakdown.travelers > 0 && (
-                  <Badge variant="secondary" className={teamBadge('traveler')}>
-                    + {breakdown.travelers} {breakdown.travelers === 1 ? 'Traveler' : 'Travelers'}
-                  </Badge>
-                )}
-              </div>
-            </div>
-
-            <div className="flex justify-between pt-4">
-              <Button variant="ghost" onClick={() => setStep(2)} data-testid="button-back">
-                <ChevronLeft className="w-4 h-4 mr-1" /> Back
-              </Button>
-              <Button onClick={handleCountConfirm} data-testid="button-count-next">
-                Next <ChevronRight className="w-4 h-4 ml-1" />
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {step === 4 && (
-          <div className="space-y-6 animate-in fade-in duration-300">
-            <div className="text-center space-y-2">
-              <h2 className="text-2xl font-display text-amber-100">Player Names</h2>
-              <p className="text-muted-foreground text-sm">Enter names or leave defaults</p>
-            </div>
-
-            <div className="grid gap-3">
-              {playerNames.map((name, i) => (
-                <div key={i} className="flex items-center gap-3">
-                  <span className="text-muted-foreground text-sm w-6 text-right">{i + 1}.</span>
-                  <Input
-                    value={name}
-                    onChange={(e) => handleNameChange(i, e.target.value)}
-                    placeholder={getDefaultName(i)}
-                    data-testid={`input-player-name-${i}`}
-                    className={playerCount > 15 && i >= 15 ? teamInputAccent('traveler') : ""}
+          {selectedScript && (
+            <Collapsible open={previewOpen} onOpenChange={setPreviewOpen}>
+              <CollapsibleTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full justify-between text-muted-foreground"
+                  data-testid="button-preview-toggle"
+                >
+                  <span className="flex items-center gap-2">
+                    <BookOpen className="w-4 h-4" />
+                    {previewOpen ? "Hide characters" : "Preview characters"}
+                  </span>
+                  {previewOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <div className="max-h-[55vh] overflow-y-auto rounded-lg border border-border/60 p-2 mt-2" data-testid="step-script-preview">
+                  <ScriptView
+                    characters={previewCharacters}
+                    toolbarClassName="mb-4 flex flex-wrap justify-end gap-2"
                   />
-                  {playerCount > 15 && i >= 15 && (
-                    <Badge variant="secondary" className={cn(teamBadge('traveler'), "shrink-0")}>
-                      Traveler
-                    </Badge>
-                  )}
                 </div>
-              ))}
-            </div>
+              </CollapsibleContent>
+            </Collapsible>
+          )}
+        </div>
 
-            <div className="flex justify-between pt-4">
-              <Button variant="ghost" onClick={() => setStep(3)} data-testid="button-back-names">
-                <ChevronLeft className="w-4 h-4 mr-1" /> Back
-              </Button>
-              <Button onClick={handleStartGame} data-testid="button-start-game">
-                <Play className="w-4 h-4 mr-2" /> Start Game
-              </Button>
+        <div className="space-y-6 border-t border-border/60 pt-8">
+          <div className="text-center space-y-2">
+            <Users className="w-12 h-12 mx-auto text-amber-500 mb-2" />
+            <h2 className="text-2xl font-display text-amber-100">How many players?</h2>
+            <p className="text-muted-foreground text-sm">Select the number of players in your game</p>
+          </div>
+
+          <div className="flex items-center justify-center gap-6 py-2">
+            <Button
+              size="icon"
+              variant="outline"
+              onClick={() => setPlayerCount(Math.max(5, playerCount - 1))}
+              data-testid="button-decrease-players"
+            >
+              <ChevronDown className="w-5 h-5" />
+            </Button>
+            <div className="text-5xl md:text-6xl font-display text-amber-100 w-20 text-center" data-testid="text-player-count">
+              {playerCount}
+            </div>
+            <Button
+              size="icon"
+              variant="outline"
+              onClick={() => setPlayerCount(Math.min(20, playerCount + 1))}
+              data-testid="button-increase-players"
+            >
+              <ChevronUp className="w-5 h-5" />
+            </Button>
+          </div>
+
+          <div className="bg-muted/30 p-4 rounded-lg text-center space-y-2">
+            <p className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Character Breakdown</p>
+            <div className="flex flex-wrap justify-center gap-2" data-testid="text-breakdown">
+              <Badge variant="secondary" className={teamBadge('townsfolk')}>
+                {breakdown.townsfolk} Townsfolk
+              </Badge>
+              <Badge variant="secondary" className={teamBadge('outsider')}>
+                {breakdown.outsiders} Outsiders
+              </Badge>
+              <Badge variant="secondary" className={teamBadge('minion')}>
+                {breakdown.minions} Minions
+              </Badge>
+              <Badge variant="secondary" className={teamBadge('demon')}>
+                {breakdown.demons} Demon
+              </Badge>
+              {'travelers' in breakdown && breakdown.travelers > 0 && (
+                <Badge variant="secondary" className={teamBadge('traveler')}>
+                  + {breakdown.travelers} {breakdown.travelers === 1 ? 'Traveler' : 'Travelers'}
+                </Badge>
+              )}
             </div>
           </div>
-        )}
 
-        {step === 1 && (
-          <div className="space-y-6 animate-in fade-in duration-300">
-            <div className="text-center space-y-2">
-              <Scroll className="w-12 h-12 mx-auto text-amber-500 mb-4" />
-              <h2 className="text-2xl font-display text-amber-100">Select Script</h2>
-              <p className="text-muted-foreground text-sm">Optional: Choose a script to filter character claims</p>
+          <p className="text-center text-sm text-muted-foreground" data-testid="text-rename-hint">
+            Seats fill as Player 1-N. Tap any name to rename during play.
+          </p>
+        </div>
+
+        <div className="flex justify-end pt-2">
+          <Button onClick={handleStartGame} size="lg" data-testid="button-start-game">
+            <Play className="w-4 h-4 mr-2" /> Start Game
+          </Button>
+        </div>
+      </Card>
+
+      <Drawer open={scriptDrawerOpen} onOpenChange={setScriptDrawerOpen}>
+        <DrawerContent className="max-h-[85vh]">
+          <DrawerHeader>
+            <DrawerTitle>Select a script</DrawerTitle>
+          </DrawerHeader>
+          <div className="overflow-y-auto px-4 pb-6 space-y-3">
+            <button
+              onClick={() => handleSelectScript(null)}
+              className={cn(
+                "w-full text-left p-4 rounded-lg border transition-colors",
+                !selectedScript
+                  ? "bg-amber-900/30 border-amber-600 ring-1 ring-amber-500/50"
+                  : "bg-card border-border hover-elevate"
+              )}
+              data-testid="button-no-script"
+            >
+              <div className="flex items-center gap-3">
+                <BookOpen className="w-5 h-5 text-muted-foreground" />
+                <div>
+                  <div className="font-medium">All Characters</div>
+                  <div className="text-sm text-muted-foreground">No script filter - show all characters when claiming</div>
+                </div>
+              </div>
+            </button>
+
+            <div className="pt-2 pb-1">
+              <span className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Official Scripts</span>
             </div>
 
-            <div className="space-y-3">
+            {allScripts.filter(s => s.isOfficial && !s.isCommunity).map(script => (
               <button
-                onClick={() => setSelectedScript(null)}
+                key={script.id}
+                onClick={() => handleSelectScript(script)}
                 className={cn(
                   "w-full text-left p-4 rounded-lg border transition-colors",
-                  !selectedScript 
-                    ? "bg-amber-900/30 border-amber-600 ring-1 ring-amber-500/50" 
+                  selectedScript?.id === script.id
+                    ? "bg-amber-900/30 border-amber-600 ring-1 ring-amber-500/50"
                     : "bg-card border-border hover-elevate"
                 )}
-                data-testid="button-no-script"
+                data-testid={`button-script-${script.id}`}
               >
                 <div className="flex items-center gap-3">
-                  <BookOpen className="w-5 h-5 text-muted-foreground" />
+                  <Scroll className="w-5 h-5 text-amber-500/70" />
                   <div>
-                    <div className="font-medium">All Characters</div>
-                    <div className="text-sm text-muted-foreground">No script filter - show all characters when claiming</div>
+                    <div className="font-medium">{script.name}</div>
+                    <div className="text-sm text-muted-foreground">{countScriptCharacters(script)} characters</div>
                   </div>
                 </div>
               </button>
+            ))}
 
-              <div className="pt-2 pb-1">
-                <span className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Official Scripts</span>
-              </div>
-
-              {allScripts.filter(s => s.isOfficial && !s.isCommunity).map(script => (
-                <button
-                  key={script.id}
-                  onClick={() => setSelectedScript(script)}
-                  className={cn(
-                    "w-full text-left p-4 rounded-lg border transition-colors",
-                    selectedScript?.id === script.id
-                      ? "bg-amber-900/30 border-amber-600 ring-1 ring-amber-500/50" 
-                      : "bg-card border-border hover-elevate"
-                  )}
-                  data-testid={`button-script-${script.id}`}
-                >
-                  <div className="flex items-center gap-3">
-                    <Scroll className="w-5 h-5 text-amber-500/70" />
-                    <div>
-                      <div className="font-medium">{script.name}</div>
-                      <div className="text-sm text-muted-foreground">{countScriptCharacters(script)} characters</div>
-                    </div>
-                  </div>
-                </button>
-              ))}
-
-              <div className="pt-2 pb-1">
-                <span className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Community Scripts</span>
-              </div>
-
-              {allScripts.filter(s => s.isOfficial && s.isCommunity).map(script => (
-                <button
-                  key={script.id}
-                  onClick={() => setSelectedScript(script)}
-                  className={cn(
-                    "w-full text-left p-4 rounded-lg border transition-colors",
-                    selectedScript?.id === script.id
-                      ? "bg-teal-900/30 border-teal-600 ring-1 ring-teal-500/50" 
-                      : "bg-card border-border hover-elevate"
-                  )}
-                  data-testid={`button-script-${script.id}`}
-                >
-                  <div className="flex items-center gap-3">
-                    <Users className="w-5 h-5 text-teal-500/70" />
-                    <div>
-                      <div className="font-medium">{script.name}</div>
-                      <div className="text-sm text-muted-foreground">{countScriptCharacters(script)} characters</div>
-                    </div>
-                  </div>
-                </button>
-              ))}
-
-              <div className="pt-2 pb-1">
-                <span className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Custom Scripts</span>
-              </div>
-              {customScripts.map(script => (
-                <div
-                  key={script.id}
-                  className={cn(
-                    "w-full text-left p-4 rounded-lg border transition-colors flex items-center gap-2",
-                    selectedScript?.id === script.id
-                      ? "bg-purple-900/30 border-purple-600 ring-1 ring-purple-500/50" 
-                      : "bg-card border-border"
-                  )}
-                >
-                  <button
-                    onClick={() => setSelectedScript(script)}
-                    className="flex-1 flex items-center gap-3 hover-elevate rounded-lg -m-2 p-2"
-                    data-testid={`button-script-${script.id}`}
-                  >
-                    <Scroll className="w-5 h-5 text-purple-500/70" />
-                    <div>
-                      <div className="font-medium">{script.name}</div>
-                      <div className="text-sm text-muted-foreground">{countScriptCharacters(script)} characters</div>
-                    </div>
-                  </button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setEditingScript(script);
-                      setShowScriptBuilder(true);
-                    }}
-                    data-testid={`button-edit-script-${script.id}`}
-                  >
-                    <Pencil className="w-4 h-4 text-muted-foreground" />
-                  </Button>
-                </div>
-              ))}
-              <button
-                onClick={() => {
-                  setEditingScript(null);
-                  setScannedCharacters(null);
-                  setShowScriptBuilder(true);
-                }}
-                className="w-full text-left p-4 rounded-lg border border-dashed border-purple-700/50 hover-elevate transition-colors flex items-center gap-3"
-                data-testid="button-create-custom-script"
-              >
-                <Plus className="w-5 h-5 text-purple-500/70" />
-                <div className="font-medium text-purple-400">Create Custom Script</div>
-              </button>
-              <button
-                onClick={() => scanInputRef.current?.click()}
-                disabled={scanning}
-                className="w-full text-left p-4 rounded-lg border border-dashed border-amber-700/50 hover-elevate transition-colors flex items-center gap-3 disabled:opacity-60"
-                data-testid="button-scan-paper-script"
-              >
-                {scanning ? (
-                  <Loader2 className="w-5 h-5 text-amber-500/70 animate-spin" />
-                ) : (
-                  <Camera className="w-5 h-5 text-amber-500/70" />
-                )}
-                <div>
-                  <div className="font-medium text-amber-400">{scanning ? "Scanning photo..." : "Scan Paper Script"}</div>
-                  <div className="text-sm text-muted-foreground">Take a photo of a printed script to build it automatically</div>
-                </div>
-              </button>
-              <input
-                ref={scanInputRef}
-                type="file"
-                accept="image/*"
-                capture="environment"
-                className="hidden"
-                onChange={handleScanScript}
-                data-testid="input-scan-paper-script"
-              />
+            <div className="pt-2 pb-1">
+              <span className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Community Scripts</span>
             </div>
+
+            {allScripts.filter(s => s.isOfficial && s.isCommunity).map(script => (
+              <button
+                key={script.id}
+                onClick={() => handleSelectScript(script)}
+                className={cn(
+                  "w-full text-left p-4 rounded-lg border transition-colors",
+                  selectedScript?.id === script.id
+                    ? "bg-teal-900/30 border-teal-600 ring-1 ring-teal-500/50"
+                    : "bg-card border-border hover-elevate"
+                )}
+                data-testid={`button-script-${script.id}`}
+              >
+                <div className="flex items-center gap-3">
+                  <Users className="w-5 h-5 text-teal-500/70" />
+                  <div>
+                    <div className="font-medium">{script.name}</div>
+                    <div className="text-sm text-muted-foreground">{countScriptCharacters(script)} characters</div>
+                  </div>
+                </div>
+              </button>
+            ))}
+
+            <div className="pt-2 pb-1">
+              <span className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Custom Scripts</span>
+            </div>
+            {customScripts.map(script => (
+              <div
+                key={script.id}
+                className={cn(
+                  "w-full text-left p-4 rounded-lg border transition-colors flex items-center gap-2",
+                  selectedScript?.id === script.id
+                    ? "bg-purple-900/30 border-purple-600 ring-1 ring-purple-500/50"
+                    : "bg-card border-border"
+                )}
+              >
+                <button
+                  onClick={() => handleSelectScript(script)}
+                  className="flex-1 flex items-center gap-3 hover-elevate rounded-lg -m-2 p-2"
+                  data-testid={`button-script-${script.id}`}
+                >
+                  <Scroll className="w-5 h-5 text-purple-500/70" />
+                  <div>
+                    <div className="font-medium">{script.name}</div>
+                    <div className="text-sm text-muted-foreground">{countScriptCharacters(script)} characters</div>
+                  </div>
+                </button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setEditingScript(script);
+                    setScriptDrawerOpen(false);
+                    setShowScriptBuilder(true);
+                  }}
+                  data-testid={`button-edit-script-${script.id}`}
+                >
+                  <Pencil className="w-4 h-4 text-muted-foreground" />
+                </Button>
+              </div>
+            ))}
+            <button
+              onClick={() => {
+                setEditingScript(null);
+                setScannedCharacters(null);
+                setScriptDrawerOpen(false);
+                setShowScriptBuilder(true);
+              }}
+              className="w-full text-left p-4 rounded-lg border border-dashed border-purple-700/50 hover-elevate transition-colors flex items-center gap-3"
+              data-testid="button-create-custom-script"
+            >
+              <Plus className="w-5 h-5 text-purple-500/70" />
+              <div className="font-medium text-purple-400">Create Custom Script</div>
+            </button>
+            <button
+              onClick={() => scanInputRef.current?.click()}
+              disabled={scanning}
+              className="w-full text-left p-4 rounded-lg border border-dashed border-amber-700/50 hover-elevate transition-colors flex items-center gap-3 disabled:opacity-60"
+              data-testid="button-scan-paper-script"
+            >
+              {scanning ? (
+                <Loader2 className="w-5 h-5 text-amber-500/70 animate-spin" />
+              ) : (
+                <Camera className="w-5 h-5 text-amber-500/70" />
+              )}
+              <div>
+                <div className="font-medium text-amber-400">{scanning ? "Scanning photo..." : "Scan Paper Script"}</div>
+                <div className="text-sm text-muted-foreground">Take a photo of a printed script to build it automatically</div>
+              </div>
+            </button>
+            <input
+              ref={scanInputRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              className="hidden"
+              onChange={handleScanScript}
+              data-testid="input-scan-paper-script"
+            />
 
             {scanning && (
               <div className="flex items-center gap-2 pt-2 text-sm text-amber-400" data-testid="status-scanning">
@@ -446,51 +451,9 @@ export function SetupWizard({ onStart }: { onStart: (count: number, names: strin
                 Reading your photo… the review screen will open in a moment.
               </div>
             )}
-            <div className="flex justify-end pt-4">
-              <Button onClick={() => setStep(2)} disabled={scanning} data-testid="button-next-step">
-                Next <ChevronRight className="w-4 h-4 ml-1" />
-              </Button>
-            </div>
           </div>
-        )}
-
-        {step === 2 && (
-          <div className="space-y-6 animate-in fade-in duration-300" data-testid="step-script-preview">
-            <div className="text-center space-y-2">
-              <BookOpen className="w-12 h-12 mx-auto text-amber-500 mb-4" />
-              <h2 className="text-2xl font-display text-amber-100">
-                {selectedScript ? selectedScript.name : "All Characters"}
-              </h2>
-              <p className="text-muted-foreground text-sm">
-                {selectedScript
-                  ? "Review the characters on this script before you start."
-                  : "No script selected. Every character will be available when claiming."}
-              </p>
-            </div>
-
-            {selectedScript ? (
-              <div className="max-h-[60vh] overflow-y-auto rounded-lg border border-border/60 p-2">
-                <ScriptView
-                  characters={resolveScriptCharacters(selectedScript, { includeTravellers: false, includeFabled: false })}
-                />
-              </div>
-            ) : (
-              <div className="bg-muted/30 p-6 rounded-lg text-center text-sm text-muted-foreground" data-testid="text-preview-all-characters">
-                You picked All Characters, so there is nothing to preview here. You can claim any character once the game starts.
-              </div>
-            )}
-
-            <div className="flex justify-between pt-4">
-              <Button variant="ghost" onClick={() => setStep(1)} data-testid="button-preview-back">
-                <ChevronLeft className="w-4 h-4 mr-1" /> Back
-              </Button>
-              <Button onClick={() => setStep(3)} data-testid="button-preview-next">
-                Next <ChevronRight className="w-4 h-4 ml-1" />
-              </Button>
-            </div>
-          </div>
-        )}
-      </Card>
+        </DrawerContent>
+      </Drawer>
 
       <ScriptBuilderDialog
         open={showScriptBuilder}

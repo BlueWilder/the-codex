@@ -38,6 +38,7 @@ export function ScriptView({
   expandedId: controlledExpandedId,
   onToggle: controlledOnToggle,
   className,
+  toolbarClassName = "sticky top-16 md:top-24 z-10 -mx-1 mb-4 flex flex-wrap justify-end gap-2 bg-background/80 backdrop-blur-sm px-1 py-2",
   emptyMessage = "No souls found matching your inquiry.",
 }: {
   characters: Character[];
@@ -47,6 +48,7 @@ export function ScriptView({
   expandedId?: string | null;
   onToggle?: (charId: string) => void;
   className?: string;
+  toolbarClassName?: string;
   emptyMessage?: string;
 }) {
   const [internalExpandedId, setInternalExpandedId] = useState<string | null>(null);
@@ -84,7 +86,7 @@ export function ScriptView({
 
   return (
     <div className={className}>
-      <div className="sticky top-16 md:top-24 z-10 -mx-1 mb-4 flex flex-wrap justify-end gap-2 bg-background/80 backdrop-blur-sm px-1 py-2">
+      <div className={toolbarClassName}>
         {sortOrder === "night" && (
           <div className="inline-flex items-center gap-1 rounded-full border border-amber-900/30 bg-black/20 p-1">
             {NIGHT_VIEW_OPTIONS.map(({ value, label, icon: Icon, testId }) => (
