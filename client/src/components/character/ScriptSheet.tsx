@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Shield, User, Skull, Flame, Footprints, Star, LayoutList, Clock, type LucideIcon } from "lucide-react";
+import { User, VenetianMask, Ghost, Footprints, Star, LayoutList, Clock, type LucideIcon } from "lucide-react";
 import { type Character, type Jinx, JINXES } from "@/lib/game-data";
 import { cn } from "@/lib/utils";
 import { sortCharacters, nightOrderValue, type ScriptSort } from "@/lib/night-order";
@@ -56,17 +56,33 @@ function teamSheet(team: string) {
   return TEAM_SHEET[team] ?? FALLBACK_SHEET;
 }
 
+/** A horned demon drawn inline so the Demon glyph is not a stock lucide icon. */
+function DemonGlyph({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6}
+         strokeLinecap="round" strokeLinejoin="round" className={className}
+         aria-hidden="true">
+      <path d="M6 7C5 5.5 4.5 4 5 3c1 .5 2 1.5 2.5 3" />
+      <path d="M18 7c1-1.5 1.5-3 1-4-1 .5-2 1.5-2.5 3" />
+      <path d="M5 11a7 7 0 0 1 14 0c0 5-3 9-7 9s-7-4-7-9Z" />
+      <path d="M9.5 12.5 8 11.5" />
+      <path d="M16 12.5 14.5 11.5" />
+      <path d="M10 16c1 1 3 1 4 0" />
+    </svg>
+  );
+}
+
 // Placeholder. Real per-character token art swaps in here once an image field
 // exists on Character.
-function getTeamToken(team: string): LucideIcon {
+function getTeamToken(team: string): React.ComponentType<{ className?: string }> {
   switch (team) {
-    case "townsfolk": return Shield;
-    case "outsider": return User;
-    case "minion": return Skull;
-    case "demon": return Flame;
+    case "townsfolk": return User;
+    case "outsider": return VenetianMask;
+    case "minion": return Ghost;
+    case "demon": return DemonGlyph;
     case "traveler": return Footprints;
     case "fabled": return Star;
-    default: return Shield;
+    default: return User;
   }
 }
 
