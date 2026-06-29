@@ -17,10 +17,10 @@ function renderWizard(onStart: (count: number, names: string[], script?: any) =>
   );
 }
 
-function cardIds(): string[] {
+function sheetCharIds(): string[] {
   return screen
-    .getAllByTestId(/^card-character-/)
-    .map(el => el.getAttribute("data-testid")!.replace("card-character-", ""));
+    .getAllByTestId(/^script-sheet-char-/)
+    .map(el => el.getAttribute("data-testid")!.replace("script-sheet-char-", ""));
 }
 
 const TB = OFFICIAL_SCRIPTS.find(s => s.id === "tb")!;
@@ -41,24 +41,35 @@ beforeEach(() => {
 
 afterEach(() => cleanup());
 
-describe("SetupWizard single-screen setup", () => {
-  it("renders a single screen with no numbered stepper or names step", () => {
+describe("SetupWizard script-sheet setup", () => {
+  it("renders the two cards, breakdown, start button and rename hint", () => {
     renderWizard();
 
-    // Single screen shows the script selector, player count and start button together.
+    expect(screen.getByTestId("card-script")).toBeTruthy();
+    expect(screen.getByTestId("card-players")).toBeTruthy();
     expect(screen.getByTestId("button-script-selector")).toBeTruthy();
     expect(screen.getByTestId("text-player-count")).toBeTruthy();
+    expect(screen.getByTestId("text-breakdown")).toBeTruthy();
     expect(screen.getByTestId("button-start-game")).toBeTruthy();
     expect(screen.getByTestId("text-rename-hint")).toBeTruthy();
 
-    // No player name inputs exist anymore.
+    // No player name inputs and no removed preview/player-count block markers.
     expect(screen.queryByTestId("input-player-name-0")).toBeNull();
+    expect(screen.queryByTestId("button-preview-toggle")).toBeNull();
+    expect(screen.queryByTestId("step-script-preview")).toBeNull();
   });
 
-  it("opens the script picker drawer when the selector bar is tapped", () => {
+  it("shows the nudge and no sheet until a real script is selected", () => {
     renderWizard();
 
-    // Drawer list items are not present until the selector is tapped.
+    // Default selection is All Characters: nudge shown, no sheet.
+    expect(screen.getByTestId("text-script-nudge")).toBeTruthy();
+    expect(screen.queryByTestId("script-sheet")).toBeNull();
+  });
+
+  it("opens the script picker drawer when the script card is tapped", () => {
+    renderWizard();
+
     expect(screen.queryByTestId("button-script-tb")).toBeNull();
 
     fireEvent.click(screen.getByTestId("button-script-selector"));
@@ -69,52 +80,58 @@ describe("SetupWizard single-screen setup", () => {
     expect(screen.getByTestId("button-scan-paper-script")).toBeTruthy();
   });
 
-  it("has no preview expander until a real script is selected", () => {
-    renderWizard();
-
-    // Default selection is All Characters: no preview toggle.
-    expect(screen.queryByTestId("button-preview-toggle")).toBeNull();
-
-    fireEvent.click(screen.getByTestId("button-script-selector"));
-    fireEvent.click(screen.getByTestId("button-script-tb"));
-
-    // Selecting a script reveals the preview toggle, but it stays closed by default.
-    expect(screen.getByTestId("button-preview-toggle")).toBeTruthy();
-    expect(screen.queryByTestId("step-script-preview")).toBeNull();
-    expect(screen.queryByTestId(/^card-character-/)).toBeNull();
-  });
-
-  it("previews the selected script using the shared ScriptView when expanded", () => {
+  it("paints the script sheet when a script is selected", () => {
     renderWizard();
 
     fireEvent.click(screen.getByTestId("button-script-selector"));
     fireEvent.click(screen.getByTestId("button-script-tb"));
-    fireEvent.click(screen.getByTestId("button-preview-toggle"));
 
-    expect(screen.getByTestId("step-script-preview")).toBeTruthy();
+    // Nudge gone, sheet present with the sort toggle.
+    expect(screen.queryByTestId("text-script-nudge")).toBeNull();
+    expect(screen.getByTestId("script-sheet")).toBeTruthy();
+    expect(screen.getByTestId("button-sheet-sort-team")).toBeTruthy();
+    expect(screen.getByTestId("button-sheet-sort-night")).toBeTruthy();
 
-    // Reuses ScriptView: its sort toggle is present.
-    expect(screen.getByTestId("button-sort-team")).toBeTruthy();
-    expect(screen.getByTestId("button-sort-night")).toBeTruthy();
-
-    // The previewed set matches the resolver (no travellers, no fabled).
+    // The sheet shows the resolver's set (no travellers, no fabled).
     expect(EXPECTED.length).toBeGreaterThan(0);
-    expect(cardIds().sort()).toEqual([...EXPECTED].sort());
-    expect(cardIds()).toContain("washerwoman");
-    expect(cardIds()).toContain("imp");
+    expect(sheetCharIds().sort()).toEqual([...EXPECTED].sort());
+    expect(sheetCharIds()).toContain("washerwoman");
+    expect(sheetCharIds()).toContain("imp");
   });
 
-  it("toggling By Night reveals the First/Other sub-toggle inside the preview", () => {
+  it("renders team sections in order with counts by default", () => {
     renderWizard();
 
     fireEvent.click(screen.getByTestId("button-script-selector"));
     fireEvent.click(screen.getByTestId("button-script-tb"));
-    fireEvent.click(screen.getByTestId("button-preview-toggle"));
 
-    expect(screen.queryByTestId("button-night-first")).toBeNull();
-    fireEvent.click(screen.getByTestId("button-sort-night"));
-    expect(screen.getByTestId("button-night-first")).toBeTruthy();
-    expect(screen.getByTestId("button-night-other")).toBeTruthy();
+    // Trouble Brewing has the four core teams.
+    expect(screen.getByTestId("script-sheet-section-townsfolk")).toBeTruthy();
+    expect(screen.getByTestId("script-sheet-section-outsider")).toBeTruthy();
+    expect(screen.getByTestId("script-sheet-section-minion")).toBeTruthy();
+    expect(screen.getByTestId("script-sheet-section-demon")).toBeTruthy();
+
+    // Section header shows the team name and count, e.g. "Demon (1)".
+    expect(screen.getByTestId("script-sheet-section-demon").textContent).toContain("Demon (1)");
+  });
+
+  it("swaps to night order and shows night numbers in the tokens", () => {
+    renderWizard();
+
+    fireEvent.click(screen.getByTestId("button-script-selector"));
+    fireEvent.click(screen.getByTestId("button-script-tb"));
+
+    // By Team default: no flat section, the demon section exists.
+    expect(screen.getByTestId("script-sheet-section-demon")).toBeTruthy();
+
+    fireEvent.click(screen.getByTestId("button-sheet-sort-night"));
+
+    // Team sections collapse into a single night-ordered list.
+    expect(screen.queryByTestId("script-sheet-section-demon")).toBeNull();
+
+    // The Imp wakes at night, so its token shows a number.
+    const impRow = screen.getByTestId("script-sheet-char-imp");
+    expect(/\d/.test(impRow.textContent || "")).toBe(true);
   });
 
   it("starts the game with default seat names and the chosen script", () => {

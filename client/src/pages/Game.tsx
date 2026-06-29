@@ -8,7 +8,7 @@ import { InlineGameLog } from "@/components/InlineGameLog";
 import { TrustSlider } from "@/components/TrustSlider";
 import { scanScriptFile } from "@/lib/scan-script";
 import { resolveScriptCharacters, countScriptCharacters } from "@/lib/script-resolve";
-import { ScriptView } from "@/components/character/ScriptView";
+import { ScriptSheet } from "@/components/character/ScriptSheet";
 import { useToast } from "@/hooks/use-toast";
 import { ChevronRight, ChevronLeft, Play, X, Plus, Check, Search, Moon, Sun, ChevronUp, ChevronDown, FileText, Vote, Loader2, GripVertical, UserPlus, ArrowRight, BookOpen, HandMetal, Ban, LogOut, Trash2, Pencil, MoreVertical, RotateCcw, Info, ExternalLink, Users, Skull, Ghost, Scroll, Hand, Target, Theater, ArrowDownUp, Camera } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -19,7 +19,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerClose } from "@/components/ui/drawer";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
@@ -75,7 +74,6 @@ export function SetupWizard({ onStart }: { onStart: (count: number, names: strin
   const [playerCount, setPlayerCount] = useState(8);
   const [selectedScript, setSelectedScript] = useState<LocalScript | null>(null);
   const [scriptDrawerOpen, setScriptDrawerOpen] = useState(false);
-  const [previewOpen, setPreviewOpen] = useState(false);
   const [showScriptBuilder, setShowScriptBuilder] = useState(false);
   const [editingScript, setEditingScript] = useState<LocalScript | null>(null);
   const [scannedCharacters, setScannedCharacters] = useState<Set<string> | null>(null);
@@ -92,7 +90,6 @@ export function SetupWizard({ onStart }: { onStart: (count: number, names: strin
 
   const handleSelectScript = (script: LocalScript | null) => {
     setSelectedScript(script);
-    setPreviewOpen(false);
     setScriptDrawerOpen(false);
   };
 
@@ -152,29 +149,20 @@ export function SetupWizard({ onStart }: { onStart: (count: number, names: strin
     onStart(playerCount, finalNames, scriptRef);
   };
 
-  const previewCharacters = selectedScript
+  const sheetCharacters = selectedScript
     ? resolveScriptCharacters(selectedScript, { includeTravellers: false, includeFabled: false })
     : [];
 
   return (
-    <div className="max-w-2xl mx-auto py-8">
+    <div className="max-w-4xl mx-auto py-8">
       <h1 className="text-3xl md:text-4xl font-display text-amber-500 mb-8 text-center">New Game</h1>
 
-      <Card className="p-6 md:p-8 space-y-8">
-        <div className="space-y-3">
-          <div className="space-y-1">
-            <h2 className="text-2xl font-display text-amber-100">Script</h2>
-            <p className="text-muted-foreground text-sm">Choose a script to filter character claims, or start with all characters.</p>
-          </div>
-
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+        <Card className="p-4 flex flex-col" data-testid="card-script">
+          <div className="text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-2">Script</div>
           <button
             onClick={() => setScriptDrawerOpen(true)}
-            className={cn(
-              "w-full text-left p-4 rounded-lg border transition-colors flex items-center gap-3",
-              selectedScript
-                ? "bg-card border-border hover-elevate"
-                : "bg-amber-900/20 border-amber-600 ring-1 ring-amber-500/40 hover-elevate"
-            )}
+            className="w-full flex-1 text-left flex items-center gap-3 rounded-lg hover-elevate -m-1 p-1"
             data-testid="button-script-selector"
           >
             {selectedScript ? (
@@ -197,43 +185,11 @@ export function SetupWizard({ onStart }: { onStart: (count: number, names: strin
             </div>
             <ChevronRight className="w-5 h-5 text-muted-foreground shrink-0" />
           </button>
+        </Card>
 
-          {selectedScript && (
-            <Collapsible open={previewOpen} onOpenChange={setPreviewOpen}>
-              <CollapsibleTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full justify-between text-muted-foreground"
-                  data-testid="button-preview-toggle"
-                >
-                  <span className="flex items-center gap-2">
-                    <BookOpen className="w-4 h-4" />
-                    {previewOpen ? "Hide characters" : "Preview characters"}
-                  </span>
-                  {previewOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                </Button>
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                <div className="max-h-[55vh] overflow-y-auto rounded-lg border border-border/60 p-2 mt-2" data-testid="step-script-preview">
-                  <ScriptView
-                    characters={previewCharacters}
-                    toolbarClassName="mb-4 flex flex-wrap justify-end gap-2"
-                  />
-                </div>
-              </CollapsibleContent>
-            </Collapsible>
-          )}
-        </div>
-
-        <div className="space-y-6 border-t border-border/60 pt-8">
-          <div className="text-center space-y-2">
-            <Users className="w-12 h-12 mx-auto text-amber-500 mb-2" />
-            <h2 className="text-2xl font-display text-amber-100">How many players?</h2>
-            <p className="text-muted-foreground text-sm">Select the number of players in your game</p>
-          </div>
-
-          <div className="flex items-center justify-center gap-6 py-2">
+        <Card className="p-4 flex flex-col" data-testid="card-players">
+          <div className="text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-2">Players</div>
+          <div className="flex flex-1 items-center justify-center gap-4">
             <Button
               size="icon"
               variant="outline"
@@ -242,7 +198,7 @@ export function SetupWizard({ onStart }: { onStart: (count: number, names: strin
             >
               <ChevronDown className="w-5 h-5" />
             </Button>
-            <div className="text-5xl md:text-6xl font-display text-amber-100 w-20 text-center" data-testid="text-player-count">
+            <div className="text-4xl md:text-5xl font-display text-amber-100 w-16 text-center" data-testid="text-player-count">
               {playerCount}
             </div>
             <Button
@@ -254,41 +210,49 @@ export function SetupWizard({ onStart }: { onStart: (count: number, names: strin
               <ChevronUp className="w-5 h-5" />
             </Button>
           </div>
+        </Card>
+      </div>
 
-          <div className="bg-muted/30 p-4 rounded-lg text-center space-y-2">
-            <p className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Character Breakdown</p>
-            <div className="flex flex-wrap justify-center gap-2" data-testid="text-breakdown">
-              <Badge variant="secondary" className={teamBadge('townsfolk')}>
-                {breakdown.townsfolk} Townsfolk
-              </Badge>
-              <Badge variant="secondary" className={teamBadge('outsider')}>
-                {breakdown.outsiders} Outsiders
-              </Badge>
-              <Badge variant="secondary" className={teamBadge('minion')}>
-                {breakdown.minions} Minions
-              </Badge>
-              <Badge variant="secondary" className={teamBadge('demon')}>
-                {breakdown.demons} Demon
-              </Badge>
-              {'travelers' in breakdown && breakdown.travelers > 0 && (
-                <Badge variant="secondary" className={teamBadge('traveler')}>
-                  + {breakdown.travelers} {breakdown.travelers === 1 ? 'Traveler' : 'Travelers'}
-                </Badge>
-              )}
-            </div>
-          </div>
-
-          <p className="text-center text-sm text-muted-foreground" data-testid="text-rename-hint">
-            Seats fill as Player 1-N. Tap any name to rename during play.
-          </p>
+      <div className="bg-muted/30 p-4 rounded-lg text-center space-y-2 mb-4">
+        <p className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Character Breakdown</p>
+        <div className="flex flex-wrap justify-center gap-2" data-testid="text-breakdown">
+          <Badge variant="secondary" className={teamBadge('townsfolk')}>
+            {breakdown.townsfolk} Townsfolk
+          </Badge>
+          <Badge variant="secondary" className={teamBadge('outsider')}>
+            {breakdown.outsiders} Outsiders
+          </Badge>
+          <Badge variant="secondary" className={teamBadge('minion')}>
+            {breakdown.minions} Minions
+          </Badge>
+          <Badge variant="secondary" className={teamBadge('demon')}>
+            {breakdown.demons} Demon
+          </Badge>
+          {'travelers' in breakdown && breakdown.travelers > 0 && (
+            <Badge variant="secondary" className={teamBadge('traveler')}>
+              + {breakdown.travelers} {breakdown.travelers === 1 ? 'Traveler' : 'Travelers'}
+            </Badge>
+          )}
         </div>
+      </div>
 
-        <div className="flex justify-end pt-2">
-          <Button onClick={handleStartGame} size="lg" data-testid="button-start-game">
-            <Play className="w-4 h-4 mr-2" /> Start Game
-          </Button>
+      {selectedScript ? (
+        <ScriptSheet characters={sheetCharacters} scriptName={selectedScript.name} />
+      ) : (
+        <div className="py-12 text-center text-muted-foreground" data-testid="text-script-nudge">
+          Pick a script to see the full character sheet.
         </div>
-      </Card>
+      )}
+
+      <p className="text-center text-sm text-muted-foreground mt-6" data-testid="text-rename-hint">
+        Seats fill as Player 1-N. Tap any name to rename during play.
+      </p>
+
+      <div className="flex justify-center pt-4">
+        <Button onClick={handleStartGame} size="lg" data-testid="button-start-game">
+          <Play className="w-4 h-4 mr-2" /> Start Game
+        </Button>
+      </div>
 
       <Drawer open={scriptDrawerOpen} onOpenChange={setScriptDrawerOpen}>
         <DrawerContent className="max-h-[85vh]">
