@@ -1,0 +1,27 @@
+Repo hygiene: remove stray committed prompt dumps and stop them being tracked. Follow the Agent Prompt Contract in replit.md.
+
+CONTEXT /
+The last docs push committed a stray prompt-text file at the repo root: a file named like "...-md-No-code-changes-This-brin_1782751259106.txt". Pasted prompts and screenshots keep landing in the repo (attached_assets is ~55MB, essentially the whole repo weight). This is tracked junk, not source.
+
+TASK /
+1. Delete the stray root-level prompt .txt (the "...No-code-changes...brin_<digits>.txt" file). Confirm there are no other stray *_<13-digit-timestamp>.txt prompt dumps tracked at the repo root or outside attached_assets; if any exist, list them and delete them too.
+2. Add .gitignore rules so these stop being tracked going forward: ignore the timestamped prompt-dump pattern (e.g. *_[0-9]*.txt at repo root) and any future pasted-prompt artifacts. Do NOT ignore real source or test files; scope the pattern tightly to the prompt-dump naming.
+3. AUDIT ONLY (do not change yet): grep the codebase for any import or reference to attached_assets/ (client, server, shared, vite config, build script). Report what, if anything, actually consumes files from attached_assets, so Brad can decide whether to untrack the directory. Do NOT git rm or untrack attached_assets in this task; just report findings and a recommendation.
+
+ACCESS /
+Writable: .gitignore, and deletion of the stray prompt .txt file(s) only. Everything else read-only (for the audit).
+
+CONSTRAINTS /
+- .gitignore is a system file; per the contract, flag it in the out-of-scope/system-file section even though editing it is the intended change.
+- Do not touch attached_assets contents in this task. The untrack decision waits on the audit.
+- Stay in scope: no source/test edits, no adjacent fixes. Report drift, do not fix it.
+- Review against the live tree first, list the exact files you will delete and the exact .gitignore lines you will add, then WAIT for Brad's approval before changing anything.
+
+VERIFICATION /
+1. The named stray .txt is gone from the working tree; git status shows it deleted.
+2. Any other root-level prompt-dump .txt files are listed and removed.
+3. .gitignore has a tightly-scoped rule that would catch a new timestamped prompt dump but not source/tests (show a quick match/no-match check).
+4. attached_assets reference audit reported with a keep-or-untrack recommendation.
+5. No source or test files changed.
+
+End with the fixed return block (Pushed commit: pending), including the attached_assets audit findings under "Deferred / out of scope found".

@@ -1,0 +1,33 @@
+Option C: untrack attached_assets entirely, repoint the one real asset. Follow the Agent Prompt Contract in replit.md. This supersedes A/B.
+
+CONTEXT /
+Audit found attached_assets is ~56MB / 152 tracked files, of which only logo.png is consumed (Navigation.tsx imports @assets/logo.png; @assets alias defined in vite.config.ts:26 and vitest.config.ts:11). The rest are 41 timestamped Pasted-*.txt prompt dumps plus inert pasted images. Goal: stop the bleed and untrack the directory, keeping the one used asset working.
+
+TASK /
+1. Re-grep to confirm the full set of live references before moving anything: every "@assets/" import and every literal "attached_assets/" path across client, server, shared, vite.config.ts, vitest.config.ts, and the build script. List them. If anything beyond logo.png is referenced, STOP and report; do not proceed on the assumption it is logo-only.
+2. Move the used asset(s) into tracked source: logo.png to client/src/assets/logo.png (and any other live @assets file alongside it). Update the import(s) to the @/ alias form (e.g. @/assets/logo.png), confirming @/ resolves to client/src in the config.
+3. Remove the now-unused @assets alias from vite.config.ts and vitest.config.ts (only if step 1 confirms nothing else uses it).
+4. Untrack the directory: git rm -r --cached attached_assets (do NOT rewrite git history; this stops future tracking, it does not purge the pack). You may delete the working copy too since it is inert, but keep the moved asset(s).
+5. Add .gitignore rule: ignore attached_assets/ outright.
+
+DATA MODEL / No schema changes.
+
+ACCESS / Writable: client/src/components/Navigation.tsx (and any other confirmed @assets consumer), the moved asset file(s), vite.config.ts, vitest.config.ts, .gitignore, and removal/untracking of attached_assets. Nothing else.
+
+CONSTRAINTS /
+- .gitignore, vite.config.ts, vitest.config.ts are system/config files; flag all three in the system-file section even though editing them is intended.
+- Do NOT rewrite git history (no filter-repo/BFG). Untrack-going-forward only; the Replit/GitHub sync makes history rewrites unsafe.
+- Sequential: confirm references (step 1) before moving or untracking anything. If step 1 finds a second live consumer, stop.
+- Stay in scope: no unrelated edits, no adjacent fixes, report drift.
+- Review against the live tree first, list exact files moved/edited/untracked and the exact .gitignore line, then WAIT for approval before Build.
+
+VERIFICATION /
+1. git grep "@assets" and "attached_assets" return zero source references after the change (config alias gone, imports repointed).
+2. logo.png renders: the app builds and Navigation shows the logo from its new path.
+3. attached_assets is untracked (git status / git ls-files shows none of it) and gitignored.
+4. Full vitest suite still passes (alias removal did not break test resolution); the 45-test count holds.
+5. No new TypeScript errors beyond the two pre-existing (F-8).
+6. Confirm the moved asset(s) ARE tracked at the new location (git ls-files shows client/src/assets/logo.png).
+7. System files (.gitignore, vite.config.ts, vitest.config.ts) listed in the out-of-scope/system-file section.
+
+End with the fixed return block (Pushed commit: pending). Note in it that git history was deliberately not rewritten, so pack size is unchanged; this stops growth and removes the dir from tracked state.
