@@ -10,6 +10,20 @@ Preferred communication style: Simple, everyday language.
 
 No em dashes in user-facing copy. Use commas, periods, or parentheses.
 
+## Agent Prompt Contract
+
+Durable rules for every build/update prompt on this repo. Prompts may reference this section instead of restating these.
+
+- No em dashes in user-facing copy. Use commas, periods, or parentheses.
+- data-testid on every new interactive or display element. Formats: button-<action>, input-<field>, text-<label>, step-<name>. Match existing names (e.g. button-next-step, input-player-name-N, text-player-count).
+- Tests live in tests/**/*.test.{ts,tsx} (vitest, jsdom, @testing-library/react, per-file jsdom directive). Any prompt that adds, removes, or alters a user-facing flow must add or update a test there.
+- Two known pre-existing TypeScript errors exist in ScriptBuilderDialog.tsx and GameTracker.tsx. Do NOT fix them as a side effect; report only, unless the task is explicitly to fix them.
+- The /game route renders client/src/pages/Game.tsx. GameSetup.tsx and GameTracker.tsx are a separate, older DB-backed flow that is NOT on /game. Do not edit them unless the task names them.
+- Stay in scope. Do not silently fix adjacent bugs or refactor outside the named change. Report drift for follow-up.
+- Shared character UI lives in client/src/components/character/ (ScriptView, CharacterCard, TeamBadge, NightBadges, JinxList). Reuse it; do not duplicate card grids or team-color logic. Team colors flow from lib/team-style.ts; night order from lib/night-order.ts; script resolution from lib/script-resolve.ts.
+- Dark gothic only, no light mode, no external brand palette.
+- Use Checkpoints after each major feature works. Store secrets in env vars, never hardcode. Report every file changed and flag any system file (.replit, .gitignore) touched.
+
 ## System Architecture
 
 ### Frontend Architecture
@@ -84,6 +98,8 @@ A beginner-friendly guide at `/introduction` explaining Blood on the Clocktower 
 - **CTA**: Links to Character Reference
 
 ### Storyteller Mode (Bag Builder)
+> DEPRECATED, slated for removal in S5
+
 A Storyteller-specific setup flow forked from the New Game wizard:
 - **Entry point**: "Storyteller" button on Step 1 (player count) of the regular setup wizard
 - **ST Step 2 — Script Selection**: Reuses the same script selector UI (official, community, custom scripts)
@@ -109,8 +125,9 @@ A Storyteller-specific setup flow forked from the New Game wizard:
 
 ### Game Mode (Player Tracker)
 A localStorage-based player tracking tool at `/game` for note-taking during games:
-- **Setup wizard**: 3-step flow with player count selection (5-20), player name inputs, and optional script selection
-- **Script selection**: Choose from official scripts or custom scripts saved from Reference page
+- **Setup wizard**: 4-step linear flow, script-first: (1) Select a Script (or All Characters), (2) read-only ScriptView preview of the chosen script, (3) player count (5-20), (4) player names. No Player/Storyteller role fork.
+- **Script selection**: official, community, or custom scripts, with Create Custom Script and Scan Paper Script (saved as custom, auto-selected) inline. All Characters skips the preview.
+- **Preview**: reuses the shared read-only ScriptView (client/src/components/character/ScriptView.tsx); characters resolved via resolveScriptCharacters(script, { includeTravellers: false, includeFabled: false }) so the preview matches the in-game claim picker.
 - **Player cards**: Grid display showing name, alive/dead status, claim badges, indicator icons
 - **Player detail drawer**: Claims (with team color-coded badges), notes, nomination history by day
   - Claims section appears first (more frequently accessed during play)
