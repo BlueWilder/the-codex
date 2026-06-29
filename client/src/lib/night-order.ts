@@ -1,4 +1,6 @@
-import { type Character } from "@/lib/game-data";
+import { ALL_CHARACTERS, type Character } from "@/lib/game-data";
+
+export type ScriptSort = "alphabetical" | "team" | "night";
 
 export function getFirstNightChars(chars: Character[]): Character[] {
   return chars
@@ -39,4 +41,23 @@ export function compareSheetOrder(a: Character, b: Character, reference: Charact
   const aIndex = reference.indexOf(a);
   const bIndex = reference.indexOf(b);
   return aIndex - bIndex;
+}
+
+export function sortCharacters(chars: Character[], sort: ScriptSort): Character[] {
+  return [...chars].sort((a, b) => {
+    const endComparison = compareEndTeams(a, b);
+    if (endComparison !== null) return endComparison;
+
+    if (sort === "alphabetical") {
+      return a.name.localeCompare(b.name);
+    }
+    if (sort === "night") {
+      const aOrder = nightOrderValue(a);
+      const bOrder = nightOrderValue(b);
+      if (aOrder !== bOrder) return aOrder - bOrder;
+      return a.name.localeCompare(b.name);
+    }
+    // "team": group by team, maintain original ALL_CHARACTERS order within team
+    return compareSheetOrder(a, b, ALL_CHARACTERS);
+  });
 }

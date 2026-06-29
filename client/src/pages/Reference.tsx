@@ -1,7 +1,7 @@
 import { Layout } from "@/components/ui/Layout";
 import { ALL_CHARACTERS, OFFICIAL_SCRIPTS, type Character } from "@/lib/game-data";
 import { useState, useEffect, useMemo } from "react";
-import { Search, Moon, Plus, Check, Trash2, Pencil, ArrowDownAZ, LayoutList, Clock } from "lucide-react";
+import { Search, Moon, Plus, Check, Trash2, Pencil } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { useLocalScripts, type LocalScript } from "@/hooks/use-local-scripts";
 import { ScriptBuilderDialog } from "@/components/ScriptBuilderDialog";
-import { nightOrderValue, compareEndTeams, compareSheetOrder } from "@/lib/night-order";
+import { type ScriptSort } from "@/lib/night-order";
 import { resolveCharactersForScriptFilter } from "@/lib/script-resolve";
 import { ScriptView } from "@/components/character/ScriptView";
 
@@ -28,7 +28,7 @@ export default function Reference() {
   const [search, setSearch] = useState("");
   const [teamFilter, setTeamFilter] = useState<string>("all");
   const [scriptFilter, setScriptFilter] = useState<string>("all");
-  const [sortOrder, setSortOrder] = useState<"alphabetical" | "sheet" | "night">("alphabetical");
+  const [sortOrder, setSortOrder] = useState<ScriptSort>("alphabetical");
   const [showScriptBuilder, setShowScriptBuilder] = useState(false);
   const [editingScript, setEditingScript] = useState<LocalScript | null>(null);
   const [copyingCommunityScript, setCopyingCommunityScript] = useState<{ name: string; characterIds: string[]; synopsis?: string } | null>(null);
@@ -39,7 +39,7 @@ export default function Reference() {
     if (scriptFilter === "all") {
       setSortOrder("alphabetical");
     } else {
-      setSortOrder("sheet");
+      setSortOrder("team");
     }
   }, [scriptFilter]);
 
@@ -67,23 +67,6 @@ export default function Reference() {
     const matchesScript = scriptCharacterIds.has(char.id);
 
     return matchesSearch && matchesTeam && matchesScript;
-  }).sort((a, b) => {
-    const endComparison = compareEndTeams(a, b);
-    if (endComparison !== null) return endComparison;
-    
-    // Sort non-travelers based on selected sort order
-    if (sortOrder === "alphabetical") {
-      return a.name.localeCompare(b.name);
-    } else if (sortOrder === "night") {
-      // Night order sorting - use firstNightOrder, fall back to otherNightOrder
-      const aOrder = nightOrderValue(a);
-      const bOrder = nightOrderValue(b);
-      if (aOrder !== bOrder) return aOrder - bOrder;
-      return a.name.localeCompare(b.name);
-    } else {
-      // Sheet order: group by team, maintain original array order within team
-      return compareSheetOrder(a, b, ALL_CHARACTERS);
-    }
   });
 
   return (
@@ -204,59 +187,22 @@ export default function Reference() {
             </button>
           </div>
 
-          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide items-center justify-between">
-            <div className="flex gap-2 scrollbar-hide">
-              {['all', 'townsfolk', 'outsider', 'minion', 'demon', 'traveler', 'fabled'].map((f) => (
-                <button
-                  key={f}
-                  onClick={() => setTeamFilter(f)}
-                  className={cn(
-                    "px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all border",
-                    teamFilter === f 
-                      ? "bg-amber-900/50 text-amber-100 border-amber-600" 
-                      : "bg-transparent text-muted-foreground border-transparent hover:bg-white/5"
-                  )}
-                  data-testid={`button-filter-${f}`}
-                >
-                  {f}
-                </button>
-              ))}
-            </div>
-            
-            <button
-              onClick={() => setSortOrder(prev => {
-                if (prev === "sheet") return "alphabetical";
-                if (prev === "alphabetical") return "night";
-                return "sheet";
-              })}
-              className={cn(
-                "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold tracking-wider transition-all border whitespace-nowrap",
-                "bg-transparent text-muted-foreground border-amber-900/30 hover:bg-white/5"
-              )}
-              title={
-                sortOrder === "sheet" ? "Sheet order (by team) - click for A-Z" :
-                sortOrder === "alphabetical" ? "Alphabetical - click for Night order" :
-                "Night order - click for Sheet order"
-              }
-              data-testid="button-toggle-sort"
-            >
-              {sortOrder === "sheet" ? (
-                <>
-                  <LayoutList className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Sheet</span>
-                </>
-              ) : sortOrder === "alphabetical" ? (
-                <>
-                  <ArrowDownAZ className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">A-Z</span>
-                </>
-              ) : (
-                <>
-                  <Clock className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Night</span>
-                </>
-              )}
-            </button>
+          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide items-center">
+            {['all', 'townsfolk', 'outsider', 'minion', 'demon', 'traveler', 'fabled'].map((f) => (
+              <button
+                key={f}
+                onClick={() => setTeamFilter(f)}
+                className={cn(
+                  "px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all border",
+                  teamFilter === f 
+                    ? "bg-amber-900/50 text-amber-100 border-amber-600" 
+                    : "bg-transparent text-muted-foreground border-transparent hover:bg-white/5"
+                )}
+                data-testid={`button-filter-${f}`}
+              >
+                {f}
+              </button>
+            ))}
           </div>
         </div>
 
@@ -294,7 +240,11 @@ export default function Reference() {
           }}
         />
 
-        <ScriptView characters={filtered} />
+        <ScriptView
+          characters={filtered}
+          sortOrder={sortOrder}
+          onSortChange={setSortOrder}
+        />
       </div>
     </Layout>
   );
