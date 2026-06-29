@@ -213,23 +213,23 @@ export function SetupWizard({ onStart }: { onStart: (count: number, names: strin
         </Card>
       </div>
 
-      <div className="bg-muted/30 p-4 rounded-lg text-center space-y-2 mb-4">
-        <p className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Character Breakdown</p>
-        <div className="flex flex-wrap justify-center gap-2" data-testid="text-breakdown">
-          <Badge variant="secondary" className={teamBadge('townsfolk')}>
+      <div className="w-full bg-muted/30 p-6 rounded-lg text-center space-y-3 mb-4">
+        <p className="text-base font-bold text-muted-foreground uppercase tracking-wider">Character Breakdown</p>
+        <div className="flex flex-wrap justify-center gap-3" data-testid="text-breakdown">
+          <Badge variant="secondary" className={cn(teamBadge('townsfolk'), 'text-sm px-3 py-1')}>
             {breakdown.townsfolk} Townsfolk
           </Badge>
-          <Badge variant="secondary" className={teamBadge('outsider')}>
+          <Badge variant="secondary" className={cn(teamBadge('outsider'), 'text-sm px-3 py-1')}>
             {breakdown.outsiders} Outsiders
           </Badge>
-          <Badge variant="secondary" className={teamBadge('minion')}>
+          <Badge variant="secondary" className={cn(teamBadge('minion'), 'text-sm px-3 py-1')}>
             {breakdown.minions} Minions
           </Badge>
-          <Badge variant="secondary" className={teamBadge('demon')}>
+          <Badge variant="secondary" className={cn(teamBadge('demon'), 'text-sm px-3 py-1')}>
             {breakdown.demons} Demon
           </Badge>
           {'travelers' in breakdown && breakdown.travelers > 0 && (
-            <Badge variant="secondary" className={teamBadge('traveler')}>
+            <Badge variant="secondary" className={cn(teamBadge('traveler'), 'text-sm px-3 py-1')}>
               + {breakdown.travelers} {breakdown.travelers === 1 ? 'Traveler' : 'Travelers'}
             </Badge>
           )}

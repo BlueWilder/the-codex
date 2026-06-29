@@ -2,7 +2,9 @@ import { useState } from "react";
 import { User, VenetianMask, Ghost, Footprints, Star, LayoutList, Clock, type LucideIcon } from "lucide-react";
 import { type Character, type Jinx, JINXES } from "@/lib/game-data";
 import { cn } from "@/lib/utils";
-import { sortCharacters, nightOrderValue, type ScriptSort } from "@/lib/night-order";
+import { nightOrderValue, getFirstNightChars, getOtherNightChars, type ScriptSort } from "@/lib/night-order";
+
+type NightView = "first" | "other";
 
 const SETUP_BRACKET = /\s*\[([^\]]+)\]\s*$/;
 
@@ -133,6 +135,33 @@ function CharRow({ char, sortOrder }: { char: Character; sortOrder: ScriptSort }
   );
 }
 
+/** A single Storyteller night-sheet row: numbered token, name, ST instruction. */
+function NightRow({ char, nightView }: { char: Character; nightView: NightView }) {
+  const sheet = teamSheet(char.team);
+  const order = nightView === "first" ? char.firstNightOrder : char.otherNightOrder;
+  const instruction = char.howToRun ?? char.ability;
+  return (
+    <div className="flex items-start gap-3 py-3" data-testid={`script-sheet-nightrow-${char.id}`}>
+      <div className={cn("shrink-0 w-10 h-10 rounded-full border-2 flex items-center justify-center", sheet.ring, sheet.tokenBg)}>
+        <span className={cn("text-sm font-bold", sheet.text)}>{order}</span>
+      </div>
+      <div className="min-w-0">
+        <div className="font-display font-bold text-[#2a2016] leading-tight">{char.name}</div>
+        <div className="font-serif text-sm text-[#4a3c28] leading-snug whitespace-pre-line">{instruction}</div>
+      </div>
+    </div>
+  );
+}
+
+/** A token-less meta step (Dusk / Dawn) bracketing the night sheet. */
+function NightMetaRow({ label, testId }: { label: string; testId: string }) {
+  return (
+    <div className="py-2 text-center" data-testid={testId}>
+      <span className="font-sans text-xs italic uppercase tracking-widest text-[#9a8252]">{label}</span>
+    </div>
+  );
+}
+
 export function ScriptSheet({
   characters,
   scriptName,
@@ -147,6 +176,7 @@ export function ScriptSheet({
   defaultSortOrder?: ScriptSort;
 }) {
   const [internalSort, setInternalSort] = useState<ScriptSort>(defaultSortOrder);
+  const [nightView, setNightView] = useState<NightView>("first");
   const isControlled = onSortChange !== undefined;
   const sortOrder = isControlled ? controlledSortOrder ?? defaultSortOrder : internalSort;
 
@@ -159,7 +189,9 @@ export function ScriptSheet({
     .map(team => ({ team, chars: characters.filter(c => c.team === team) }))
     .filter(s => s.chars.length > 0);
 
-  const nightSorted = sortCharacters(characters, "night");
+  const nightChars = nightView === "first"
+    ? getFirstNightChars(characters)
+    : getOtherNightChars(characters);
 
   const byId = new Map(characters.map(c => [c.id, c]));
   const jinxPairs = JINXES
@@ -204,6 +236,31 @@ export function ScriptSheet({
         </div>
       </div>
 
+      {sortOrder === "night" && (
+        <div className="flex justify-end mb-4">
+          <div className="inline-flex items-center gap-1 rounded-full border border-[#cbb98e] bg-[#e8dcbe] p-0.5">
+            {([
+              { value: "first" as NightView, label: "First Night", testId: "script-sheet-night-first" },
+              { value: "other" as NightView, label: "Other Nights", testId: "script-sheet-night-other" },
+            ]).map(({ value, label, testId }) => (
+              <button
+                key={value}
+                onClick={() => setNightView(value)}
+                className={cn(
+                  "px-2.5 py-1 rounded-full text-[11px] font-bold tracking-wider transition-all whitespace-nowrap",
+                  nightView === value
+                    ? "bg-[#7a5c2e] text-[#f4ecd8]"
+                    : "bg-transparent text-[#6b5836] hover:bg-[#dccfa9]"
+                )}
+                data-testid={testId}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {sortOrder === "team" ? (
         <div className="space-y-5">
           {sections.map(({ team, chars }) => {
@@ -221,8 +278,10 @@ export function ScriptSheet({
           })}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-0.5">
-          {nightSorted.map(c => <CharRow key={c.id} char={c} sortOrder={sortOrder} />)}
+        <div className="divide-y divide-[#d8c9a3]">
+          <NightMetaRow label="Dusk - Start the Night Phase." testId="script-sheet-night-dusk" />
+          {nightChars.map(c => <NightRow key={c.id} char={c} nightView={nightView} />)}
+          <NightMetaRow label="Dawn - End the Night Phase." testId="script-sheet-night-dawn" />
         </div>
       )}
 

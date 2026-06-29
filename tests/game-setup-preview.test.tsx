@@ -169,23 +169,49 @@ describe("SetupWizard script-sheet setup", () => {
     expect(screen.getByTestId("script-sheet-section-demon").textContent).toContain("Demon (1)");
   });
 
-  it("swaps to night order and shows night numbers in the tokens", () => {
+  it("swaps to night order and shows a single-column night sheet", () => {
     renderWizard();
 
     fireEvent.click(screen.getByTestId("button-script-selector"));
     fireEvent.click(screen.getByTestId("button-script-tb"));
 
-    // By Team default: no flat section, the demon section exists.
+    // By Team default: no flat section, the demon section exists. The night
+    // sub-toggle and Dusk/Dawn meta rows are hidden in By Team view.
     expect(screen.getByTestId("script-sheet-section-demon")).toBeTruthy();
+    expect(screen.queryByTestId("script-sheet-night-first")).toBeNull();
+    expect(screen.queryByTestId("script-sheet-night-dusk")).toBeNull();
 
     fireEvent.click(screen.getByTestId("button-sheet-sort-night"));
 
-    // Team sections collapse into a single night-ordered list.
+    // Team sections collapse, the night sub-toggle and Dusk/Dawn rows appear.
     expect(screen.queryByTestId("script-sheet-section-demon")).toBeNull();
+    expect(screen.getByTestId("script-sheet-night-first")).toBeTruthy();
+    expect(screen.getByTestId("script-sheet-night-other")).toBeTruthy();
+    expect(screen.getByTestId("script-sheet-night-dusk").textContent).toContain("Dusk");
+    expect(screen.getByTestId("script-sheet-night-dawn").textContent).toContain("Dawn");
 
-    // The Imp wakes at night, so its token shows a number.
-    const impRow = screen.getByTestId("script-sheet-char-imp");
-    expect(/\d/.test(impRow.textContent || "")).toBe(true);
+    // Default is First Night: the Washerwoman wakes first night, shown as a
+    // night row with its order number. The Imp only acts on other nights.
+    const wwRow = screen.getByTestId("script-sheet-nightrow-washerwoman");
+    expect(/\d/.test(wwRow.textContent || "")).toBe(true);
+    expect(screen.queryByTestId("script-sheet-nightrow-imp")).toBeNull();
+  });
+
+  it("switches between First Night and Other Nights wakers", () => {
+    renderWizard();
+
+    fireEvent.click(screen.getByTestId("button-script-selector"));
+    fireEvent.click(screen.getByTestId("button-script-tb"));
+    fireEvent.click(screen.getByTestId("button-sheet-sort-night"));
+
+    // First Night includes the Washerwoman (first-night info role).
+    expect(screen.getByTestId("script-sheet-nightrow-washerwoman")).toBeTruthy();
+    // The Washerwoman has no other-night action.
+    fireEvent.click(screen.getByTestId("script-sheet-night-other"));
+    expect(screen.queryByTestId("script-sheet-nightrow-washerwoman")).toBeNull();
+
+    // The Imp acts every night, so it stays in Other Nights too.
+    expect(screen.getByTestId("script-sheet-nightrow-imp")).toBeTruthy();
   });
 
   it("starts the game with default seat names and the chosen script", () => {
