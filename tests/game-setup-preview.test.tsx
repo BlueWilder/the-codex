@@ -42,7 +42,7 @@ beforeEach(() => {
 afterEach(() => cleanup());
 
 describe("SetupWizard script-sheet setup", () => {
-  it("renders the two cards, breakdown, start button and rename hint", () => {
+  it("renders the two cards, breakdown and start button without a rename hint", () => {
     renderWizard();
 
     expect(screen.getByTestId("card-script")).toBeTruthy();
@@ -51,7 +51,7 @@ describe("SetupWizard script-sheet setup", () => {
     expect(screen.getByTestId("text-player-count")).toBeTruthy();
     expect(screen.getByTestId("text-breakdown")).toBeTruthy();
     expect(screen.getByTestId("button-start-game")).toBeTruthy();
-    expect(screen.getByTestId("text-rename-hint")).toBeTruthy();
+    expect(screen.queryByTestId("text-rename-hint")).toBeNull();
 
     // No player name inputs and no removed preview/player-count block markers.
     expect(screen.queryByTestId("input-player-name-0")).toBeNull();
@@ -97,6 +97,50 @@ describe("SetupWizard script-sheet setup", () => {
     expect(sheetCharIds().sort()).toEqual([...EXPECTED].sort());
     expect(sheetCharIds()).toContain("washerwoman");
     expect(sheetCharIds()).toContain("imp");
+  });
+
+  it("styles a trailing setup bracket and leaves plain abilities alone", () => {
+    renderWizard();
+
+    fireEvent.click(screen.getByTestId("button-script-selector"));
+    fireEvent.click(screen.getByTestId("button-script-tb"));
+
+    // Baron's ability ends with "[+2 Outsiders]" -> styled bracket element.
+    const baronSetup = screen.getByTestId("script-sheet-setup-baron");
+    expect(baronSetup).toBeTruthy();
+    expect(baronSetup.textContent).toContain("+2 Outsiders");
+
+    // The bracket text is lifted out of the ability body (not duplicated).
+    const baronRow = screen.getByTestId("script-sheet-char-baron");
+    expect(baronRow.textContent).toContain("There are extra Outsiders in play.");
+
+    // A character with no trailing bracket renders no setup element.
+    expect(screen.queryByTestId("script-sheet-setup-imp")).toBeNull();
+  });
+
+  it("renders a bottom Jinxes block for in-sheet pairs only", () => {
+    renderWizard();
+
+    fireEvent.click(screen.getByTestId("button-script-selector"));
+    fireEvent.click(screen.getByTestId("button-script-tb"));
+
+    // Trouble Brewing has both Spy and Recluse, which are jinxed.
+    expect(screen.getByTestId("script-sheet-jinxes")).toBeTruthy();
+    expect(screen.getByTestId("script-sheet-jinx-recluse-spy")).toBeTruthy();
+
+    // A jinx whose partner is not on this sheet does not appear (Spy/Damsel:
+    // Damsel is not in Trouble Brewing).
+    expect(screen.queryByTestId("script-sheet-jinx-damsel-spy")).toBeNull();
+  });
+
+  it("hides the Jinxes block when no in-sheet pair exists", () => {
+    renderWizard();
+
+    fireEvent.click(screen.getByTestId("button-script-selector"));
+    fireEvent.click(screen.getByTestId("button-script-bmr"));
+
+    // Bad Moon Rising has no jinxed pair where both are on the sheet.
+    expect(screen.queryByTestId("script-sheet-jinxes")).toBeNull();
   });
 
   it("renders team sections in order with counts by default", () => {

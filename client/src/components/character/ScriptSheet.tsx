@@ -1,8 +1,17 @@
 import { useState } from "react";
 import { Shield, User, Skull, Flame, Footprints, Star, LayoutList, Clock, type LucideIcon } from "lucide-react";
-import { type Character } from "@/lib/game-data";
+import { type Character, type Jinx, JINXES } from "@/lib/game-data";
 import { cn } from "@/lib/utils";
 import { sortCharacters, nightOrderValue, type ScriptSort } from "@/lib/night-order";
+
+const SETUP_BRACKET = /\s*\[([^\]]+)\]\s*$/;
+
+/** Split an ability into its body and any trailing `[setup modifier]` text. */
+function splitSetup(ability: string): { body: string; setup: string | null } {
+  const match = ability.match(SETUP_BRACKET);
+  if (!match) return { body: ability, setup: null };
+  return { body: ability.replace(SETUP_BRACKET, ""), setup: match[1] };
+}
 
 /**
  * ScriptSheet renders a selected script in official BotC "almanac" style: a
@@ -86,12 +95,23 @@ function Token({ char, sortOrder }: { char: Character; sortOrder: ScriptSort }) 
 }
 
 function CharRow({ char, sortOrder }: { char: Character; sortOrder: ScriptSort }) {
+  const { body, setup } = splitSetup(char.ability);
   return (
     <div className="flex items-start gap-3 py-2" data-testid={`script-sheet-char-${char.id}`}>
       <Token char={char} sortOrder={sortOrder} />
       <div className="min-w-0">
         <div className="font-display font-bold text-[#2a2016] leading-tight">{char.name}</div>
-        <div className="font-serif text-sm text-[#4a3c28] leading-snug">{char.ability}</div>
+        <div className="font-serif text-sm text-[#4a3c28] leading-snug">
+          {body}
+          {setup && (
+            <span
+              className="ml-1 font-sans font-bold text-xs text-[#7a5c2e] whitespace-nowrap"
+              data-testid={`script-sheet-setup-${char.id}`}
+            >
+              [{setup}]
+            </span>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -124,6 +144,21 @@ export function ScriptSheet({
     .filter(s => s.chars.length > 0);
 
   const nightSorted = sortCharacters(characters, "night");
+
+  const byId = new Map(characters.map(c => [c.id, c]));
+  const jinxPairs = JINXES
+    .filter(j => byId.has(j.character1) && byId.has(j.character2))
+    .map(j => {
+      const a = byId.get(j.character1)!;
+      const b = byId.get(j.character2)!;
+      const first = a.name.localeCompare(b.name) <= 0 ? a : b;
+      const second = first === a ? b : a;
+      return { first, second, reason: j.reason };
+    })
+    .sort((x, y) =>
+      x.first.name.localeCompare(y.first.name) ||
+      x.second.name.localeCompare(y.second.name),
+    );
 
   return (
     <div
@@ -174,6 +209,58 @@ export function ScriptSheet({
           {nightSorted.map(c => <CharRow key={c.id} char={c} sortOrder={sortOrder} />)}
         </div>
       )}
+
+      {jinxPairs.length > 0 && (
+        <section
+          className="mt-6 pt-4 border-t border-[#d8c9a3]"
+          data-testid="script-sheet-jinxes"
+        >
+          <h4 className="font-display font-bold tracking-wider uppercase text-sm mb-2 text-[#7a5c2e]">
+            Jinxes
+          </h4>
+          <div className="space-y-3">
+            {jinxPairs.map(({ first, second, reason }) => {
+              const ids = [first.id, second.id].sort();
+              return (
+                <div
+                  key={`${ids[0]}-${ids[1]}`}
+                  className="flex items-start gap-3"
+                  data-testid={`script-sheet-jinx-${ids[0]}-${ids[1]}`}
+                >
+                  <div className="flex shrink-0 -space-x-1">
+                    <JinxToken char={first} />
+                    <JinxToken char={second} />
+                  </div>
+                  <div className="min-w-0 font-serif text-sm text-[#4a3c28] leading-snug">
+                    <span className="font-display font-bold text-[#2a2016]">
+                      {first.name} &amp; {second.name}
+                    </span>
+                    : {reason}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
+    </div>
+  );
+}
+
+/** Compact team-colored token reused inside jinx rows. */
+function JinxToken({ char }: { char: Character }) {
+  const sheet = teamSheet(char.team);
+  const Icon = getTeamToken(char.team);
+  return (
+    <div
+      className={cn(
+        "shrink-0 w-8 h-8 rounded-full border-2 flex items-center justify-center",
+        sheet.ring,
+        sheet.tokenBg,
+      )}
+      title={char.name}
+    >
+      <Icon className={cn("w-4 h-4", sheet.text)} />
     </div>
   );
 }

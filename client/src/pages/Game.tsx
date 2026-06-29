@@ -244,11 +244,7 @@ export function SetupWizard({ onStart }: { onStart: (count: number, names: strin
         </div>
       )}
 
-      <p className="text-center text-sm text-muted-foreground mt-6" data-testid="text-rename-hint">
-        Seats fill as Player 1-N. Tap any name to rename during play.
-      </p>
-
-      <div className="flex justify-center pt-4">
+      <div className="flex justify-center pt-6">
         <Button onClick={handleStartGame} size="lg" data-testid="button-start-game">
           <Play className="w-4 h-4 mr-2" /> Start Game
         </Button>
