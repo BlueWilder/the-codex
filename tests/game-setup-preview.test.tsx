@@ -122,15 +122,25 @@ describe("SetupWizard script-sheet setup", () => {
     renderWizard();
 
     fireEvent.click(screen.getByTestId("button-script-selector"));
+    fireEvent.click(screen.getByTestId("button-script-sot"));
+
+    // The Ship of Theseus has both Alchemist and Boffin, which are jinxed.
+    expect(screen.getByTestId("script-sheet-jinxes")).toBeTruthy();
+    expect(screen.getByTestId("script-sheet-jinx-alchemist-boffin")).toBeTruthy();
+
+    // A jinx whose partner is not on this sheet does not appear (Alchemist/Wraith:
+    // Wraith is not in The Ship of Theseus).
+    expect(screen.queryByTestId("script-sheet-jinx-alchemist-wraith")).toBeNull();
+  });
+
+  it("no longer shows the removed Recluse and Spy jinx on Trouble Brewing", () => {
+    renderWizard();
+
+    fireEvent.click(screen.getByTestId("button-script-selector"));
     fireEvent.click(screen.getByTestId("button-script-tb"));
 
-    // Trouble Brewing has both Spy and Recluse, which are jinxed.
-    expect(screen.getByTestId("script-sheet-jinxes")).toBeTruthy();
-    expect(screen.getByTestId("script-sheet-jinx-recluse-spy")).toBeTruthy();
-
-    // A jinx whose partner is not on this sheet does not appear (Spy/Damsel:
-    // Damsel is not in Trouble Brewing).
-    expect(screen.queryByTestId("script-sheet-jinx-damsel-spy")).toBeNull();
+    // Recluse/Spy was removed from the jinx data, so it must not appear.
+    expect(screen.queryByTestId("script-sheet-jinx-recluse-spy")).toBeNull();
   });
 
   it("hides the Jinxes block when no in-sheet pair exists", () => {
