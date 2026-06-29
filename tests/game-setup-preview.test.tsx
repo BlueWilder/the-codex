@@ -214,6 +214,33 @@ describe("SetupWizard script-sheet setup", () => {
     expect(screen.getByTestId("script-sheet-nightrow-imp")).toBeTruthy();
   });
 
+  it("numbers night rows sequentially and shows no instruction text", () => {
+    renderWizard();
+
+    fireEvent.click(screen.getByTestId("button-script-selector"));
+    fireEvent.click(screen.getByTestId("button-script-tb"));
+    fireEvent.click(screen.getByTestId("button-sheet-sort-night"));
+
+    // First Night numbers from 1 in list order.
+    const firstRows = screen.getAllByTestId(/^script-sheet-nightrow-/);
+    expect(firstRows.length).toBeGreaterThan(0);
+    firstRows.forEach((row, i) => {
+      expect(row.querySelector("span")?.textContent).toBe(String(i + 1));
+    });
+
+    // Rows show only the numbered name, no instruction/howToRun prose.
+    const wwRow = screen.getByTestId("script-sheet-nightrow-washerwoman");
+    expect(wwRow.textContent).toContain("Washerwoman");
+    expect(wwRow.textContent).not.toMatch(/wake|show|point|learn/i);
+
+    // Other Nights renumbers independently from 1: Poisoner = 1, Monk = 2.
+    fireEvent.click(screen.getByTestId("script-sheet-night-other"));
+    const poisoner = screen.getByTestId("script-sheet-nightrow-poisoner");
+    const monk = screen.getByTestId("script-sheet-nightrow-monk");
+    expect(poisoner.querySelector("span")?.textContent).toBe("1");
+    expect(monk.querySelector("span")?.textContent).toBe("2");
+  });
+
   it("starts the game with default seat names and the chosen script", () => {
     const onStart = vi.fn();
     renderWizard(onStart);

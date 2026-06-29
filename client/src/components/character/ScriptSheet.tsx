@@ -135,19 +135,16 @@ function CharRow({ char, sortOrder }: { char: Character; sortOrder: ScriptSort }
   );
 }
 
-/** A single Storyteller night-sheet row: numbered token, name, ST instruction. */
-function NightRow({ char, nightView }: { char: Character; nightView: NightView }) {
+/** A single Storyteller night-sheet row: sequential numbered token and name. */
+function NightRow({ char, position }: { char: Character; position: number }) {
   const sheet = teamSheet(char.team);
-  const order = nightView === "first" ? char.firstNightOrder : char.otherNightOrder;
-  const instruction = char.howToRun ?? char.ability;
   return (
-    <div className="flex items-start gap-3 py-3" data-testid={`script-sheet-nightrow-${char.id}`}>
+    <div className="flex items-center gap-3 py-3" data-testid={`script-sheet-nightrow-${char.id}`}>
       <div className={cn("shrink-0 w-10 h-10 rounded-full border-2 flex items-center justify-center", sheet.ring, sheet.tokenBg)}>
-        <span className={cn("text-sm font-bold", sheet.text)}>{order}</span>
+        <span className={cn("text-sm font-bold", sheet.text)}>{position}</span>
       </div>
       <div className="min-w-0">
         <div className="font-display font-bold text-[#2a2016] leading-tight">{char.name}</div>
-        <div className="font-serif text-sm text-[#4a3c28] leading-snug whitespace-pre-line">{instruction}</div>
       </div>
     </div>
   );
@@ -280,7 +277,7 @@ export function ScriptSheet({
       ) : (
         <div className="divide-y divide-[#d8c9a3]">
           <NightMetaRow label="Dusk - Start the Night Phase." testId="script-sheet-night-dusk" />
-          {nightChars.map(c => <NightRow key={c.id} char={c} nightView={nightView} />)}
+          {nightChars.map((c, i) => <NightRow key={c.id} char={c} position={i + 1} />)}
           <NightMetaRow label="Dawn - End the Night Phase." testId="script-sheet-night-dawn" />
         </div>
       )}
