@@ -52,7 +52,6 @@ function renderTracker(game: PlayerGame) {
         onAddClaim={noop}
         onAddMultipleClaims={noop}
         onRemoveClaim={noop}
-        onSetPrimary={noop}
         onSetNotes={noop}
         onUpdatePlayerName={noop}
         onAdvancePhase={noop}

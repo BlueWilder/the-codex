@@ -11,7 +11,7 @@ import { ScriptSheet } from "@/components/character/ScriptSheet";
 import { CharacterCard } from "@/components/character/CharacterCard";
 import { latestDeathRecord, deathPhaseLabel } from "@/lib/death-phase";
 import { useToast } from "@/hooks/use-toast";
-import { ChevronRight, ChevronLeft, Play, X, Plus, Check, Search, Moon, Sun, ChevronUp, ChevronDown, FileText, Vote, Loader2, GripVertical, UserPlus, ArrowRight, BookOpen, HandMetal, Ban, LogOut, Trash2, Pencil, MoreVertical, RotateCcw, Info, ExternalLink, Users, Skull, Ghost, Scroll, Hand, Target, Theater, ArrowDownUp, Camera, Crown, LayoutList, NotebookText, ScrollText } from "lucide-react";
+import { ChevronRight, ChevronLeft, Play, X, Plus, Check, Search, Moon, Sun, ChevronUp, ChevronDown, FileText, Vote, Loader2, GripVertical, UserPlus, ArrowRight, BookOpen, HandMetal, Ban, LogOut, Trash2, Pencil, MoreVertical, RotateCcw, Info, ExternalLink, Users, Skull, Ghost, Scroll, Hand, Target, Theater, ArrowDownUp, Camera, LayoutList, NotebookText, ScrollText } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -626,7 +626,6 @@ function PlayerDetailDrawer({
   onToggleGhostVote,
   onAddMultipleClaims,
   onRemoveClaim,
-  onSetPrimary,
   onSetNotes,
   onSetPlayerName,
   onRemoveTraveler,
@@ -645,7 +644,6 @@ function PlayerDetailDrawer({
   onToggleGhostVote: () => void;
   onAddMultipleClaims: (characterIds: string[]) => void;
   onRemoveClaim: (characterId: string) => void;
-  onSetPrimary: (characterId: string) => void;
   onSetNotes: (notes: string) => void;
   onSetPlayerName: (name: string) => void;
   onRemoveTraveler?: () => void;
@@ -865,39 +863,21 @@ function PlayerDetailDrawer({
                   <div className="flex flex-wrap gap-2">
                     {claimedCharacters.map((char, idx) => char && (
                       <div key={char.id} className="inline-flex items-center gap-1">
-                        {idx === 0 && (
-                          <Crown
-                            className="w-4 h-4 text-amber-400"
-                            aria-label="Primary claim"
-                            data-testid={`text-primary-claim-${player.id}`}
-                          />
-                        )}
                         <Badge
                           className={cn(
                             "gap-1.5 text-base",
                             char.id !== GENERIC_TRAVELLER_ID && "cursor-pointer",
-                            teamBadge(char.team)
+                            candidateChipClass(char.team, idx === 0)
                           )}
                           onClick={char.id === GENERIC_TRAVELLER_ID ? undefined : () => {
                             const full = ALL_CHARACTERS.find(c => c.id === char.id);
                             if (full) setPreviewCharacter(full);
                           }}
-                          data-testid={`badge-claim-${char.id}`}
+                          data-testid={idx === 0 ? `chip-primary-${player.id}` : `badge-claim-${char.id}`}
                         >
                           {char.name}
                           {char.id !== GENERIC_TRAVELLER_ID && <Info className="w-3.5 h-3.5 opacity-60" />}
                         </Badge>
-                        {idx !== 0 && (
-                          <button
-                            type="button"
-                            onClick={() => onSetPrimary(char.id)}
-                            className="p-1.5 rounded-full text-amber-500/70 hover:text-amber-400 hover:bg-amber-900/30 transition-colors"
-                            title={`Make ${char.name} the primary claim`}
-                            data-testid={`button-set-primary-${char.id}`}
-                          >
-                            <Crown className="w-3.5 h-3.5" />
-                          </button>
-                        )}
                       </div>
                     ))}
                   </div>
@@ -1197,7 +1177,6 @@ export function SortablePlayerCard({
   onToggleGhostVote,
   onOpenClaimPicker,
   onRemoveClaim,
-  onSetPrimary,
 }: {
   player: GamePlayer;
   game: NonNullable<ReturnType<typeof usePlayerGame>["game"]>;
@@ -1207,7 +1186,6 @@ export function SortablePlayerCard({
   onToggleGhostVote: () => void;
   onOpenClaimPicker: () => void;
   onRemoveClaim: (characterId: string) => void;
-  onSetPrimary: (characterId: string) => void;
 }) {
   const {
     attributes,
@@ -1315,7 +1293,7 @@ export function SortablePlayerCard({
             <button
               onClick={(e) => { e.stopPropagation(); onSelect(); }}
               className={cn(
-                "font-bold text-lg text-left hover:underline truncate min-w-0",
+                "font-display font-semibold text-base text-left hover:underline truncate min-w-0",
                 isActive ? "text-amber-100" : "text-muted-foreground line-through"
               )}
               data-testid={`button-player-name-${player.id}`}
@@ -1337,13 +1315,6 @@ export function SortablePlayerCard({
                   className="inline-flex items-center gap-1"
                   data-testid={`chip-candidate-${player.id}-${char.id}`}
                 >
-                  {idx === 0 && (
-                    <Crown
-                      className="w-3.5 h-3.5 text-amber-400"
-                      aria-label="Primary claim"
-                      data-testid={`text-primary-claim-${player.id}`}
-                    />
-                  )}
                   <button
                     onClick={(e) => { e.stopPropagation(); onRemoveClaim(char.id); }}
                     className={cn("inline-flex items-center gap-1 text-xs font-sans whitespace-nowrap rounded-full border px-2.5 py-1 font-semibold transition-colors hover:opacity-80", candidateChipClass(char.team, idx === 0))}
@@ -1353,16 +1324,6 @@ export function SortablePlayerCard({
                     {char.name}
                     <X className="w-3 h-3 opacity-60" />
                   </button>
-                  {idx !== 0 && (
-                    <button
-                      onClick={(e) => { e.stopPropagation(); onSetPrimary(char.id); }}
-                      className="p-1.5 rounded-full text-amber-500/70 hover:text-amber-400 hover:bg-amber-900/30 transition-colors"
-                      title={`Make ${char.name} the primary claim`}
-                      data-testid={`button-set-primary-${char.id}`}
-                    >
-                      <Crown className="w-3 h-3" />
-                    </button>
-                  )}
                 </div>
               ))}
             </div>
@@ -2706,7 +2667,7 @@ function DraggableCircleNode({
     >
       <span
         className={cn(
-          "absolute left-1/2 -translate-x-1/2 text-[11px] font-medium whitespace-nowrap pointer-events-none",
+          "absolute left-1/2 -translate-x-1/2 font-display text-[11px] font-medium whitespace-nowrap pointer-events-none",
           !isActive && "text-muted-foreground line-through",
           isActive && "text-foreground"
         )}
@@ -2740,7 +2701,6 @@ export function GameTrackerView({
   onAddClaim,
   onAddMultipleClaims,
   onRemoveClaim,
-  onSetPrimary,
   onSetNotes,
   onUpdatePlayerName,
   onAdvancePhase,
@@ -2780,7 +2740,6 @@ export function GameTrackerView({
   onAddClaim: (playerId: string, characterId: string) => void;
   onAddMultipleClaims: (playerId: string, characterIds: string[]) => void;
   onRemoveClaim: (playerId: string, characterId: string) => void;
-  onSetPrimary: (playerId: string, characterId: string) => void;
   onSetNotes: (playerId: string, notes: string) => void;
   onUpdatePlayerName: (playerId: string, name: string) => void;
   onAdvancePhase: () => void;
@@ -3358,7 +3317,6 @@ export function GameTrackerView({
                   onToggleGhostVote={() => onToggleGhostVote(player.id)}
                   onOpenClaimPicker={() => setClaimPickerPlayerId(player.id)}
                   onRemoveClaim={(charId) => onRemoveClaim(player.id, charId)}
-                  onSetPrimary={(charId) => onSetPrimary(player.id, charId)}
                 />
               ))}
             </div>
@@ -3462,7 +3420,6 @@ export function GameTrackerView({
         onToggleGhostVote={() => selectedPlayerId && onToggleGhostVote(selectedPlayerId)}
         onAddMultipleClaims={(charIds) => selectedPlayerId && onAddMultipleClaims(selectedPlayerId, charIds)}
         onRemoveClaim={(charId) => selectedPlayerId && onRemoveClaim(selectedPlayerId, charId)}
-        onSetPrimary={(charId) => selectedPlayerId && onSetPrimary(selectedPlayerId, charId)}
         onSetNotes={(notes) => selectedPlayerId && onSetNotes(selectedPlayerId, notes)}
         onSetPlayerName={(name) => selectedPlayerId && onUpdatePlayerName(selectedPlayerId, name)}
         onRemoveTraveler={selectedPlayer?.isTraveler ? () => selectedPlayerId && onRemoveTraveler(selectedPlayerId) : undefined}
@@ -3646,7 +3603,6 @@ export default function Game() {
     addClaim,
     addMultipleClaims,
     removeClaim,
-    setPrimaryCandidate,
     toggleAlive,
     setPlayerStatus,
     toggleGhostVote,
@@ -3709,7 +3665,6 @@ export default function Game() {
           onAddClaim={addClaim}
           onAddMultipleClaims={addMultipleClaims}
           onRemoveClaim={removeClaim}
-          onSetPrimary={setPrimaryCandidate}
           onSetNotes={setNotes}
           onUpdatePlayerName={updatePlayerName}
           onAdvancePhase={advancePhase}

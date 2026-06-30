@@ -158,7 +158,6 @@ function renderRow(
     deathRecords?: DeathRecord[];
     onSelect?: () => void;
     onRemoveClaim?: (id: string) => void;
-    onSetPrimary?: (id: string) => void;
   } = {},
 ) {
   const game = makeGame([player], opts.deathRecords ?? []);
@@ -174,7 +173,6 @@ function renderRow(
           onToggleGhostVote={noop}
           onOpenClaimPicker={noop}
           onRemoveClaim={opts.onRemoveClaim ?? noop}
-          onSetPrimary={opts.onSetPrimary ?? noop}
         />
       </SortableContext>
     </DndContext>,
@@ -199,9 +197,9 @@ describe("List row states", () => {
     const alternate = screen.getByTestId("button-claim-badge-poisoner-p2");
     expect(primary.className).not.toContain("bg-transparent");
     expect(alternate.className).toContain("bg-transparent");
-    // The primary marker shows once; alternates get a set-primary control.
-    expect(screen.getByTestId("text-primary-claim-p2")).not.toBeNull();
-    expect(screen.getByTestId("button-set-primary-poisoner")).not.toBeNull();
+    // No crown marker renders; the primary is shown by the filled chip alone.
+    expect(screen.queryByTestId("text-primary-claim-p2")).toBeNull();
+    expect(screen.queryByTestId("button-set-primary-poisoner")).toBeNull();
   });
 
   it("shows a dashed token and a no-guess hint for an empty seat", () => {
@@ -237,18 +235,6 @@ describe("List row tap isolation", () => {
     });
     fireEvent.click(screen.getByTestId("button-claim-badge-imp-p1"));
     expect(onRemoveClaim).toHaveBeenCalledWith("imp");
-    expect(onSelect).not.toHaveBeenCalled();
-  });
-
-  it("setting a primary claim does not open the drawer", () => {
-    const onSelect = vi.fn();
-    const onSetPrimary = vi.fn();
-    renderRow(makePlayer({ id: "p2", name: "Bob", claims: ["imp", "poisoner"] }), {
-      onSelect,
-      onSetPrimary,
-    });
-    fireEvent.click(screen.getByTestId("button-set-primary-poisoner"));
-    expect(onSetPrimary).toHaveBeenCalledWith("poisoner");
     expect(onSelect).not.toHaveBeenCalled();
   });
 });

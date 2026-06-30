@@ -353,19 +353,6 @@ export function usePlayerGame() {
     });
   }, [game, updatePlayer]);
 
-  // Make a claim the primary candidate by moving it to claims[0] while keeping
-  // the relative order of the rest. claimRecords membership is unchanged (it is
-  // not order-significant). No-op if the id is already primary or not present.
-  const setPrimaryCandidate = useCallback((playerId: string, characterId: string) => {
-    if (!game) return;
-    const player = game.players.find(p => p.id === playerId);
-    if (!player) return;
-    const index = player.claims.indexOf(characterId);
-    if (index <= 0) return; // already primary (0) or absent (-1)
-    const reordered = [characterId, ...player.claims.filter(c => c !== characterId)];
-    updatePlayer(playerId, { claims: reordered });
-  }, [game, updatePlayer]);
-
   const hasBeenNominatedToday = useCallback((playerId: string) => {
     if (!game) return false;
     return game.nominations.some(n => n.day === game.currentDay && n.nomineeId === playerId);
@@ -1193,7 +1180,6 @@ export function usePlayerGame() {
     addClaim,
     addMultipleClaims,
     removeClaim,
-    setPrimaryCandidate,
     toggleAlive,
     setPlayerStatus,
     toggleGhostVote,

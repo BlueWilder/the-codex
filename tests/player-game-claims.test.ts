@@ -96,47 +96,7 @@ describe("ordered claims with a primary candidate", () => {
     expect(player.claims[0]).toBe("washerwoman");
   });
 
-  it("setPrimaryCandidate moves the id to the front with no duplicates", () => {
-    const hook = startGame();
-    const pid = firstPlayerId(hook);
-    act(() => {
-      hook.result.current.addMultipleClaims(pid, ["washerwoman", "librarian", "chef"]);
-    });
-    act(() => {
-      hook.result.current.setPrimaryCandidate(pid, "chef");
-    });
-    const player = findPlayer(hook, pid);
-    expect(player.claims).toEqual(["chef", "washerwoman", "librarian"]);
-    expect(player.claims.filter((c) => c === "chef")).toHaveLength(1);
-  });
-
-  it("setPrimaryCandidate is a no op when the id is already primary", () => {
-    const hook = startGame();
-    const pid = firstPlayerId(hook);
-    act(() => {
-      hook.result.current.addMultipleClaims(pid, ["washerwoman", "librarian", "chef"]);
-    });
-    act(() => {
-      hook.result.current.setPrimaryCandidate(pid, "washerwoman");
-    });
-    const player = findPlayer(hook, pid);
-    expect(player.claims).toEqual(["washerwoman", "librarian", "chef"]);
-  });
-
-  it("setPrimaryCandidate is a no op when the id is absent", () => {
-    const hook = startGame();
-    const pid = firstPlayerId(hook);
-    act(() => {
-      hook.result.current.addMultipleClaims(pid, ["washerwoman", "librarian"]);
-    });
-    act(() => {
-      hook.result.current.setPrimaryCandidate(pid, "chef");
-    });
-    const player = findPlayer(hook, pid);
-    expect(player.claims).toEqual(["washerwoman", "librarian"]);
-  });
-
-  it("keeps claimRecords consistent with claims after add, remove, and set primary", () => {
+  it("keeps claimRecords consistent with claims after add and remove", () => {
     const hook = startGame();
     const pid = firstPlayerId(hook);
     act(() => {
@@ -145,43 +105,26 @@ describe("ordered claims with a primary candidate", () => {
     act(() => {
       hook.result.current.removeClaim(pid, "washerwoman");
     });
-    act(() => {
-      hook.result.current.setPrimaryCandidate(pid, "chef");
-    });
     const player = findPlayer(hook, pid);
     const recordIds = (player.claimRecords ?? []).map((r) => r.characterId).sort();
     expect(recordIds).toEqual([...player.claims].sort());
-    expect(player.claims).toEqual(["chef", "librarian"]);
+    expect(player.claims).toEqual(["librarian", "chef"]);
   });
 
-  it("the circle node primary reflects claims[0] after setPrimaryCandidate", () => {
-    // The circle node reads firstClaim = player.claims[0] (Game.tsx). This
-    // asserts that promoting a claim surfaces there as the seat's claims[0].
+  it("the circle node primary reflects claims[0] after the primary is removed", () => {
+    // The circle node reads firstClaim = player.claims[0] (Game.tsx). Removing
+    // the primary promotes the next claim, which surfaces as the seat's claims[0].
     const hook = startGame();
     const pid = firstPlayerId(hook);
     act(() => {
       hook.result.current.addMultipleClaims(pid, ["washerwoman", "librarian", "chef"]);
     });
     act(() => {
-      hook.result.current.setPrimaryCandidate(pid, "chef");
+      hook.result.current.removeClaim(pid, "washerwoman");
     });
     const player = findPlayer(hook, pid);
-    expect(player.claims[0]).toBe("chef");
-  });
-
-  it("a chosen primary survives a reload from storage", () => {
-    const hook = startGame();
-    const pid = firstPlayerId(hook);
-    act(() => {
-      hook.result.current.addMultipleClaims(pid, ["washerwoman", "librarian", "chef"]);
-    });
-    act(() => {
-      hook.result.current.setPrimaryCandidate(pid, "chef");
-    });
-    const reloaded = renderHook(() => usePlayerGame());
-    const player = reloaded.result.current.game!.players.find((p) => p.id === pid)!;
-    expect(player.claims[0]).toBe("chef");
-    expect(player.claims).toEqual(["chef", "washerwoman", "librarian"]);
+    expect(player.claims[0]).toBe("librarian");
+    expect(player.claims).toEqual(["librarian", "chef"]);
   });
 
   it("loads an old saved game with its claim order intact", () => {
