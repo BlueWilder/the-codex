@@ -11,7 +11,7 @@ import { ScriptSheet } from "@/components/character/ScriptSheet";
 import { CharacterCard } from "@/components/character/CharacterCard";
 import { latestDeathRecord, deathPhaseLabel } from "@/lib/death-phase";
 import { useToast } from "@/hooks/use-toast";
-import { ChevronRight, ChevronLeft, Play, X, Plus, Check, Search, Moon, Sun, ChevronUp, ChevronDown, FileText, Vote, Loader2, GripVertical, UserPlus, ArrowRight, BookOpen, HandMetal, Ban, LogOut, Trash2, Pencil, MoreVertical, RotateCcw, Info, ExternalLink, Users, Skull, Ghost, Scroll, Hand, Target, Theater, ArrowDownUp, Camera, LayoutList, NotebookText, ScrollText } from "lucide-react";
+import { ChevronRight, ChevronLeft, Play, X, Plus, Check, Search, Moon, Sun, ChevronUp, ChevronDown, FileText, Loader2, GripVertical, UserPlus, ArrowRight, BookOpen, HandMetal, Ban, LogOut, Trash2, Pencil, MoreVertical, RotateCcw, Info, ExternalLink, Users, Skull, Scroll, Hand, Target, Theater, ArrowDownUp, Camera, LayoutList, NotebookText, ScrollText } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -1201,7 +1201,7 @@ function PlayerDetailDrawer({
 }
 
 /**
- * Candidate chip styling. The primary guess renders as a filled team-colored
+ * Candidate chip styling. The primary claim renders as a filled team-colored
  * pill (the existing badge style); alternates render outlined (team text + ring
  * border on a transparent background). Both reuse team-style values; no new
  * colors are introduced here.
@@ -1258,12 +1258,12 @@ export function SortablePlayerCard({
   const phaseStamp = deathPhaseLabel(deathRecord);
 
   return (
-    <Card
+    <div
       ref={setNodeRef}
       style={style}
       onClick={onSelect}
       className={cn(
-        "p-3 cursor-pointer",
+        "rounded-md border border-border/60 bg-card/40 p-2 cursor-pointer",
         isDead && "opacity-60",
         isDragging && "opacity-80 shadow-lg z-50 scale-[1.02]",
         player.isTraveler && "border-purple-700/50"
@@ -1317,7 +1317,6 @@ export function SortablePlayerCard({
               data-testid={`overlay-shroud-${player.id}`}
             >
               <span className="absolute inset-0 rounded-full bg-[#c79fe6]/15 border-2 border-[#3d2f57]" />
-              <Skull className="relative mb-0.5 w-3 h-3 text-[#c79fe6]/80" />
             </span>
           )}
         </button>
@@ -1346,9 +1345,9 @@ export function SortablePlayerCard({
             )}
           </div>
 
-          {claimedChars.length > 0 ? (
-            <div className="flex flex-wrap gap-1.5 mt-1.5" data-testid={`claims-row-${player.id}`}>
-              {claimedChars.map((char, idx) => char && (
+          <div className="flex flex-wrap items-center gap-1.5 mt-1.5" data-testid={`claims-row-${player.id}`}>
+            {claimedChars.length > 0 ? (
+              claimedChars.map((char, idx) => char && (
                 <div
                   key={char.id}
                   className="inline-flex items-center gap-1"
@@ -1364,50 +1363,48 @@ export function SortablePlayerCard({
                     <X className="w-3 h-3 opacity-60" />
                   </button>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <p
-              className="mt-1.5 text-xs italic text-muted-foreground/60"
-              data-testid={`text-no-guess-${player.id}`}
+              ))
+            ) : (
+              <span
+                className="text-xs italic text-muted-foreground/60"
+                data-testid={`text-no-claim-${player.id}`}
+              >
+                no claim yet
+              </span>
+            )}
+            <button
+              onClick={(e) => { e.stopPropagation(); onOpenClaimPicker(); }}
+              className="inline-flex items-center justify-center w-6 h-6 rounded-full border border-dashed border-amber-700/60 text-amber-400 hover:bg-amber-900/20 hover:border-amber-600 transition-colors shrink-0"
+              title="Add claim"
+              data-testid={`button-add-claim-${player.id}`}
             >
-              no guess yet
-            </p>
-          )}
+              <Plus className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
 
         <div className="flex flex-col items-end gap-1 shrink-0">
           <div className="flex items-center gap-1 h-4">
             {hasNotes && <FileText className="w-3.5 h-3.5 text-muted-foreground" />}
           </div>
-          <div className="flex items-center gap-1">
+          {!player.isTraveler && (
             <button
-              onClick={(e) => { e.stopPropagation(); onOpenClaimPicker(); }}
-              className="flex items-center gap-1 px-2.5 rounded-full border border-dashed border-amber-700/60 text-amber-400 text-xs font-medium hover:bg-amber-900/20 hover:border-amber-600 transition-colors shrink-0 h-9"
-              data-testid={`button-add-claim-${player.id}`}
+              onClick={(e) => { e.stopPropagation(); onToggleAlive(); }}
+              className={cn(
+                "flex items-center justify-center w-8 h-8 rounded-lg border transition-colors",
+                isDead
+                  ? "bg-red-900/40 border-red-700/60 text-red-400 hover:bg-red-900/60"
+                  : "border-muted-foreground/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+              )}
+              title={isDead ? "Revive player" : "Mark as dead"}
+              data-testid={`button-toggle-dead-${player.id}`}
             >
-              <Plus className="w-4 h-4" />
-              Claim
+              <Skull className="w-4 h-4" />
             </button>
-            {!player.isTraveler && (
-              <button
-                onClick={(e) => { e.stopPropagation(); onToggleAlive(); }}
-                className={cn(
-                  "flex items-center justify-center w-9 h-9 rounded-lg border transition-colors",
-                  isDead
-                    ? "bg-red-900/40 border-red-700/60 text-red-400 hover:bg-red-900/60"
-                    : "border-muted-foreground/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground"
-                )}
-                title={isDead ? "Revive player" : "Mark as dead"}
-                data-testid={`button-toggle-dead-${player.id}`}
-              >
-                <Skull className="w-5 h-5" />
-              </button>
-            )}
-          </div>
+          )}
         </div>
       </div>
-    </Card>
+    </div>
   );
 }
 
@@ -1478,9 +1475,9 @@ function CircleNodeContent({
       ) : (
         <span
           className="mt-0.5 text-[9px] leading-tight italic text-muted-foreground/60 px-1"
-          data-testid={`text-seat-noguess-${player.id}`}
+          data-testid={`text-seat-noclaim-${player.id}`}
         >
-          no guess
+          no claim
         </span>
       )}
 
@@ -1502,10 +1499,6 @@ function CircleNodeContent({
           data-testid={`overlay-shroud-${player.id}`}
         >
           <div className="absolute inset-0 rounded-full bg-[#c79fe6]/15 border-2 border-[#3d2f57]" />
-          <Skull
-            className="relative mb-1 text-[#c79fe6]/80"
-            style={{ width: Math.round(nodeSize * 0.3), height: Math.round(nodeSize * 0.3) }}
-          />
         </div>
       )}
     </div>
@@ -2234,35 +2227,35 @@ export function GameTrackerView({
           );
         })()}
 
-        {/* Core Action Zone - Alive/Dead filters */}
-        <div className="grid grid-cols-2 gap-3 px-3 py-3 border-b border-border">
-          {/* Alive - Interactive Filter */}
-          <Button
-            variant="outline"
+        {/* Core Action Zone - compact Alive/Dead filter line */}
+        <div className="flex items-center justify-center gap-2 px-3 py-2 border-b border-border">
+          <button
             onClick={() => toggleFilter('alive')}
             className={cn(
-              "flex flex-col items-center h-auto py-3 toggle-elevate",
-              playerFilter === 'alive' && "toggle-elevated bg-emerald-500/20 border-emerald-500/50"
+              "flex items-baseline gap-1.5 px-3 py-1 rounded-md border transition-colors",
+              playerFilter === 'alive'
+                ? "bg-emerald-500/20 border-emerald-500/50"
+                : "border-transparent hover:bg-muted/40"
             )}
             data-testid="filter-alive"
           >
-            <span className="text-3xl font-sans font-bold text-emerald-400 tabular-nums">{aliveCount}</span>
-            <span className="text-xs font-sans text-muted-foreground uppercase tracking-wide">Alive</span>
-          </Button>
-
-          {/* Dead - Interactive Filter */}
-          <Button
-            variant="outline"
+            <span className="text-xl font-display font-semibold text-emerald-400 tabular-nums">{aliveCount}</span>
+            <span className="text-xs text-muted-foreground uppercase tracking-wide">Alive</span>
+          </button>
+          <span className="text-muted-foreground/50">/</span>
+          <button
             onClick={() => toggleFilter('dead')}
             className={cn(
-              "flex flex-col items-center h-auto py-3 toggle-elevate",
-              playerFilter === 'dead' && "toggle-elevated bg-red-500/20 border-red-500/50"
+              "flex items-baseline gap-1.5 px-3 py-1 rounded-md border transition-colors",
+              playerFilter === 'dead'
+                ? "bg-red-500/20 border-red-500/50"
+                : "border-transparent hover:bg-muted/40"
             )}
             data-testid="filter-dead"
           >
-            <span className="text-3xl font-sans font-bold text-red-400/80 tabular-nums">{deadCount}</span>
-            <span className="text-xs font-sans text-muted-foreground uppercase tracking-wide">Dead</span>
-          </Button>
+            <span className="text-xl font-display font-semibold text-red-400/80 tabular-nums">{deadCount}</span>
+            <span className="text-xs text-muted-foreground uppercase tracking-wide">Dead</span>
+          </button>
         </div>
 
         {/* Traveler Row - Conditional */}

@@ -1,0 +1,1 @@
+- [ripgrep match-token drop](rg-match-token-drop.md) — when grepping a literal that's a substring of testids/copy, captured rg output can drop the matched token; use `cat -v` or read the file for exact strings.

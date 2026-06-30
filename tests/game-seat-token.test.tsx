@@ -84,9 +84,9 @@ describe("Circle seat states", () => {
     expect(screen.getByTestId("badge-candidates-p2").textContent).toContain("+2");
   });
 
-  it("shows a no-guess placeholder for an empty seat", () => {
+  it("shows a no-claim placeholder for an empty seat", () => {
     renderChart([makePlayer({ id: "p3", name: "Cara", claims: [] })]);
-    expect(screen.getByTestId("text-seat-noguess-p3")).not.toBeNull();
+    expect(screen.getByTestId("text-seat-noclaim-p3")).not.toBeNull();
     expect(screen.queryByTestId("text-seat-role-p3")).toBeNull();
   });
 
@@ -185,7 +185,7 @@ describe("List row states", () => {
     const chip = screen.getByTestId("button-claim-badge-imp-p1");
     // The primary chip is filled: it carries the team badge background, not bg-transparent.
     expect(chip.className).not.toContain("bg-transparent");
-    expect(screen.queryByTestId("text-no-guess-p1")).toBeNull();
+    expect(screen.queryByTestId("text-no-claim-p1")).toBeNull();
   });
 
   it("renders the primary filled and alternates outlined", () => {
@@ -199,11 +199,12 @@ describe("List row states", () => {
     expect(screen.queryByTestId("button-set-primary-poisoner")).toBeNull();
   });
 
-  it("shows a dashed token and a no-guess hint for an empty seat", () => {
+  it("shows a dashed token and a no-claim hint for an empty seat", () => {
     renderRow(makePlayer({ id: "p3", name: "Cara", claims: [] }));
     expect(screen.getByTestId("token-list-p3")).not.toBeNull();
-    expect(screen.getByTestId("text-no-guess-p3")).not.toBeNull();
-    expect(screen.queryByTestId("claims-row-p3")).toBeNull();
+    expect(screen.getByTestId("text-no-claim-p3")).not.toBeNull();
+    expect(screen.queryAllByTestId(/^chip-candidate-p3-/)).toHaveLength(0);
+    expect(screen.getByTestId("button-add-claim-p3")).not.toBeNull();
   });
 
   it("greys a dead seat with a shroud and a dagger phase stamp", () => {

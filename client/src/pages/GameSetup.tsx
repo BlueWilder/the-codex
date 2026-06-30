@@ -29,8 +29,7 @@ export default function GameSetup() {
           id: `player-${i}`,
           name: `Player ${i+1}`,
           character: null,
-          isAlive: true,
-          hasGhostVote: true
+          isAlive: true
         })),
         storyteller: storytellerName || "Storyteller"
       };

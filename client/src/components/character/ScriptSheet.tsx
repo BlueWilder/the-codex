@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { User, VenetianMask, Ghost, Footprints, Star, LayoutList, Clock, type LucideIcon } from "lucide-react";
+import { User, VenetianMask, PersonStanding, Footprints, Star, LayoutList, Clock, type LucideIcon } from "lucide-react";
 import { type Character, type Jinx, JINXES } from "@/lib/game-data";
 import { cn } from "@/lib/utils";
 import { nightOrderValue, getFirstNightChars, getOtherNightChars, type ScriptSort } from "@/lib/night-order";
@@ -79,8 +79,8 @@ function DemonGlyph({ className }: { className?: string }) {
 function getTeamToken(team: string): React.ComponentType<{ className?: string }> {
   switch (team) {
     case "townsfolk": return User;
-    case "outsider": return VenetianMask;
-    case "minion": return Ghost;
+    case "outsider": return PersonStanding;
+    case "minion": return VenetianMask;
     case "demon": return DemonGlyph;
     case "traveler": return Footprints;
     case "fabled": return Star;
