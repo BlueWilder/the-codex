@@ -296,35 +296,36 @@ export function usePlayerGame() {
     // If player is dying (not being resurrected), record a death stamped with
     // the current phase (day = execution, night = night kill).
     if (!newIsAlive && player.status === 'alive') {
-      // Idempotent: skip only a true duplicate (same player, same day, same
-      // phase). A revive then re-kill in a LATER phase of the same day (e.g.
-      // night kill -> revive -> day execution) must still write a fresh record
-      // so the latest death type/phase is correct.
-      const alreadyRecorded = (game.deathRecords || []).some(
-        d => d.playerId === playerId && d.day === game.currentDay && d.phase === game.phase
-      );
-      
-      if (!alreadyRecorded) {
-        const newDeathRecord: DeathRecord = {
-          playerId,
-          day: game.currentDay,
-          type: game.phase === 'day' ? 'execution' : 'night',
-          phase: game.phase,
-          timestamp: new Date().toISOString(),
-        };
-        
-        const newGame = {
-          ...game,
-          players: game.players.map(p => 
-            p.id === playerId 
-              ? { ...p, isAlive: newIsAlive, status: newStatus }
-              : p
+      // Replace (not skip) any existing record for the same player on the same
+      // day and phase. A revive then re-kill in the SAME phase (e.g. day
+      // execution -> revive -> exile) must update the latest death type; a
+      // re-kill in a LATER phase of the same day (night kill -> revive -> day
+      // execution) keeps both, since their phases differ. This also prevents
+      // duplicate records from a double-fire of the same transition.
+      const newDeathRecord: DeathRecord = {
+        playerId,
+        day: game.currentDay,
+        type: game.phase === 'day' ? 'execution' : 'night',
+        phase: game.phase,
+        timestamp: new Date().toISOString(),
+      };
+
+      const newGame = {
+        ...game,
+        players: game.players.map(p =>
+          p.id === playerId
+            ? { ...p, isAlive: newIsAlive, status: newStatus }
+            : p
+        ),
+        deathRecords: [
+          ...(game.deathRecords || []).filter(
+            d => !(d.playerId === playerId && d.day === game.currentDay && d.phase === game.phase)
           ),
-          deathRecords: [...(game.deathRecords || []), newDeathRecord],
-        };
-        saveGame(newGame);
-        return;
-      }
+          newDeathRecord,
+        ],
+      };
+      saveGame(newGame);
+      return;
     }
     
     updatePlayer(playerId, { isAlive: newIsAlive, status: newStatus });
@@ -342,37 +343,38 @@ export function usePlayerGame() {
     const isDeathTransition =
       player.status === 'alive' && (status === 'dead' || status === 'exiled');
     if (isDeathTransition) {
-      // Idempotent: skip only a true duplicate (same player, same day, same
-      // phase) so a revive then re-kill in a later phase of the same day still
-      // records the new death.
-      const alreadyRecorded = (game.deathRecords || []).some(
-        d => d.playerId === playerId && d.day === game.currentDay && d.phase === game.phase
-      );
-      if (!alreadyRecorded) {
-        const deathType: DeathRecord['type'] =
-          status === 'exiled'
-            ? 'exile'
-            : game.phase === 'day'
-              ? 'execution'
-              : 'night';
-        const newDeathRecord: DeathRecord = {
-          playerId,
-          day: game.currentDay,
-          type: deathType,
-          phase: game.phase,
-          timestamp: new Date().toISOString(),
-        };
-        saveGame({
-          ...game,
-          players: game.players.map(p =>
-            p.id === playerId
-              ? { ...p, isAlive: newIsAlive, status }
-              : p
+      // Replace (not skip) any existing record for the same player on the same
+      // day and phase, so a revive then re-kill in the same phase (e.g. day
+      // execution -> revive -> exile) updates the latest death type. A re-kill
+      // in a later phase of the same day keeps both records (phases differ).
+      const deathType: DeathRecord['type'] =
+        status === 'exiled'
+          ? 'exile'
+          : game.phase === 'day'
+            ? 'execution'
+            : 'night';
+      const newDeathRecord: DeathRecord = {
+        playerId,
+        day: game.currentDay,
+        type: deathType,
+        phase: game.phase,
+        timestamp: new Date().toISOString(),
+      };
+      saveGame({
+        ...game,
+        players: game.players.map(p =>
+          p.id === playerId
+            ? { ...p, isAlive: newIsAlive, status }
+            : p
+        ),
+        deathRecords: [
+          ...(game.deathRecords || []).filter(
+            d => !(d.playerId === playerId && d.day === game.currentDay && d.phase === game.phase)
           ),
-          deathRecords: [...(game.deathRecords || []), newDeathRecord],
-        });
-        return;
-      }
+          newDeathRecord,
+        ],
+      });
+      return;
     }
 
     updatePlayer(playerId, { isAlive: newIsAlive, status });

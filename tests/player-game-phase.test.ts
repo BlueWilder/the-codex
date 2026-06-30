@@ -145,6 +145,36 @@ describe("toggleAlive death records by phase", () => {
     expect(records[0]?.phase).toBe("day");
   });
 
+  it("updates the latest death to exile when exiled after a same-phase execution and revival", () => {
+    const { result } = renderHook(() => usePlayerGame());
+    act(() => {
+      result.current.createGame(5, ["A", "B", "C", "D", "E"]);
+    });
+    act(() => {
+      result.current.advancePhase(); // Night 1 -> Day 1
+    });
+    const target = result.current.game!.players[0].id;
+    // Day 1: executed.
+    act(() => {
+      result.current.setPlayerStatus(target, "dead");
+    });
+    // Revived (still Day 1).
+    act(() => {
+      result.current.setPlayerStatus(target, "alive");
+    });
+    // Exiled (still Day 1).
+    act(() => {
+      result.current.setPlayerStatus(target, "exiled");
+    });
+    const records = (result.current.game?.deathRecords ?? []).filter(
+      (r) => r.playerId === target,
+    );
+    // No stale execution record left behind; the single same-phase record is exile.
+    expect(records).toHaveLength(1);
+    expect(records[0].type).toBe("exile");
+    expect(records[0].phase).toBe("day");
+  });
+
   it("re-kills after a same-day revival, keeping the latest death type correct", () => {
     const { result } = renderHook(() => usePlayerGame());
     act(() => {
