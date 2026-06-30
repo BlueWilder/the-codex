@@ -68,3 +68,13 @@ export function teamSurface(team: string): string {
 export function teamInputAccent(team: string): string {
   return (TEAM_STYLES[team as Team] ?? FALLBACK).inputAccent;
 }
+
+/**
+ * The team ring/border color for tokens and seat nodes. Reuses the existing
+ * badge border value (no new color values), so the seat ring flows from this
+ * single source instead of a duplicate inline map.
+ */
+export function teamRing(team: string): string {
+  const badge = (TEAM_STYLES[team as Team] ?? FALLBACK).badge;
+  return badge.split(' ').find((c) => c.startsWith('border-')) ?? '';
+}

@@ -16,6 +16,7 @@ export interface Character {
   bluffingAs?: string[];    // For good characters - tips for evil players bluffing as this role
   fightingThe?: string[];   // For evil characters - tips for good players fighting this role
   howToRun?: string;        // Storyteller instructions for running this character
+  icon?: string;            // Optional per-character token art (forward hook; unused for now)
 }
 
 export interface Jinx {

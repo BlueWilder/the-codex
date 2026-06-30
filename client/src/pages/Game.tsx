@@ -1,6 +1,6 @@
 import { Layout } from "@/components/ui/Layout";
 import { useState, useMemo, useEffect, useRef } from "react";
-import { usePlayerGame, getBreakdown, isPlayerActive, canPlayerVote, canPlayerVoteOnExile, type GamePlayer, type Nomination, type PlayerVote, type GameScriptRef, type ExileVote, type PlayerStatus, type NominationResult } from "@/hooks/use-player-game";
+import { usePlayerGame, getBreakdown, isPlayerActive, canPlayerVote, canPlayerVoteOnExile, type GamePlayer, type Nomination, type PlayerVote, type GameScriptRef, type ExileVote, type PlayerStatus, type NominationResult, type DeathRecord } from "@/hooks/use-player-game";
 import { ALL_CHARACTERS, OFFICIAL_SCRIPTS, getJinxesForCharacter } from "@/lib/game-data";
 import { useLocalScripts, type LocalScript } from "@/hooks/use-local-scripts";
 import { ScriptBuilderDialog } from "@/components/ScriptBuilderDialog";
@@ -28,7 +28,8 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, TouchSensor, useSensor, useSensors, DragEndEvent, DragOverlay, DragStartEvent, useDraggable } from "@dnd-kit/core";
 import { SortableContext, sortableKeyboardCoordinates, useSortable, rectSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { teamBadge, teamInputAccent } from "@/lib/team-style";
+import { teamBadge, teamInputAccent, teamCard } from "@/lib/team-style";
+import { CharacterToken } from "@/components/character/CharacterToken";
 import { TeamBadge } from "@/components/character/TeamBadge";
 import { NightBadges } from "@/components/character/NightBadges";
 import { JinxBadge } from "@/components/character/JinxBadge";
@@ -2259,22 +2260,15 @@ function ExileDialog({
   );
 }
 
-const TEAM_BORDER_INLINE: Record<string, string> = {
-  townsfolk: '#3b82f6',
-  outsider: '#22c55e',
-  minion: '#ef4444',
-  demon: '#991b1b',
-  traveler: '#9333ea',
-  fabled: '#f59e0b',
-};
+/** Pull just the text color token out of the single team-style source. */
+function seatRoleTextColor(team: string): string {
+  return teamCard(team).split(' ').find((c) => c.startsWith('text-')) ?? 'text-foreground';
+}
 
 function CircleNodeContent({
   player,
   nodeSize,
-  nominations,
-  isDragging = false,
   isOverlay = false,
-  nameOutside = false,
 }: {
   player: GamePlayer;
   nodeSize: number;
@@ -2283,54 +2277,90 @@ function CircleNodeContent({
   isOverlay?: boolean;
   nameOutside?: boolean;
 }) {
-  const firstClaim = player.claims[0];
-  const claimChar = firstClaim ? resolveClaimDescriptor(firstClaim) : null;
-  const isActive = player.status === 'alive';
-  const isDead = player.status === 'dead';
+  const claims = player.claims ?? [];
+  const primaryId = claims?.[0] ?? null;
+  const primaryChar = primaryId ? resolveClaimDescriptor(primaryId) : null;
+  const extraCount = claims.length > 1 ? claims.length - 1 : 0;
+  const isDead = player.status === 'dead' || player.status === 'exiled';
 
-  const borderColor = claimChar
-    ? TEAM_BORDER_INLINE[claimChar.team] || undefined
-    : undefined;
+  const tokenSize = Math.round(nodeSize * 0.62);
+  const roleName = primaryChar?.name ?? null;
 
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-center rounded-full border-2 text-center",
-        !borderColor && "border-border",
-        !borderColor && player.isTraveler && "border-purple-700",
-        isActive ? "bg-card" : "bg-muted/50",
-        !isActive && "opacity-50",
-        isOverlay && "shadow-2xl scale-110 border-amber-500 bg-card",
-        isDragging && "opacity-40"
+        "relative flex flex-col items-center justify-center rounded-full text-center",
+        isOverlay && "shadow-2xl scale-110"
       )}
-      style={{
-        width: nodeSize,
-        height: nodeSize,
-        ...(borderColor && !isOverlay ? { borderColor } : {}),
-      }}
+      style={{ width: nodeSize, height: nodeSize }}
+      data-testid={`token-seat-${player.id}`}
     >
-      {nameOutside && claimChar ? (
-        <span className={cn(
-          "text-[10px] font-medium truncate px-1 leading-tight",
-          teamBadge(claimChar.team)
-        )}
-        style={{ maxWidth: nodeSize - 6 }}
+      {primaryChar ? (
+        <CharacterToken
+          characterId={primaryId ?? undefined}
+          team={primaryChar.team}
+          size={tokenSize}
+          muted={isDead}
+        />
+      ) : (
+        <div
+          className={cn(
+            "flex items-center justify-center rounded-full border-2 border-dashed border-muted-foreground/40 text-muted-foreground/60",
+            isDead && "opacity-40"
+          )}
+          style={{ width: tokenSize, height: tokenSize }}
         >
-          {claimChar.name.length > 9 ? claimChar.name.slice(0, 8) + '…' : claimChar.name}
+          <Plus style={{ width: Math.round(tokenSize * 0.45), height: Math.round(tokenSize * 0.45) }} />
+        </div>
+      )}
+
+      {roleName ? (
+        <span
+          className={cn(
+            "mt-0.5 text-[9px] leading-tight font-medium truncate px-1",
+            isDead ? "text-muted-foreground" : seatRoleTextColor(primaryChar?.team ?? 'townsfolk')
+          )}
+          style={{ maxWidth: nodeSize - 6 }}
+          data-testid={`text-seat-role-${player.id}`}
+        >
+          {roleName.length > 9 ? roleName.slice(0, 8) + '…' : roleName}
         </span>
       ) : (
-        <span className={cn(
-          "text-xs font-medium truncate px-1",
-          !isActive && "text-muted-foreground line-through"
-        )}
-        style={{ maxWidth: nodeSize - 6 }}
+        <span
+          className="mt-0.5 text-[9px] leading-tight italic text-muted-foreground/60 px-1"
+          data-testid={`text-seat-noguess-${player.id}`}
         >
-          {player.name.length > 8 ? player.name.slice(0, 7) + '…' : player.name}
+          no guess
         </span>
       )}
 
+      {extraCount > 0 && (
+        <span
+          className={cn(
+            "absolute -bottom-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full border flex items-center justify-center text-[9px] font-semibold leading-none",
+            teamBadge(primaryChar?.team ?? 'townsfolk')
+          )}
+          data-testid={`badge-candidates-${player.id}`}
+        >
+          +{extraCount}
+        </span>
+      )}
+
+      {isDead && (
+        <div
+          className="absolute inset-0 rounded-full pointer-events-none flex items-end justify-center overflow-hidden"
+          data-testid={`overlay-shroud-${player.id}`}
+        >
+          <div className="absolute inset-0 rounded-full bg-[#c79fe6]/15 border-2 border-[#3d2f57]" />
+          <Skull
+            className="relative mb-1 text-[#c79fe6]/80"
+            style={{ width: Math.round(nodeSize * 0.3), height: Math.round(nodeSize * 0.3) }}
+          />
+        </div>
+      )}
+
       {isDead && !player.isTraveler && (
-        <div className="mt-0.5">
+        <div className="absolute top-0 right-0">
           {player.hasGhostVote ? (
             <Ghost className="w-3 h-3 text-purple-400" />
           ) : (
@@ -2345,10 +2375,11 @@ function CircleNodeContent({
   );
 }
 
-function CircleSeatingChart({
+export function CircleSeatingChart({
   players,
   nominations,
   currentDay,
+  deathRecords = [],
   onSelectPlayer,
   onReorderPlayers,
   onSetCirclePosition,
@@ -2358,6 +2389,7 @@ function CircleSeatingChart({
   players: GamePlayer[];
   nominations: Nomination[];
   currentDay: number;
+  deathRecords?: DeathRecord[];
   onSelectPlayer: (playerId: string) => void;
   onReorderPlayers: (activeId: string, overId: string) => void;
   onSetCirclePosition: (playerId: string, x: number, y: number) => void;
@@ -2523,6 +2555,20 @@ function CircleSeatingChart({
             const displayX = isBeingDragged ? pos.x + dragDelta.x : pos.x;
             const displayY = isBeingDragged ? pos.y + dragDelta.y : pos.y;
             const angleDeg = getPlayerAngleDeg(player, index);
+            // Latest death = highest day, then 'day' phase after 'night' within a
+            // day, then last-logged for same day+phase. Deterministic regardless
+            // of array order so the dagger stamp is always the true final death.
+            const phaseRank = (p: DeathRecord['phase']) => (p === 'night' ? 0 : 1);
+            const deathRecord =
+              deathRecords
+                .map((r, i) => ({ r, i }))
+                .filter(({ r }) => r.playerId === player.id)
+                .sort((a, b) =>
+                  a.r.day - b.r.day ||
+                  phaseRank(a.r.phase) - phaseRank(b.r.phase) ||
+                  a.i - b.i,
+                )
+                .at(-1)?.r ?? null;
 
             return (
               <DraggableCircleNode
@@ -2534,6 +2580,7 @@ function CircleSeatingChart({
                 onSelectPlayer={onSelectPlayer}
                 isDragging={isBeingDragged}
                 angleDeg={angleDeg}
+                deathRecord={deathRecord}
               />
             );
           })}
@@ -2551,6 +2598,7 @@ function DraggableCircleNode({
   onSelectPlayer,
   isDragging,
   angleDeg,
+  deathRecord = null,
 }: {
   player: GamePlayer;
   position: { x: number; y: number };
@@ -2559,6 +2607,7 @@ function DraggableCircleNode({
   onSelectPlayer: (playerId: string) => void;
   isDragging: boolean;
   angleDeg: number;
+  deathRecord?: DeathRecord | null;
 }) {
   const { attributes, listeners, setNodeRef } = useDraggable({
     id: player.id,
@@ -2567,6 +2616,7 @@ function DraggableCircleNode({
   const isBottom = angleDeg > 0 && angleDeg < 180;
   const isActive = player.status === 'alive';
   const displayName = player.name.length > 9 ? player.name.slice(0, 8) + '…' : player.name;
+  const phaseStamp = deathRecord ? `${deathRecord.phase === 'night' ? 'N' : 'D'}${deathRecord.day}` : null;
 
   return (
     <button
@@ -2600,6 +2650,11 @@ function DraggableCircleNode({
         style={isBottom ? { top: nodeSize + 2 } : { bottom: nodeSize + 2 }}
       >
         {displayName}
+        {phaseStamp && (
+          <span className="ml-1 text-[#c79fe6]" data-testid={`text-seat-death-${player.id}`}>
+            † {phaseStamp}
+          </span>
+        )}
       </span>
       <CircleNodeContent
         player={player}
@@ -3264,6 +3319,7 @@ function GameTrackerView({
           players={game.players}
           nominations={game.nominations}
           currentDay={game.currentDay}
+          deathRecords={game.deathRecords ?? []}
           onSelectPlayer={(playerId) => setSelectedPlayerId(playerId)}
           onReorderPlayers={onReorderPlayers}
           onSetCirclePosition={onSetCirclePosition}
