@@ -73,7 +73,6 @@ export interface GamePlayer {
   isTraveler?: boolean;
   joinedAt?: string; // When traveler joined
   joinedDay?: number;
-  trust?: number; // 0-100 scale, 50 = neutral
   circleX?: number; // Normalized 0-1 position on circle canvas
   circleY?: number;
 }
@@ -767,10 +766,6 @@ export function usePlayerGame() {
     updatePlayer(playerId, { notes });
   }, [updatePlayer]);
 
-  const setTrust = useCallback((playerId: string, trust: number) => {
-    updatePlayer(playerId, { trust: Math.max(0, Math.min(100, trust)) });
-  }, [updatePlayer]);
-
   const nextDay = useCallback(() => {
     if (!game) return;
     saveGame({ ...game, currentDay: game.currentDay + 1 });
@@ -1206,7 +1201,6 @@ export function usePlayerGame() {
     setGameNotes,
     addPlayer,
     removePlayer,
-    setTrust,
     setCirclePosition,
     setMultipleCirclePositions,
     resetCirclePositions,

@@ -5,7 +5,6 @@ import { ALL_CHARACTERS, OFFICIAL_SCRIPTS, getJinxesForCharacter } from "@/lib/g
 import { useLocalScripts, type LocalScript } from "@/hooks/use-local-scripts";
 import { ScriptBuilderDialog } from "@/components/ScriptBuilderDialog";
 import { InlineGameLog } from "@/components/InlineGameLog";
-import { TrustSlider } from "@/components/TrustSlider";
 import { scanScriptFile } from "@/lib/scan-script";
 import { resolveScriptCharacters, countScriptCharacters } from "@/lib/script-resolve";
 import { ScriptSheet } from "@/components/character/ScriptSheet";
@@ -633,7 +632,6 @@ function PlayerDetailDrawer({
   onConvertToTraveler,
   canRemovePlayer,
   scriptCharacterIds,
-  onSetTrust,
 }: {
   player: GamePlayer | null;
   players: GamePlayer[];
@@ -653,7 +651,6 @@ function PlayerDetailDrawer({
   onConvertToTraveler?: () => void;
   canRemovePlayer?: boolean;
   scriptCharacterIds?: string[] | null;
-  onSetTrust: (trust: number) => void;
 }) {
   const [showCharacterPicker, setShowCharacterPicker] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
@@ -907,17 +904,6 @@ function PlayerDetailDrawer({
                 )}
               </div>
 
-              {/* Trust Section */}
-              <div className="rounded-lg bg-card/30 border border-border/30 p-4 space-y-3">
-                <h3 className="font-bold text-sm uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                  <Hand className="w-4 h-4" /> Trust
-                </h3>
-                <TrustSlider
-                  value={player.trust ?? 50}
-                  onChange={onSetTrust}
-                  disabled={player.status !== 'alive'}
-                />
-              </div>
 
               {/* Notes Section */}
               <div ref={notesSectionRef} className="rounded-lg bg-card/30 border border-border/30 p-4 space-y-3">
@@ -2698,7 +2684,6 @@ function GameTrackerView({
   onSetGameNotes,
   onAddPlayer,
   onRemovePlayer,
-  onSetTrust,
   onSetCirclePosition,
   onSetMultipleCirclePositions,
   onResetCirclePositions,
@@ -2737,7 +2722,6 @@ function GameTrackerView({
   onSetGameNotes: (notes: string) => void;
   onAddPlayer: (name: string, insertAfterPlayerId: string | null) => void;
   onRemovePlayer: (playerId: string) => void;
-  onSetTrust: (playerId: string, trust: number) => void;
   onSetCirclePosition: (playerId: string, x: number, y: number) => void;
   onSetMultipleCirclePositions: (updates: { playerId: string; x: number; y: number }[]) => void;
   onResetCirclePositions: () => void;
@@ -3351,7 +3335,6 @@ function GameTrackerView({
         onConvertToTraveler={!selectedPlayer?.isTraveler ? () => selectedPlayerId && onConvertToTraveler(selectedPlayerId) : undefined}
         canRemovePlayer={game.players.length > 1}
         scriptCharacterIds={scriptCharacterIds}
-        onSetTrust={(trust) => selectedPlayerId && onSetTrust(selectedPlayerId, trust)}
       />
 
       <NominationDialog
@@ -3551,7 +3534,6 @@ export default function Game() {
     setGameNotes,
     addPlayer,
     removePlayer,
-    setTrust,
     setCirclePosition,
     setMultipleCirclePositions,
     resetCirclePositions,
@@ -3611,7 +3593,6 @@ export default function Game() {
           onSetGameNotes={setGameNotes}
           onAddPlayer={addPlayer}
           onRemovePlayer={removePlayer}
-          onSetTrust={setTrust}
           onSetCirclePosition={setCirclePosition}
           onSetMultipleCirclePositions={setMultipleCirclePositions}
           onResetCirclePositions={resetCirclePositions}
