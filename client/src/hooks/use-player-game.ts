@@ -331,7 +331,26 @@ export function usePlayerGame() {
     if (!game) return;
     const player = game.players.find(p => p.id === playerId);
     if (!player) return;
-    updatePlayer(playerId, { claims: player.claims.filter(c => c !== characterId) });
+    // Keep claimRecords consistent with claims membership. Natural array order
+    // means removing claims[0] promotes the next claim to primary.
+    const existingRecords = player.claimRecords ?? [];
+    updatePlayer(playerId, {
+      claims: player.claims.filter(c => c !== characterId),
+      claimRecords: existingRecords.filter(r => r.characterId !== characterId),
+    });
+  }, [game, updatePlayer]);
+
+  // Make a claim the primary candidate by moving it to claims[0] while keeping
+  // the relative order of the rest. claimRecords membership is unchanged (it is
+  // not order-significant). No-op if the id is already primary or not present.
+  const setPrimaryCandidate = useCallback((playerId: string, characterId: string) => {
+    if (!game) return;
+    const player = game.players.find(p => p.id === playerId);
+    if (!player) return;
+    const index = player.claims.indexOf(characterId);
+    if (index <= 0) return; // already primary (0) or absent (-1)
+    const reordered = [characterId, ...player.claims.filter(c => c !== characterId)];
+    updatePlayer(playerId, { claims: reordered });
   }, [game, updatePlayer]);
 
   const hasBeenNominatedToday = useCallback((playerId: string) => {
@@ -1156,6 +1175,7 @@ export function usePlayerGame() {
     addClaim,
     addMultipleClaims,
     removeClaim,
+    setPrimaryCandidate,
     toggleAlive,
     setPlayerStatus,
     toggleGhostVote,

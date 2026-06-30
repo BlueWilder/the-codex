@@ -10,7 +10,7 @@ import { scanScriptFile } from "@/lib/scan-script";
 import { resolveScriptCharacters, countScriptCharacters } from "@/lib/script-resolve";
 import { ScriptSheet } from "@/components/character/ScriptSheet";
 import { useToast } from "@/hooks/use-toast";
-import { ChevronRight, ChevronLeft, Play, X, Plus, Check, Search, Moon, Sun, ChevronUp, ChevronDown, FileText, Vote, Loader2, GripVertical, UserPlus, ArrowRight, BookOpen, HandMetal, Ban, LogOut, Trash2, Pencil, MoreVertical, RotateCcw, Info, ExternalLink, Users, Skull, Ghost, Scroll, Hand, Target, Theater, ArrowDownUp, Camera } from "lucide-react";
+import { ChevronRight, ChevronLeft, Play, X, Plus, Check, Search, Moon, Sun, ChevronUp, ChevronDown, FileText, Vote, Loader2, GripVertical, UserPlus, ArrowRight, BookOpen, HandMetal, Ban, LogOut, Trash2, Pencil, MoreVertical, RotateCcw, Info, ExternalLink, Users, Skull, Ghost, Scroll, Hand, Target, Theater, ArrowDownUp, Camera, Crown } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -624,6 +624,7 @@ function PlayerDetailDrawer({
   onToggleGhostVote,
   onAddMultipleClaims,
   onRemoveClaim,
+  onSetPrimary,
   onSetNotes,
   onSetPlayerName,
   onRemoveTraveler,
@@ -643,6 +644,7 @@ function PlayerDetailDrawer({
   onToggleGhostVote: () => void;
   onAddMultipleClaims: (characterIds: string[]) => void;
   onRemoveClaim: (characterId: string) => void;
+  onSetPrimary: (characterId: string) => void;
   onSetNotes: (notes: string) => void;
   onSetPlayerName: (name: string) => void;
   onRemoveTraveler?: () => void;
@@ -861,23 +863,42 @@ function PlayerDetailDrawer({
                 </div>
                 {claimedCharacters.length > 0 ? (
                   <div className="flex flex-wrap gap-2">
-                    {claimedCharacters.map(char => char && (
-                      <Badge
-                        key={char.id}
-                        className={cn(
-                          "gap-1.5 text-base",
-                          char.id !== GENERIC_TRAVELLER_ID && "cursor-pointer",
-                          teamBadge(char.team)
+                    {claimedCharacters.map((char, idx) => char && (
+                      <div key={char.id} className="inline-flex items-center gap-1">
+                        {idx === 0 && (
+                          <Crown
+                            className="w-4 h-4 text-amber-400"
+                            aria-label="Primary claim"
+                            data-testid={`text-primary-claim-${player.id}`}
+                          />
                         )}
-                        onClick={char.id === GENERIC_TRAVELLER_ID ? undefined : () => {
-                          const full = ALL_CHARACTERS.find(c => c.id === char.id);
-                          if (full) setPreviewCharacter(full);
-                        }}
-                        data-testid={`badge-claim-${char.id}`}
-                      >
-                        {char.name}
-                        {char.id !== GENERIC_TRAVELLER_ID && <Info className="w-3.5 h-3.5 opacity-60" />}
-                      </Badge>
+                        <Badge
+                          className={cn(
+                            "gap-1.5 text-base",
+                            char.id !== GENERIC_TRAVELLER_ID && "cursor-pointer",
+                            teamBadge(char.team)
+                          )}
+                          onClick={char.id === GENERIC_TRAVELLER_ID ? undefined : () => {
+                            const full = ALL_CHARACTERS.find(c => c.id === char.id);
+                            if (full) setPreviewCharacter(full);
+                          }}
+                          data-testid={`badge-claim-${char.id}`}
+                        >
+                          {char.name}
+                          {char.id !== GENERIC_TRAVELLER_ID && <Info className="w-3.5 h-3.5 opacity-60" />}
+                        </Badge>
+                        {idx !== 0 && (
+                          <button
+                            type="button"
+                            onClick={() => onSetPrimary(char.id)}
+                            className="p-1.5 rounded-full text-amber-500/70 hover:text-amber-400 hover:bg-amber-900/30 transition-colors"
+                            title={`Make ${char.name} the primary claim`}
+                            data-testid={`button-set-primary-${char.id}`}
+                          >
+                            <Crown className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
                     ))}
                   </div>
                 ) : (
@@ -1174,6 +1195,7 @@ function SortablePlayerCard({
   onToggleGhostVote,
   onOpenClaimPicker,
   onRemoveClaim,
+  onSetPrimary,
 }: {
   player: GamePlayer;
   game: NonNullable<ReturnType<typeof usePlayerGame>["game"]>;
@@ -1182,6 +1204,7 @@ function SortablePlayerCard({
   onToggleGhostVote: () => void;
   onOpenClaimPicker: () => void;
   onRemoveClaim: (characterId: string) => void;
+  onSetPrimary: (characterId: string) => void;
 }) {
   const {
     attributes,
@@ -1305,17 +1328,35 @@ function SortablePlayerCard({
 
       {claimedChars.length > 0 && (
         <div className="flex flex-wrap gap-1.5 mt-2" data-testid={`claims-row-${player.id}`}>
-          {claimedChars.map(char => char && (
-            <button
-              key={char.id}
-              onClick={() => onRemoveClaim(char.id)}
-              className={cn("inline-flex items-center gap-1 text-xs whitespace-nowrap rounded-full border px-2.5 py-1 font-semibold transition-colors hover:opacity-80", teamBadge(char.team))}
-              title={`Remove ${char.name} claim`}
-              data-testid={`button-claim-badge-${char.id}-${player.id}`}
-            >
-              {char.name}
-              <X className="w-3 h-3 opacity-60" />
-            </button>
+          {claimedChars.map((char, idx) => char && (
+            <div key={char.id} className="inline-flex items-center gap-1">
+              {idx === 0 && (
+                <Crown
+                  className="w-3.5 h-3.5 text-amber-400"
+                  aria-label="Primary claim"
+                  data-testid={`text-primary-claim-${player.id}`}
+                />
+              )}
+              <button
+                onClick={() => onRemoveClaim(char.id)}
+                className={cn("inline-flex items-center gap-1 text-xs whitespace-nowrap rounded-full border px-2.5 py-1 font-semibold transition-colors hover:opacity-80", teamBadge(char.team))}
+                title={`Remove ${char.name} claim`}
+                data-testid={`button-claim-badge-${char.id}-${player.id}`}
+              >
+                {char.name}
+                <X className="w-3 h-3 opacity-60" />
+              </button>
+              {idx !== 0 && (
+                <button
+                  onClick={() => onSetPrimary(char.id)}
+                  className="p-1.5 rounded-full text-amber-500/70 hover:text-amber-400 hover:bg-amber-900/30 transition-colors"
+                  title={`Make ${char.name} the primary claim`}
+                  data-testid={`button-set-primary-${char.id}`}
+                >
+                  <Crown className="w-3 h-3" />
+                </button>
+              )}
+            </div>
           ))}
         </div>
       )}
@@ -2581,6 +2622,7 @@ function GameTrackerView({
   onAddClaim,
   onAddMultipleClaims,
   onRemoveClaim,
+  onSetPrimary,
   onSetNotes,
   onUpdatePlayerName,
   onAdvancePhase,
@@ -2619,6 +2661,7 @@ function GameTrackerView({
   onAddClaim: (playerId: string, characterId: string) => void;
   onAddMultipleClaims: (playerId: string, characterIds: string[]) => void;
   onRemoveClaim: (playerId: string, characterId: string) => void;
+  onSetPrimary: (playerId: string, characterId: string) => void;
   onSetNotes: (playerId: string, notes: string) => void;
   onUpdatePlayerName: (playerId: string, name: string) => void;
   onAdvancePhase: () => void;
@@ -3208,6 +3251,7 @@ function GameTrackerView({
                   onToggleGhostVote={() => onToggleGhostVote(player.id)}
                   onOpenClaimPicker={() => setClaimPickerPlayerId(player.id)}
                   onRemoveClaim={(charId) => onRemoveClaim(player.id, charId)}
+                  onSetPrimary={(charId) => onSetPrimary(player.id, charId)}
                 />
               ))}
             </div>
@@ -3243,6 +3287,7 @@ function GameTrackerView({
         onToggleGhostVote={() => selectedPlayerId && onToggleGhostVote(selectedPlayerId)}
         onAddMultipleClaims={(charIds) => selectedPlayerId && onAddMultipleClaims(selectedPlayerId, charIds)}
         onRemoveClaim={(charId) => selectedPlayerId && onRemoveClaim(selectedPlayerId, charId)}
+        onSetPrimary={(charId) => selectedPlayerId && onSetPrimary(selectedPlayerId, charId)}
         onSetNotes={(notes) => selectedPlayerId && onSetNotes(selectedPlayerId, notes)}
         onSetPlayerName={(name) => selectedPlayerId && onUpdatePlayerName(selectedPlayerId, name)}
         onRemoveTraveler={selectedPlayer?.isTraveler ? () => selectedPlayerId && onRemoveTraveler(selectedPlayerId) : undefined}
@@ -3427,6 +3472,7 @@ export default function Game() {
     addClaim,
     addMultipleClaims,
     removeClaim,
+    setPrimaryCandidate,
     toggleAlive,
     setPlayerStatus,
     toggleGhostVote,
@@ -3488,6 +3534,7 @@ export default function Game() {
           onAddClaim={addClaim}
           onAddMultipleClaims={addMultipleClaims}
           onRemoveClaim={removeClaim}
+          onSetPrimary={setPrimaryCandidate}
           onSetNotes={setNotes}
           onUpdatePlayerName={updatePlayerName}
           onAdvancePhase={advancePhase}
