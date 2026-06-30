@@ -85,7 +85,7 @@ export default function Reference() {
                 <button
                   onClick={() => setScriptFilter(script.id)}
                   className={cn(
-                    "px-4 py-1.5 text-xs font-bold uppercase tracking-wider transition-all border whitespace-nowrap",
+                    "px-4 py-1.5 text-xs font-sans font-bold uppercase tracking-wider transition-all border whitespace-nowrap",
                     script.isCommunity ? "rounded-l-full" : "rounded-full",
                     scriptFilter === script.id 
                       ? "bg-red-900/50 text-red-100 border-red-600" 
@@ -127,7 +127,7 @@ export default function Reference() {
                     <button
                       onClick={() => setScriptFilter(`custom:${script.id}`)}
                       className={cn(
-                        "px-3 py-1.5 rounded-l-full text-xs font-bold tracking-wider transition-all border whitespace-nowrap",
+                        "px-3 py-1.5 rounded-l-full text-xs font-sans font-bold tracking-wider transition-all border whitespace-nowrap",
                         scriptFilter === `custom:${script.id}`
                           ? "bg-purple-900/50 text-purple-100 border-purple-600"
                           : "bg-transparent text-muted-foreground border-transparent hover:bg-white/5"
@@ -170,7 +170,7 @@ export default function Reference() {
                 setEditingScript(null);
                 setShowScriptBuilder(true);
               }}
-              className="px-3 py-1.5 rounded-full text-xs font-bold tracking-wider transition-all border border-dashed border-purple-700/50 whitespace-nowrap flex items-center gap-1 text-purple-400 hover:bg-purple-900/20"
+              className="px-3 py-1.5 rounded-full text-xs font-sans font-bold tracking-wider transition-all border border-dashed border-purple-700/50 whitespace-nowrap flex items-center gap-1 text-purple-400 hover:bg-purple-900/20"
               data-testid="button-create-custom-script"
             >
               <Plus className="w-3 h-3" />
@@ -184,7 +184,7 @@ export default function Reference() {
                 key={f}
                 onClick={() => setTeamFilter(f)}
                 className={cn(
-                  "px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all border",
+                  "px-4 py-1.5 rounded-full text-xs font-sans font-bold uppercase tracking-wider transition-all border",
                   teamFilter === f 
                     ? "bg-amber-900/50 text-amber-100 border-amber-600" 
                     : "bg-transparent text-muted-foreground border-transparent hover:bg-white/5"

@@ -94,7 +94,7 @@ export function ScriptView({
                 key={value}
                 onClick={() => setNightView(value)}
                 className={cn(
-                  "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold tracking-wider transition-all whitespace-nowrap",
+                  "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-sans font-bold tracking-wider transition-all whitespace-nowrap",
                   nightView === value
                     ? "bg-amber-900/50 text-amber-100"
                     : "bg-transparent text-muted-foreground hover:bg-white/5",
