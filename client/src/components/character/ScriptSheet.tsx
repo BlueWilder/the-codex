@@ -112,10 +112,10 @@ function Token({ char, sortOrder }: { char: Character; sortOrder: ScriptSort }) 
   );
 }
 
-function CharRow({ char, sortOrder }: { char: Character; sortOrder: ScriptSort }) {
+function CharRow({ char, sortOrder, onSelect }: { char: Character; sortOrder: ScriptSort; onSelect?: () => void }) {
   const { body, setup } = splitSetup(char.ability);
-  return (
-    <div className="flex items-start gap-3 py-2" data-testid={`script-sheet-char-${char.id}`}>
+  const inner = (
+    <>
       <Token char={char} sortOrder={sortOrder} />
       <div className="min-w-0">
         <div className="font-display font-bold text-[#2a2016] leading-tight">{char.name}</div>
@@ -131,21 +131,55 @@ function CharRow({ char, sortOrder }: { char: Character; sortOrder: ScriptSort }
           )}
         </div>
       </div>
+    </>
+  );
+  if (onSelect) {
+    return (
+      <button
+        type="button"
+        onClick={onSelect}
+        className="flex items-start gap-3 py-2 w-full text-left rounded-md transition-colors hover:bg-[#e8dcbe]/70"
+        data-testid={`button-script-char-${char.id}`}
+      >
+        {inner}
+      </button>
+    );
+  }
+  return (
+    <div className="flex items-start gap-3 py-2" data-testid={`script-sheet-char-${char.id}`}>
+      {inner}
     </div>
   );
 }
 
 /** A single Storyteller night-sheet row: sequential numbered token and name. */
-function NightRow({ char, position }: { char: Character; position: number }) {
+function NightRow({ char, position, onSelect }: { char: Character; position: number; onSelect?: () => void }) {
   const sheet = teamSheet(char.team);
-  return (
-    <div className="flex items-center gap-3 py-3" data-testid={`script-sheet-nightrow-${char.id}`}>
+  const inner = (
+    <>
       <div className={cn("shrink-0 w-10 h-10 rounded-full border-2 flex items-center justify-center", sheet.ring, sheet.tokenBg)}>
         <span className={cn("text-sm font-bold", sheet.text)}>{position}</span>
       </div>
       <div className="min-w-0">
         <div className="font-display font-bold text-[#2a2016] leading-tight">{char.name}</div>
       </div>
+    </>
+  );
+  if (onSelect) {
+    return (
+      <button
+        type="button"
+        onClick={onSelect}
+        className="flex items-center gap-3 py-3 w-full text-left rounded-md transition-colors hover:bg-[#e8dcbe]/70"
+        data-testid={`button-script-char-${char.id}`}
+      >
+        {inner}
+      </button>
+    );
+  }
+  return (
+    <div className="flex items-center gap-3 py-3" data-testid={`script-sheet-nightrow-${char.id}`}>
+      {inner}
     </div>
   );
 }
@@ -165,12 +199,14 @@ export function ScriptSheet({
   sortOrder: controlledSortOrder,
   onSortChange,
   defaultSortOrder = "team",
+  onCharacterSelect,
 }: {
   characters: Character[];
   scriptName?: string;
   sortOrder?: ScriptSort;
   onSortChange?: (s: ScriptSort) => void;
   defaultSortOrder?: ScriptSort;
+  onCharacterSelect?: (characterId: string) => void;
 }) {
   const [internalSort, setInternalSort] = useState<ScriptSort>(defaultSortOrder);
   const [nightView, setNightView] = useState<NightView>("first");
@@ -268,7 +304,14 @@ export function ScriptSheet({
                   {TEAM_LABEL[team] ?? team} ({chars.length})
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-0.5">
-                  {chars.map(c => <CharRow key={c.id} char={c} sortOrder={sortOrder} />)}
+                  {chars.map(c => (
+                    <CharRow
+                      key={c.id}
+                      char={c}
+                      sortOrder={sortOrder}
+                      onSelect={onCharacterSelect ? () => onCharacterSelect(c.id) : undefined}
+                    />
+                  ))}
                 </div>
               </section>
             );
@@ -277,7 +320,14 @@ export function ScriptSheet({
       ) : (
         <div className="divide-y divide-[#d8c9a3]">
           <NightMetaRow label="Dusk - Start the Night Phase." testId="script-sheet-night-dusk" />
-          {nightChars.map((c, i) => <NightRow key={c.id} char={c} position={i + 1} />)}
+          {nightChars.map((c, i) => (
+            <NightRow
+              key={c.id}
+              char={c}
+              position={i + 1}
+              onSelect={onCharacterSelect ? () => onCharacterSelect(c.id) : undefined}
+            />
+          ))}
           <NightMetaRow label="Dawn - End the Night Phase." testId="script-sheet-night-dawn" />
         </div>
       )}

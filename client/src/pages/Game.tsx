@@ -1,15 +1,16 @@
 import { Layout } from "@/components/ui/Layout";
 import { useState, useMemo, useEffect, useRef } from "react";
 import { usePlayerGame, getBreakdown, isPlayerActive, canPlayerVote, canPlayerVoteOnExile, type GamePlayer, type Nomination, type PlayerVote, type GameScriptRef, type ExileVote, type PlayerStatus, type NominationResult, type DeathRecord } from "@/hooks/use-player-game";
-import { ALL_CHARACTERS, OFFICIAL_SCRIPTS, getJinxesForCharacter } from "@/lib/game-data";
+import { ALL_CHARACTERS, OFFICIAL_SCRIPTS, getJinxesForCharacter, getCharacterById } from "@/lib/game-data";
 import { useLocalScripts, type LocalScript } from "@/hooks/use-local-scripts";
 import { ScriptBuilderDialog } from "@/components/ScriptBuilderDialog";
 import { InlineGameLog } from "@/components/InlineGameLog";
 import { scanScriptFile } from "@/lib/scan-script";
 import { resolveScriptCharacters, countScriptCharacters } from "@/lib/script-resolve";
 import { ScriptSheet } from "@/components/character/ScriptSheet";
+import { CharacterCard } from "@/components/character/CharacterCard";
 import { useToast } from "@/hooks/use-toast";
-import { ChevronRight, ChevronLeft, Play, X, Plus, Check, Search, Moon, Sun, ChevronUp, ChevronDown, FileText, Vote, Loader2, GripVertical, UserPlus, ArrowRight, BookOpen, HandMetal, Ban, LogOut, Trash2, Pencil, MoreVertical, RotateCcw, Info, ExternalLink, Users, Skull, Ghost, Scroll, Hand, Target, Theater, ArrowDownUp, Camera, Crown } from "lucide-react";
+import { ChevronRight, ChevronLeft, Play, X, Plus, Check, Search, Moon, Sun, ChevronUp, ChevronDown, FileText, Vote, Loader2, GripVertical, UserPlus, ArrowRight, BookOpen, HandMetal, Ban, LogOut, Trash2, Pencil, MoreVertical, RotateCcw, Info, ExternalLink, Users, Skull, Ghost, Scroll, Hand, Target, Theater, ArrowDownUp, Camera, Crown, LayoutList, NotebookText, ScrollText } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -2762,7 +2763,7 @@ function DraggableCircleNode({
   );
 }
 
-function GameTrackerView({
+export function GameTrackerView({
   game,
   onEndGame,
   onPlayAgain,
@@ -2850,7 +2851,8 @@ function GameTrackerView({
   const [showChoppingBlockModal, setShowChoppingBlockModal] = useState(false);
   const [showDayChangePrompt, setShowDayChangePrompt] = useState(false);
   const [scriptPopoverOpen, setScriptPopoverOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'list' | 'circle' | 'log'>('list');
+  const [activeTab, setActiveTab] = useState<'list' | 'circle' | 'log' | 'script'>('list');
+  const [selectedSheetCharId, setSelectedSheetCharId] = useState<string | null>(null);
   const [scoreboardCollapsed, setScoreboardCollapsed] = useState(false);
   const [showScriptBuilder, setShowScriptBuilder] = useState(false);
   const [editingScript, setEditingScript] = useState<LocalScript | null>(null);
@@ -2870,6 +2872,18 @@ function GameTrackerView({
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [resolvedScript?.id, resolvedScript?.characterIds],
   );
+  const sheetCharacters = useMemo(
+    () =>
+      resolvedScript
+        ? resolveScriptCharacters(resolvedScript, {
+            includeTravellers: false,
+            includeFabled: false,
+          })
+        : [],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [resolvedScript?.id, resolvedScript?.characterIds],
+  );
+  const selectedSheetChar = selectedSheetCharId ? getCharacterById(selectedSheetCharId) ?? null : null;
 
   useEffect(() => {
     if (!scriptsLoading && game.script && !resolvedScript) {
@@ -3331,45 +3345,6 @@ function GameTrackerView({
 
         </div>
 
-        {/* View Nav Zone - List/Circle/Log as 3 navigation buttons */}
-        <div className="grid grid-cols-3 gap-2 px-3 py-2 border-t border-border bg-muted/20">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => { setActiveTab('list'); setScoreboardCollapsed(false); }}
-            className={cn(
-              "toggle-elevate",
-              activeTab === 'list' && "toggle-elevated bg-background shadow-sm"
-            )}
-            data-testid="tab-list"
-          >
-            List
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => { setActiveTab('circle'); setScoreboardCollapsed(true); }}
-            className={cn(
-              "toggle-elevate",
-              activeTab === 'circle' && "toggle-elevated bg-background shadow-sm"
-            )}
-            data-testid="tab-circle"
-          >
-            Circle
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => { setActiveTab('log'); setScoreboardCollapsed(false); }}
-            className={cn(
-              "toggle-elevate",
-              activeTab === 'log' && "toggle-elevated bg-background shadow-sm"
-            )}
-            data-testid="tab-log"
-          >
-            Log
-          </Button>
-        </div>
       </div>
 
       {/* Tab Content */}
@@ -3425,6 +3400,68 @@ function GameTrackerView({
       {activeTab === 'log' && (
         <InlineGameLog game={game} onUpdateGameNotes={onSetGameNotes} />
       )}
+
+      {activeTab === 'script' && (
+        resolvedScript ? (
+          <ScriptSheet
+            characters={sheetCharacters}
+            scriptName={resolvedScript.name}
+            onCharacterSelect={(id) => setSelectedSheetCharId(id)}
+          />
+        ) : (
+          <div className="py-12 text-center text-muted-foreground" data-testid="text-script-nudge">
+            Pick a script to see the full character sheet.
+          </div>
+        )
+      )}
+
+      {/* Bottom Navigation - thumb-reachable view switcher */}
+      <nav
+        className="sticky bottom-0 z-40 mt-2 grid grid-cols-4 gap-1 rounded-t-xl border-t border-border bg-background/95 px-2 py-2 backdrop-blur supports-[backdrop-filter]:bg-background/80"
+        data-testid="nav-tracker"
+      >
+        {([
+          { tab: 'circle', label: 'Grim', icon: Users, testId: 'nav-grim', collapse: true },
+          { tab: 'list', label: 'List', icon: LayoutList, testId: 'nav-list', collapse: false },
+          { tab: 'log', label: 'Notebook', icon: NotebookText, testId: 'nav-notebook', collapse: false },
+          { tab: 'script', label: 'Script', icon: ScrollText, testId: 'nav-script', collapse: true },
+        ] as const).map(({ tab, label, icon: Icon, testId, collapse }) => (
+          <button
+            key={tab}
+            type="button"
+            onClick={() => { setActiveTab(tab); setScoreboardCollapsed(collapse); }}
+            className={cn(
+              "flex flex-col items-center gap-0.5 rounded-lg px-2 py-1.5 text-xs font-medium transition-colors",
+              activeTab === tab
+                ? "bg-primary/15 text-primary"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+            )}
+            data-testid={testId}
+          >
+            <Icon className="w-5 h-5" />
+            <span>{label}</span>
+          </button>
+        ))}
+      </nav>
+
+      <Drawer
+        open={!!selectedSheetChar}
+        onOpenChange={(open) => { if (!open) setSelectedSheetCharId(null); }}
+      >
+        <DrawerContent
+          className="max-h-[85vh]"
+          data-testid={selectedSheetChar ? `drawer-character-${selectedSheetChar.id}` : undefined}
+        >
+          <DrawerHeader className="sr-only">
+            <DrawerTitle>{selectedSheetChar?.name ?? "Character"}</DrawerTitle>
+          </DrawerHeader>
+          <div className="overflow-y-auto px-4 pb-8">
+            {selectedSheetChar && (
+              <CharacterCard char={selectedSheetChar} isExpanded onToggle={() => {}} />
+            )}
+          </div>
+        </DrawerContent>
+      </Drawer>
 
       <PlayerDetailDrawer
         player={selectedPlayer}
