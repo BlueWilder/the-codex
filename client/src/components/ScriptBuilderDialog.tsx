@@ -322,7 +322,7 @@ export function ScriptBuilderDialog({
                 />
               </div>
             ) : (
-              <div className="border border-amber-900/30 rounded-lg p-3 space-y-2 bg-amber-950/10">
+              <div className="border border-border rounded-lg p-3 space-y-2 bg-card">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-medium text-amber-200/80">Import from BOTC Script Tool</span>
                   <button onClick={() => { setShowImport(false); setImportJson(""); }} className="text-muted-foreground hover:text-foreground">
@@ -424,7 +424,7 @@ export function ScriptBuilderDialog({
           </Button>
         </div>
 
-        <div className="flex-1 min-h-0 max-h-[45vh] md:max-h-[50vh] overflow-y-auto border border-amber-900/30 rounded-lg p-2 touch-pan-y">
+        <div className="flex-1 min-h-0 max-h-[45vh] md:max-h-[50vh] overflow-y-auto border border-border rounded-lg p-2 touch-pan-y">
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1.5 md:gap-2">
             {filteredChars.map((char) => (
               <button

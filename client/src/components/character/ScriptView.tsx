@@ -88,7 +88,7 @@ export function ScriptView({
     <div className={className}>
       <div className={toolbarClassName}>
         {sortOrder === "night" && (
-          <div className="inline-flex items-center gap-1 rounded-full border border-amber-900/30 bg-black/20 p-1">
+          <div className="inline-flex items-center gap-1 rounded-full border border-border bg-black/20 p-1">
             {NIGHT_VIEW_OPTIONS.map(({ value, label, icon: Icon, testId }) => (
               <button
                 key={value}
@@ -108,7 +108,7 @@ export function ScriptView({
             ))}
           </div>
         )}
-        <div className="inline-flex items-center gap-1 rounded-full border border-amber-900/30 bg-black/20 p-1">
+        <div className="inline-flex items-center gap-1 rounded-full border border-border bg-black/20 p-1">
           {SORT_OPTIONS.map(({ value, label, icon: Icon, testId }) => (
             <button
               key={value}

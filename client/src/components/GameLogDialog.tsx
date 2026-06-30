@@ -286,7 +286,7 @@ export function GameLogDialog({ open, onOpenChange, game }: GameLogDialogProps) 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg max-h-[85vh] flex flex-col p-0">
-        <DialogHeader className="p-4 pb-2 border-b border-amber-900/30">
+        <DialogHeader className="p-4 pb-2 border-b border-border">
           <DialogTitle className="font-display text-lg text-amber-500">
             Game Log
           </DialogTitle>

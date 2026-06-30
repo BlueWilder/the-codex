@@ -218,20 +218,20 @@ export function SetupWizard({ onStart }: { onStart: (count: number, names: strin
       <div className="w-full bg-muted/30 p-6 rounded-lg text-center space-y-3 mb-4">
         <p className="text-base font-bold text-muted-foreground uppercase tracking-wider">Character Breakdown</p>
         <div className="flex flex-wrap justify-center gap-3" data-testid="text-breakdown">
-          <Badge variant="secondary" className={cn(teamBadge('townsfolk'), 'text-sm px-3 py-1')}>
+          <Badge variant="secondary" className={cn(teamBadge('townsfolk'), 'text-sm px-3 py-1 font-sans')}>
             {breakdown.townsfolk} Townsfolk
           </Badge>
-          <Badge variant="secondary" className={cn(teamBadge('outsider'), 'text-sm px-3 py-1')}>
+          <Badge variant="secondary" className={cn(teamBadge('outsider'), 'text-sm px-3 py-1 font-sans')}>
             {breakdown.outsiders} Outsiders
           </Badge>
-          <Badge variant="secondary" className={cn(teamBadge('minion'), 'text-sm px-3 py-1')}>
+          <Badge variant="secondary" className={cn(teamBadge('minion'), 'text-sm px-3 py-1 font-sans')}>
             {breakdown.minions} Minions
           </Badge>
-          <Badge variant="secondary" className={cn(teamBadge('demon'), 'text-sm px-3 py-1')}>
+          <Badge variant="secondary" className={cn(teamBadge('demon'), 'text-sm px-3 py-1 font-sans')}>
             {breakdown.demons} Demon
           </Badge>
           {'travelers' in breakdown && breakdown.travelers > 0 && (
-            <Badge variant="secondary" className={cn(teamBadge('traveler'), 'text-sm px-3 py-1')}>
+            <Badge variant="secondary" className={cn(teamBadge('traveler'), 'text-sm px-3 py-1 font-sans')}>
               + {breakdown.travelers} {breakdown.travelers === 1 ? 'Traveler' : 'Travelers'}
             </Badge>
           )}
@@ -1346,7 +1346,7 @@ export function SortablePlayerCard({
                   )}
                   <button
                     onClick={(e) => { e.stopPropagation(); onRemoveClaim(char.id); }}
-                    className={cn("inline-flex items-center gap-1 text-xs whitespace-nowrap rounded-full border px-2.5 py-1 font-semibold transition-colors hover:opacity-80", candidateChipClass(char.team, idx === 0))}
+                    className={cn("inline-flex items-center gap-1 text-xs font-sans whitespace-nowrap rounded-full border px-2.5 py-1 font-semibold transition-colors hover:opacity-80", candidateChipClass(char.team, idx === 0))}
                     title={`Remove ${char.name} claim`}
                     data-testid={`button-claim-badge-${char.id}-${player.id}`}
                   >
@@ -3121,7 +3121,7 @@ export function GameTrackerView({
                 ) : (
                   <Sun className="w-3.5 h-3.5 text-amber-400" />
                 )}
-                <span className={cn("font-medium", isNight ? "text-indigo-300" : "text-amber-400")}>{currentPhaseLabel}</span>
+                <span className={cn("font-sans font-medium", isNight ? "text-indigo-300" : "text-amber-400")}>{currentPhaseLabel}</span>
               </div>
               <span className="text-muted-foreground">·</span>
               <span className="text-emerald-400 font-medium">{aliveCount}A</span>
@@ -3154,7 +3154,7 @@ export function GameTrackerView({
               ) : (
                 <Sun className="w-4 h-4 text-amber-400 shrink-0" />
               )}
-              <span className="text-xs text-muted-foreground whitespace-nowrap">{phaseLabel(prevChapter.day, prevChapter.phase)}</span>
+              <span className="text-xs font-sans text-muted-foreground whitespace-nowrap">{phaseLabel(prevChapter.day, prevChapter.phase)}</span>
             </Button>
           ) : (
             <div className="w-[44px] shrink-0" aria-hidden="true" />
@@ -3175,7 +3175,7 @@ export function GameTrackerView({
             ) : (
               <Sun className="w-5 h-5 text-amber-400 shrink-0" />
             )}
-            <span className={cn("font-display text-lg truncate", isNight ? "text-indigo-200" : "text-amber-400")}>{currentPhaseLabel}</span>
+            <span className={cn("font-sans text-lg truncate", isNight ? "text-indigo-200" : "text-amber-400")}>{currentPhaseLabel}</span>
           </div>
 
           {/* Next chapter pill */}
@@ -3185,7 +3185,7 @@ export function GameTrackerView({
             className="flex items-center gap-1 px-2 h-10 min-w-0"
             data-testid="button-phase-next"
           >
-            <span className="text-xs text-muted-foreground whitespace-nowrap">{phaseLabel(nextChapter.day, nextChapter.phase)}</span>
+            <span className="text-xs font-sans text-muted-foreground whitespace-nowrap">{phaseLabel(nextChapter.day, nextChapter.phase)}</span>
             {nextChapter.phase === 'night' ? (
               <Moon className="w-4 h-4 text-indigo-300 shrink-0" />
             ) : (
@@ -3249,8 +3249,8 @@ export function GameTrackerView({
             )}
             data-testid="filter-alive"
           >
-            <span className="text-3xl font-bold text-emerald-400 tabular-nums">{aliveCount}</span>
-            <span className="text-xs text-muted-foreground uppercase tracking-wide">Alive</span>
+            <span className="text-3xl font-sans font-bold text-emerald-400 tabular-nums">{aliveCount}</span>
+            <span className="text-xs font-sans text-muted-foreground uppercase tracking-wide">Alive</span>
           </Button>
 
           {/* Dead - Interactive Filter */}
@@ -3263,8 +3263,8 @@ export function GameTrackerView({
             )}
             data-testid="filter-dead"
           >
-            <span className="text-3xl font-bold text-red-400/80 tabular-nums">{deadCount}</span>
-            <span className="text-xs text-muted-foreground uppercase tracking-wide">Dead</span>
+            <span className="text-3xl font-sans font-bold text-red-400/80 tabular-nums">{deadCount}</span>
+            <span className="text-xs font-sans text-muted-foreground uppercase tracking-wide">Dead</span>
           </Button>
 
           {/* Nominate - Core Action (daytime only) */}
@@ -3279,7 +3279,7 @@ export function GameTrackerView({
             data-testid="button-nominate"
           >
             <span className="text-xl font-bold text-red-400">+</span>
-            <span className="text-xs text-muted-foreground uppercase tracking-wide">Nominate</span>
+            <span className="text-xs font-sans text-muted-foreground uppercase tracking-wide">Nominate</span>
           </Button>
         </div>
 
@@ -3419,7 +3419,7 @@ export function GameTrackerView({
             type="button"
             onClick={() => { setActiveTab(tab); setScoreboardCollapsed(collapse); }}
             className={cn(
-              "flex flex-col items-center gap-0.5 rounded-lg px-2 py-1.5 text-xs font-medium transition-colors",
+              "flex flex-col items-center gap-0.5 rounded-lg px-2 py-1.5 text-xs font-sans font-medium transition-colors",
               activeTab === tab
                 ? "bg-primary/15 text-primary"
                 : "text-muted-foreground hover:text-foreground hover:bg-muted/50"

@@ -22,7 +22,7 @@ export function Navigation() {
   ];
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-md border-b border-amber-900/50">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-md border-b border-border">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-14 md:h-20">
           <Link href="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity" data-testid="link-logo-home">
@@ -44,7 +44,7 @@ export function Navigation() {
                 )}
               >
                 <item.icon className="w-5 h-5 md:w-6 md:h-6" />
-                <span className="hidden md:inline text-sm font-medium">{item.label}</span>
+                <span className="hidden md:inline text-sm font-sans font-medium">{item.label}</span>
               </Link>
             ))}
 
@@ -83,7 +83,7 @@ export function Navigation() {
                 </DropdownMenu>
               ) : (
                 <a href="/api/login" data-testid="button-login">
-                  <Button variant="outline" size="sm" className="gap-1.5 text-amber-500 border-amber-900/50 hover:bg-amber-950/30">
+                  <Button variant="outline" size="sm" className="gap-1.5 font-sans text-amber-500 border-amber-900/50 hover:bg-amber-950/30">
                     <LogIn className="h-4 w-4" />
                     <span className="hidden sm:inline">Sign in</span>
                   </Button>

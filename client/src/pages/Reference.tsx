@@ -63,7 +63,7 @@ export default function Reference() {
   return (
     <Layout>
       <div className="max-w-6xl mx-auto space-y-6">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-amber-900/30 pb-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border pb-6">
           <h1 className="text-4xl font-display text-amber-500">Character Reference</h1>
           
           <div className="relative w-full md:w-64">
