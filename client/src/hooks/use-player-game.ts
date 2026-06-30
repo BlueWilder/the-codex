@@ -61,6 +61,14 @@ export interface GhostVoteEvent {
   nominationId: string;
 }
 
+export interface NotebookNote {
+  id: string;
+  day: number;
+  phase: 'day' | 'night'; // Moment-in-time phase, stamped at write
+  text: string;
+  createdAt: string;
+}
+
 export interface GamePlayer {
   id: string;
   name: string;
@@ -112,6 +120,8 @@ export interface PlayerGame {
   ghostVoteEvents?: GhostVoteEvent[];
   // Free-form game notes
   gameNotes?: string;
+  // Per-phase notebook notes, stamped with day + phase at write
+  notebookNotes?: NotebookNote[];
   // Chopping block - nomination IDs of players currently on the block
   choppingBlock?: string[];
 }
@@ -173,6 +183,8 @@ export function usePlayerGame() {
         if (!parsed.deathRecords) parsed.deathRecords = [];
         if (!parsed.travelerEvents) parsed.travelerEvents = [];
         if (!parsed.ghostVoteEvents) parsed.ghostVoteEvents = [];
+        // Migrate: ensure notebookNotes array exists
+        if (!parsed.notebookNotes) parsed.notebookNotes = [];
         // Migrate: backfill game phase. Existing in-progress games predate
         // the phase concept and were operating as a day, so default to 'day'.
         if (parsed.phase !== 'day' && parsed.phase !== 'night') {
@@ -228,6 +240,7 @@ export function usePlayerGame() {
       })),
       nominations: [],
       exileVotes: [],
+      notebookNotes: [],
       script: script || null,
     };
     saveGame(newGame);
@@ -269,6 +282,7 @@ export function usePlayerGame() {
       ghostVoteEvents: [],
       script: game.script, // Keep script selection
       gameNotes: '',
+      notebookNotes: [],
     };
     
     saveGame(newGame);
@@ -1069,6 +1083,25 @@ export function usePlayerGame() {
     saveGame({ ...game, gameNotes: notes });
   }, [game, saveGame]);
 
+  const addNotebookNote = useCallback((text: string) => {
+    if (!game) return;
+    const trimmed = text.trim();
+    if (!trimmed) return;
+    const note: NotebookNote = {
+      id: crypto.randomUUID(),
+      day: game.currentDay,
+      phase: game.phase,
+      text: trimmed,
+      createdAt: new Date().toISOString(),
+    };
+    saveGame({ ...game, notebookNotes: [...(game.notebookNotes ?? []), note] });
+  }, [game, saveGame]);
+
+  const removeNotebookNote = useCallback((id: string) => {
+    if (!game) return;
+    saveGame({ ...game, notebookNotes: (game.notebookNotes ?? []).filter(n => n.id !== id) });
+  }, [game, saveGame]);
+
   const addPlayer = useCallback((name: string, insertAfterPlayerId: string | null) => {
     if (!game) return;
     
@@ -1199,6 +1232,8 @@ export function usePlayerGame() {
     createExileVote,
     getPlayerExileVotes,
     setGameNotes,
+    addNotebookNote,
+    removeNotebookNote,
     addPlayer,
     removePlayer,
     setCirclePosition,

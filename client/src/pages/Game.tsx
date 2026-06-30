@@ -2792,6 +2792,8 @@ export function GameTrackerView({
   onCreateExileVote,
   getPlayerExileVotes,
   onSetGameNotes,
+  onAddNotebookNote,
+  onRemoveNotebookNote,
   onAddPlayer,
   onRemovePlayer,
   onSetCirclePosition,
@@ -2830,6 +2832,8 @@ export function GameTrackerView({
   onCreateExileVote: (travelerId: string, votes: PlayerVote[]) => void;
   getPlayerExileVotes: (playerId: string) => ExileVote[];
   onSetGameNotes: (notes: string) => void;
+  onAddNotebookNote: (text: string) => void;
+  onRemoveNotebookNote: (id: string) => void;
   onAddPlayer: (name: string, insertAfterPlayerId: string | null) => void;
   onRemovePlayer: (playerId: string) => void;
   onSetCirclePosition: (playerId: string, x: number, y: number) => void;
@@ -3398,7 +3402,12 @@ export function GameTrackerView({
       )}
       
       {activeTab === 'log' && (
-        <InlineGameLog game={game} onUpdateGameNotes={onSetGameNotes} />
+        <InlineGameLog
+          game={game}
+          onUpdateGameNotes={onSetGameNotes}
+          onAddNotebookNote={onAddNotebookNote}
+          onRemoveNotebookNote={onRemoveNotebookNote}
+        />
       )}
 
       {activeTab === 'script' && (
@@ -3679,6 +3688,8 @@ export default function Game() {
     createExileVote,
     getPlayerExileVotes,
     setGameNotes,
+    addNotebookNote,
+    removeNotebookNote,
     addPlayer,
     removePlayer,
     setCirclePosition,
@@ -3738,6 +3749,8 @@ export default function Game() {
           onCreateExileVote={createExileVote}
           getPlayerExileVotes={getPlayerExileVotes}
           onSetGameNotes={setGameNotes}
+          onAddNotebookNote={addNotebookNote}
+          onRemoveNotebookNote={removeNotebookNote}
           onAddPlayer={addPlayer}
           onRemovePlayer={removePlayer}
           onSetCirclePosition={setCirclePosition}
