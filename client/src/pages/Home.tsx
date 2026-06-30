@@ -42,6 +42,41 @@ export default function Home() {
             Track players, claims, and votes during your live games.
           </p>
         </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.6, duration: 0.6 }}
+          className="pt-8 space-y-3 border-t border-amber-900/20"
+        >
+          <p className="text-sm text-muted-foreground">
+            Created by{" "}
+            <a
+              href="https://mageproductions.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold text-amber-600 hover:text-amber-500 underline underline-offset-2"
+              data-testid="link-mage-productions"
+            >
+              Mage Productions
+            </a>
+          </p>
+          <p
+            className="text-xs leading-relaxed text-muted-foreground/70 max-w-2xl mx-auto"
+            data-testid="text-attribution"
+          >
+            This is an unofficial fan-made reference tool for Blood on the Clocktower. Blood on the Clocktower and all associated characters, names, and imagery are the property of Steven Medway and The Pandemonium Institute. This tool is not affiliated with, endorsed, or sponsored by The Pandemonium Institute. For the official game, visit{" "}
+            <a
+              href="https://bloodontheclocktower.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-amber-600 hover:text-amber-500 underline underline-offset-2"
+              data-testid="link-botc-official"
+            >
+              bloodontheclocktower.com
+            </a>
+          </p>
+        </motion.div>
       </div>
     </Layout>
   );
