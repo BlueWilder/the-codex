@@ -1,8 +1,15 @@
 // @vitest-environment jsdom
-import { afterEach, describe, expect, it } from "vitest";
-import { cleanup, render, screen, within } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { DndContext } from "@dnd-kit/core";
+import { SortableContext, rectSortingStrategy } from "@dnd-kit/sortable";
 import { CharacterToken } from "@/components/character/CharacterToken";
-import { CircleSeatingChart } from "@/pages/Game";
+import {
+  CircleSeatingChart,
+  SortablePlayerCard,
+  latestDeathRecord,
+  deathPhaseLabel,
+} from "@/pages/Game";
 import type { GamePlayer, DeathRecord } from "@/hooks/use-player-game";
 
 afterEach(cleanup);
@@ -105,5 +112,164 @@ describe("Circle seat states", () => {
     );
     // Same day: the 'day' phase is later than 'night', so the stamp must be D3.
     expect(screen.getByTestId("text-seat-death-p5").textContent).toContain("D3");
+  });
+});
+
+describe("death-label helpers", () => {
+  const records: DeathRecord[] = [
+    { playerId: "a", day: 1, type: "night", phase: "night" },
+    { playerId: "a", day: 2, type: "execution", phase: "day" },
+    { playerId: "b", day: 1, type: "night", phase: "night" },
+  ];
+
+  it("latestDeathRecord returns null when the player has no record", () => {
+    expect(latestDeathRecord(records, "c")).toBeNull();
+    expect(latestDeathRecord([], "a")).toBeNull();
+  });
+
+  it("latestDeathRecord picks the highest day for a player", () => {
+    expect(latestDeathRecord(records, "a")?.day).toBe(2);
+  });
+
+  it("latestDeathRecord prefers the day phase over night within the same day", () => {
+    const sameDay: DeathRecord[] = [
+      { playerId: "a", day: 3, type: "night", phase: "night" },
+      { playerId: "a", day: 3, type: "execution", phase: "day" },
+    ];
+    expect(latestDeathRecord(sameDay, "a")?.phase).toBe("day");
+  });
+
+  it("deathPhaseLabel formats night and day stamps", () => {
+    expect(deathPhaseLabel({ playerId: "a", day: 1, type: "night", phase: "night" })).toBe("N1");
+    expect(deathPhaseLabel({ playerId: "a", day: 2, type: "execution", phase: "day" })).toBe("D2");
+    expect(deathPhaseLabel(null)).toBeNull();
+  });
+});
+
+type RowGame = Parameters<typeof SortablePlayerCard>[0]["game"];
+
+function makeGame(players: GamePlayer[], deathRecords: DeathRecord[] = []): RowGame {
+  return { players, nominations: [], deathRecords } as unknown as RowGame;
+}
+
+function renderRow(
+  player: GamePlayer,
+  opts: {
+    seatNumber?: number;
+    deathRecords?: DeathRecord[];
+    onSelect?: () => void;
+    onRemoveClaim?: (id: string) => void;
+    onSetPrimary?: (id: string) => void;
+  } = {},
+) {
+  const game = makeGame([player], opts.deathRecords ?? []);
+  return render(
+    <DndContext>
+      <SortableContext items={[player.id]} strategy={rectSortingStrategy}>
+        <SortablePlayerCard
+          player={player}
+          game={game}
+          seatNumber={opts.seatNumber ?? 1}
+          onSelect={opts.onSelect ?? noop}
+          onToggleAlive={noop}
+          onToggleGhostVote={noop}
+          onOpenClaimPicker={noop}
+          onRemoveClaim={opts.onRemoveClaim ?? noop}
+          onSetPrimary={opts.onSetPrimary ?? noop}
+        />
+      </SortableContext>
+    </DndContext>,
+  );
+}
+
+describe("List row states", () => {
+  it("shows the seat number, a primary token, and a filled primary chip for a single claim", () => {
+    renderRow(makePlayer({ id: "p1", name: "Alice", claims: ["imp"] }), { seatNumber: 4 });
+    expect(screen.getByTestId("text-seat-number-p1").textContent).toBe("4");
+    const token = screen.getByTestId("token-list-p1");
+    expect(token.getAttribute("data-team")).toBe("demon");
+    const chip = screen.getByTestId("button-claim-badge-imp-p1");
+    // The primary chip is filled: it carries the team badge background, not bg-transparent.
+    expect(chip.className).not.toContain("bg-transparent");
+    expect(screen.queryByTestId("text-no-guess-p1")).toBeNull();
+  });
+
+  it("renders the primary filled and alternates outlined", () => {
+    renderRow(makePlayer({ id: "p2", name: "Bob", claims: ["imp", "poisoner"] }));
+    const primary = screen.getByTestId("button-claim-badge-imp-p2");
+    const alternate = screen.getByTestId("button-claim-badge-poisoner-p2");
+    expect(primary.className).not.toContain("bg-transparent");
+    expect(alternate.className).toContain("bg-transparent");
+    // The primary marker shows once; alternates get a set-primary control.
+    expect(screen.getByTestId("text-primary-claim-p2")).not.toBeNull();
+    expect(screen.getByTestId("button-set-primary-poisoner")).not.toBeNull();
+  });
+
+  it("shows a dashed token and a no-guess hint for an empty seat", () => {
+    renderRow(makePlayer({ id: "p3", name: "Cara", claims: [] }));
+    expect(screen.getByTestId("token-list-p3")).not.toBeNull();
+    expect(screen.getByTestId("text-no-guess-p3")).not.toBeNull();
+    expect(screen.queryByTestId("claims-row-p3")).toBeNull();
+  });
+
+  it("greys a dead seat with a shroud and a dagger phase stamp", () => {
+    renderRow(makePlayer({ id: "p4", name: "Dan", status: "dead", claims: ["imp"] }), {
+      deathRecords: [{ playerId: "p4", day: 2, type: "night", phase: "night" }],
+    });
+    expect(screen.getByTestId("overlay-shroud-p4")).not.toBeNull();
+    expect(screen.getByTestId("text-seat-death-p4").textContent).toContain("N2");
+  });
+});
+
+describe("List row tap isolation", () => {
+  it("tapping the row background opens the drawer", () => {
+    const onSelect = vi.fn();
+    renderRow(makePlayer({ id: "p0", name: "Zed", claims: ["imp"] }), { onSelect });
+    fireEvent.click(screen.getByTestId("card-player-p0"));
+    expect(onSelect).toHaveBeenCalledTimes(1);
+  });
+
+  it("removing a claim does not open the drawer", () => {
+    const onSelect = vi.fn();
+    const onRemoveClaim = vi.fn();
+    renderRow(makePlayer({ id: "p1", name: "Alice", claims: ["imp"] }), {
+      onSelect,
+      onRemoveClaim,
+    });
+    fireEvent.click(screen.getByTestId("button-claim-badge-imp-p1"));
+    expect(onRemoveClaim).toHaveBeenCalledWith("imp");
+    expect(onSelect).not.toHaveBeenCalled();
+  });
+
+  it("setting a primary claim does not open the drawer", () => {
+    const onSelect = vi.fn();
+    const onSetPrimary = vi.fn();
+    renderRow(makePlayer({ id: "p2", name: "Bob", claims: ["imp", "poisoner"] }), {
+      onSelect,
+      onSetPrimary,
+    });
+    fireEvent.click(screen.getByTestId("button-set-primary-poisoner"));
+    expect(onSetPrimary).toHaveBeenCalledWith("poisoner");
+    expect(onSelect).not.toHaveBeenCalled();
+  });
+});
+
+describe("List row resurrection", () => {
+  it("renders no shroud or dagger for an alive player with a stale death record", () => {
+    renderRow(makePlayer({ id: "p1", name: "Alice", status: "alive", claims: ["imp"] }), {
+      deathRecords: [{ playerId: "p1", day: 1, type: "night", phase: "night" }],
+    });
+    expect(screen.queryByTestId("overlay-shroud-p1")).toBeNull();
+    expect(screen.queryByTestId("text-seat-death-p1")).toBeNull();
+  });
+
+  it("shows the latest death phase for a player who re-dies after resurrection", () => {
+    renderRow(makePlayer({ id: "p2", name: "Bob", status: "dead", claims: ["imp"] }), {
+      deathRecords: [
+        { playerId: "p2", day: 1, type: "night", phase: "night" },
+        { playerId: "p2", day: 2, type: "execution", phase: "day" },
+      ],
+    });
+    expect(screen.getByTestId("text-seat-death-p2").textContent).toContain("D2");
   });
 });

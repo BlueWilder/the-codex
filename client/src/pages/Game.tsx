@@ -27,7 +27,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, TouchSensor, useSensor, useSensors, DragEndEvent, DragOverlay, DragStartEvent, useDraggable } from "@dnd-kit/core";
 import { SortableContext, sortableKeyboardCoordinates, useSortable, rectSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { teamBadge, teamInputAccent, teamCard } from "@/lib/team-style";
+import { teamBadge, teamInputAccent, teamCard, teamRing } from "@/lib/team-style";
 import { CharacterToken } from "@/components/character/CharacterToken";
 import { TeamBadge } from "@/components/character/TeamBadge";
 import { NightBadges } from "@/components/character/NightBadges";
@@ -1174,9 +1174,56 @@ function PlayerDetailDrawer({
   );
 }
 
-function SortablePlayerCard({
+/**
+ * Pick a player's final death record. Latest death = highest day, then 'day'
+ * phase after 'night' within a day, then last-logged for the same day+phase.
+ * Deterministic regardless of array order, so the dagger stamp is always the
+ * true final death. Shared by the Grim/circle view and the List row. Exported
+ * for tests.
+ */
+export function latestDeathRecord(
+  deathRecords: DeathRecord[],
+  playerId: string,
+): DeathRecord | null {
+  const phaseRank = (p: DeathRecord['phase']) => (p === 'night' ? 0 : 1);
+  return (
+    deathRecords
+      .map((r, i) => ({ r, i }))
+      .filter(({ r }) => r.playerId === playerId)
+      .sort((a, b) =>
+        a.r.day - b.r.day ||
+        phaseRank(a.r.phase) - phaseRank(b.r.phase) ||
+        a.i - b.i,
+      )
+      .at(-1)?.r ?? null
+  );
+}
+
+/**
+ * The dagger phase-label string for a death record, e.g. N1 / D2. Shared by the
+ * circle node and the List row so both views show an identical stamp. Exported
+ * for tests.
+ */
+export function deathPhaseLabel(record: DeathRecord | null | undefined): string | null {
+  return record ? `${record.phase === 'night' ? 'N' : 'D'}${record.day}` : null;
+}
+
+/**
+ * Candidate chip styling. The primary guess renders as a filled team-colored
+ * pill (the existing badge style); alternates render outlined (team text + ring
+ * border on a transparent background). Both reuse team-style values; no new
+ * colors are introduced here.
+ */
+function candidateChipClass(team: string, isPrimary: boolean): string {
+  if (isPrimary) return teamBadge(team);
+  const text = teamCard(team).split(' ').find((c) => c.startsWith('text-')) ?? 'text-foreground';
+  return cn('bg-transparent', text, teamRing(team));
+}
+
+export function SortablePlayerCard({
   player,
   game,
+  seatNumber,
   onSelect,
   onToggleAlive,
   onToggleGhostVote,
@@ -1186,6 +1233,7 @@ function SortablePlayerCard({
 }: {
   player: GamePlayer;
   game: NonNullable<ReturnType<typeof usePlayerGame>["game"]>;
+  seatNumber: number;
   onSelect: () => void;
   onToggleAlive: () => void;
   onToggleGhostVote: () => void;
@@ -1210,143 +1258,217 @@ function SortablePlayerCard({
   };
 
   const claimedChars = player.claims.map(id => resolveClaimDescriptor(id)).filter(Boolean);
+  const primaryChar = claimedChars[0] ?? null;
   const hasNotes = player.notes.trim().length > 0;
-  
+
   const nominationsReceived = game.nominations.filter(n => n.nomineeId === player.id).length;
   const nominationsMade = game.nominations.filter(n => n.nominatorId === player.id).length;
 
   const isActive = player.status === 'alive';
-  const isInactive = player.status !== 'alive';
-  const isDead = player.status === 'dead';
+  // Gate every dead visual (greyed row, shroud, dagger) on CURRENT status, not
+  // on the existence of a death record, so a resurrected player renders as a
+  // normal living seat. Matches the circle node's isDead gate.
+  const isDead = player.status === 'dead' || player.status === 'exiled';
+  const deathRecord = isDead ? latestDeathRecord(game.deathRecords ?? [], player.id) : null;
+  const phaseStamp = deathPhaseLabel(deathRecord);
 
   return (
     <Card
       ref={setNodeRef}
       style={style}
+      onClick={onSelect}
       className={cn(
-        "p-3",
-        isInactive && "opacity-60",
+        "p-3 cursor-pointer",
+        isDead && "opacity-60",
         isDragging && "opacity-80 shadow-lg z-50 scale-[1.02]",
         player.isTraveler && "border-purple-700/50"
       )}
       data-testid={`card-player-${player.id}`}
     >
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-start gap-2">
         <button
           {...attributes}
           {...listeners}
-          className="touch-none cursor-grab active:cursor-grabbing flex items-center justify-center w-10 h-10 -ml-1 shrink-0 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 active:bg-muted"
+          onClick={(e) => e.stopPropagation()}
+          className="touch-none cursor-grab active:cursor-grabbing flex items-center justify-center w-9 h-9 -ml-1 shrink-0 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 active:bg-muted"
           data-testid={`button-drag-${player.id}`}
         >
           <GripVertical className="w-5 h-5" />
         </button>
-        {player.isTraveler && (
-          <Badge variant="secondary" className="bg-purple-900/40 text-purple-300 border-purple-700 text-xs shrink-0">
-            T
-          </Badge>
-        )}
-        <button
-          onClick={onSelect}
-          className={cn(
-            "font-bold text-lg text-left hover:underline truncate min-w-0",
-            isActive ? "text-amber-100" : "text-muted-foreground line-through"
-          )}
-          data-testid={`button-player-name-${player.id}`}
+
+        <span
+          className="shrink-0 mt-1.5 w-5 text-center text-sm font-mono tabular-nums text-muted-foreground"
+          data-testid={`text-seat-number-${player.id}`}
         >
-          {player.name}
+          {seatNumber}
+        </span>
+
+        <button
+          onClick={(e) => { e.stopPropagation(); onSelect(); }}
+          className="relative shrink-0 mt-0.5"
+          title={`View ${player.name}`}
+          data-testid={`button-token-${player.id}`}
+        >
+          {primaryChar ? (
+            <CharacterToken
+              characterId={primaryChar.id}
+              team={primaryChar.team}
+              size={40}
+              muted={isDead}
+              data-testid={`token-list-${player.id}`}
+            />
+          ) : (
+            <span
+              className="inline-flex items-center justify-center rounded-full border-2 border-dashed border-muted-foreground/40 text-muted-foreground/60 bg-background/40"
+              style={{ width: 40, height: 40 }}
+              data-testid={`token-list-${player.id}`}
+            >
+              <Plus className="w-4 h-4" />
+            </span>
+          )}
+          {isDead && (
+            <span
+              className="absolute inset-0 rounded-full pointer-events-none flex items-end justify-center overflow-hidden"
+              data-testid={`overlay-shroud-${player.id}`}
+            >
+              <span className="absolute inset-0 rounded-full bg-[#c79fe6]/15 border-2 border-[#3d2f57]" />
+              <Skull className="relative mb-0.5 w-3 h-3 text-[#c79fe6]/80" />
+            </span>
+          )}
         </button>
-        <div className="flex items-center gap-1 shrink-0 ml-auto">
-          {nominationsReceived > 0 && (
-            <span className="flex items-center gap-0.5 text-amber-400 text-xs" data-testid={`text-nominated-${player.id}`}>
-              <GallowsIcon className="w-3.5 h-3.5" />
-              {nominationsReceived}
-            </span>
-          )}
-          {nominationsMade > 0 && (
-            <span className="flex items-center gap-0.5 text-purple-400 text-xs" data-testid={`text-nominations-made-${player.id}`}>
-              <PointingFingerIcon className="w-3.5 h-3.5" />
-              {nominationsMade}
-            </span>
-          )}
-          {hasNotes && <FileText className="w-3.5 h-3.5 text-muted-foreground" />}
-          <button
-            onClick={onOpenClaimPicker}
-            className="flex items-center gap-1 px-2.5 rounded-full border border-dashed border-amber-700/60 text-amber-400 text-xs font-medium hover:bg-amber-900/20 hover:border-amber-600 transition-colors shrink-0 h-10"
-            data-testid={`button-add-claim-${player.id}`}
-          >
-            <Plus className="w-4 h-4" />
-            Claim
-          </button>
-          {!player.isTraveler && (
+
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {player.isTraveler && (
+              <Badge variant="secondary" className="bg-purple-900/40 text-purple-300 border-purple-700 text-xs shrink-0">
+                T
+              </Badge>
+            )}
             <button
-              onClick={onToggleAlive}
+              onClick={(e) => { e.stopPropagation(); onSelect(); }}
               className={cn(
-                "flex items-center justify-center w-11 h-11 rounded-lg border transition-colors",
-                isDead
-                  ? "bg-red-900/40 border-red-700/60 text-red-400 hover:bg-red-900/60"
-                  : "border-muted-foreground/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                "font-bold text-lg text-left hover:underline truncate min-w-0",
+                isActive ? "text-amber-100" : "text-muted-foreground line-through"
               )}
-              title={isDead ? "Revive player" : "Mark as dead"}
-              data-testid={`button-toggle-dead-${player.id}`}
+              data-testid={`button-player-name-${player.id}`}
             >
-              <Skull className="w-5 h-5" />
+              {player.name}
             </button>
+            {phaseStamp && (
+              <span className="text-[#c79fe6] text-sm shrink-0" data-testid={`text-seat-death-${player.id}`}>
+                † {phaseStamp}
+              </span>
+            )}
+          </div>
+
+          {claimedChars.length > 0 ? (
+            <div className="flex flex-wrap gap-1.5 mt-1.5" data-testid={`claims-row-${player.id}`}>
+              {claimedChars.map((char, idx) => char && (
+                <div
+                  key={char.id}
+                  className="inline-flex items-center gap-1"
+                  data-testid={`chip-candidate-${player.id}-${char.id}`}
+                >
+                  {idx === 0 && (
+                    <Crown
+                      className="w-3.5 h-3.5 text-amber-400"
+                      aria-label="Primary claim"
+                      data-testid={`text-primary-claim-${player.id}`}
+                    />
+                  )}
+                  <button
+                    onClick={(e) => { e.stopPropagation(); onRemoveClaim(char.id); }}
+                    className={cn("inline-flex items-center gap-1 text-xs whitespace-nowrap rounded-full border px-2.5 py-1 font-semibold transition-colors hover:opacity-80", candidateChipClass(char.team, idx === 0))}
+                    title={`Remove ${char.name} claim`}
+                    data-testid={`button-claim-badge-${char.id}-${player.id}`}
+                  >
+                    {char.name}
+                    <X className="w-3 h-3 opacity-60" />
+                  </button>
+                  {idx !== 0 && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); onSetPrimary(char.id); }}
+                      className="p-1.5 rounded-full text-amber-500/70 hover:text-amber-400 hover:bg-amber-900/30 transition-colors"
+                      title={`Make ${char.name} the primary claim`}
+                      data-testid={`button-set-primary-${char.id}`}
+                    >
+                      <Crown className="w-3 h-3" />
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p
+              className="mt-1.5 text-xs italic text-muted-foreground/60"
+              data-testid={`text-no-guess-${player.id}`}
+            >
+              no guess yet
+            </p>
           )}
-          {isDead && !player.isTraveler && (
+        </div>
+
+        <div className="flex flex-col items-end gap-1 shrink-0">
+          <div className="flex items-center gap-1 h-4">
+            {nominationsReceived > 0 && (
+              <span className="flex items-center gap-0.5 text-amber-400 text-xs" data-testid={`text-nominated-${player.id}`}>
+                <GallowsIcon className="w-3.5 h-3.5" />
+                {nominationsReceived}
+              </span>
+            )}
+            {nominationsMade > 0 && (
+              <span className="flex items-center gap-0.5 text-purple-400 text-xs" data-testid={`text-nominations-made-${player.id}`}>
+                <PointingFingerIcon className="w-3.5 h-3.5" />
+                {nominationsMade}
+              </span>
+            )}
+            {hasNotes && <FileText className="w-3.5 h-3.5 text-muted-foreground" />}
+          </div>
+          <div className="flex items-center gap-1">
             <button
-              onClick={onToggleGhostVote}
-              className={cn(
-                "relative flex items-center justify-center w-11 h-11 rounded-lg border transition-colors",
-                player.hasGhostVote
-                  ? "bg-purple-900/40 border-purple-700/60 text-purple-400 hover:bg-purple-900/60"
-                  : "bg-muted/30 border-muted-foreground/30 text-muted-foreground/40 hover:bg-muted/50"
-              )}
-              title={player.hasGhostVote ? "Use ghost vote" : "Ghost vote spent"}
-              data-testid={`button-toggle-ghost-${player.id}`}
+              onClick={(e) => { e.stopPropagation(); onOpenClaimPicker(); }}
+              className="flex items-center gap-1 px-2.5 rounded-full border border-dashed border-amber-700/60 text-amber-400 text-xs font-medium hover:bg-amber-900/20 hover:border-amber-600 transition-colors shrink-0 h-9"
+              data-testid={`button-add-claim-${player.id}`}
             >
-              <Ghost className="w-5 h-5" />
-              {!player.hasGhostVote && (
-                <X className="w-3 h-3 text-red-500 absolute bottom-1 right-1" />
-              )}
+              <Plus className="w-4 h-4" />
+              Claim
             </button>
-          )}
+            {!player.isTraveler && (
+              <button
+                onClick={(e) => { e.stopPropagation(); onToggleAlive(); }}
+                className={cn(
+                  "flex items-center justify-center w-9 h-9 rounded-lg border transition-colors",
+                  isDead
+                    ? "bg-red-900/40 border-red-700/60 text-red-400 hover:bg-red-900/60"
+                    : "border-muted-foreground/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                )}
+                title={isDead ? "Revive player" : "Mark as dead"}
+                data-testid={`button-toggle-dead-${player.id}`}
+              >
+                <Skull className="w-5 h-5" />
+              </button>
+            )}
+            {isDead && !player.isTraveler && (
+              <button
+                onClick={(e) => { e.stopPropagation(); onToggleGhostVote(); }}
+                className={cn(
+                  "relative flex items-center justify-center w-9 h-9 rounded-lg border transition-colors",
+                  player.hasGhostVote
+                    ? "bg-purple-900/40 border-purple-700/60 text-purple-400 hover:bg-purple-900/60"
+                    : "bg-muted/30 border-muted-foreground/30 text-muted-foreground/40 hover:bg-muted/50"
+                )}
+                title={player.hasGhostVote ? "Use ghost vote" : "Ghost vote spent"}
+                data-testid={`button-toggle-ghost-${player.id}`}
+              >
+                <Ghost className="w-5 h-5" />
+                {!player.hasGhostVote && (
+                  <X className="w-3 h-3 text-red-500 absolute bottom-1 right-1" />
+                )}
+              </button>
+            )}
+          </div>
         </div>
       </div>
-
-      {claimedChars.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 mt-2" data-testid={`claims-row-${player.id}`}>
-          {claimedChars.map((char, idx) => char && (
-            <div key={char.id} className="inline-flex items-center gap-1">
-              {idx === 0 && (
-                <Crown
-                  className="w-3.5 h-3.5 text-amber-400"
-                  aria-label="Primary claim"
-                  data-testid={`text-primary-claim-${player.id}`}
-                />
-              )}
-              <button
-                onClick={() => onRemoveClaim(char.id)}
-                className={cn("inline-flex items-center gap-1 text-xs whitespace-nowrap rounded-full border px-2.5 py-1 font-semibold transition-colors hover:opacity-80", teamBadge(char.team))}
-                title={`Remove ${char.name} claim`}
-                data-testid={`button-claim-badge-${char.id}-${player.id}`}
-              >
-                {char.name}
-                <X className="w-3 h-3 opacity-60" />
-              </button>
-              {idx !== 0 && (
-                <button
-                  onClick={() => onSetPrimary(char.id)}
-                  className="p-1.5 rounded-full text-amber-500/70 hover:text-amber-400 hover:bg-amber-900/30 transition-colors"
-                  title={`Make ${char.name} the primary claim`}
-                  data-testid={`button-set-primary-${char.id}`}
-                >
-                  <Crown className="w-3 h-3" />
-                </button>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
     </Card>
   );
 }
@@ -2541,20 +2663,7 @@ export function CircleSeatingChart({
             const displayX = isBeingDragged ? pos.x + dragDelta.x : pos.x;
             const displayY = isBeingDragged ? pos.y + dragDelta.y : pos.y;
             const angleDeg = getPlayerAngleDeg(player, index);
-            // Latest death = highest day, then 'day' phase after 'night' within a
-            // day, then last-logged for same day+phase. Deterministic regardless
-            // of array order so the dagger stamp is always the true final death.
-            const phaseRank = (p: DeathRecord['phase']) => (p === 'night' ? 0 : 1);
-            const deathRecord =
-              deathRecords
-                .map((r, i) => ({ r, i }))
-                .filter(({ r }) => r.playerId === player.id)
-                .sort((a, b) =>
-                  a.r.day - b.r.day ||
-                  phaseRank(a.r.phase) - phaseRank(b.r.phase) ||
-                  a.i - b.i,
-                )
-                .at(-1)?.r ?? null;
+            const deathRecord = latestDeathRecord(deathRecords, player.id);
 
             return (
               <DraggableCircleNode
@@ -2602,7 +2711,7 @@ function DraggableCircleNode({
   const isBottom = angleDeg > 0 && angleDeg < 180;
   const isActive = player.status === 'alive';
   const displayName = player.name.length > 9 ? player.name.slice(0, 8) + '…' : player.name;
-  const phaseStamp = deathRecord ? `${deathRecord.phase === 'night' ? 'N' : 'D'}${deathRecord.day}` : null;
+  const phaseStamp = deathPhaseLabel(deathRecord);
 
   return (
     <button
@@ -3285,6 +3394,7 @@ function GameTrackerView({
                   key={player.id}
                   player={player}
                   game={game}
+                  seatNumber={game.players.findIndex(p => p.id === player.id) + 1}
                   onSelect={() => setSelectedPlayerId(player.id)}
                   onToggleAlive={() => onToggleAlive(player.id)}
                   onToggleGhostVote={() => onToggleGhostVote(player.id)}
