@@ -2583,8 +2583,8 @@ function GameTrackerView({
   onRemoveClaim,
   onSetNotes,
   onUpdatePlayerName,
-  onNextDay,
-  onPrevDay,
+  onAdvancePhase,
+  onRegressPhase,
   onReorderPlayers,
   onReversePlayers,
   hasBeenNominatedToday,
@@ -2608,6 +2608,7 @@ function GameTrackerView({
   choppingBlock,
   onExecuteFromBlock,
   onClearChoppingBlock,
+  onSkipExecutionAndAdvancePhase,
 }: {
   game: NonNullable<ReturnType<typeof usePlayerGame>["game"]>;
   onEndGame: () => void;
@@ -2620,8 +2621,8 @@ function GameTrackerView({
   onRemoveClaim: (playerId: string, characterId: string) => void;
   onSetNotes: (playerId: string, notes: string) => void;
   onUpdatePlayerName: (playerId: string, name: string) => void;
-  onNextDay: () => void;
-  onPrevDay: () => void;
+  onAdvancePhase: () => void;
+  onRegressPhase: () => void;
   onReorderPlayers: (activeId: string, overId: string) => void;
   onReversePlayers: () => void;
   hasBeenNominatedToday: (playerId: string) => boolean;
@@ -2645,6 +2646,7 @@ function GameTrackerView({
   choppingBlock: { nominations: Nomination[]; isTied: boolean };
   onExecuteFromBlock: () => void;
   onClearChoppingBlock: () => void;
+  onSkipExecutionAndAdvancePhase: () => void;
 }) {
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
   const [confirmEnd, setConfirmEnd] = useState(false);
@@ -2697,11 +2699,13 @@ function GameTrackerView({
     }
   };
 
-  const handleNextDay = () => {
-    if (choppingBlock.nominations.length > 0) {
+  // Advancing out of a day (day -> night) ends the day. If a block is still
+  // open at that point, prompt to resolve it first. Night -> day just advances.
+  const handleAdvancePhase = () => {
+    if (game.phase === 'day' && choppingBlock.nominations.length > 0) {
       setShowDayChangePrompt(true);
     } else {
-      onNextDay();
+      onAdvancePhase();
     }
   };
 
@@ -2719,6 +2723,20 @@ function GameTrackerView({
   const totalVotesAvailable = aliveCount + ghostVotesAvailable;
   const todayNominations = game.nominations.filter(n => n.day === game.currentDay);
   const canExecute = totalVotesAvailable >= votesNeeded;
+
+  // Phase spine: Night N = (day N, 'night'), Day N = (day N, 'day').
+  const isNight = game.phase === 'night';
+  const phaseLabel = (day: number, phase: 'day' | 'night') =>
+    phase === 'day' ? `Day ${day}` : `Night ${day}`;
+  const currentPhaseLabel = phaseLabel(game.currentDay, game.phase);
+  // The chapter before the current one (null at Night 1, the start of time).
+  const prevChapter = isNight
+    ? (game.currentDay > 1 ? { day: game.currentDay - 1, phase: 'day' as const } : null)
+    : { day: game.currentDay, phase: 'night' as const };
+  // The chapter after the current one.
+  const nextChapter = isNight
+    ? { day: game.currentDay, phase: 'day' as const }
+    : { day: game.currentDay + 1, phase: 'night' as const };
 
   // Filter players based on current filter
   const filteredPlayers = useMemo(() => {
@@ -2910,8 +2928,12 @@ function GameTrackerView({
           >
             <div className="flex items-center gap-3 text-sm">
               <div className="flex items-center gap-1.5">
-                <Sun className="w-3.5 h-3.5 text-amber-400" />
-                <span className="text-amber-400 font-medium">Day {game.currentDay}</span>
+                {isNight ? (
+                  <Moon className="w-3.5 h-3.5 text-indigo-300" />
+                ) : (
+                  <Sun className="w-3.5 h-3.5 text-amber-400" />
+                )}
+                <span className={cn("font-medium", isNight ? "text-indigo-300" : "text-amber-400")}>{currentPhaseLabel}</span>
               </div>
               <span className="text-muted-foreground">·</span>
               <span className="text-emerald-400 font-medium">{aliveCount}A</span>
@@ -2923,43 +2945,87 @@ function GameTrackerView({
         )}
 
         <div className={cn(scoreboardCollapsed && "hidden")}>
-        {/* Day Nav Zone - Arrows at edges, wide banner */}
-        <div className="flex items-center justify-between gap-2 px-3 py-2.5 border-b border-border bg-amber-950/10">
-          <Button
-            variant="outline"
-            onClick={onPrevDay}
-            disabled={game.currentDay <= 1}
-            className="px-4 h-10"
-            data-testid="button-prev-day"
+        {/* Phase Spine - prev chapter, current phase, next chapter */}
+        <div
+          className={cn(
+            "flex items-stretch justify-between gap-1.5 px-2 py-2.5 border-b border-border",
+            isNight ? "bg-indigo-950/20" : "bg-amber-950/10"
+          )}
+        >
+          {/* Previous chapter pill (hidden at Night 1, the start of time) */}
+          {prevChapter ? (
+            <Button
+              variant="outline"
+              onClick={onRegressPhase}
+              className="flex items-center gap-1 px-2 h-10 min-w-0"
+              data-testid="button-phase-prev"
+            >
+              <ChevronLeft className="w-4 h-4 shrink-0" />
+              {prevChapter.phase === 'night' ? (
+                <Moon className="w-4 h-4 text-indigo-300 shrink-0" />
+              ) : (
+                <Sun className="w-4 h-4 text-amber-400 shrink-0" />
+              )}
+              <span className="text-xs text-muted-foreground whitespace-nowrap">{phaseLabel(prevChapter.day, prevChapter.phase)}</span>
+            </Button>
+          ) : (
+            <div className="w-[44px] shrink-0" aria-hidden="true" />
+          )}
+
+          {/* Current phase pill */}
+          <div
+            className={cn(
+              "flex-1 flex items-center justify-center gap-2 h-10 px-2 border rounded-md min-w-0",
+              isNight
+                ? "bg-indigo-900/30 border-indigo-700/40"
+                : "bg-amber-900/30 border-amber-700/30"
+            )}
+            data-testid="text-phase-current"
           >
-            <ChevronLeft className="w-5 h-5" />
-          </Button>
-          <div className="flex-1 flex items-center justify-center gap-2 h-10 px-4 bg-amber-900/30 border border-amber-700/30 rounded-md">
-            <Sun className="w-5 h-5 text-amber-400" />
-            <span className="font-display text-lg text-amber-400">Day {game.currentDay}</span>
+            {isNight ? (
+              <Moon className="w-5 h-5 text-indigo-300 shrink-0" />
+            ) : (
+              <Sun className="w-5 h-5 text-amber-400 shrink-0" />
+            )}
+            <span className={cn("font-display text-lg truncate", isNight ? "text-indigo-200" : "text-amber-400")}>{currentPhaseLabel}</span>
           </div>
+
+          {/* Next chapter pill */}
           <Button
             variant="outline"
-            onClick={handleNextDay}
-            className="px-4 h-10"
-            data-testid="button-next-day"
+            onClick={handleAdvancePhase}
+            className="flex items-center gap-1 px-2 h-10 min-w-0"
+            data-testid="button-phase-next"
           >
-            <ChevronRight className="w-5 h-5" />
+            <span className="text-xs text-muted-foreground whitespace-nowrap">{phaseLabel(nextChapter.day, nextChapter.phase)}</span>
+            {nextChapter.phase === 'night' ? (
+              <Moon className="w-4 h-4 text-indigo-300 shrink-0" />
+            ) : (
+              <Sun className="w-4 h-4 text-amber-400 shrink-0" />
+            )}
+            <ChevronRight className="w-4 h-4 shrink-0" />
           </Button>
         </div>
 
-        {/* Vote Info Text */}
-        <div className="text-center px-4 py-2.5 border-b border-border text-base text-muted-foreground">
-          <div>
-            <span className="text-amber-400 font-semibold">{votesNeeded}</span> Votes <span className="font-semibold">to execute</span> out of{' '}
-            <span className={cn("font-semibold", canExecute ? "text-purple-400" : "text-red-400")}>{totalVotesAvailable}</span> Possible
+        {/* Vote Info Text - nominations and voting are a daytime activity */}
+        {isNight ? (
+          <div className="flex items-center justify-center gap-2 px-4 py-2.5 border-b border-border text-base text-indigo-300/80" data-testid="text-night-context">
+            <Moon className="w-4 h-4 shrink-0" />
+            <span>Night falls. Mark any deaths, then move to the day.</span>
           </div>
-          {ghostVotesAvailable > 0 && (
-            <div className="text-purple-400/80">
-              including <span className="font-semibold">{ghostVotesAvailable}</span> Ghost {ghostVotesAvailable === 1 ? 'Vote' : 'Votes'}
+        ) : (
+          <div className="text-center px-4 py-2.5 border-b border-border text-base text-muted-foreground">
+            <div>
+              <span className="text-amber-400 font-semibold">{votesNeeded}</span> Votes <span className="font-semibold">to execute</span> out of{' '}
+              <span className={cn("font-semibold", canExecute ? "text-purple-400" : "text-red-400")}>{totalVotesAvailable}</span> Possible
             </div>
-          )}
-        </div>
+            {ghostVotesAvailable > 0 && (
+              <div className="text-purple-400/80">
+                including <span className="font-semibold">{ghostVotesAvailable}</span> Ghost {ghostVotesAvailable === 1 ? 'Vote' : 'Votes'}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Role Count */}
         {(() => {
@@ -3013,9 +3079,10 @@ function GameTrackerView({
             <span className="text-xs text-muted-foreground uppercase tracking-wide">Dead</span>
           </Button>
 
-          {/* Nominate - Core Action */}
+          {/* Nominate - Core Action (daytime only) */}
           <Button 
             variant="outline"
+            disabled={isNight}
             className="flex flex-col items-center h-auto py-3 bg-red-500/20 border-red-500/30 toggle-elevate"
             onClick={() => {
               setNominationPreselectedNominee(null);
@@ -3028,8 +3095,8 @@ function GameTrackerView({
           </Button>
         </div>
 
-        {/* Chopping Block Indicator */}
-        {choppingBlock.nominations.length > 0 && (
+        {/* Chopping Block Indicator (daytime execution flow) */}
+        {!isNight && choppingBlock.nominations.length > 0 && (
           <button
             onClick={() => setShowChoppingBlockModal(true)}
             className={cn(
@@ -3302,7 +3369,7 @@ function GameTrackerView({
                   </p>
                 )}
                 <p className="text-sm text-muted-foreground">
-                  Resolve the block before moving to the next day, or skip to continue without executing.
+                  Resolve the block before moving on to night, or skip to continue without executing.
                 </p>
               </div>
             </AlertDialogDescription>
@@ -3322,12 +3389,11 @@ function GameTrackerView({
             </Button>
             <AlertDialogAction 
               onClick={() => {
-                onClearChoppingBlock();
-                onNextDay();
+                onSkipExecutionAndAdvancePhase();
               }}
               data-testid="button-skip-execution"
             >
-              Skip & Next Day
+              Skip & Continue
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -3365,8 +3431,8 @@ export default function Game() {
     setPlayerStatus,
     toggleGhostVote,
     setNotes,
-    nextDay,
-    prevDay,
+    advancePhase,
+    regressPhase,
     reorderPlayers,
     reversePlayers,
     hasBeenNominatedToday,
@@ -3390,6 +3456,7 @@ export default function Game() {
     getChoppingBlock,
     executeFromBlock,
     clearChoppingBlock,
+    skipExecutionAndAdvancePhase,
   } = usePlayerGame();
 
   const updatePlayerName = (playerId: string, name: string) => {
@@ -3423,8 +3490,8 @@ export default function Game() {
           onRemoveClaim={removeClaim}
           onSetNotes={setNotes}
           onUpdatePlayerName={updatePlayerName}
-          onNextDay={nextDay}
-          onPrevDay={prevDay}
+          onAdvancePhase={advancePhase}
+          onRegressPhase={regressPhase}
           onReorderPlayers={reorderPlayers}
           onReversePlayers={reversePlayers}
           hasBeenNominatedToday={hasBeenNominatedToday}
@@ -3448,6 +3515,7 @@ export default function Game() {
           choppingBlock={getChoppingBlock()}
           onExecuteFromBlock={executeFromBlock}
           onClearChoppingBlock={clearChoppingBlock}
+          onSkipExecutionAndAdvancePhase={skipExecutionAndAdvancePhase}
         />
       )}
     </Layout>

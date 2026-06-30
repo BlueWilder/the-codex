@@ -40,6 +40,7 @@ export interface DeathRecord {
   playerId: string;
   day: number;
   type: 'execution' | 'night' | 'exile';
+  phase: 'day' | 'night'; // Moment-in-time phase, stamped at write
   timestamp: string;
   nominationId?: string; // If execution, link to nomination
 }
@@ -104,6 +105,7 @@ export interface PlayerGame {
   nominations: Nomination[];
   exileVotes: ExileVote[];
   currentDay: number;
+  phase: 'day' | 'night'; // Night N = (day N, 'night'); Day N = (day N, 'day')
   script?: GameScriptRef | null;
   // Event logs for Game Log view
   deathRecords?: DeathRecord[];
@@ -172,6 +174,21 @@ export function usePlayerGame() {
         if (!parsed.deathRecords) parsed.deathRecords = [];
         if (!parsed.travelerEvents) parsed.travelerEvents = [];
         if (!parsed.ghostVoteEvents) parsed.ghostVoteEvents = [];
+        // Migrate: backfill game phase. Existing in-progress games predate
+        // the phase concept and were operating as a day, so default to 'day'.
+        if (parsed.phase !== 'day' && parsed.phase !== 'night') {
+          parsed.phase = 'day';
+        }
+        // Migrate: backfill each death record's phase, derived from its type
+        // (night deaths happened at night; executions and exiles at day).
+        if (Array.isArray(parsed.deathRecords)) {
+          parsed.deathRecords = parsed.deathRecords.map((dr: DeathRecord) => {
+            if (dr.phase === 'day' || dr.phase === 'night') {
+              return dr;
+            }
+            return { ...dr, phase: dr.type === 'night' ? 'night' : 'day' };
+          });
+        }
         setGame(parsed);
         // Re-save to persist migration
         localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
@@ -199,6 +216,7 @@ export function usePlayerGame() {
       playerCount,
       breakdown: getBreakdown(playerCount),
       currentDay: 1,
+      phase: 'night',
       players: playerNames.map((name, i) => ({
         id: `player-${i}`,
         name,
@@ -244,6 +262,7 @@ export function usePlayerGame() {
       breakdown: getBreakdown(resetPlayers.length),
       players: resetPlayers,
       currentDay: 1,
+      phase: 'night',
       nominations: [],
       exileVotes: [],
       deathRecords: [],
@@ -501,6 +520,7 @@ export function usePlayerGame() {
           playerId: nomineeId,
           day: game.currentDay,
           type: 'execution',
+          phase: game.phase,
           timestamp,
           nominationId,
         });
@@ -557,6 +577,28 @@ export function usePlayerGame() {
     });
   }, [game, saveGame]);
 
+  // Skip the day's execution and move on in a single transaction. Clearing the
+  // block and advancing the phase both derive from the same game snapshot, so
+  // they must be saved together or the second save would overwrite the first.
+  const skipExecutionAndAdvancePhase = useCallback(() => {
+    if (!game) return;
+    const blockIds = game.choppingBlock || [];
+    const updatedNominations = game.nominations.map(nom =>
+      blockIds.includes(nom.id)
+        ? { ...nom, result: 'passed' as NominationResult }
+        : nom
+    );
+    // Mirror advancePhase: Night -> Day (same day); Day -> Night N+1.
+    const isNight = game.phase === 'night';
+    saveGame({
+      ...game,
+      nominations: updatedNominations,
+      choppingBlock: [],
+      currentDay: isNight ? (game.currentDay ?? 1) : (game.currentDay ?? 1) + 1,
+      phase: isNight ? 'day' : 'night',
+    });
+  }, [game, saveGame]);
+
   // Execute from chopping block (only when single player on block)
   const executeFromBlock = useCallback(() => {
     if (!game) return;
@@ -580,6 +622,7 @@ export function usePlayerGame() {
         playerId: nomination.nomineeId,
         day: game.currentDay,
         type: 'execution',
+        phase: game.phase,
         timestamp,
         nominationId,
       });
@@ -628,6 +671,7 @@ export function usePlayerGame() {
           playerId,
           day: game.currentDay,
           type: 'night',
+          phase: game.phase,
           timestamp: new Date().toISOString(),
         };
         
@@ -655,8 +699,41 @@ export function usePlayerGame() {
     const newIsAlive = status === 'alive';
     // Travelers never get ghost votes
     const hasGhostVote = player.isTraveler ? false : (status === 'dead' ? true : player.hasGhostVote);
+
+    // Stamp a phase-aware death record when a living player transitions to a
+    // death state ('dead' or 'exiled'). 'left' is not a death. Resurrecting
+    // back to 'alive' records nothing.
+    const isDeathTransition =
+      player.status === 'alive' && (status === 'dead' || status === 'exiled');
+    if (isDeathTransition) {
+      // Idempotent: skip if a death for this player on this day already exists
+      // (e.g. written by the execution or toggleAlive paths).
+      const alreadyRecorded = (game.deathRecords || []).some(
+        d => d.playerId === playerId && d.day === game.currentDay
+      );
+      if (!alreadyRecorded) {
+        const newDeathRecord: DeathRecord = {
+          playerId,
+          day: game.currentDay,
+          type: status === 'exiled' ? 'exile' : 'night',
+          phase: game.phase,
+          timestamp: new Date().toISOString(),
+        };
+        saveGame({
+          ...game,
+          players: game.players.map(p =>
+            p.id === playerId
+              ? { ...p, isAlive: newIsAlive, status, hasGhostVote }
+              : p
+          ),
+          deathRecords: [...(game.deathRecords || []), newDeathRecord],
+        });
+        return;
+      }
+    }
+
     updatePlayer(playerId, { isAlive: newIsAlive, status, hasGhostVote });
-  }, [game, updatePlayer]);
+  }, [game, updatePlayer, saveGame]);
 
   const toggleGhostVote = useCallback((playerId: string) => {
     if (!game) return;
@@ -683,6 +760,30 @@ export function usePlayerGame() {
   const prevDay = useCallback(() => {
     if (!game || game.currentDay <= 1) return;
     saveGame({ ...game, currentDay: game.currentDay - 1 });
+  }, [game, saveGame]);
+
+  // Advance the timeline one chapter: Night N -> Day N -> Night N+1 -> Day N+1.
+  // night -> day keeps the same day number; day -> night increments the day.
+  const advancePhase = useCallback(() => {
+    if (!game) return;
+    if (game.phase === 'night') {
+      saveGame({ ...game, phase: 'day' });
+    } else {
+      saveGame({ ...game, currentDay: (game.currentDay ?? 1) + 1, phase: 'night' });
+    }
+  }, [game, saveGame]);
+
+  // Regress one chapter, the reverse of advancePhase. Day N -> Night N (same
+  // day); Night N -> Day N-1. Never regress before Night 1.
+  const regressPhase = useCallback(() => {
+    if (!game) return;
+    if (game.phase === 'day') {
+      saveGame({ ...game, phase: 'night' });
+    } else {
+      // Already at night; the previous chapter is the prior day's daytime.
+      if ((game.currentDay ?? 1) <= 1) return; // Night 1 is the start
+      saveGame({ ...game, currentDay: (game.currentDay ?? 1) - 1, phase: 'day' });
+    }
   }, [game, saveGame]);
 
   const reorderPlayers = useCallback((activeId: string, overId: string) => {
@@ -921,6 +1022,7 @@ export function usePlayerGame() {
         playerId: travelerId,
         day: game.currentDay,
         type: 'exile',
+        phase: game.phase,
         timestamp,
       });
       
@@ -1060,6 +1162,8 @@ export function usePlayerGame() {
     setNotes,
     nextDay,
     prevDay,
+    advancePhase,
+    regressPhase,
     reorderPlayers,
     reversePlayers,
     hasBeenNominatedToday,
@@ -1070,6 +1174,7 @@ export function usePlayerGame() {
     deleteNomination,
     getChoppingBlock,
     clearChoppingBlock,
+    skipExecutionAndAdvancePhase,
     executeFromBlock,
     clearScript,
     setScript,
