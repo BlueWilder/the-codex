@@ -780,16 +780,6 @@ export function usePlayerGame() {
     updatePlayer(playerId, { notes });
   }, [updatePlayer]);
 
-  const nextDay = useCallback(() => {
-    if (!game) return;
-    saveGame({ ...game, currentDay: game.currentDay + 1 });
-  }, [game, saveGame]);
-
-  const prevDay = useCallback(() => {
-    if (!game || game.currentDay <= 1) return;
-    saveGame({ ...game, currentDay: game.currentDay - 1 });
-  }, [game, saveGame]);
-
   // Advance the timeline one chapter: Night N -> Day N -> Night N+1 -> Day N+1.
   // night -> day keeps the same day number; day -> night increments the day.
   const advancePhase = useCallback(() => {
@@ -1208,8 +1198,6 @@ export function usePlayerGame() {
     setPlayerStatus,
     toggleGhostVote,
     setNotes,
-    nextDay,
-    prevDay,
     advancePhase,
     regressPhase,
     reorderPlayers,

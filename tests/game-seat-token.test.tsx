@@ -7,9 +7,8 @@ import { CharacterToken } from "@/components/character/CharacterToken";
 import {
   CircleSeatingChart,
   SortablePlayerCard,
-  latestDeathRecord,
-  deathPhaseLabel,
 } from "@/pages/Game";
+import { latestDeathRecord, deathPhaseLabel } from "@/lib/death-phase";
 import type { GamePlayer, DeathRecord } from "@/hooks/use-player-game";
 
 afterEach(cleanup);

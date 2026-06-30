@@ -102,13 +102,13 @@ describe("GameTrackerView bottom navigation", () => {
     fireEvent.click(screen.getByTestId("nav-script"));
     expect(screen.getByTestId("script-sheet")).toBeTruthy();
     expect(screen.getAllByTestId(/^button-script-char-/).length).toBeGreaterThan(0);
-    expect(screen.queryByTestId("text-script-nudge")).toBeNull();
+    expect(screen.queryByTestId("text-script-nudge-game")).toBeNull();
   });
 
   it("shows the nudge on the Script tab when no script is selected", () => {
     renderTracker(makeGame({ script: null }));
     fireEvent.click(screen.getByTestId("nav-script"));
-    expect(screen.getByTestId("text-script-nudge")).toBeTruthy();
+    expect(screen.getByTestId("text-script-nudge-game")).toBeTruthy();
     expect(screen.queryByTestId("script-sheet")).toBeNull();
   });
 
@@ -117,5 +117,14 @@ describe("GameTrackerView bottom navigation", () => {
     fireEvent.click(screen.getByTestId("nav-script"));
     fireEvent.click(screen.getByTestId("button-script-char-imp"));
     expect(screen.getByTestId("drawer-character-imp")).toBeTruthy();
+  });
+
+  it("resets the open sheet selection when leaving the Script tab", () => {
+    renderTracker(makeGame());
+    fireEvent.click(screen.getByTestId("nav-script"));
+    fireEvent.click(screen.getByTestId("button-script-char-imp"));
+    expect(screen.getByTestId("drawer-character-imp")).toBeTruthy();
+    fireEvent.click(screen.getByTestId("nav-list"));
+    expect(screen.queryByTestId("drawer-character-imp")).toBeNull();
   });
 });

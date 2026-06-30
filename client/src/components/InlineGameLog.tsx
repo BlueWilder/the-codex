@@ -7,7 +7,7 @@ import {
   type PlayerGame, 
   type DeathRecord,
 } from "@/hooks/use-player-game";
-import { deathPhaseLabel } from "@/pages/Game";
+import { deathPhaseLabel } from "@/lib/death-phase";
 import { ALL_CHARACTERS } from "@/lib/game-data";
 import { 
   Theater, 

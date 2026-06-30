@@ -9,6 +9,7 @@ import { scanScriptFile } from "@/lib/scan-script";
 import { resolveScriptCharacters, countScriptCharacters } from "@/lib/script-resolve";
 import { ScriptSheet } from "@/components/character/ScriptSheet";
 import { CharacterCard } from "@/components/character/CharacterCard";
+import { latestDeathRecord, deathPhaseLabel } from "@/lib/death-phase";
 import { useToast } from "@/hooks/use-toast";
 import { ChevronRight, ChevronLeft, Play, X, Plus, Check, Search, Moon, Sun, ChevronUp, ChevronDown, FileText, Vote, Loader2, GripVertical, UserPlus, ArrowRight, BookOpen, HandMetal, Ban, LogOut, Trash2, Pencil, MoreVertical, RotateCcw, Info, ExternalLink, Users, Skull, Ghost, Scroll, Hand, Target, Theater, ArrowDownUp, Camera, Crown, LayoutList, NotebookText, ScrollText } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -1173,40 +1174,6 @@ function PlayerDetailDrawer({
       </Dialog>
     </>
   );
-}
-
-/**
- * Pick a player's final death record. Latest death = highest day, then 'day'
- * phase after 'night' within a day, then last-logged for the same day+phase.
- * Deterministic regardless of array order, so the dagger stamp is always the
- * true final death. Shared by the Grim/circle view and the List row. Exported
- * for tests.
- */
-export function latestDeathRecord(
-  deathRecords: DeathRecord[],
-  playerId: string,
-): DeathRecord | null {
-  const phaseRank = (p: DeathRecord['phase']) => (p === 'night' ? 0 : 1);
-  return (
-    deathRecords
-      .map((r, i) => ({ r, i }))
-      .filter(({ r }) => r.playerId === playerId)
-      .sort((a, b) =>
-        a.r.day - b.r.day ||
-        phaseRank(a.r.phase) - phaseRank(b.r.phase) ||
-        a.i - b.i,
-      )
-      .at(-1)?.r ?? null
-  );
-}
-
-/**
- * The dagger phase-label string for a death record, e.g. N1 / D2. Shared by the
- * circle node and the List row so both views show an identical stamp. Exported
- * for tests.
- */
-export function deathPhaseLabel(record: DeathRecord | null | undefined): string | null {
-  return record ? `${record.phase === 'night' ? 'N' : 'D'}${record.day}` : null;
 }
 
 /**
@@ -2895,6 +2862,18 @@ export function GameTrackerView({
     }
   }, [scriptsLoading, game.script, resolvedScript, onClearScript]);
 
+  // Reset any open sheet selection when leaving the Script tab or switching
+  // scripts, so the drawer never shows stale content from a prior context.
+  useEffect(() => {
+    if (activeTab !== 'script') {
+      setSelectedSheetCharId(null);
+    }
+  }, [activeTab]);
+
+  useEffect(() => {
+    setSelectedSheetCharId(null);
+  }, [resolvedScript?.id]);
+
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 100, tolerance: 8 } }),
@@ -3418,7 +3397,7 @@ export function GameTrackerView({
             onCharacterSelect={(id) => setSelectedSheetCharId(id)}
           />
         ) : (
-          <div className="py-12 text-center text-muted-foreground" data-testid="text-script-nudge">
+          <div className="py-12 text-center text-muted-foreground" data-testid="text-script-nudge-game">
             Pick a script to see the full character sheet.
           </div>
         )
