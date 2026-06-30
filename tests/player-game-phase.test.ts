@@ -144,6 +144,37 @@ describe("toggleAlive death records by phase", () => {
     expect(records[0]?.type).toBe("execution");
     expect(records[0]?.phase).toBe("day");
   });
+
+  it("re-kills after a same-day revival, keeping the latest death type correct", () => {
+    const { result } = renderHook(() => usePlayerGame());
+    act(() => {
+      result.current.createGame(5, ["A", "B", "C", "D", "E"]);
+    });
+    const target = result.current.game!.players[0].id;
+    // Night 1: killed in the night.
+    act(() => {
+      result.current.toggleAlive(target);
+    });
+    // Revived (still Night 1).
+    act(() => {
+      result.current.toggleAlive(target);
+    });
+    // Advance to Day 1 and execute.
+    act(() => {
+      result.current.advancePhase();
+    });
+    act(() => {
+      result.current.toggleAlive(target);
+    });
+    const records = (result.current.game?.deathRecords ?? []).filter(
+      (r) => r.playerId === target,
+    );
+    // Both deaths recorded (night kill + day execution), latest is the execution.
+    const latest = records[records.length - 1];
+    expect(latest.type).toBe("execution");
+    expect(latest.phase).toBe("day");
+    expect(records.some((r) => r.type === "night")).toBe(true);
+  });
 });
 
 describe("phase migration of legacy saves", () => {

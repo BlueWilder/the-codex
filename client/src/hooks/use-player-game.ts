@@ -296,9 +296,12 @@ export function usePlayerGame() {
     // If player is dying (not being resurrected), record a death stamped with
     // the current phase (day = execution, night = night kill).
     if (!newIsAlive && player.status === 'alive') {
-      // Idempotent: skip if a death for this player on this day already exists.
+      // Idempotent: skip only a true duplicate (same player, same day, same
+      // phase). A revive then re-kill in a LATER phase of the same day (e.g.
+      // night kill -> revive -> day execution) must still write a fresh record
+      // so the latest death type/phase is correct.
       const alreadyRecorded = (game.deathRecords || []).some(
-        d => d.playerId === playerId && d.day === game.currentDay
+        d => d.playerId === playerId && d.day === game.currentDay && d.phase === game.phase
       );
       
       if (!alreadyRecorded) {
@@ -339,10 +342,11 @@ export function usePlayerGame() {
     const isDeathTransition =
       player.status === 'alive' && (status === 'dead' || status === 'exiled');
     if (isDeathTransition) {
-      // Idempotent: skip if a death for this player on this day already exists
-      // (e.g. written by the execution or toggleAlive paths).
+      // Idempotent: skip only a true duplicate (same player, same day, same
+      // phase) so a revive then re-kill in a later phase of the same day still
+      // records the new death.
       const alreadyRecorded = (game.deathRecords || []).some(
-        d => d.playerId === playerId && d.day === game.currentDay
+        d => d.playerId === playerId && d.day === game.currentDay && d.phase === game.phase
       );
       if (!alreadyRecorded) {
         const deathType: DeathRecord['type'] =
