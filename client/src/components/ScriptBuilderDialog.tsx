@@ -137,7 +137,7 @@ export function ScriptBuilderDialog({
       }
     }
 
-    const uniqueMatched = [...new Set(matched)];
+    const uniqueMatched = Array.from(new Set(matched));
 
     if (uniqueMatched.length === 0) {
       setImportMessage({ type: 'error', text: `No recognized characters found in the JSON. ${unrecognized.length > 0 ? `Unrecognized IDs: ${unrecognized.join(', ')}` : ''}` });
