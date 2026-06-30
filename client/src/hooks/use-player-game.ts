@@ -2,34 +2,6 @@ import { useState, useEffect, useCallback } from "react";
 
 export type PlayerStatus = 'alive' | 'dead' | 'left' | 'exiled';
 
-export interface PlayerVote {
-  playerId: string;
-  voted: boolean;
-}
-
-export type NominationResult = 'failed' | 'on_the_block' | 'passed' | 'executed';
-
-export interface Nomination {
-  id: string;
-  day: number;
-  nomineeId: string;
-  nominatorId: string;
-  votes?: PlayerVote[]; // Only if Full Vote Record used
-  passed: boolean; // Whether the nomination passed (enough votes to execute)
-  yesVotes: number; // Number of yes votes
-  votesNeeded: number; // Votes needed at the time of nomination
-  isQuickLog?: boolean; // True if Quick Log was used
-  result?: NominationResult; // Quick log result - failed, passed (on block), or executed
-}
-
-export interface ExileVote {
-  id: string;
-  day: number;
-  travelerId: string;
-  votes: PlayerVote[];
-  passed: boolean;
-}
-
 export interface ClaimRecord {
   characterId: string;
   addedAt: string;
@@ -54,13 +26,6 @@ export interface TravelerEvent {
   characterId?: string;
 }
 
-export interface GhostVoteEvent {
-  playerId: string;
-  day: number;
-  timestamp: string;
-  nominationId: string;
-}
-
 export interface NotebookNote {
   id: string;
   day: number;
@@ -74,7 +39,6 @@ export interface GamePlayer {
   name: string;
   isAlive: boolean;
   status: PlayerStatus;
-  hasGhostVote: boolean;
   notes: string;
   claims: string[]; // Legacy: simple character IDs
   claimRecords?: ClaimRecord[]; // New: with timestamps
@@ -89,16 +53,6 @@ export function isPlayerActive(player: GamePlayer): boolean {
   return player.status === 'alive';
 }
 
-export function canPlayerVote(player: GamePlayer): boolean {
-  if (player.status === 'alive') return true;
-  if (player.status === 'dead' && player.hasGhostVote && !player.isTraveler) return true;
-  return false;
-}
-
-export function canPlayerVoteOnExile(player: GamePlayer): boolean {
-  return player.status === 'alive' || player.status === 'dead';
-}
-
 export interface GameScriptRef {
   id: string;
 }
@@ -109,21 +63,16 @@ export interface PlayerGame {
   playerCount: number;
   breakdown: { townsfolk: number; outsiders: number; minions: number; demons: number; travelers?: number };
   players: GamePlayer[];
-  nominations: Nomination[];
-  exileVotes: ExileVote[];
   currentDay: number;
   phase: 'day' | 'night'; // Night N = (day N, 'night'); Day N = (day N, 'day')
   script?: GameScriptRef | null;
   // Event logs for Game Log view
   deathRecords?: DeathRecord[];
   travelerEvents?: TravelerEvent[];
-  ghostVoteEvents?: GhostVoteEvent[];
   // Free-form game notes
   gameNotes?: string;
   // Per-phase notebook notes, stamped with day + phase at write
   notebookNotes?: NotebookNote[];
-  // Chopping block - nomination IDs of players currently on the block
-  choppingBlock?: string[];
 }
 
 const STORAGE_KEY = "clocktower_player_game";
@@ -160,14 +109,6 @@ export function usePlayerGame() {
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
-        // Migrate legacy data: ensure nominations array exists
-        if (!parsed.nominations) {
-          parsed.nominations = [];
-        }
-        // Migrate: ensure exileVotes array exists
-        if (!parsed.exileVotes) {
-          parsed.exileVotes = [];
-        }
         // Migrate: add status field to players if missing
         if (parsed.players) {
           parsed.players = parsed.players.map((p: GamePlayer & { votes?: unknown }) => {
@@ -182,7 +123,6 @@ export function usePlayerGame() {
         // Migrate: ensure event log arrays exist
         if (!parsed.deathRecords) parsed.deathRecords = [];
         if (!parsed.travelerEvents) parsed.travelerEvents = [];
-        if (!parsed.ghostVoteEvents) parsed.ghostVoteEvents = [];
         // Migrate: ensure notebookNotes array exists
         if (!parsed.notebookNotes) parsed.notebookNotes = [];
         // Migrate: backfill game phase. Existing in-progress games predate
@@ -233,13 +173,10 @@ export function usePlayerGame() {
         name,
         isAlive: true,
         status: 'alive' as PlayerStatus,
-        hasGhostVote: !( i >= travelerStartIndex), // Travelers don't get ghost votes
         notes: "",
         claims: [],
         isTraveler: i >= travelerStartIndex,
       })),
-      nominations: [],
-      exileVotes: [],
       notebookNotes: [],
       script: script || null,
     };
@@ -261,7 +198,6 @@ export function usePlayerGame() {
         ...p,
         isAlive: true,
         status: 'alive' as PlayerStatus,
-        hasGhostVote: true,
         notes: '',
         claims: [],
         claimRecords: [],
@@ -275,11 +211,8 @@ export function usePlayerGame() {
       players: resetPlayers,
       currentDay: 1,
       phase: 'night',
-      nominations: [],
-      exileVotes: [],
       deathRecords: [],
       travelerEvents: [],
-      ghostVoteEvents: [],
       script: game.script, // Keep script selection
       gameNotes: '',
       notebookNotes: [],
@@ -353,343 +286,26 @@ export function usePlayerGame() {
     });
   }, [game, updatePlayer]);
 
-  const hasBeenNominatedToday = useCallback((playerId: string) => {
-    if (!game) return false;
-    return game.nominations.some(n => n.day === game.currentDay && n.nomineeId === playerId);
-  }, [game]);
-
-  const hasNominatedToday = useCallback((playerId: string) => {
-    if (!game) return false;
-    return game.nominations.some(n => n.day === game.currentDay && n.nominatorId === playerId);
-  }, [game]);
-
-  const getDayNominations = useCallback((day: number) => {
-    if (!game) return [];
-    return game.nominations.filter(n => n.day === day);
-  }, [game]);
-
-  const createNomination = useCallback((nomineeId: string, nominatorId: string, votes: PlayerVote[]) => {
-    if (!game) return;
-    if (hasBeenNominatedToday(nomineeId) || hasNominatedToday(nominatorId)) return;
-    
-    const nominationId = crypto.randomUUID();
-    const timestamp = new Date().toISOString();
-    
-    // Calculate votes needed
-    const aliveCount = game.players.filter(p => p.status === 'alive').length;
-    const votesNeeded = Math.ceil(aliveCount / 2);
-    const yesVotes = votes.filter(v => v.voted).length;
-    const meetsThreshold = yesVotes >= votesNeeded;
-    
-    // Get current block state
-    const currentBlock = game.choppingBlock || [];
-    const blockNominations = currentBlock
-      .map(id => game.nominations.find(n => n.id === id))
-      .filter((n): n is Nomination => n !== undefined);
-    const currentBlockVotes = blockNominations.length > 0 ? blockNominations[0].yesVotes : 0;
-    
-    // Determine result based on block logic
-    let result: NominationResult = 'failed';
-    let newBlock = [...currentBlock];
-    let updatedNominations = [...game.nominations];
-    
-    if (meetsThreshold) {
-      if (currentBlock.length === 0) {
-        // First to reach threshold - goes on block
-        result = 'on_the_block';
-        newBlock = [nominationId];
-      } else if (yesVotes > currentBlockVotes) {
-        // More votes than current block - replaces them
-        result = 'on_the_block';
-        // Update previous block holders to 'passed'
-        updatedNominations = updatedNominations.map(nom =>
-          currentBlock.includes(nom.id)
-            ? { ...nom, result: 'passed' as NominationResult }
-            : nom
-        );
-        newBlock = [nominationId];
-      } else if (yesVotes === currentBlockVotes) {
-        // Ties current block - joins them (signals no execution)
-        result = 'on_the_block';
-        newBlock = [...currentBlock, nominationId];
-      } else {
-        // Fewer votes than current block - fails
-        result = 'failed';
-      }
-    }
-    
-    const newNomination: Nomination = {
-      id: nominationId,
-      day: game.currentDay,
-      nomineeId,
-      nominatorId,
-      votes,
-      passed: meetsThreshold,
-      yesVotes,
-      votesNeeded,
-      result,
-    };
-    
-    // Track ghost vote events
-    const newGhostVoteEvents: GhostVoteEvent[] = [];
-    
-    // Mark ghost votes as spent for dead non-Traveler players who voted yes
-    let updatedPlayers = game.players.map(p => {
-      const playerVote = votes.find(v => v.playerId === p.id);
-      // If dead, non-Traveler, has ghost vote, and voted yes - spend it
-      if (p.status === 'dead' && !p.isTraveler && p.hasGhostVote && playerVote?.voted) {
-        newGhostVoteEvents.push({
-          playerId: p.id,
-          day: game.currentDay,
-          timestamp,
-          nominationId,
-        });
-        return { ...p, hasGhostVote: false };
-      }
-      return p;
-    });
-    
-    saveGame({ 
-      ...game, 
-      players: updatedPlayers,
-      nominations: [...updatedNominations, newNomination],
-      choppingBlock: newBlock,
-      ghostVoteEvents: [...(game.ghostVoteEvents || []), ...newGhostVoteEvents],
-    });
-  }, [game, saveGame, hasBeenNominatedToday, hasNominatedToday]);
-
-  const createQuickNomination = useCallback((
-    nomineeId: string, 
-    nominatorId: string, 
-    yesVotes: number,
-    result: NominationResult
-  ) => {
-    if (!game) return;
-    if (hasBeenNominatedToday(nomineeId) || hasNominatedToday(nominatorId)) return;
-    
-    const nominationId = crypto.randomUUID();
-    const timestamp = new Date().toISOString();
-    
-    const aliveCount = game.players.filter(p => p.status === 'alive').length;
-    const votesNeeded = Math.ceil(aliveCount / 2);
-    const passed = result === 'passed' || result === 'executed' || result === 'on_the_block';
-    
-    // Get current block state for handling 'on_the_block' result
-    const currentBlock = game.choppingBlock || [];
-    const blockNominations = currentBlock
-      .map(id => game.nominations.find(n => n.id === id))
-      .filter((n): n is Nomination => n !== undefined);
-    const currentBlockVotes = blockNominations.length > 0 ? blockNominations[0].yesVotes : 0;
-    
-    let newBlock = [...currentBlock];
-    let updatedNominations = [...game.nominations];
-    let finalResult = result;
-    
-    // Handle block logic for 'on_the_block' result
-    if (result === 'on_the_block') {
-      if (currentBlock.length === 0) {
-        // First on block
-        newBlock = [nominationId];
-      } else if (yesVotes > currentBlockVotes) {
-        // Replaces current block
-        updatedNominations = updatedNominations.map(nom =>
-          currentBlock.includes(nom.id)
-            ? { ...nom, result: 'passed' as NominationResult }
-            : nom
-        );
-        newBlock = [nominationId];
-      } else if (yesVotes === currentBlockVotes) {
-        // Ties current block
-        newBlock = [...currentBlock, nominationId];
-      } else {
-        // Fewer votes - becomes 'passed' (survived but didn't make block)
-        finalResult = 'passed';
-      }
-    } else if (result === 'executed') {
-      // Clear block since execution is happening
-      // Update any previous block holders to 'passed'
-      updatedNominations = updatedNominations.map(nom =>
-        currentBlock.includes(nom.id)
-          ? { ...nom, result: 'passed' as NominationResult }
-          : nom
-      );
-      newBlock = [];
-    }
-    
-    const newNomination: Nomination = {
-      id: nominationId,
-      day: game.currentDay,
-      nomineeId,
-      nominatorId,
-      passed,
-      yesVotes,
-      votesNeeded,
-      isQuickLog: true,
-      result: finalResult,
-    };
-    
-    let updatedPlayers = game.players;
-    const newDeathRecords: DeathRecord[] = [];
-    
-    // If result is 'executed', mark nominee as dead
-    if (result === 'executed') {
-      const nominee = updatedPlayers.find(p => p.id === nomineeId);
-      if (nominee && nominee.status === 'alive') {
-        newDeathRecords.push({
-          playerId: nomineeId,
-          day: game.currentDay,
-          type: 'execution',
-          phase: game.phase,
-          timestamp,
-          nominationId,
-        });
-        updatedPlayers = updatedPlayers.map(p => 
-          p.id === nomineeId 
-            ? { ...p, isAlive: false, status: 'dead' as PlayerStatus, hasGhostVote: !nominee.isTraveler }
-            : p
-        );
-      }
-    }
-    
-    saveGame({ 
-      ...game, 
-      players: updatedPlayers,
-      nominations: [...updatedNominations, newNomination],
-      choppingBlock: newBlock,
-      deathRecords: [...(game.deathRecords || []), ...newDeathRecords],
-    });
-  }, [game, saveGame, hasBeenNominatedToday, hasNominatedToday]);
-
-  const deleteNomination = useCallback((nominationId: string) => {
-    if (!game) return;
-    saveGame({ ...game, nominations: game.nominations.filter(n => n.id !== nominationId) });
-  }, [game, saveGame]);
-
-  // Get current chopping block info
-  const getChoppingBlock = useCallback(() => {
-    if (!game) return { nominations: [], isTied: false };
-    const blockIds = game.choppingBlock || [];
-    const nominations = blockIds
-      .map(id => game.nominations.find(n => n.id === id))
-      .filter((n): n is Nomination => n !== undefined);
-    return {
-      nominations,
-      isTied: nominations.length > 1,
-    };
-  }, [game]);
-
-  // Clear the chopping block (no execution) - update all block nominations to 'passed'
-  const clearChoppingBlock = useCallback(() => {
-    if (!game) return;
-    const blockIds = game.choppingBlock || [];
-    
-    const updatedNominations = game.nominations.map(nom => 
-      blockIds.includes(nom.id) 
-        ? { ...nom, result: 'passed' as NominationResult }
-        : nom
-    );
-    
-    saveGame({
-      ...game,
-      nominations: updatedNominations,
-      choppingBlock: [],
-    });
-  }, [game, saveGame]);
-
-  // Skip the day's execution and move on in a single transaction. Clearing the
-  // block and advancing the phase both derive from the same game snapshot, so
-  // they must be saved together or the second save would overwrite the first.
-  const skipExecutionAndAdvancePhase = useCallback(() => {
-    if (!game) return;
-    const blockIds = game.choppingBlock || [];
-    const updatedNominations = game.nominations.map(nom =>
-      blockIds.includes(nom.id)
-        ? { ...nom, result: 'passed' as NominationResult }
-        : nom
-    );
-    // Mirror advancePhase: Night -> Day (same day); Day -> Night N+1.
-    const isNight = game.phase === 'night';
-    saveGame({
-      ...game,
-      nominations: updatedNominations,
-      choppingBlock: [],
-      currentDay: isNight ? (game.currentDay ?? 1) : (game.currentDay ?? 1) + 1,
-      phase: isNight ? 'day' : 'night',
-    });
-  }, [game, saveGame]);
-
-  // Execute from chopping block (only when single player on block)
-  const executeFromBlock = useCallback(() => {
-    if (!game) return;
-    const blockIds = game.choppingBlock || [];
-    if (blockIds.length !== 1) return; // Can only execute when single player on block
-    
-    const nominationId = blockIds[0];
-    const nomination = game.nominations.find(n => n.id === nominationId);
-    if (!nomination) return;
-    
-    const nominee = game.players.find(p => p.id === nomination.nomineeId);
-    if (!nominee) return;
-    
-    const timestamp = new Date().toISOString();
-    const newDeathRecords: DeathRecord[] = [];
-    let updatedPlayers = game.players;
-    
-    // Mark player as dead
-    if (nominee.status === 'alive') {
-      newDeathRecords.push({
-        playerId: nomination.nomineeId,
-        day: game.currentDay,
-        type: 'execution',
-        phase: game.phase,
-        timestamp,
-        nominationId,
-      });
-      updatedPlayers = updatedPlayers.map(p => 
-        p.id === nomination.nomineeId 
-          ? { ...p, isAlive: false, status: 'dead' as PlayerStatus, hasGhostVote: !nominee.isTraveler }
-          : p
-      );
-    }
-    
-    // Update nomination result to 'executed'
-    const updatedNominations = game.nominations.map(nom => 
-      nom.id === nominationId 
-        ? { ...nom, result: 'executed' as NominationResult }
-        : nom
-    );
-    
-    saveGame({
-      ...game,
-      players: updatedPlayers,
-      nominations: updatedNominations,
-      deathRecords: [...(game.deathRecords || []), ...newDeathRecords],
-      choppingBlock: [],
-    });
-  }, [game, saveGame]);
-
   const toggleAlive = useCallback((playerId: string) => {
     if (!game) return;
     const player = game.players.find(p => p.id === playerId);
     if (!player) return;
     const newStatus: PlayerStatus = player.status === 'alive' ? 'dead' : 'alive';
     const newIsAlive = newStatus === 'alive';
-    // Regular players get ghost vote when dying, Travelers don't
-    const hasGhostVote = !newIsAlive && !player.isTraveler ? true : player.hasGhostVote;
     
-    // If player is dying (not being resurrected), record a night death
-    // (Executions are recorded separately in createNomination)
+    // If player is dying (not being resurrected), record a death stamped with
+    // the current phase (day = execution, night = night kill).
     if (!newIsAlive && player.status === 'alive') {
-      // Check if this player was executed today - if so, don't double-record
-      const wasExecutedToday = (game.deathRecords || []).some(
-        d => d.playerId === playerId && d.day === game.currentDay && d.type === 'execution'
+      // Idempotent: skip if a death for this player on this day already exists.
+      const alreadyRecorded = (game.deathRecords || []).some(
+        d => d.playerId === playerId && d.day === game.currentDay
       );
       
-      if (!wasExecutedToday) {
+      if (!alreadyRecorded) {
         const newDeathRecord: DeathRecord = {
           playerId,
           day: game.currentDay,
-          type: 'night',
+          type: game.phase === 'day' ? 'execution' : 'night',
           phase: game.phase,
           timestamp: new Date().toISOString(),
         };
@@ -698,7 +314,7 @@ export function usePlayerGame() {
           ...game,
           players: game.players.map(p => 
             p.id === playerId 
-              ? { ...p, isAlive: newIsAlive, status: newStatus, hasGhostVote }
+              ? { ...p, isAlive: newIsAlive, status: newStatus }
               : p
           ),
           deathRecords: [...(game.deathRecords || []), newDeathRecord],
@@ -708,7 +324,7 @@ export function usePlayerGame() {
       }
     }
     
-    updatePlayer(playerId, { isAlive: newIsAlive, status: newStatus, hasGhostVote });
+    updatePlayer(playerId, { isAlive: newIsAlive, status: newStatus });
   }, [game, updatePlayer, saveGame]);
 
   const setPlayerStatus = useCallback((playerId: string, status: PlayerStatus) => {
@@ -716,8 +332,6 @@ export function usePlayerGame() {
     const player = game.players.find(p => p.id === playerId);
     if (!player) return;
     const newIsAlive = status === 'alive';
-    // Travelers never get ghost votes
-    const hasGhostVote = player.isTraveler ? false : (status === 'dead' ? true : player.hasGhostVote);
 
     // Stamp a phase-aware death record when a living player transitions to a
     // death state ('dead' or 'exiled'). 'left' is not a death. Resurrecting
@@ -731,10 +345,16 @@ export function usePlayerGame() {
         d => d.playerId === playerId && d.day === game.currentDay
       );
       if (!alreadyRecorded) {
+        const deathType: DeathRecord['type'] =
+          status === 'exiled'
+            ? 'exile'
+            : game.phase === 'day'
+              ? 'execution'
+              : 'night';
         const newDeathRecord: DeathRecord = {
           playerId,
           day: game.currentDay,
-          type: status === 'exiled' ? 'exile' : 'night',
+          type: deathType,
           phase: game.phase,
           timestamp: new Date().toISOString(),
         };
@@ -742,7 +362,7 @@ export function usePlayerGame() {
           ...game,
           players: game.players.map(p =>
             p.id === playerId
-              ? { ...p, isAlive: newIsAlive, status, hasGhostVote }
+              ? { ...p, isAlive: newIsAlive, status }
               : p
           ),
           deathRecords: [...(game.deathRecords || []), newDeathRecord],
@@ -751,17 +371,8 @@ export function usePlayerGame() {
       }
     }
 
-    updatePlayer(playerId, { isAlive: newIsAlive, status, hasGhostVote });
+    updatePlayer(playerId, { isAlive: newIsAlive, status });
   }, [game, updatePlayer, saveGame]);
-
-  const toggleGhostVote = useCallback((playerId: string) => {
-    if (!game) return;
-    const player = game.players.find(p => p.id === playerId);
-    if (!player) return;
-    // Travelers can never have ghost votes
-    if (player.isTraveler) return;
-    updatePlayer(playerId, { hasGhostVote: !player.hasGhostVote });
-  }, [game, updatePlayer]);
 
   const setNotes = useCallback((playerId: string, notes: string) => {
     updatePlayer(playerId, { notes });
@@ -899,7 +510,6 @@ export function usePlayerGame() {
       name: travelerName,
       isAlive: true,
       status: 'alive',
-      hasGhostVote: false, // Travelers never get ghost votes
       notes: "",
       claims: initialClaims,
       claimRecords: initialClaims.map(c => ({ characterId: c, addedAt: timestamp, day: game.currentDay })),
@@ -947,7 +557,6 @@ export function usePlayerGame() {
         ? { 
             ...p, 
             isTraveler: true, 
-            hasGhostVote: false, // Travelers don't get ghost votes
             joinedAt: timestamp,
             joinedDay: game.currentDay,
           } 
@@ -977,83 +586,12 @@ export function usePlayerGame() {
       characterId: player.claims[0],
     };
     
-    // Remove player and their nominations/exile votes
-    const newNominations = game.nominations.filter(
-      n => n.nomineeId !== playerId && n.nominatorId !== playerId
-    );
-    const newExileVotes = game.exileVotes.filter(e => e.travelerId !== playerId);
     saveGame({ 
       ...game, 
       players: game.players.filter(p => p.id !== playerId),
-      nominations: newNominations,
-      exileVotes: newExileVotes,
       travelerEvents: [...(game.travelerEvents || []), travelerEvent],
     });
   }, [game, saveGame]);
-
-  const createExileVote = useCallback((travelerId: string, votes: PlayerVote[]) => {
-    if (!game) return;
-    const traveler = game.players.find(p => p.id === travelerId);
-    if (!traveler || !traveler.isTraveler) return;
-    
-    const timestamp = new Date().toISOString();
-    
-    // Calculate if exile passes (50% of living players)
-    const aliveCount = game.players.filter(p => p.status === 'alive').length;
-    const votesNeeded = Math.ceil(aliveCount / 2);
-    const yesVotes = votes.filter(v => v.voted).length;
-    const passed = yesVotes >= votesNeeded;
-    
-    const newExileVote: ExileVote = {
-      id: crypto.randomUUID(),
-      day: game.currentDay,
-      travelerId,
-      votes,
-      passed,
-    };
-    
-    let updatedPlayers = game.players;
-    const newDeathRecords: DeathRecord[] = [];
-    const newTravelerEvents: TravelerEvent[] = [];
-    
-    if (passed) {
-      updatedPlayers = game.players.map(p => 
-        p.id === travelerId 
-          ? { ...p, isAlive: false, status: 'exiled' as PlayerStatus, hasGhostVote: false }
-          : p
-      );
-      
-      newDeathRecords.push({
-        playerId: travelerId,
-        day: game.currentDay,
-        type: 'exile',
-        phase: game.phase,
-        timestamp,
-      });
-      
-      newTravelerEvents.push({
-        playerId: travelerId,
-        playerName: traveler.name,
-        type: 'exiled',
-        day: game.currentDay,
-        timestamp,
-        characterId: traveler.claims[0],
-      });
-    }
-    
-    saveGame({ 
-      ...game, 
-      players: updatedPlayers,
-      exileVotes: [...game.exileVotes, newExileVote],
-      deathRecords: [...(game.deathRecords || []), ...newDeathRecords],
-      travelerEvents: [...(game.travelerEvents || []), ...newTravelerEvents],
-    });
-  }, [game, saveGame]);
-
-  const getPlayerExileVotes = useCallback((playerId: string) => {
-    if (!game) return [];
-    return game.exileVotes.filter(e => e.travelerId === playerId);
-  }, [game]);
 
   const setGameNotes = useCallback((notes: string) => {
     if (!game) return;
@@ -1087,7 +625,6 @@ export function usePlayerGame() {
       name: name || `Player ${game.players.length + 1}`,
       isAlive: true,
       status: 'alive',
-      hasGhostVote: true, // New players start with ghost vote available (used when they die)
       notes: "",
       claims: [],
       claimRecords: [],
@@ -1128,45 +665,14 @@ export function usePlayerGame() {
     
     const newPlayers = game.players.filter(p => p.id !== playerId);
     
-    // Clean up nominations: remove the player's votes and recalculate yesVotes
-    const cleanedNominations = game.nominations.map(nom => {
-      // Quick log nominations don't have individual votes
-      if (!nom.votes || nom.isQuickLog) {
-        return nom;
-      }
-      const filteredVotes = nom.votes.filter(v => v.playerId !== playerId);
-      const newYesVotes = filteredVotes.filter(v => v.voted).length;
-      // Keep the original votesNeeded/passed as historical record (reflects state at time of nomination)
-      return {
-        ...nom,
-        votes: filteredVotes,
-        yesVotes: newYesVotes,
-      };
-    });
-    
-    // Clean up exile votes: remove the player's votes
-    const cleanedExileVotes = game.exileVotes.map(ev => {
-      const filteredVotes = ev.votes.filter(v => v.playerId !== playerId);
-      return {
-        ...ev,
-        votes: filteredVotes,
-      };
-    });
-    
     // Clean up death records that reference the removed player
     const cleanedDeathRecords = (game.deathRecords || []).filter(dr => dr.playerId !== playerId);
-    
-    // Clean up ghost vote events for the removed player
-    const cleanedGhostVoteEvents = (game.ghostVoteEvents || []).filter(gv => gv.playerId !== playerId);
     
     saveGame({ 
       ...game, 
       players: newPlayers,
       playerCount: newPlayers.filter(p => !p.isTraveler).length,
-      nominations: cleanedNominations,
-      exileVotes: cleanedExileVotes,
       deathRecords: cleanedDeathRecords,
-      ghostVoteEvents: cleanedGhostVoteEvents,
     });
   }, [game, saveGame]);
 
@@ -1182,29 +688,16 @@ export function usePlayerGame() {
     removeClaim,
     toggleAlive,
     setPlayerStatus,
-    toggleGhostVote,
     setNotes,
     advancePhase,
     regressPhase,
     reorderPlayers,
     reversePlayers,
-    hasBeenNominatedToday,
-    hasNominatedToday,
-    getDayNominations,
-    createNomination,
-    createQuickNomination,
-    deleteNomination,
-    getChoppingBlock,
-    clearChoppingBlock,
-    skipExecutionAndAdvancePhase,
-    executeFromBlock,
     clearScript,
     setScript,
     addTraveler,
     convertToTraveler,
     removeTraveler,
-    createExileVote,
-    getPlayerExileVotes,
     setGameNotes,
     addNotebookNote,
     removeNotebookNote,

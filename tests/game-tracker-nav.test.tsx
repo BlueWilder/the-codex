@@ -18,18 +18,14 @@ function makeGame(overrides: Partial<PlayerGame> = {}): PlayerGame {
     playerCount: 7,
     breakdown: { townsfolk: 5, outsiders: 0, minions: 1, demons: 1 },
     players: [
-      { id: "p1", name: "Alice", isAlive: true, status: "alive", hasGhostVote: true, notes: "", claims: [] },
-      { id: "p2", name: "Bob", isAlive: true, status: "alive", hasGhostVote: true, notes: "", claims: [] },
+      { id: "p1", name: "Alice", isAlive: true, status: "alive", notes: "", claims: [] },
+      { id: "p2", name: "Bob", isAlive: true, status: "alive", notes: "", claims: [] },
     ],
-    nominations: [],
-    exileVotes: [],
     currentDay: 1,
     phase: "night",
     script: { id: "tb" },
     deathRecords: [],
     travelerEvents: [],
-    ghostVoteEvents: [],
-    choppingBlock: [],
     ...overrides,
   };
 }
@@ -48,7 +44,6 @@ function renderTracker(game: PlayerGame) {
         onPlayAgain={noop}
         onToggleAlive={noop}
         onSetPlayerStatus={noop}
-        onToggleGhostVote={noop}
         onAddClaim={noop}
         onAddMultipleClaims={noop}
         onRemoveClaim={noop}
@@ -58,27 +53,19 @@ function renderTracker(game: PlayerGame) {
         onRegressPhase={noop}
         onReorderPlayers={noop}
         onReversePlayers={noop}
-        hasBeenNominatedToday={() => false}
-        hasNominatedToday={() => false}
-        onCreateNomination={noop}
-        onCreateQuickNomination={noop}
         onClearScript={noop}
         onSetScript={noop}
         onAddTraveler={noop}
         onConvertToTraveler={noop}
         onRemoveTraveler={noop}
-        onCreateExileVote={noop}
-        getPlayerExileVotes={() => []}
         onSetGameNotes={noop}
+        onAddNotebookNote={noop}
+        onRemoveNotebookNote={noop}
         onAddPlayer={noop}
         onRemovePlayer={noop}
         onSetCirclePosition={noop}
         onSetMultipleCirclePositions={noop}
         onResetCirclePositions={noop}
-        choppingBlock={{ nominations: [], isTied: false }}
-        onExecuteFromBlock={noop}
-        onClearChoppingBlock={noop}
-        onSkipExecutionAndAdvancePhase={noop}
       />
     </QueryClientProvider>,
   );

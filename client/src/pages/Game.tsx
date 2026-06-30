@@ -1,6 +1,6 @@
 import { Layout } from "@/components/ui/Layout";
 import { useState, useMemo, useEffect, useRef } from "react";
-import { usePlayerGame, getBreakdown, isPlayerActive, canPlayerVote, canPlayerVoteOnExile, type GamePlayer, type Nomination, type PlayerVote, type GameScriptRef, type ExileVote, type PlayerStatus, type NominationResult, type DeathRecord } from "@/hooks/use-player-game";
+import { usePlayerGame, getBreakdown, isPlayerActive, type GamePlayer, type GameScriptRef, type PlayerStatus, type DeathRecord } from "@/hooks/use-player-game";
 import { ALL_CHARACTERS, OFFICIAL_SCRIPTS, getJinxesForCharacter, getCharacterById } from "@/lib/game-data";
 import { useLocalScripts, type LocalScript } from "@/hooks/use-local-scripts";
 import { ScriptBuilderDialog } from "@/components/ScriptBuilderDialog";
@@ -36,41 +36,196 @@ import { NightBadges } from "@/components/character/NightBadges";
 import { JinxBadge } from "@/components/character/JinxBadge";
 import { JinxList } from "@/components/character/JinxList";
 
-function GallowsIcon({ className }: { className?: string }) {
+function AddTravelerDialog({
+  open,
+  onClose,
+  onAddTraveler,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onAddTraveler: (name: string, initialClaims?: string[]) => void;
+}) {
+  const [name, setName] = useState("");
+  const [selectedClaim, setSelectedClaim] = useState<string | null>(null);
+  const [claimSearch, setClaimSearch] = useState("");
+
+  const travelerCharacters = useMemo(() => {
+    let chars = ALL_CHARACTERS.filter(c => c.team === "traveler");
+    if (claimSearch) {
+      chars = chars.filter(c => c.name.toLowerCase().includes(claimSearch.toLowerCase()));
+    }
+    return chars;
+  }, [claimSearch]);
+
+  const resetState = () => {
+    setName("");
+    setSelectedClaim(null);
+    setClaimSearch("");
+  };
+
+  const handleAdd = () => {
+    if (!name.trim()) return;
+    const claims = selectedClaim ? [selectedClaim] : [];
+    onAddTraveler(name.trim(), claims);
+    resetState();
+    onClose();
+  };
+
+  const handleClose = () => {
+    resetState();
+    onClose();
+  };
+
   return (
-    <svg 
-      viewBox="0 0 24 24" 
-      fill="none" 
-      stroke="currentColor" 
-      strokeWidth="2" 
-      strokeLinecap="round" 
-      strokeLinejoin="round"
-      className={className}
-    >
-      <path d="M4 22V4" />
-      <path d="M4 4h10" />
-      <path d="M4 8l3-4" />
-      <path d="M14 4v3" />
-      <circle cx="14" cy="10" r="3" />
-    </svg>
+    <Dialog open={open} onOpenChange={(open) => !open && handleClose()}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle className="text-amber-500 font-display">Add Traveler</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div>
+            <label className="text-sm text-muted-foreground mb-1 block">Traveler Name</label>
+            <Input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Traveler name"
+              data-testid="input-traveler-name"
+            />
+          </div>
+          <div>
+            <label className="text-sm text-muted-foreground mb-1 block">Character Claim (optional)</label>
+            <div className="relative mb-2">
+              <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                value={claimSearch}
+                onChange={(e) => setClaimSearch(e.target.value)}
+                placeholder="Search travelers..."
+                className="pl-8"
+                data-testid="input-search-traveler-claim"
+              />
+            </div>
+            <div className="max-h-32 overflow-y-auto space-y-1">
+              {travelerCharacters.map(char => (
+                <button
+                  key={char.id}
+                  onClick={() => setSelectedClaim(selectedClaim === char.id ? null : char.id)}
+                  className={cn(
+                    "w-full text-left px-2 py-1.5 rounded-md text-sm flex items-center gap-2",
+                    selectedClaim === char.id 
+                      ? "bg-purple-900/40 border border-purple-700" 
+                      : "hover-elevate"
+                  )}
+                  data-testid={`button-claim-${char.id}`}
+                >
+                  {char.name}
+                  {selectedClaim === char.id && <Check className="w-3 h-3 ml-auto text-purple-400" />}
+                </button>
+              ))}
+              {travelerCharacters.length === 0 && (
+                <p className="text-sm text-muted-foreground text-center py-2">No travelers found</p>
+              )}
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="ghost" className="flex-1" onClick={handleClose}>
+              Cancel
+            </Button>
+            <Button className="flex-1" onClick={handleAdd} disabled={!name.trim()} data-testid="button-confirm-add-traveler">
+              <Plus className="w-4 h-4 mr-2" />
+              Add Traveler
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
-function PointingFingerIcon({ className }: { className?: string }) {
+function AddPlayerDialog({
+  open,
+  onClose,
+  onAddPlayer,
+  players,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onAddPlayer: (name: string, insertAfterPlayerId: string | null) => void;
+  players: GamePlayer[];
+}) {
+  const [name, setName] = useState(`Player ${players.length + 1}`);
+  const [insertAfter, setInsertAfter] = useState<string>("__end__");
+
+  const resetState = () => {
+    setName(`Player ${players.length + 1}`);
+    setInsertAfter("__end__");
+  };
+
+  const handleAdd = () => {
+    if (!name.trim()) return;
+    onAddPlayer(name.trim(), insertAfter === "__beginning__" ? null : insertAfter);
+    resetState();
+    onClose();
+  };
+
+  const handleAddAsTraveler = () => {
+    onClose();
+  };
+
+  const handleClose = () => {
+    resetState();
+    onClose();
+  };
+
   return (
-    <svg 
-      viewBox="0 0 24 24" 
-      fill="currentColor"
-      className={className}
-    >
-      <rect x="10" y="9" width="12" height="4" rx="2" />
-      <rect x="2" y="7" width="10" height="8" rx="2" />
-      <rect x="3" y="15" width="3" height="4" rx="1" />
-      <rect x="6" y="15" width="3" height="4" rx="1" />
-      <rect x="9" y="15" width="3" height="3" rx="1" />
-    </svg>
+    <Dialog open={open} onOpenChange={(open) => !open && handleClose()}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle className="text-amber-500 font-display">Add Player</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div>
+            <label className="text-sm text-muted-foreground mb-1 block">Player Name</label>
+            <Input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Player name"
+              data-testid="input-new-player-name"
+            />
+          </div>
+          <div>
+            <label className="text-sm text-muted-foreground mb-1 block">Insert After</label>
+            <select
+              value={insertAfter}
+              onChange={(e) => setInsertAfter(e.target.value)}
+              className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm"
+              data-testid="select-insert-position"
+            >
+              <option value="__beginning__">At beginning</option>
+              {players.map(p => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+              <option value="__end__">At end</option>
+            </select>
+          </div>
+          <p className="text-xs text-amber-600 flex items-center gap-1">
+            <span className="text-amber-500">Warning:</span> Adding players mid-game may affect balance. Consider Traveler instead.
+          </p>
+          <div className="flex gap-2">
+            <Button variant="ghost" className="flex-1" onClick={handleClose} data-testid="button-cancel-add-player">
+              Cancel
+            </Button>
+            <Button className="flex-1" onClick={handleAdd} disabled={!name.trim()} data-testid="button-confirm-add-player">
+              <Plus className="w-4 h-4 mr-2" />
+              Add Player
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
+
+
 
 export function SetupWizard({ onStart }: { onStart: (count: number, names: string[], script?: GameScriptRef | null) => void }) {
   const [playerCount, setPlayerCount] = useState(8);
@@ -618,12 +773,9 @@ function CharacterPicker({
 function PlayerDetailDrawer({
   player,
   players,
-  nominations,
-  exileVotes,
   onClose,
   onToggleAlive,
   onSetPlayerStatus,
-  onToggleGhostVote,
   onAddMultipleClaims,
   onRemoveClaim,
   onSetNotes,
@@ -636,12 +788,9 @@ function PlayerDetailDrawer({
 }: {
   player: GamePlayer | null;
   players: GamePlayer[];
-  nominations: Nomination[];
-  exileVotes?: ExileVote[];
   onClose: () => void;
   onToggleAlive: () => void;
   onSetPlayerStatus?: (status: PlayerStatus) => void;
-  onToggleGhostVote: () => void;
   onAddMultipleClaims: (characterIds: string[]) => void;
   onRemoveClaim: (characterId: string) => void;
   onSetNotes: (notes: string) => void;
@@ -662,15 +811,6 @@ function PlayerDetailDrawer({
   if (!player) return null;
 
   const claimedCharacters = player.claims.map(id => resolveClaimDescriptor(id)).filter(Boolean);
-  
-  const playerNominations = nominations.filter(n => 
-    n.nomineeId === player.id || n.nominatorId === player.id || (n.votes && n.votes.some(v => v.playerId === player.id))
-  );
-  const nominationsByDay = playerNominations.reduce((acc, nom) => {
-    if (!acc[nom.day]) acc[nom.day] = [];
-    acc[nom.day].push(nom);
-    return acc;
-  }, {} as Record<number, Nomination[]>);
 
   return (
     <>
@@ -831,21 +971,6 @@ function PlayerDetailDrawer({
                     <Skull className="w-4 h-4 mr-2" />
                     {player.status === 'alive' ? "Mark as Dead" : "Mark as Alive"}
                   </Button>
-                  {player.status === 'dead' && !player.isTraveler && (
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        player.hasGhostVote
-                          ? "border-purple-800 text-purple-400"
-                          : "border-muted text-muted-foreground"
-                      )}
-                      onClick={onToggleGhostVote}
-                      data-testid="button-toggle-ghost-vote"
-                    >
-                      <Ghost className="w-4 h-4 mr-2" />
-                      {player.hasGhostVote ? "Has Ghost Vote" : "Ghost Vote Used"}
-                    </Button>
-                  )}
                 </div>
               )}
 
@@ -906,87 +1031,6 @@ function PlayerDetailDrawer({
                   className="min-h-[80px] resize-none bg-background/50"
                   data-testid="textarea-notes"
                 />
-              </div>
-
-              {/* Nomination History Section */}
-              <div className="rounded-lg bg-card/30 border border-border/30 p-4 space-y-3">
-                <div className="flex items-center justify-between gap-2">
-                  <h3 className="font-bold text-sm uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                    <Vote className="w-4 h-4" /> Nomination History
-                  </h3>
-                </div>
-                {Object.keys(nominationsByDay).length > 0 ? (
-                  <div className="space-y-3">
-                    {Object.entries(nominationsByDay).sort(([a], [b]) => Number(b) - Number(a)).map(([day, noms]) => (
-                      <div key={day} className="space-y-2">
-                        <p className="text-xs font-bold text-muted-foreground">Day {day}</p>
-                        {noms.map((nom) => {
-                          const nominee = players.find(p => p.id === nom.nomineeId);
-                          const nominator = players.find(p => p.id === nom.nominatorId);
-                          const playerVote = nom.votes?.find(v => v.playerId === player.id);
-                          const votesFor = nom.votes?.filter(v => v.voted).length ?? nom.yesVotes;
-                          
-                          // Quick log result display
-                          const quickLogResult = nom.result 
-                            ? (nom.result === 'executed' ? 'Executed' : nom.result === 'on_the_block' ? 'On Block' : nom.result === 'passed' ? 'Survived' : 'Failed')
-                            : null;
-                          
-                          return (
-                            <div key={nom.id} className="text-sm pl-2 space-y-1">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <span className="text-amber-400">{nominee?.name || '[Removed]'}</span>
-                                <span className="text-muted-foreground">nominated by</span>
-                                <span className="text-purple-400">{nominator?.name || '[Removed]'}</span>
-                                <Badge variant="secondary" className="text-xs">{votesFor} votes</Badge>
-                                {quickLogResult && (
-                                  <Badge 
-                                    variant="outline" 
-                                    className={cn(
-                                      "text-xs",
-                                      nom.result === 'executed' && "border-red-500 text-red-400",
-                                      nom.result === 'on_the_block' && "border-amber-500 text-amber-400",
-                                      nom.result === 'passed' && "border-emerald-500 text-emerald-400",
-                                      nom.result === 'failed' && "border-muted-foreground"
-                                    )}
-                                  >
-                                    {quickLogResult}
-                                  </Badge>
-                                )}
-                              </div>
-                              {nom.nomineeId === player.id && (
-                                <div className="flex items-center gap-1 text-amber-400">
-                                  <GallowsIcon className="w-3 h-3" /> Was nominated
-                                </div>
-                              )}
-                              {nom.nominatorId === player.id && (
-                                <div className="flex items-center gap-1 text-purple-400">
-                                  <PointingFingerIcon className="w-3 h-3" /> Made nomination
-                                </div>
-                              )}
-                              {playerVote && (
-                                <div className="flex items-center gap-1">
-                                  {playerVote.voted ? (
-                                    <>
-                                      <Check className="w-3 h-3 text-emerald-500" />
-                                      <span className="text-emerald-400">Voted for execution</span>
-                                    </>
-                                  ) : (
-                                    <>
-                                      <X className="w-3 h-3 text-red-500" />
-                                      <span className="text-red-400">Did not vote</span>
-                                    </>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground italic">No nomination activity</p>
-                )}
               </div>
 
               {/* Player Actions - subtle styling at bottom */}
@@ -1174,7 +1218,6 @@ export function SortablePlayerCard({
   seatNumber,
   onSelect,
   onToggleAlive,
-  onToggleGhostVote,
   onOpenClaimPicker,
   onRemoveClaim,
 }: {
@@ -1183,7 +1226,6 @@ export function SortablePlayerCard({
   seatNumber: number;
   onSelect: () => void;
   onToggleAlive: () => void;
-  onToggleGhostVote: () => void;
   onOpenClaimPicker: () => void;
   onRemoveClaim: (characterId: string) => void;
 }) {
@@ -1206,9 +1248,6 @@ export function SortablePlayerCard({
   const claimedChars = player.claims.map(id => resolveClaimDescriptor(id)).filter(Boolean);
   const primaryChar = claimedChars[0] ?? null;
   const hasNotes = player.notes.trim().length > 0;
-
-  const nominationsReceived = game.nominations.filter(n => n.nomineeId === player.id).length;
-  const nominationsMade = game.nominations.filter(n => n.nominatorId === player.id).length;
 
   const isActive = player.status === 'alive';
   // Gate every dead visual (greyed row, shroud, dagger) on CURRENT status, not
@@ -1339,18 +1378,6 @@ export function SortablePlayerCard({
 
         <div className="flex flex-col items-end gap-1 shrink-0">
           <div className="flex items-center gap-1 h-4">
-            {nominationsReceived > 0 && (
-              <span className="flex items-center gap-0.5 text-amber-400 text-xs" data-testid={`text-nominated-${player.id}`}>
-                <GallowsIcon className="w-3.5 h-3.5" />
-                {nominationsReceived}
-              </span>
-            )}
-            {nominationsMade > 0 && (
-              <span className="flex items-center gap-0.5 text-purple-400 text-xs" data-testid={`text-nominations-made-${player.id}`}>
-                <PointingFingerIcon className="w-3.5 h-3.5" />
-                {nominationsMade}
-              </span>
-            )}
             {hasNotes && <FileText className="w-3.5 h-3.5 text-muted-foreground" />}
           </div>
           <div className="flex items-center gap-1">
@@ -1377,923 +1404,10 @@ export function SortablePlayerCard({
                 <Skull className="w-5 h-5" />
               </button>
             )}
-            {isDead && !player.isTraveler && (
-              <button
-                onClick={(e) => { e.stopPropagation(); onToggleGhostVote(); }}
-                className={cn(
-                  "relative flex items-center justify-center w-9 h-9 rounded-lg border transition-colors",
-                  player.hasGhostVote
-                    ? "bg-purple-900/40 border-purple-700/60 text-purple-400 hover:bg-purple-900/60"
-                    : "bg-muted/30 border-muted-foreground/30 text-muted-foreground/40 hover:bg-muted/50"
-                )}
-                title={player.hasGhostVote ? "Use ghost vote" : "Ghost vote spent"}
-                data-testid={`button-toggle-ghost-${player.id}`}
-              >
-                <Ghost className="w-5 h-5" />
-                {!player.hasGhostVote && (
-                  <X className="w-3 h-3 text-red-500 absolute bottom-1 right-1" />
-                )}
-              </button>
-            )}
           </div>
         </div>
       </div>
     </Card>
-  );
-}
-
-function NominationDialog({
-  open,
-  onClose,
-  players,
-  hasBeenNominatedToday,
-  hasNominatedToday,
-  onCreateNomination,
-  onCreateQuickNomination,
-  preselectedNomineeId,
-}: {
-  open: boolean;
-  onClose: () => void;
-  players: GamePlayer[];
-  hasBeenNominatedToday: (playerId: string) => boolean;
-  hasNominatedToday: (playerId: string) => boolean;
-  onCreateNomination: (nomineeId: string, nominatorId: string, votes: PlayerVote[]) => void;
-  onCreateQuickNomination: (nomineeId: string, nominatorId: string, yesVotes: number, result: NominationResult) => void;
-  preselectedNomineeId?: string | null;
-}) {
-  // Steps: 1=nominee, 2=nominator, 3=choose mode, 4=full vote record, 5=quick log
-  const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1);
-  const [nomineeId, setNomineeId] = useState<string | null>(null);
-  const [nominatorId, setNominatorId] = useState<string | null>(null);
-  const [selectedVoters, setSelectedVoters] = useState<Set<string>>(new Set());
-  // Quick log state
-  const [quickVoteCount, setQuickVoteCount] = useState<string>("");
-  const [quickResult, setQuickResult] = useState<NominationResult>("failed");
-
-  // Handle preselected nominee when dialog opens
-  useEffect(() => {
-    if (open && preselectedNomineeId) {
-      setNomineeId(preselectedNomineeId);
-      setStep(2);
-    }
-  }, [open, preselectedNomineeId]);
-
-  const reset = () => {
-    setStep(1);
-    setNomineeId(null);
-    setNominatorId(null);
-    setSelectedVoters(new Set());
-    setQuickVoteCount("");
-    setQuickResult("failed");
-  };
-
-  const handleClose = () => {
-    reset();
-    onClose();
-  };
-
-  const handleSelectNominee = (id: string) => {
-    setNomineeId(id);
-    setStep(2);
-  };
-
-  const handleSelectNominator = (id: string) => {
-    setNominatorId(id);
-    setStep(3);
-  };
-
-  const handleToggleVoter = (playerId: string) => {
-    setSelectedVoters(prev => {
-      const next = new Set(prev);
-      if (next.has(playerId)) {
-        next.delete(playerId);
-      } else {
-        next.add(playerId);
-      }
-      return next;
-    });
-  };
-
-  const handleSubmitFullVote = () => {
-    if (!nomineeId || !nominatorId) return;
-    
-    const votes: PlayerVote[] = players
-      .filter(p => p.isAlive || p.hasGhostVote)
-      .map(p => ({
-        playerId: p.id,
-        voted: selectedVoters.has(p.id),
-      }));
-    
-    onCreateNomination(nomineeId, nominatorId, votes);
-    handleClose();
-  };
-
-  const handleSubmitQuickLog = () => {
-    if (!nomineeId || !nominatorId) return;
-    const voteCount = parseInt(quickVoteCount) || 0;
-    onCreateQuickNomination(nomineeId, nominatorId, voteCount, quickResult);
-    handleClose();
-  };
-
-  const eligibleNominees = players.filter(p => p.status === 'alive' && !hasBeenNominatedToday(p.id));
-  const eligibleNominators = players.filter(p => p.status === 'alive' && !hasNominatedToday(p.id));
-  // Show all alive players and dead non-travelers (travelers can't vote on nominations)
-  const allVoters = players.filter(p => p.status === 'alive' || (p.status === 'dead' && !p.isTraveler));
-  // Helper to check if a player can actually vote
-  const canVote = (player: GamePlayer) => player.status === 'alive' || (player.status === 'dead' && player.hasGhostVote && !player.isTraveler);
-  const nominee = players.find(p => p.id === nomineeId);
-  const nominator = players.find(p => p.id === nominatorId);
-  
-  // Calculate votes needed for display
-  const aliveCount = players.filter(p => p.status === 'alive').length;
-  const votesNeeded = Math.ceil(aliveCount / 2);
-
-  return (
-    <Dialog open={open} onOpenChange={(o) => { if (!o) handleClose(); }}>
-      <DialogContent className={cn(
-        "max-w-sm max-h-[80vh] flex flex-col",
-        step === 1 && "ring-1 ring-red-900/40",
-        step === 2 && "ring-1 ring-purple-900/40"
-      )}>
-        <DialogHeader>
-          <DialogTitle className={cn(
-            "font-display flex items-center gap-2",
-            step === 1 ? "text-red-400" : step === 2 ? "text-purple-400" : "text-amber-500"
-          )}>
-            {step === 1 && <><Target className="w-5 h-5" /> Select Nominee</>}
-            {step === 2 && <><PointingFingerIcon className="w-5 h-5" /> Select Nominator</>}
-            {step === 3 && "How to Record?"}
-            {step === 4 && "Record Votes"}
-            {step === 5 && "Quick Log"}
-          </DialogTitle>
-        </DialogHeader>
-
-        {step === 1 && (
-          <div className="space-y-2 overflow-y-auto flex-1">
-            <p className="text-sm text-red-300/70 mb-4">Who is being put on the block?</p>
-            {eligibleNominees.length > 0 ? (
-              eligibleNominees.map(player => (
-                <button
-                  key={player.id}
-                  onClick={() => handleSelectNominee(player.id)}
-                  className="w-full text-left p-3 rounded-lg border border-l-2 bg-card border-border border-l-red-700/50 hover-elevate active-elevate-2"
-                  data-testid={`button-nominee-${player.id}`}
-                >
-                  {player.name}
-                </button>
-              ))
-            ) : (
-              <p className="text-sm text-muted-foreground italic">All players have been nominated today</p>
-            )}
-          </div>
-        )}
-
-        {step === 2 && (
-          <div className="space-y-2 overflow-y-auto flex-1">
-            <p className="text-sm text-purple-300/70 mb-4">
-              Who nominated <span className="text-purple-300 font-medium">{nominee?.name}</span>?
-            </p>
-            {eligibleNominators.length > 0 ? (
-              eligibleNominators.map(player => (
-                <button
-                  key={player.id}
-                  onClick={() => handleSelectNominator(player.id)}
-                  className="w-full text-left p-3 rounded-lg border border-l-2 bg-card border-border border-l-purple-700/50 hover-elevate active-elevate-2"
-                  data-testid={`button-nominator-${player.id}`}
-                >
-                  {player.name}
-                </button>
-              ))
-            ) : (
-              <p className="text-sm text-muted-foreground italic">All players have nominated today</p>
-            )}
-            <Button variant="ghost" className="w-full mt-2" onClick={() => setStep(1)}>
-              Back
-            </Button>
-          </div>
-        )}
-
-        {step === 3 && (
-          <div className="space-y-4">
-            <div className="text-sm text-muted-foreground">
-              <p>
-                <span className="text-amber-400 font-medium">{nominee?.name}</span>
-                {" "}nominated by{" "}
-                <span className="text-purple-400 font-medium">{nominator?.name}</span>
-              </p>
-            </div>
-            <div className="space-y-3">
-              <button
-                onClick={() => setStep(5)}
-                className="w-full text-left p-4 rounded-lg border bg-card border-border hover-elevate active-elevate-2"
-                data-testid="button-quick-log"
-              >
-                <div className="font-medium mb-1">Quick Log</div>
-                <div className="text-sm text-muted-foreground">
-                  Just record vote count and result
-                </div>
-              </button>
-              <button
-                onClick={() => setStep(4)}
-                className="w-full text-left p-4 rounded-lg border bg-card border-border hover-elevate active-elevate-2"
-                data-testid="button-full-vote-record"
-              >
-                <div className="font-medium mb-1">Full Vote Record</div>
-                <div className="text-sm text-muted-foreground">
-                  Track each player's vote individually
-                </div>
-              </button>
-            </div>
-            <Button variant="ghost" className="w-full" onClick={() => setStep(2)}>
-              Back
-            </Button>
-          </div>
-        )}
-
-        {step === 4 && (
-          <div className="space-y-4 overflow-y-auto flex-1">
-            <div className="text-sm text-muted-foreground space-y-1">
-              <p>
-                <span className="text-amber-400 font-medium">{nominee?.name}</span>
-                {" "}nominated by{" "}
-                <span className="text-purple-400 font-medium">{nominator?.name}</span>
-              </p>
-              <p>Check all players who voted for execution:</p>
-            </div>
-            <div className="space-y-2">
-              {allVoters.map(player => {
-                const playerCanVote = canVote(player);
-                const isSpentGhost = player.status === 'dead' && !player.hasGhostVote && !player.isTraveler;
-                
-                return (
-                  <label
-                    key={player.id}
-                    className={cn(
-                      "flex items-center gap-3 p-3 rounded-lg border transition-colors",
-                      !playerCanVote && "opacity-50 cursor-not-allowed",
-                      playerCanVote && "cursor-pointer",
-                      selectedVoters.has(player.id)
-                        ? "bg-emerald-950/30 border-emerald-800"
-                        : playerCanVote ? "bg-card border-border hover:bg-muted/50" : "bg-muted/30 border-border"
-                    )}
-                    data-testid={`label-voter-${player.id}`}
-                  >
-                    <Checkbox
-                      checked={selectedVoters.has(player.id)}
-                      onCheckedChange={() => playerCanVote && handleToggleVoter(player.id)}
-                      disabled={!playerCanVote}
-                      data-testid={`checkbox-voter-${player.id}`}
-                    />
-                    <span className={cn(
-                      "flex-1",
-                      player.status !== 'alive' && "text-muted-foreground",
-                      isSpentGhost && "line-through"
-                    )}>
-                      {player.name}
-                      {player.status === 'dead' && player.hasGhostVote && !player.isTraveler && (
-                        <Ghost className="w-4 h-4 inline ml-2 text-purple-400" />
-                      )}
-                      {isSpentGhost && (
-                        <span className="ml-2 text-xs text-muted-foreground">(vote spent)</span>
-                      )}
-                    </span>
-                    {selectedVoters.has(player.id) && (
-                      <Hand className="w-4 h-4 text-emerald-500" />
-                    )}
-                  </label>
-                );
-              })}
-            </div>
-            <div className="flex gap-2 pt-2">
-              <Button variant="ghost" className="flex-1" onClick={() => setStep(3)}>
-                Back
-              </Button>
-              <Button className="flex-1" onClick={handleSubmitFullVote} data-testid="button-confirm-nomination">
-                <Check className="w-4 h-4 mr-2" />
-                Confirm ({selectedVoters.size} votes)
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {step === 5 && (
-          <div className="space-y-3">
-            <div className="text-sm text-muted-foreground">
-              <p>
-                <span className="text-amber-400 font-medium">{nominee?.name}</span>
-                {" "}nominated by{" "}
-                <span className="text-purple-400 font-medium">{nominator?.name}</span>
-              </p>
-              <p className="mt-1 text-xs">Votes needed: {votesNeeded}</p>
-            </div>
-            
-            <div className="space-y-1.5">
-              <label className="text-sm text-muted-foreground block">Vote Count</label>
-              <Input
-                type="number"
-                min="0"
-                value={quickVoteCount}
-                onChange={(e) => setQuickVoteCount(e.target.value)}
-                placeholder="0"
-                className="text-center text-3xl font-bold h-16 border-2 border-amber-700/60 bg-amber-950/20 focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500"
-                data-testid="input-quick-vote-count"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-sm text-muted-foreground block">Result</label>
-              <div className="space-y-1.5">
-                <label
-                  className={cn(
-                    "flex items-center gap-3 px-3 py-2 rounded-lg border cursor-pointer transition-colors",
-                    quickResult === "failed" ? "bg-red-950/30 border-red-800" : "bg-card border-border"
-                  )}
-                >
-                  <input
-                    type="radio"
-                    name="quickResult"
-                    checked={quickResult === "failed"}
-                    onChange={() => setQuickResult("failed")}
-                    className="accent-red-500"
-                    data-testid="radio-result-failed"
-                  />
-                  <span className="flex items-center gap-2">
-                    <X className="w-4 h-4 text-red-500" />
-                    Failed
-                  </span>
-                </label>
-                <label
-                  className={cn(
-                    "flex items-center gap-3 px-3 py-2 rounded-lg border cursor-pointer transition-colors",
-                    quickResult === "on_the_block" ? "bg-amber-950/30 border-amber-800" : "bg-card border-border"
-                  )}
-                >
-                  <input
-                    type="radio"
-                    name="quickResult"
-                    checked={quickResult === "on_the_block"}
-                    onChange={() => setQuickResult("on_the_block")}
-                    className="accent-amber-500"
-                    data-testid="radio-result-on-block"
-                  />
-                  <span className="flex items-center gap-2">
-                    <Target className="w-4 h-4 text-amber-500" />
-                    On the Block
-                  </span>
-                </label>
-                <label
-                  className={cn(
-                    "flex items-center gap-3 px-3 py-2 rounded-lg border cursor-pointer transition-colors",
-                    quickResult === "executed" ? "bg-emerald-950/30 border-emerald-800" : "bg-card border-border"
-                  )}
-                >
-                  <input
-                    type="radio"
-                    name="quickResult"
-                    checked={quickResult === "executed"}
-                    onChange={() => setQuickResult("executed")}
-                    className="accent-emerald-500"
-                    data-testid="radio-result-executed"
-                  />
-                  <span className="flex items-center gap-2">
-                    <GallowsIcon className="w-4 h-4 text-emerald-500" />
-                    Executed
-                  </span>
-                </label>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Note: Quick Log does not auto-spend ghost votes
-              </p>
-            </div>
-
-            <div className="flex gap-2 pt-2">
-              <Button variant="outline" className="flex-1" onClick={() => setStep(3)} data-testid="button-back-quick-log">
-                Back
-              </Button>
-              <Button className="flex-1" onClick={handleSubmitQuickLog} data-testid="button-confirm-quick-log">
-                <Check className="w-4 h-4 mr-2" />
-                Confirm
-              </Button>
-            </div>
-          </div>
-        )}
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-function AxeIcon({ className }: { className?: string }) {
-  return (
-    <svg 
-      viewBox="0 0 24 24" 
-      fill="currentColor"
-      className={className}
-    >
-      {/* Handle */}
-      <rect x="10" y="12" width="3" height="11" rx="1" fill="currentColor" opacity="0.7" />
-      {/* Axe head - curved blade */}
-      <path d="M6 4 C2 6, 2 12, 6 14 L13 14 L13 4 Z" fill="currentColor" />
-      {/* Metal edge highlight */}
-      <path d="M6 4 C3 6, 3 12, 6 14" stroke="currentColor" strokeWidth="0.5" fill="none" opacity="0.5" />
-    </svg>
-  );
-}
-
-function ChoppingBlockModal({
-  open,
-  onClose,
-  nominations,
-  isTied,
-  players,
-  onExecute,
-  onNoExecution,
-}: {
-  open: boolean;
-  onClose: () => void;
-  nominations: Nomination[];
-  isTied: boolean;
-  players: GamePlayer[];
-  onExecute: () => void;
-  onNoExecution: () => void;
-}) {
-  const [showConfirmExecute, setShowConfirmExecute] = useState(false);
-  
-  if (nominations.length === 0) return null;
-  
-  const currentBlockVotes = nominations[0]?.yesVotes ?? 0;
-  
-  const handleExecute = () => {
-    onExecute();
-    setShowConfirmExecute(false);
-    onClose();
-  };
-  
-  const handleNoExecution = () => {
-    onNoExecution();
-    onClose();
-  };
-  
-  return (
-    <>
-      <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle className={cn(
-              "font-display flex items-center gap-2",
-              isTied ? "text-amber-500" : "text-red-500"
-            )}>
-              <AxeIcon className="w-5 h-5" />
-              {isTied ? "CHOPPING BLOCK - TIE" : "CHOPPING BLOCK"}
-            </DialogTitle>
-          </DialogHeader>
-          
-          <div className="space-y-4">
-            {isTied ? (
-              <>
-                <p className="text-muted-foreground">No execution - players are tied</p>
-                <div className="space-y-2">
-                  {nominations.map(nom => {
-                    const nominee = players.find(p => p.id === nom.nomineeId);
-                    const nominator = players.find(p => p.id === nom.nominatorId);
-                    return (
-                      <div key={nom.id} className="p-3 bg-card rounded-lg border border-amber-800/50">
-                        <p className="font-medium text-amber-400">{nominee?.name || 'Unknown'}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {nom.yesVotes} votes - nominated by {nominator?.name || 'Unknown'}
-                        </p>
-                      </div>
-                    );
-                  })}
-                </div>
-                <Button 
-                  className="w-full" 
-                  variant="outline"
-                  onClick={handleNoExecution}
-                  data-testid="button-confirm-no-execution-tie"
-                >
-                  Confirm No Execution
-                </Button>
-              </>
-            ) : (
-              <>
-                {nominations.map(nom => {
-                  const nominee = players.find(p => p.id === nom.nomineeId);
-                  const nominator = players.find(p => p.id === nom.nominatorId);
-                  return (
-                    <div key={nom.id} className="text-center space-y-2">
-                      <p className="text-2xl font-display text-red-400">{nominee?.name || 'Unknown'}</p>
-                      <p className="text-muted-foreground">
-                        {nom.yesVotes} votes received
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        Nominated by {nominator?.name || 'Unknown'}
-                      </p>
-                      <p className="text-xs text-amber-500 mt-2">
-                        Needs more than {currentBlockVotes} votes to replace
-                      </p>
-                    </div>
-                  );
-                })}
-                
-                <div className="flex gap-2 pt-2">
-                  <Button 
-                    variant="outline"
-                    className="flex-1"
-                    onClick={handleNoExecution}
-                    data-testid="button-no-execution"
-                  >
-                    No Execution
-                  </Button>
-                  <Button 
-                    className="flex-1 bg-red-600 hover:bg-red-700"
-                    onClick={() => setShowConfirmExecute(true)}
-                    data-testid="button-execute"
-                  >
-                    <GallowsIcon className="w-4 h-4 mr-2" />
-                    Execute
-                  </Button>
-                </div>
-              </>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
-      
-      {/* Execute Confirmation */}
-      <AlertDialog open={showConfirmExecute} onOpenChange={setShowConfirmExecute}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Execute Player?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Execute "{players.find(p => p.id === nominations[0]?.nomineeId)?.name}"? This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel data-testid="button-cancel-execute">Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-red-600 hover:bg-red-700"
-              onClick={handleExecute}
-              data-testid="button-confirm-execute"
-            >
-              Execute
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </>
-  );
-}
-
-function AddTravelerDialog({
-  open,
-  onClose,
-  onAddTraveler,
-}: {
-  open: boolean;
-  onClose: () => void;
-  onAddTraveler: (name: string, initialClaims?: string[]) => void;
-}) {
-  const [name, setName] = useState("");
-  const [selectedClaim, setSelectedClaim] = useState<string | null>(null);
-  const [claimSearch, setClaimSearch] = useState("");
-
-  const travelerCharacters = useMemo(() => {
-    let chars = ALL_CHARACTERS.filter(c => c.team === "traveler");
-    if (claimSearch) {
-      chars = chars.filter(c => c.name.toLowerCase().includes(claimSearch.toLowerCase()));
-    }
-    return chars;
-  }, [claimSearch]);
-
-  const resetState = () => {
-    setName("");
-    setSelectedClaim(null);
-    setClaimSearch("");
-  };
-
-  const handleAdd = () => {
-    if (!name.trim()) return;
-    const claims = selectedClaim ? [selectedClaim] : [];
-    onAddTraveler(name.trim(), claims);
-    resetState();
-    onClose();
-  };
-
-  const handleClose = () => {
-    resetState();
-    onClose();
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="max-w-sm">
-        <DialogHeader>
-          <DialogTitle className="text-amber-500 font-display">Add Traveler</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4">
-          <div>
-            <label className="text-sm text-muted-foreground mb-1 block">Traveler Name</label>
-            <Input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Traveler name"
-              data-testid="input-traveler-name"
-            />
-          </div>
-          <div>
-            <label className="text-sm text-muted-foreground mb-1 block">Character Claim (optional)</label>
-            <div className="relative mb-2">
-              <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                value={claimSearch}
-                onChange={(e) => setClaimSearch(e.target.value)}
-                placeholder="Search travelers..."
-                className="pl-8"
-                data-testid="input-search-traveler-claim"
-              />
-            </div>
-            <div className="max-h-32 overflow-y-auto space-y-1">
-              {travelerCharacters.map(char => (
-                <button
-                  key={char.id}
-                  onClick={() => setSelectedClaim(selectedClaim === char.id ? null : char.id)}
-                  className={cn(
-                    "w-full text-left px-2 py-1.5 rounded-md text-sm flex items-center gap-2",
-                    selectedClaim === char.id 
-                      ? "bg-purple-900/40 border border-purple-700" 
-                      : "hover-elevate"
-                  )}
-                  data-testid={`button-claim-${char.id}`}
-                >
-                  {char.name}
-                  {selectedClaim === char.id && <Check className="w-3 h-3 ml-auto text-purple-400" />}
-                </button>
-              ))}
-              {travelerCharacters.length === 0 && (
-                <p className="text-sm text-muted-foreground text-center py-2">No travelers found</p>
-              )}
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="ghost" className="flex-1" onClick={handleClose}>
-              Cancel
-            </Button>
-            <Button className="flex-1" onClick={handleAdd} disabled={!name.trim()} data-testid="button-confirm-add-traveler">
-              <Plus className="w-4 h-4 mr-2" />
-              Add Traveler
-            </Button>
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-function AddPlayerDialog({
-  open,
-  onClose,
-  onAddPlayer,
-  players,
-}: {
-  open: boolean;
-  onClose: () => void;
-  onAddPlayer: (name: string, insertAfterPlayerId: string | null) => void;
-  players: GamePlayer[];
-}) {
-  const [name, setName] = useState(`Player ${players.length + 1}`);
-  const [insertAfter, setInsertAfter] = useState<string>("__end__");
-
-  const resetState = () => {
-    setName(`Player ${players.length + 1}`);
-    setInsertAfter("__end__");
-  };
-
-  const handleAdd = () => {
-    if (!name.trim()) return;
-    onAddPlayer(name.trim(), insertAfter === "__beginning__" ? null : insertAfter);
-    resetState();
-    onClose();
-  };
-
-  const handleAddAsTraveler = () => {
-    onClose();
-  };
-
-  const handleClose = () => {
-    resetState();
-    onClose();
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="max-w-sm">
-        <DialogHeader>
-          <DialogTitle className="text-amber-500 font-display">Add Player</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4">
-          <div>
-            <label className="text-sm text-muted-foreground mb-1 block">Player Name</label>
-            <Input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Player name"
-              data-testid="input-new-player-name"
-            />
-          </div>
-          <div>
-            <label className="text-sm text-muted-foreground mb-1 block">Insert After</label>
-            <select
-              value={insertAfter}
-              onChange={(e) => setInsertAfter(e.target.value)}
-              className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm"
-              data-testid="select-insert-position"
-            >
-              <option value="__beginning__">At beginning</option>
-              {players.map(p => (
-                <option key={p.id} value={p.id}>{p.name}</option>
-              ))}
-              <option value="__end__">At end</option>
-            </select>
-          </div>
-          <p className="text-xs text-amber-600 flex items-center gap-1">
-            <span className="text-amber-500">Warning:</span> Adding players mid-game may affect balance. Consider Traveler instead.
-          </p>
-          <div className="flex gap-2">
-            <Button variant="ghost" className="flex-1" onClick={handleClose} data-testid="button-cancel-add-player">
-              Cancel
-            </Button>
-            <Button className="flex-1" onClick={handleAdd} disabled={!name.trim()} data-testid="button-confirm-add-player">
-              <Plus className="w-4 h-4 mr-2" />
-              Add Player
-            </Button>
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-function ExileDialog({
-  open,
-  onClose,
-  players,
-  onCreateExileVote,
-}: {
-  open: boolean;
-  onClose: () => void;
-  players: GamePlayer[];
-  onCreateExileVote: (travelerId: string, votes: PlayerVote[]) => void;
-}) {
-  const [step, setStep] = useState<1 | 2>(1);
-  const [selectedTravelerId, setSelectedTravelerId] = useState<string | null>(null);
-  const [selectedVoters, setSelectedVoters] = useState<Set<string>>(new Set());
-
-  useEffect(() => {
-    if (!open) {
-      setStep(1);
-      setSelectedTravelerId(null);
-      setSelectedVoters(new Set());
-    }
-  }, [open]);
-
-  const aliveTravelers = players.filter(p => p.isTraveler && p.status === 'alive');
-  const selectedTraveler = players.find(p => p.id === selectedTravelerId);
-  
-  // All alive and dead players can vote on exile (not left/exiled)
-  const eligibleVoters = players.filter(p => canPlayerVoteOnExile(p));
-  const aliveCount = players.filter(p => p.status === 'alive').length;
-  const votesNeeded = Math.ceil(aliveCount / 2);
-
-  const handleToggleVoter = (playerId: string) => {
-    setSelectedVoters(prev => {
-      const next = new Set(prev);
-      if (next.has(playerId)) {
-        next.delete(playerId);
-      } else {
-        next.add(playerId);
-      }
-      return next;
-    });
-  };
-
-  const handleSubmit = () => {
-    if (!selectedTravelerId) return;
-    const votes: PlayerVote[] = eligibleVoters.map(p => ({
-      playerId: p.id,
-      voted: selectedVoters.has(p.id),
-    }));
-    onCreateExileVote(selectedTravelerId, votes);
-    onClose();
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle className="text-amber-500 font-display">
-            {step === 1 ? "Call for Exile" : `Exile ${selectedTraveler?.name}?`}
-          </DialogTitle>
-        </DialogHeader>
-
-        {step === 1 && (
-          <div className="space-y-3">
-            <p className="text-sm text-muted-foreground">Select a Traveler to call for exile:</p>
-            <div className="space-y-2 max-h-60 overflow-y-auto">
-              {aliveTravelers.map(player => (
-                <button
-                  key={player.id}
-                  onClick={() => {
-                    setSelectedTravelerId(player.id);
-                    setStep(2);
-                  }}
-                  className="w-full text-left p-3 rounded-lg border border-purple-700/50 bg-purple-900/20 hover-elevate"
-                  data-testid={`button-exile-${player.id}`}
-                >
-                  <div className="font-medium">{player.name}</div>
-                  {player.claims.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-1">
-                      {player.claims.map(claimId => {
-                        const char = resolveClaimDescriptor(claimId);
-                        return char && (
-                          <Badge
-                            key={claimId}
-                            variant="secondary"
-                            className={cn(
-                              "text-xs",
-                              char.id === GENERIC_TRAVELLER_ID
-                                ? teamBadge(char.team)
-                                : "bg-purple-900/40 text-purple-300 border-purple-700"
-                            )}
-                          >
-                            {char.name}
-                          </Badge>
-                        );
-                      })}
-                    </div>
-                  )}
-                </button>
-              ))}
-            </div>
-            <Button variant="ghost" className="w-full" onClick={onClose}>
-              Cancel
-            </Button>
-          </div>
-        )}
-
-        {step === 2 && (
-          <div className="space-y-3">
-            <p className="text-sm text-muted-foreground">
-              Select all players who vote to exile. Dead players can vote on exile (doesn't use ghost vote). Need {votesNeeded} votes to pass.
-            </p>
-            <div className="space-y-2 max-h-60 overflow-y-auto">
-              {eligibleVoters.map(player => (
-                <label
-                  key={player.id}
-                  className={cn(
-                    "flex items-center gap-3 p-2 rounded-lg border cursor-pointer transition-colors",
-                    selectedVoters.has(player.id)
-                      ? "bg-emerald-900/30 border-emerald-700"
-                      : "bg-card border-border hover:bg-muted/50"
-                  )}
-                  data-testid={`label-exile-voter-${player.id}`}
-                >
-                  <Checkbox
-                    checked={selectedVoters.has(player.id)}
-                    onCheckedChange={() => handleToggleVoter(player.id)}
-                    data-testid={`checkbox-exile-voter-${player.id}`}
-                  />
-                  <span className={cn(
-                    "flex-1",
-                    player.status !== 'alive' && "text-muted-foreground"
-                  )}>
-                    {player.name}
-                    {player.status === 'dead' && (
-                      <Skull className="w-4 h-4 inline ml-2 text-red-400/70" />
-                    )}
-                  </span>
-                  {selectedVoters.has(player.id) && (
-                    <Hand className="w-4 h-4 text-emerald-500" />
-                  )}
-                </label>
-              ))}
-            </div>
-            <div className="flex gap-2 pt-2">
-              <Button variant="ghost" className="flex-1" onClick={() => setStep(1)}>
-                Back
-              </Button>
-              <Button 
-                className={cn("flex-1", selectedVoters.size >= votesNeeded ? "bg-red-600 hover:bg-red-700" : "")}
-                onClick={handleSubmit} 
-                data-testid="button-confirm-exile"
-              >
-                <Check className="w-4 h-4 mr-2" />
-                {selectedVoters.size >= votesNeeded ? `Exile (${selectedVoters.size} votes)` : `${selectedVoters.size} / ${votesNeeded} votes`}
-              </Button>
-            </div>
-          </div>
-        )}
-      </DialogContent>
-    </Dialog>
   );
 }
 
@@ -2309,7 +1423,6 @@ function CircleNodeContent({
 }: {
   player: GamePlayer;
   nodeSize: number;
-  nominations: Nomination[];
   isDragging?: boolean;
   isOverlay?: boolean;
   nameOutside?: boolean;
@@ -2395,26 +1508,12 @@ function CircleNodeContent({
           />
         </div>
       )}
-
-      {isDead && !player.isTraveler && (
-        <div className="absolute top-0 right-0">
-          {player.hasGhostVote ? (
-            <Ghost className="w-3 h-3 text-purple-400" />
-          ) : (
-            <span className="relative">
-              <Ghost className="w-3 h-3 text-muted-foreground/40" />
-              <X className="w-2 h-2 text-red-500 absolute -bottom-0.5 -right-0.5" />
-            </span>
-          )}
-        </div>
-      )}
     </div>
   );
 }
 
 export function CircleSeatingChart({
   players,
-  nominations,
   currentDay,
   deathRecords = [],
   onSelectPlayer,
@@ -2424,7 +1523,6 @@ export function CircleSeatingChart({
   onResetCirclePositions,
 }: {
   players: GamePlayer[];
-  nominations: Nomination[];
   currentDay: number;
   deathRecords?: DeathRecord[];
   onSelectPlayer: (playerId: string) => void;
@@ -2600,7 +1698,6 @@ export function CircleSeatingChart({
                 player={player}
                 position={{ x: displayX, y: displayY }}
                 nodeSize={nodeSize}
-                nominations={nominations}
                 onSelectPlayer={onSelectPlayer}
                 isDragging={isBeingDragged}
                 angleDeg={angleDeg}
@@ -2618,7 +1715,6 @@ function DraggableCircleNode({
   player,
   position,
   nodeSize,
-  nominations,
   onSelectPlayer,
   isDragging,
   angleDeg,
@@ -2627,7 +1723,6 @@ function DraggableCircleNode({
   player: GamePlayer;
   position: { x: number; y: number };
   nodeSize: number;
-  nominations: Nomination[];
   onSelectPlayer: (playerId: string) => void;
   isDragging: boolean;
   angleDeg: number;
@@ -2683,7 +1778,6 @@ function DraggableCircleNode({
       <CircleNodeContent
         player={player}
         nodeSize={nodeSize}
-        nominations={nominations}
         isDragging={isDragging}
         nameOutside={true}
       />
@@ -2697,7 +1791,6 @@ export function GameTrackerView({
   onPlayAgain,
   onToggleAlive,
   onSetPlayerStatus,
-  onToggleGhostVote,
   onAddClaim,
   onAddMultipleClaims,
   onRemoveClaim,
@@ -2707,17 +1800,11 @@ export function GameTrackerView({
   onRegressPhase,
   onReorderPlayers,
   onReversePlayers,
-  hasBeenNominatedToday,
-  hasNominatedToday,
-  onCreateNomination,
-  onCreateQuickNomination,
   onClearScript,
   onSetScript,
   onAddTraveler,
   onConvertToTraveler,
   onRemoveTraveler,
-  onCreateExileVote,
-  getPlayerExileVotes,
   onSetGameNotes,
   onAddNotebookNote,
   onRemoveNotebookNote,
@@ -2726,17 +1813,12 @@ export function GameTrackerView({
   onSetCirclePosition,
   onSetMultipleCirclePositions,
   onResetCirclePositions,
-  choppingBlock,
-  onExecuteFromBlock,
-  onClearChoppingBlock,
-  onSkipExecutionAndAdvancePhase,
 }: {
   game: NonNullable<ReturnType<typeof usePlayerGame>["game"]>;
   onEndGame: () => void;
   onPlayAgain: () => void;
   onToggleAlive: (playerId: string) => void;
   onSetPlayerStatus: (playerId: string, status: PlayerStatus) => void;
-  onToggleGhostVote: (playerId: string) => void;
   onAddClaim: (playerId: string, characterId: string) => void;
   onAddMultipleClaims: (playerId: string, characterIds: string[]) => void;
   onRemoveClaim: (playerId: string, characterId: string) => void;
@@ -2746,17 +1828,11 @@ export function GameTrackerView({
   onRegressPhase: () => void;
   onReorderPlayers: (activeId: string, overId: string) => void;
   onReversePlayers: () => void;
-  hasBeenNominatedToday: (playerId: string) => boolean;
-  hasNominatedToday: (playerId: string) => boolean;
-  onCreateNomination: (nomineeId: string, nominatorId: string, votes: PlayerVote[]) => void;
-  onCreateQuickNomination: (nomineeId: string, nominatorId: string, yesVotes: number, result: NominationResult) => void;
   onClearScript: () => void;
   onSetScript: (scriptRef: GameScriptRef | null) => void;
   onAddTraveler: (name: string, initialClaims?: string[]) => void;
   onConvertToTraveler: (playerId: string) => void;
   onRemoveTraveler: (playerId: string) => void;
-  onCreateExileVote: (travelerId: string, votes: PlayerVote[]) => void;
-  getPlayerExileVotes: (playerId: string) => ExileVote[];
   onSetGameNotes: (notes: string) => void;
   onAddNotebookNote: (text: string) => void;
   onRemoveNotebookNote: (id: string) => void;
@@ -2765,21 +1841,12 @@ export function GameTrackerView({
   onSetCirclePosition: (playerId: string, x: number, y: number) => void;
   onSetMultipleCirclePositions: (updates: { playerId: string; x: number; y: number }[]) => void;
   onResetCirclePositions: () => void;
-  choppingBlock: { nominations: Nomination[]; isTied: boolean };
-  onExecuteFromBlock: () => void;
-  onClearChoppingBlock: () => void;
-  onSkipExecutionAndAdvancePhase: () => void;
 }) {
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
   const [confirmEnd, setConfirmEnd] = useState(false);
   const [showPlayAgainConfirm, setShowPlayAgainConfirm] = useState(false);
-  const [showNominationDialog, setShowNominationDialog] = useState(false);
-  const [nominationPreselectedNominee, setNominationPreselectedNominee] = useState<string | null>(null);
   const [showAddTravelerDialog, setShowAddTravelerDialog] = useState(false);
   const [showAddPlayerDialog, setShowAddPlayerDialog] = useState(false);
-  const [showExileDialog, setShowExileDialog] = useState(false);
-  const [showChoppingBlockModal, setShowChoppingBlockModal] = useState(false);
-  const [showDayChangePrompt, setShowDayChangePrompt] = useState(false);
   const [scriptPopoverOpen, setScriptPopoverOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'list' | 'circle' | 'log' | 'script'>('list');
   const [selectedSheetCharId, setSelectedSheetCharId] = useState<string | null>(null);
@@ -2846,14 +1913,8 @@ export function GameTrackerView({
     }
   };
 
-  // Advancing out of a day (day -> night) ends the day. If a block is still
-  // open at that point, prompt to resolve it first. Night -> day just advances.
   const handleAdvancePhase = () => {
-    if (game.phase === 'day' && choppingBlock.nominations.length > 0) {
-      setShowDayChangePrompt(true);
-    } else {
-      onAdvancePhase();
-    }
+    onAdvancePhase();
   };
 
   const selectedPlayer = game.players.find(p => p.id === selectedPlayerId) || null;
@@ -2865,11 +1926,6 @@ export function GameTrackerView({
   const exiledCount = game.players.filter(p => p.status === 'exiled').length;
   const leftCount = game.players.filter(p => p.status === 'left').length;
   const aliveTravelers = travelers.filter(p => p.status === 'alive');
-  const votesNeeded = Math.ceil(aliveCount / 2);
-  const ghostVotesAvailable = game.players.filter(p => p.status === 'dead' && p.hasGhostVote && !p.isTraveler).length;
-  const totalVotesAvailable = aliveCount + ghostVotesAvailable;
-  const todayNominations = game.nominations.filter(n => n.day === game.currentDay);
-  const canExecute = totalVotesAvailable >= votesNeeded;
 
   // Phase spine: Night N = (day N, 'night'), Day N = (day N, 'day').
   const isNight = game.phase === 'night';
@@ -2898,12 +1954,6 @@ export function GameTrackerView({
   // Toggle filter on tap
   const toggleFilter = (filter: 'alive' | 'dead') => {
     setPlayerFilter(prev => prev === filter ? 'all' : filter);
-  };
-
-  // Quick nominate handler
-  const handleQuickNominate = (playerId: string) => {
-    setNominationPreselectedNominee(playerId);
-    setShowNominationDialog(true);
   };
 
   return (
@@ -3154,23 +2204,11 @@ export function GameTrackerView({
           </Button>
         </div>
 
-        {/* Vote Info Text - nominations and voting are a daytime activity */}
-        {isNight ? (
+        {/* Night context line. Days have no special banner. */}
+        {isNight && (
           <div className="flex items-center justify-center gap-2 px-4 py-2.5 border-b border-border text-base text-indigo-300/80" data-testid="text-night-context">
             <Moon className="w-4 h-4 shrink-0" />
             <span>Night falls. Mark any deaths, then move to the day.</span>
-          </div>
-        ) : (
-          <div className="text-center px-4 py-2.5 border-b border-border text-base text-muted-foreground">
-            <div>
-              <span className="text-amber-400 font-semibold">{votesNeeded}</span> Votes <span className="font-semibold">to execute</span> out of{' '}
-              <span className={cn("font-semibold", canExecute ? "text-purple-400" : "text-red-400")}>{totalVotesAvailable}</span> Possible
-            </div>
-            {ghostVotesAvailable > 0 && (
-              <div className="text-purple-400/80">
-                including <span className="font-semibold">{ghostVotesAvailable}</span> Ghost {ghostVotesAvailable === 1 ? 'Vote' : 'Votes'}
-              </div>
-            )}
           </div>
         )}
 
@@ -3196,8 +2234,8 @@ export function GameTrackerView({
           );
         })()}
 
-        {/* Core Action Zone - Alive/Dead/Nominate as 3 main action buttons */}
-        <div className="grid grid-cols-3 gap-3 px-3 py-3 border-b border-border">
+        {/* Core Action Zone - Alive/Dead filters */}
+        <div className="grid grid-cols-2 gap-3 px-3 py-3 border-b border-border">
           {/* Alive - Interactive Filter */}
           <Button
             variant="outline"
@@ -3225,46 +2263,7 @@ export function GameTrackerView({
             <span className="text-3xl font-sans font-bold text-red-400/80 tabular-nums">{deadCount}</span>
             <span className="text-xs font-sans text-muted-foreground uppercase tracking-wide">Dead</span>
           </Button>
-
-          {/* Nominate - Core Action (daytime only) */}
-          <Button 
-            variant="outline"
-            disabled={isNight}
-            className="flex flex-col items-center h-auto py-3 bg-red-500/20 border-red-500/30 toggle-elevate"
-            onClick={() => {
-              setNominationPreselectedNominee(null);
-              setShowNominationDialog(true);
-            }} 
-            data-testid="button-nominate"
-          >
-            <span className="text-xl font-bold text-red-400">+</span>
-            <span className="text-xs font-sans text-muted-foreground uppercase tracking-wide">Nominate</span>
-          </Button>
         </div>
-
-        {/* Chopping Block Indicator (daytime execution flow) */}
-        {!isNight && choppingBlock.nominations.length > 0 && (
-          <button
-            onClick={() => setShowChoppingBlockModal(true)}
-            className={cn(
-              "flex items-center justify-center gap-2 px-3 py-2.5 border-t border-border w-full hover-elevate active-elevate-2",
-              choppingBlock.isTied ? "bg-amber-950/30" : "bg-red-950/30"
-            )}
-            data-testid="button-view-chopping-block"
-          >
-            <AxeIcon className={cn("w-5 h-5", choppingBlock.isTied ? "text-amber-500" : "text-red-500")} />
-            {choppingBlock.isTied ? (
-              <span className="text-amber-400 font-medium">
-                Tied on Block: {choppingBlock.nominations.length} players ({choppingBlock.nominations[0]?.yesVotes} votes)
-              </span>
-            ) : (
-              <span className="text-red-400 font-medium">
-                On the Block: {game.players.find(p => p.id === choppingBlock.nominations[0]?.nomineeId)?.name} ({choppingBlock.nominations[0]?.yesVotes} votes)
-              </span>
-            )}
-            <Badge variant="outline" className="text-xs">View</Badge>
-          </button>
-        )}
 
         {/* Traveler Row - Conditional */}
         {travelers.length > 0 && (
@@ -3277,11 +2276,6 @@ export function GameTrackerView({
                 </span>
               )}
             </span>
-            {aliveTravelers.length > 0 && (
-              <Button variant="outline" size="sm" onClick={() => setShowExileDialog(true)} data-testid="button-exile">
-                Exile
-              </Button>
-            )}
           </div>
         )}
 
@@ -3314,7 +2308,6 @@ export function GameTrackerView({
                   seatNumber={game.players.findIndex(p => p.id === player.id) + 1}
                   onSelect={() => setSelectedPlayerId(player.id)}
                   onToggleAlive={() => onToggleAlive(player.id)}
-                  onToggleGhostVote={() => onToggleGhostVote(player.id)}
                   onOpenClaimPicker={() => setClaimPickerPlayerId(player.id)}
                   onRemoveClaim={(charId) => onRemoveClaim(player.id, charId)}
                 />
@@ -3327,7 +2320,6 @@ export function GameTrackerView({
       {activeTab === 'circle' && (
         <CircleSeatingChart
           players={game.players}
-          nominations={game.nominations}
           currentDay={game.currentDay}
           deathRecords={game.deathRecords ?? []}
           onSelectPlayer={(playerId) => setSelectedPlayerId(playerId)}
@@ -3412,12 +2404,9 @@ export function GameTrackerView({
       <PlayerDetailDrawer
         player={selectedPlayer}
         players={game.players}
-        nominations={game.nominations}
-        exileVotes={selectedPlayer ? getPlayerExileVotes(selectedPlayer.id) : []}
         onClose={() => setSelectedPlayerId(null)}
         onToggleAlive={() => selectedPlayerId && onToggleAlive(selectedPlayerId)}
         onSetPlayerStatus={(status) => selectedPlayerId && onSetPlayerStatus(selectedPlayerId, status)}
-        onToggleGhostVote={() => selectedPlayerId && onToggleGhostVote(selectedPlayerId)}
         onAddMultipleClaims={(charIds) => selectedPlayerId && onAddMultipleClaims(selectedPlayerId, charIds)}
         onRemoveClaim={(charId) => selectedPlayerId && onRemoveClaim(selectedPlayerId, charId)}
         onSetNotes={(notes) => selectedPlayerId && onSetNotes(selectedPlayerId, notes)}
@@ -3427,30 +2416,6 @@ export function GameTrackerView({
         onConvertToTraveler={!selectedPlayer?.isTraveler ? () => selectedPlayerId && onConvertToTraveler(selectedPlayerId) : undefined}
         canRemovePlayer={game.players.length > 1}
         scriptCharacterIds={scriptCharacterIds}
-      />
-
-      <NominationDialog
-        open={showNominationDialog}
-        onClose={() => {
-          setShowNominationDialog(false);
-          setNominationPreselectedNominee(null);
-        }}
-        players={game.players}
-        hasBeenNominatedToday={hasBeenNominatedToday}
-        hasNominatedToday={hasNominatedToday}
-        onCreateNomination={onCreateNomination}
-        onCreateQuickNomination={onCreateQuickNomination}
-        preselectedNomineeId={nominationPreselectedNominee}
-      />
-
-      <ChoppingBlockModal
-        open={showChoppingBlockModal}
-        onClose={() => setShowChoppingBlockModal(false)}
-        nominations={choppingBlock.nominations}
-        isTied={choppingBlock.isTied}
-        players={game.players}
-        onExecute={onExecuteFromBlock}
-        onNoExecution={onClearChoppingBlock}
       />
 
       <AddTravelerDialog
@@ -3464,13 +2429,6 @@ export function GameTrackerView({
         onClose={() => setShowAddPlayerDialog(false)}
         onAddPlayer={onAddPlayer}
         players={game.players}
-      />
-
-      <ExileDialog
-        open={showExileDialog}
-        onClose={() => setShowExileDialog(false)}
-        players={game.players}
-        onCreateExileVote={onCreateExileVote}
       />
 
       <ScriptBuilderDialog
@@ -3499,7 +2457,6 @@ export function GameTrackerView({
               <div className="space-y-3">
                 <p>This will reset:</p>
                 <ul className="list-disc list-inside text-sm space-y-1 text-muted-foreground">
-                  <li>All nominations and votes</li>
                   <li>All claims</li>
                   <li>All deaths</li>
                   <li>Day counter</li>
@@ -3517,59 +2474,6 @@ export function GameTrackerView({
               data-testid="button-confirm-play-again"
             >
               Play Again
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      <AlertDialog open={showDayChangePrompt} onOpenChange={setShowDayChangePrompt}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2">
-              <AxeIcon className="w-5 h-5 text-red-500" />
-              {choppingBlock.isTied ? "Tied on the Block" : "Player on the Block"}
-            </AlertDialogTitle>
-            <AlertDialogDescription asChild>
-              <div className="space-y-3">
-                {choppingBlock.isTied ? (
-                  <p>
-                    {choppingBlock.nominations.length} players are tied with {choppingBlock.nominations[0]?.yesVotes} votes each.
-                    In BOTC, ties mean no execution.
-                  </p>
-                ) : (
-                  <p>
-                    <span className="font-medium text-red-400">
-                      {game.players.find(p => p.id === choppingBlock.nominations[0]?.nomineeId)?.name}
-                    </span>
-                    {" "}is on the chopping block with {choppingBlock.nominations[0]?.yesVotes} votes.
-                  </p>
-                )}
-                <p className="text-sm text-muted-foreground">
-                  Resolve the block before moving on to night, or skip to continue without executing.
-                </p>
-              </div>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="gap-2 sm:gap-0">
-            <AlertDialogCancel data-testid="button-cancel-day-change">Stay on Day {game.currentDay}</AlertDialogCancel>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setShowDayChangePrompt(false);
-                setShowChoppingBlockModal(true);
-              }}
-              data-testid="button-resolve-block"
-            >
-              <AxeIcon className="w-4 h-4 mr-2" />
-              Resolve Block
-            </Button>
-            <AlertDialogAction 
-              onClick={() => {
-                onSkipExecutionAndAdvancePhase();
-              }}
-              data-testid="button-skip-execution"
-            >
-              Skip & Continue
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -3605,23 +2509,16 @@ export default function Game() {
     removeClaim,
     toggleAlive,
     setPlayerStatus,
-    toggleGhostVote,
     setNotes,
     advancePhase,
     regressPhase,
     reorderPlayers,
     reversePlayers,
-    hasBeenNominatedToday,
-    hasNominatedToday,
-    createNomination,
-    createQuickNomination,
     clearScript,
     setScript,
     addTraveler,
     convertToTraveler,
     removeTraveler,
-    createExileVote,
-    getPlayerExileVotes,
     setGameNotes,
     addNotebookNote,
     removeNotebookNote,
@@ -3630,10 +2527,6 @@ export default function Game() {
     setCirclePosition,
     setMultipleCirclePositions,
     resetCirclePositions,
-    getChoppingBlock,
-    executeFromBlock,
-    clearChoppingBlock,
-    skipExecutionAndAdvancePhase,
   } = usePlayerGame();
 
   const updatePlayerName = (playerId: string, name: string) => {
@@ -3661,7 +2554,6 @@ export default function Game() {
           onPlayAgain={playAgain}
           onToggleAlive={toggleAlive}
           onSetPlayerStatus={setPlayerStatus}
-          onToggleGhostVote={toggleGhostVote}
           onAddClaim={addClaim}
           onAddMultipleClaims={addMultipleClaims}
           onRemoveClaim={removeClaim}
@@ -3671,17 +2563,11 @@ export default function Game() {
           onRegressPhase={regressPhase}
           onReorderPlayers={reorderPlayers}
           onReversePlayers={reversePlayers}
-          hasBeenNominatedToday={hasBeenNominatedToday}
-          hasNominatedToday={hasNominatedToday}
-          onCreateNomination={createNomination}
-          onCreateQuickNomination={createQuickNomination}
           onClearScript={clearScript}
           onSetScript={setScript}
           onAddTraveler={addTraveler}
           onConvertToTraveler={convertToTraveler}
           onRemoveTraveler={removeTraveler}
-          onCreateExileVote={createExileVote}
-          getPlayerExileVotes={getPlayerExileVotes}
           onSetGameNotes={setGameNotes}
           onAddNotebookNote={addNotebookNote}
           onRemoveNotebookNote={removeNotebookNote}
@@ -3690,10 +2576,6 @@ export default function Game() {
           onSetCirclePosition={setCirclePosition}
           onSetMultipleCirclePositions={setMultipleCirclePositions}
           onResetCirclePositions={resetCirclePositions}
-          choppingBlock={getChoppingBlock()}
-          onExecuteFromBlock={executeFromBlock}
-          onClearChoppingBlock={clearChoppingBlock}
-          onSkipExecutionAndAdvancePhase={skipExecutionAndAdvancePhase}
         />
       )}
     </Layout>

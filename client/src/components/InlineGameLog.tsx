@@ -11,9 +11,7 @@ import { deathPhaseLabel } from "@/lib/death-phase";
 import { ALL_CHARACTERS } from "@/lib/game-data";
 import { 
   Theater, 
-  Scale, 
   Skull, 
-  Ghost, 
   UserPlus, 
   UserMinus, 
   Sun, 
@@ -26,7 +24,7 @@ import {
 import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
 
-type EventType = 'claim' | 'nomination' | 'death' | 'ghost_vote' | 'traveler';
+type EventType = 'claim' | 'death' | 'traveler';
 type Phase = 'day' | 'night';
 
 interface GameEvent {
@@ -91,58 +89,6 @@ export function InlineGameLog({
       });
     });
     
-    game.nominations.forEach(nom => {
-      const nominee = players.find(p => p.id === nom.nomineeId);
-      const nominator = players.find(p => p.id === nom.nominatorId);
-      const yesVotes = nom.yesVotes ?? nom.votes?.filter(v => v.voted).length ?? 0;
-      const passed = nom.passed ?? false;
-      
-      // Determine display text based on result
-      let resultText = 'Failed';
-      if (nom.result === 'executed') {
-        resultText = 'Executed';
-      } else if (nom.result === 'on_the_block') {
-        resultText = 'On Block';
-      } else if (nom.result === 'passed') {
-        resultText = 'Passed (no exec)';
-      } else if (passed) {
-        resultText = 'Passed';
-      }
-      
-      allEvents.push({
-        id: `nom-${nom.id}`,
-        type: 'nomination',
-        day: nom.day,
-        phase: 'day',
-        timestamp: '',
-        playerId: nom.nomineeId,
-        playerName: nominee?.name || '[Removed]',
-        description: `nominated by ${nominator?.name || '[Removed]'}`,
-        details: `${resultText} - ${yesVotes} votes`,
-        icon: Scale,
-        iconColor: passed ? 'text-red-400' : 'text-amber-400',
-      });
-    });
-    
-    game.exileVotes.forEach(exile => {
-      const traveler = players.find(p => p.id === exile.travelerId);
-      const yesVotes = exile.votes.filter(v => v.voted).length;
-      
-      allEvents.push({
-        id: `exile-vote-${exile.id}`,
-        type: 'nomination',
-        day: exile.day,
-        phase: 'day',
-        timestamp: '',
-        playerId: exile.travelerId,
-        playerName: traveler?.name || '[Removed]',
-        description: `exile vote`,
-        details: `${exile.passed ? 'Exiled' : 'Failed'} - ${yesVotes} votes`,
-        icon: Scale,
-        iconColor: exile.passed ? 'text-red-400' : 'text-amber-400',
-      });
-    });
-    
     const deathRecords = game.deathRecords || [];
     deathRecords.forEach(death => {
       const player = players.find(p => p.id === death.playerId);
@@ -172,24 +118,6 @@ export function InlineGameLog({
         icon: Skull,
         iconColor: 'text-red-500',
         deathRecord: death,
-      });
-    });
-    
-    const ghostVoteEvents = game.ghostVoteEvents || [];
-    ghostVoteEvents.forEach(gv => {
-      const player = players.find(p => p.id === gv.playerId);
-      
-      allEvents.push({
-        id: `ghost-${gv.playerId}-${gv.nominationId}`,
-        type: 'ghost_vote',
-        day: gv.day,
-        phase: 'day',
-        timestamp: gv.timestamp,
-        playerId: gv.playerId,
-        playerName: player?.name || '[Removed]',
-        description: 'used ghost vote',
-        icon: Ghost,
-        iconColor: 'text-blue-400',
       });
     });
     
@@ -285,7 +213,6 @@ export function InlineGameLog({
   const filterButtons: { type: EventType | 'all'; label: string }[] = [
     { type: 'all', label: 'All' },
     { type: 'claim', label: 'Claims' },
-    { type: 'nomination', label: 'Votes' },
     { type: 'death', label: 'Deaths' },
     { type: 'traveler', label: 'Travelers' },
   ];
@@ -424,7 +351,7 @@ export function InlineGameLog({
             <Theater className="w-12 h-12 mx-auto mb-3 opacity-30" />
             <p className="text-sm">No events recorded yet.</p>
             <p className="text-xs mt-1 opacity-70">
-              Start tracking claims and nominations!
+              Start tracking claims and deaths!
             </p>
           </div>
         )}

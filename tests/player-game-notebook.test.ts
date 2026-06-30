@@ -105,11 +105,8 @@ describe("notebook migration of legacy saves", () => {
       currentDay: 1,
       phase: "night",
       players: [{ id: "p1", name: "A", isAlive: true, status: "alive" }],
-      nominations: [],
-      exileVotes: [],
       deathRecords: [],
       travelerEvents: [],
-      ghostVoteEvents: [],
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(legacy));
     const { result } = renderHook(() => usePlayerGame());
@@ -124,11 +121,8 @@ describe("notebook migration of legacy saves", () => {
       currentDay: 2,
       phase: "day",
       players: [{ id: "p1", name: "A", isAlive: true, status: "alive" }],
-      nominations: [],
-      exileVotes: [],
       deathRecords: [],
       travelerEvents: [],
-      ghostVoteEvents: [],
       notebookNotes: [
         { id: "n1", day: 1, phase: "night", text: "old note", createdAt: new Date().toISOString() },
       ],

@@ -14,19 +14,15 @@ function makeGame(overrides: Partial<PlayerGame> = {}): PlayerGame {
     playerCount: 5,
     breakdown: { townsfolk: 3, outsiders: 0, minions: 1, demons: 1 },
     players: [
-      { id: "p1", name: "Alice", isAlive: true, status: "alive", hasGhostVote: true, notes: "", claims: [] },
-      { id: "p2", name: "Bob", isAlive: true, status: "alive", hasGhostVote: true, notes: "", claims: [] },
+      { id: "p1", name: "Alice", isAlive: true, status: "alive", notes: "", claims: [] },
+      { id: "p2", name: "Bob", isAlive: true, status: "alive", notes: "", claims: [] },
     ],
-    nominations: [],
-    exileVotes: [],
     currentDay: 1,
     phase: "night",
     script: { id: "tb" },
     deathRecords: [],
     travelerEvents: [],
-    ghostVoteEvents: [],
     notebookNotes: [],
-    choppingBlock: [],
     ...overrides,
   };
 }
@@ -66,15 +62,13 @@ describe("InlineGameLog phase chapters", () => {
     expect(onUpdateGameNotes).toHaveBeenCalledWith("new theory");
   });
 
-  it("places a night death in the Night chapter and a day vote in the Day chapter", () => {
+  it("places a night death in the Night chapter and a day execution in the Day chapter", () => {
     const game = makeGame({
       currentDay: 2,
       phase: "day",
       deathRecords: [
         { playerId: "p1", day: 2, type: "night", phase: "night", timestamp: "2026-06-30T01:00:00Z" },
-      ],
-      nominations: [
-        { id: "nom1", nominatorId: "p2", nomineeId: "p1", day: 1, yesVotes: 3, votesNeeded: 2, passed: true, result: "executed" } as any,
+        { playerId: "p2", playerName: "Bob", day: 1, type: "execution", phase: "day", timestamp: "2026-06-29T12:00:00Z" },
       ],
     });
     renderLog(game);
@@ -82,11 +76,9 @@ describe("InlineGameLog phase chapters", () => {
     const n2 = screen.getByTestId("notebook-chapter-n2");
     expect(n2.textContent).toContain("Alice");
     expect(n2.textContent).toContain("died in the night");
-    // The night death never carries the day-only nomination text.
-    expect(n2.textContent).not.toContain("nominated by Bob");
-    // The day-1 nomination lives in the Day 1 chapter, not a night chapter.
+    // The day-1 execution lives in the Day 1 chapter, not a night chapter.
     const d1 = screen.getByTestId("notebook-chapter-d1");
-    expect(d1.textContent).toContain("nominated by Bob");
+    expect(d1.textContent).toContain("Bob");
   });
 
   it("adds a note via the input and clears the draft", () => {

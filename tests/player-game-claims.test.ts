@@ -143,11 +143,8 @@ describe("ordered claims with a primary candidate", () => {
           claims: ["chef", "washerwoman", "librarian"],
         },
       ],
-      nominations: [],
-      exileVotes: [],
       deathRecords: [],
       travelerEvents: [],
-      ghostVoteEvents: [],
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(legacy));
     const hook = renderHook(() => usePlayerGame());

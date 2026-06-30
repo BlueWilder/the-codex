@@ -17,7 +17,6 @@ function makePlayer(overrides: Partial<GamePlayer> & { id: string; name: string 
   return {
     seatNumber: 1,
     status: "alive",
-    hasGhostVote: true,
     claims: [],
     notes: "",
     isTraveler: false,
@@ -31,7 +30,6 @@ function renderChart(players: GamePlayer[], deathRecords: DeathRecord[] = []) {
   return render(
     <CircleSeatingChart
       players={players}
-      nominations={[]}
       currentDay={1}
       deathRecords={deathRecords}
       onSelectPlayer={noop}
@@ -148,7 +146,7 @@ describe("death-label helpers", () => {
 type RowGame = Parameters<typeof SortablePlayerCard>[0]["game"];
 
 function makeGame(players: GamePlayer[], deathRecords: DeathRecord[] = []): RowGame {
-  return { players, nominations: [], deathRecords } as unknown as RowGame;
+  return { players, deathRecords } as unknown as RowGame;
 }
 
 function renderRow(
@@ -170,7 +168,6 @@ function renderRow(
           seatNumber={opts.seatNumber ?? 1}
           onSelect={opts.onSelect ?? noop}
           onToggleAlive={noop}
-          onToggleGhostVote={noop}
           onOpenClaimPicker={noop}
           onRemoveClaim={opts.onRemoveClaim ?? noop}
         />

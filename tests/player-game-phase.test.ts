@@ -96,36 +96,53 @@ describe("day/night phase spine", () => {
   });
 });
 
-describe("skipExecutionAndAdvancePhase", () => {
-  it("clears the chopping block and advances the phase in one transition", () => {
-    const day = {
-      id: "skip-1",
-      createdAt: new Date().toISOString(),
-      playerCount: 5,
-      currentDay: 1,
-      phase: "day",
-      players: [
-        { id: "p1", name: "A", isAlive: true, status: "alive" },
-        { id: "p2", name: "B", isAlive: true, status: "alive" },
-      ],
-      nominations: [
-        { id: "n1", nominatorId: "p1", nomineeId: "p2", day: 1, yesVotes: 3 },
-      ],
-      exileVotes: [],
-      choppingBlock: ["n1"],
-      deathRecords: [],
-      travelerEvents: [],
-      ghostVoteEvents: [],
-    };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(day));
+describe("toggleAlive death records by phase", () => {
+  it("records an execution when a player is marked dead during the day", () => {
     const { result } = renderHook(() => usePlayerGame());
     act(() => {
-      result.current.skipExecutionAndAdvancePhase();
+      result.current.createGame(5, ["A", "B", "C", "D", "E"]);
     });
-    expect(result.current.game?.choppingBlock).toEqual([]);
-    expect(result.current.game?.nominations[0].result).toBe("passed");
-    expect(result.current.game?.phase).toBe("night");
-    expect(result.current.game?.currentDay).toBe(2);
+    act(() => {
+      result.current.advancePhase(); // Night 1 -> Day 1
+    });
+    const target = result.current.game!.players[0].id;
+    act(() => {
+      result.current.toggleAlive(target);
+    });
+    const records = result.current.game?.deathRecords ?? [];
+    expect(records[0]?.type).toBe("execution");
+    expect(records[0]?.phase).toBe("day");
+  });
+
+  it("records a night death when a player is marked dead at night", () => {
+    const { result } = renderHook(() => usePlayerGame());
+    act(() => {
+      result.current.createGame(5, ["A", "B", "C", "D", "E"]);
+    });
+    const target = result.current.game!.players[0].id;
+    act(() => {
+      result.current.toggleAlive(target);
+    });
+    const records = result.current.game?.deathRecords ?? [];
+    expect(records[0]?.type).toBe("night");
+    expect(records[0]?.phase).toBe("night");
+  });
+
+  it("records an execution when setPlayerStatus marks a player dead during the day", () => {
+    const { result } = renderHook(() => usePlayerGame());
+    act(() => {
+      result.current.createGame(5, ["A", "B", "C", "D", "E"]);
+    });
+    act(() => {
+      result.current.advancePhase(); // Night 1 -> Day 1
+    });
+    const target = result.current.game!.players[0].id;
+    act(() => {
+      result.current.setPlayerStatus(target, "dead");
+    });
+    const records = result.current.game?.deathRecords ?? [];
+    expect(records[0]?.type).toBe("execution");
+    expect(records[0]?.phase).toBe("day");
   });
 });
 
@@ -137,11 +154,8 @@ describe("phase migration of legacy saves", () => {
       playerCount: 5,
       currentDay: 2,
       players: [{ id: "p1", name: "A", isAlive: true, status: "alive" }],
-      nominations: [],
-      exileVotes: [],
       deathRecords: [],
       travelerEvents: [],
-      ghostVoteEvents: [],
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(legacy));
     const { result } = renderHook(() => usePlayerGame());
@@ -155,15 +169,12 @@ describe("phase migration of legacy saves", () => {
       playerCount: 5,
       currentDay: 3,
       players: [{ id: "p1", name: "A", isAlive: false, status: "dead" }],
-      nominations: [],
-      exileVotes: [],
       deathRecords: [
         { playerId: "p1", playerName: "A", type: "night", day: 2 },
         { playerId: "p2", playerName: "B", type: "execution", day: 1 },
         { playerId: "p3", playerName: "C", type: "exile", day: 1 },
       ],
       travelerEvents: [],
-      ghostVoteEvents: [],
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(legacy));
     const { result } = renderHook(() => usePlayerGame());
@@ -181,11 +192,8 @@ describe("phase migration of legacy saves", () => {
       currentDay: 1,
       phase: "night",
       players: [{ id: "p1", name: "A", isAlive: true, status: "alive" }],
-      nominations: [],
-      exileVotes: [],
       deathRecords: [],
       travelerEvents: [],
-      ghostVoteEvents: [],
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(current));
     const { result } = renderHook(() => usePlayerGame());
