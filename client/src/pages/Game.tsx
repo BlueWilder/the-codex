@@ -618,21 +618,25 @@ function resolveClaimDescriptor(id: string): ClaimDescriptor | null {
   return char ? { id: char.id, name: char.name, team: char.team } : null;
 }
 
-function CharacterPicker({ 
+export function CharacterPicker({ 
   open, 
   onClose, 
   onSelect,
+  onRemove,
   excludeIds = [],
   scriptCharacterIds,
   singleSelect = false,
+  primaryClaimId,
   title,
 }: { 
   open: boolean; 
   onClose: () => void; 
   onSelect: (characterIds: string[]) => void;
+  onRemove?: (characterId: string) => void;
   excludeIds?: string[];
   scriptCharacterIds?: string[] | null;
   singleSelect?: boolean;
+  primaryClaimId?: string;
   title?: string;
 }) {
   const [search, setSearch] = useState("");
@@ -702,7 +706,11 @@ function CharacterPicker({
 
   const handleSelectRow = (charId: string) => {
     if (singleSelect) {
-      onSelect([charId]);
+      if (primaryClaimId && charId === primaryClaimId) {
+        onRemove?.(charId);
+      } else {
+        onSelect([charId]);
+      }
       setSelected(new Set());
       setSearch("");
       onClose();
@@ -737,7 +745,8 @@ function CharacterPicker({
           <div className="flex-1 overflow-y-auto -mx-2 px-2">
             <div className="space-y-1 pb-4">
               {pickerOptions.map(char => {
-                const isSelected = selected.has(char.id);
+                const isPrimary = singleSelect && primaryClaimId === char.id;
+                const isSelected = singleSelect ? isPrimary : selected.has(char.id);
                 return (
                   <button
                     key={char.id}
@@ -748,6 +757,7 @@ function CharacterPicker({
                       teamBadge(char.team),
                       isSelected && "ring-2 ring-amber-500 ring-offset-1 ring-offset-background"
                     )}
+                    title={isPrimary ? `Tap to remove ${char.name} claim` : undefined}
                     data-testid={`button-select-character-${char.id}`}
                   >
                     {!singleSelect && (
@@ -757,8 +767,16 @@ function CharacterPicker({
                         data-testid={`checkbox-character-${char.id}`}
                       />
                     )}
+                    {isPrimary && (
+                      <Check className="w-4 h-4 text-amber-500 shrink-0" data-testid={`icon-current-claim-${char.id}`} />
+                    )}
                     <span className="font-medium">{char.name}</span>
-                    <span className="ml-auto">
+                    <span className="ml-auto flex items-center gap-2">
+                      {isPrimary && (
+                        <span className="text-xs text-amber-500/80" data-testid={`text-tap-to-remove-${char.id}`}>
+                          Tap to remove
+                        </span>
+                      )}
                       <TeamBadge team={char.team} variant="label" />
                     </span>
                   </button>
@@ -789,7 +807,7 @@ function CharacterPicker({
   );
 }
 
-function PlayerDetailDrawer({
+export function PlayerDetailDrawer({
   player,
   players,
   onClose,
@@ -1006,27 +1024,46 @@ function PlayerDetailDrawer({
                 {claimedCharacters.length > 0 ? (
                   <div className="flex flex-wrap gap-2">
                     {claimedCharacters.map((char, idx) => char && (
-                      <div key={char.id} className="inline-flex items-center gap-1">
-                        <Badge
-                          className={cn(
-                            "gap-1.5 text-base",
-                            char.id !== GENERIC_TRAVELLER_ID && "cursor-pointer",
-                            candidateChipClass(char.team, idx === 0)
-                          )}
-                          onClick={char.id === GENERIC_TRAVELLER_ID ? undefined : () => {
-                            const full = ALL_CHARACTERS.find(c => c.id === char.id);
-                            if (full) setPreviewCharacter(full);
-                          }}
-                          data-testid={idx === 0 ? `chip-primary-${player.id}` : `badge-claim-${char.id}`}
+                      <div
+                        key={char.id}
+                        className={cn(
+                          "inline-flex items-center gap-1.5 rounded-full border pl-3 pr-1.5 py-1",
+                          candidateChipClass(char.team, idx === 0)
+                        )}
+                        data-testid={idx === 0 ? `chip-primary-${player.id}` : `badge-claim-${char.id}`}
+                      >
+                        {char.id !== GENERIC_TRAVELLER_ID ? (
+                          <button
+                            type="button"
+                            className="inline-flex items-center gap-1.5 text-base font-semibold cursor-pointer"
+                            onClick={() => {
+                              const full = ALL_CHARACTERS.find(c => c.id === char.id);
+                              if (full) setPreviewCharacter(full);
+                            }}
+                            title={`View ${char.name}`}
+                            data-testid={`button-claim-info-${char.id}-${player.id}`}
+                          >
+                            {char.name}
+                            <Info className="w-3.5 h-3.5 opacity-60" />
+                          </button>
+                        ) : (
+                          <span className="text-base font-semibold">{char.name}</span>
+                        )}
+                        <button
+                          type="button"
+                          className="inline-flex items-center justify-center w-7 h-7 rounded-full hover:bg-background/40 transition-colors"
+                          onClick={() => onRemoveClaim(char.id)}
+                          title={`Remove ${char.name} claim`}
+                          aria-label={`Remove ${char.name} claim`}
+                          data-testid={`button-remove-claim-${char.id}-${player.id}`}
                         >
-                          {char.name}
-                          {char.id !== GENERIC_TRAVELLER_ID && <Info className="w-3.5 h-3.5 opacity-60" />}
-                        </Badge>
+                          <X className="w-4 h-4 opacity-70" />
+                        </button>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-sm text-muted-foreground italic">No claims recorded</p>
+                  <p className="text-sm text-muted-foreground italic" data-testid={`text-no-claims-${player.id}`}>No claims recorded</p>
                 )}
               </div>
 
@@ -2559,8 +2596,13 @@ export function GameTrackerView({
           open={!!primaryPickerPlayerId}
           onClose={() => setPrimaryPickerPlayerId(null)}
           singleSelect
+          primaryClaimId={game.players.find(p => p.id === primaryPickerPlayerId)?.claims?.[0]}
           onSelect={(characterIds) => {
             if (characterIds[0]) onSetPrimaryClaim(primaryPickerPlayerId, characterIds[0]);
+            setPrimaryPickerPlayerId(null);
+          }}
+          onRemove={(characterId) => {
+            onRemoveClaim(primaryPickerPlayerId, characterId);
             setPrimaryPickerPlayerId(null);
           }}
           scriptCharacterIds={scriptCharacterIds}

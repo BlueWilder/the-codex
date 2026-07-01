@@ -7,6 +7,8 @@ import { CharacterToken } from "@/components/character/CharacterToken";
 import {
   CircleSeatingChart,
   SortablePlayerCard,
+  CharacterPicker,
+  PlayerDetailDrawer,
 } from "@/pages/Game";
 import { latestDeathRecord, deathPhaseLabel } from "@/lib/death-phase";
 import type { GamePlayer, DeathRecord } from "@/hooks/use-player-game";
@@ -273,6 +275,93 @@ describe("List row tap isolation", () => {
     fireEvent.click(screen.getByTestId("button-claim-badge-imp-p1"));
     expect(onRemoveClaim).toHaveBeenCalledWith("imp");
     expect(onSelect).not.toHaveBeenCalled();
+  });
+});
+
+describe("Set Claim picker (single select)", () => {
+  it("marks the current primary claim and removes it when tapped again", () => {
+    const onSelect = vi.fn();
+    const onRemove = vi.fn();
+    render(
+      <CharacterPicker
+        open
+        onClose={noop}
+        singleSelect
+        primaryClaimId="imp"
+        onSelect={onSelect}
+        onRemove={onRemove}
+      />,
+    );
+    // The current primary is marked with a check and a "tap to remove" hint.
+    expect(screen.getByTestId("icon-current-claim-imp")).not.toBeNull();
+    expect(screen.getByTestId("text-tap-to-remove-imp")).not.toBeNull();
+    // Tapping the current primary removes it (deselect), not re-select.
+    fireEvent.click(screen.getByTestId("button-select-character-imp"));
+    expect(onRemove).toHaveBeenCalledWith("imp");
+    expect(onSelect).not.toHaveBeenCalled();
+  });
+
+  it("sets a different character as the new primary", () => {
+    const onSelect = vi.fn();
+    const onRemove = vi.fn();
+    render(
+      <CharacterPicker
+        open
+        onClose={noop}
+        singleSelect
+        primaryClaimId="imp"
+        onSelect={onSelect}
+        onRemove={onRemove}
+      />,
+    );
+    fireEvent.click(screen.getByTestId("button-select-character-poisoner"));
+    expect(onSelect).toHaveBeenCalledWith(["poisoner"]);
+    expect(onRemove).not.toHaveBeenCalled();
+  });
+});
+
+function renderDrawer(
+  player: GamePlayer,
+  opts: { onRemoveClaim?: (id: string) => void } = {},
+) {
+  return render(
+    <PlayerDetailDrawer
+      player={player}
+      players={[player]}
+      onClose={noop}
+      onToggleAlive={noop}
+      onAddMultipleClaims={noop}
+      onRemoveClaim={opts.onRemoveClaim ?? noop}
+      onSetNotes={noop}
+      onSetPlayerName={noop}
+    />,
+  );
+}
+
+describe("Player detail drawer claims", () => {
+  it("removes a claim via the x on each chip (primary and extra)", () => {
+    const onRemoveClaim = vi.fn();
+    renderDrawer(makePlayer({ id: "p1", name: "Alice", claims: ["imp", "poisoner"] }), {
+      onRemoveClaim,
+    });
+    fireEvent.click(screen.getByTestId("button-remove-claim-imp-p1"));
+    expect(onRemoveClaim).toHaveBeenCalledWith("imp");
+    fireEvent.click(screen.getByTestId("button-remove-claim-poisoner-p1"));
+    expect(onRemoveClaim).toHaveBeenCalledWith("poisoner");
+  });
+
+  it("keeps the info button distinct from the remove control", () => {
+    const onRemoveClaim = vi.fn();
+    renderDrawer(makePlayer({ id: "p2", name: "Bob", claims: ["imp"] }), { onRemoveClaim });
+    // The info button opens the preview and must not trigger removal.
+    fireEvent.click(screen.getByTestId("button-claim-info-imp-p2"));
+    expect(onRemoveClaim).not.toHaveBeenCalled();
+  });
+
+  it("shows an empty state when the seat has no claims", () => {
+    renderDrawer(makePlayer({ id: "p3", name: "Cara", claims: [] }));
+    expect(screen.getByTestId("text-no-claims-p3")).not.toBeNull();
+    expect(screen.queryByTestId("chip-primary-p3")).toBeNull();
   });
 });
 
