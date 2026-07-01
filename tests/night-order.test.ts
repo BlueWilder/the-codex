@@ -240,6 +240,64 @@ describe("sortCharacters", () => {
     });
   });
 
+  describe("official botc.app night-order anchors (data correctness)", () => {
+    const byId = (id: string): Character => {
+      const c = ALL_CHARACTERS.find(ch => ch.id === id);
+      if (!c) throw new Error(`character not found: ${id}`);
+      return c;
+    };
+
+    it("wizard acts on both nights (both orders non-null)", () => {
+      const wizard = byId("wizard");
+      expect(wizard.firstNightOrder).not.toBeNull();
+      expect(wizard.otherNightOrder).not.toBeNull();
+    });
+
+    it("scarlet woman acts before the imp on other nights", () => {
+      const sw = byId("scarletwoman");
+      const imp = byId("imp");
+      expect(sw.otherNightOrder).not.toBeNull();
+      expect(imp.otherNightOrder).not.toBeNull();
+      expect(sw.otherNightOrder!).toBeLessThan(imp.otherNightOrder!);
+    });
+
+    it("poisoner is among the earliest on both nights", () => {
+      const poisoner = byId("poisoner");
+      expect(poisoner.firstNightOrder).not.toBeNull();
+      expect(poisoner.otherNightOrder).not.toBeNull();
+      // Poisoner precedes the Scarlet Woman and Imp on other nights.
+      expect(poisoner.otherNightOrder!).toBeLessThan(byId("scarletwoman").otherNightOrder!);
+      // Poisoner precedes the Trouble Brewing info townsfolk on the first night.
+      expect(poisoner.firstNightOrder!).toBeLessThan(byId("washerwoman").firstNightOrder!);
+    });
+
+    it("keeps the first-night Trouble Brewing info order washerwoman < librarian < investigator < chef < empath < fortuneteller < butler", () => {
+      const chain = [
+        "washerwoman",
+        "librarian",
+        "investigator",
+        "chef",
+        "empath",
+        "fortuneteller",
+        "butler",
+      ].map(id => {
+        const order = byId(id).firstNightOrder;
+        expect(order).not.toBeNull();
+        return order!;
+      });
+      for (let i = 1; i < chain.length; i += 1) {
+        expect(chain[i - 1]).toBeLessThan(chain[i]);
+      }
+    });
+
+    it("maps no character to a night meta step (dusk/minioninfo/demoninfo/dawn)", () => {
+      const meta = new Set(["dusk", "minioninfo", "demoninfo", "dawn"]);
+      const norm = (id: string) => id.toLowerCase().replace(/[^a-z0-9]/g, "");
+      const collisions = ALL_CHARACTERS.filter(c => meta.has(norm(c.id))).map(c => c.id);
+      expect(collisions).toEqual([]);
+    });
+  });
+
   describe("team mode", () => {
     it("groups by team in townsfolk/outsider/minion/demon order", () => {
       const chars = [
