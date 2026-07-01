@@ -401,8 +401,8 @@ export function SetupWizard({ onStart }: { onStart: (count: number, names: strin
         </div>
       )}
 
-      <div className="flex justify-center pt-6">
-        <Button onClick={handleStartGame} size="lg" data-testid="button-start-game">
+      <div className="sticky bottom-0 z-30 -mx-4 mt-6 px-4 pt-3 pb-4 flex justify-center bg-gradient-to-t from-background via-background/95 to-transparent">
+        <Button onClick={handleStartGame} size="lg" className="shadow-lg shadow-amber-900/30" data-testid="button-start-game">
           <Play className="w-4 h-4 mr-2" /> Start Game
         </Button>
       </div>
@@ -624,12 +624,16 @@ function CharacterPicker({
   onSelect,
   excludeIds = [],
   scriptCharacterIds,
+  singleSelect = false,
+  title,
 }: { 
   open: boolean; 
   onClose: () => void; 
   onSelect: (characterIds: string[]) => void;
   excludeIds?: string[];
   scriptCharacterIds?: string[] | null;
+  singleSelect?: boolean;
+  title?: string;
 }) {
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -696,6 +700,17 @@ function CharacterPicker({
     onClose();
   };
 
+  const handleSelectRow = (charId: string) => {
+    if (singleSelect) {
+      onSelect([charId]);
+      setSelected(new Set());
+      setSearch("");
+      onClose();
+      return;
+    }
+    toggleCharacter(charId);
+  };
+
   const handleClose = () => {
     setSelected(new Set());
     setSearch("");
@@ -707,7 +722,7 @@ function CharacterPicker({
       <DialogContent className="max-w-md p-0" onOpenAutoFocus={(e) => e.preventDefault()}>
         <div className="flex flex-col max-h-[70vh] overflow-hidden p-6 pb-0">
           <DialogHeader className="mb-4">
-            <DialogTitle className="font-display text-amber-500">Select Characters</DialogTitle>
+            <DialogTitle className="font-display text-amber-500">{title ?? (singleSelect ? "Set Claim" : "Select Characters")}</DialogTitle>
           </DialogHeader>
           <div className="relative mb-4 flex-shrink-0">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -726,7 +741,7 @@ function CharacterPicker({
                 return (
                   <button
                     key={char.id}
-                    onClick={() => toggleCharacter(char.id)}
+                    onClick={() => handleSelectRow(char.id)}
                     className={cn(
                       "w-full text-left p-3 rounded-lg border transition-colors flex items-center gap-3",
                       "hover-elevate active-elevate-2",
@@ -735,11 +750,13 @@ function CharacterPicker({
                     )}
                     data-testid={`button-select-character-${char.id}`}
                   >
-                    <Checkbox 
-                      checked={isSelected} 
-                      className="pointer-events-none"
-                      data-testid={`checkbox-character-${char.id}`}
-                    />
+                    {!singleSelect && (
+                      <Checkbox 
+                        checked={isSelected} 
+                        className="pointer-events-none"
+                        data-testid={`checkbox-character-${char.id}`}
+                      />
+                    )}
                     <span className="font-medium">{char.name}</span>
                     <span className="ml-auto">
                       <TeamBadge team={char.team} variant="label" />
@@ -753,18 +770,20 @@ function CharacterPicker({
             </div>
           </div>
         </div>
-        <div className="flex items-center justify-between gap-3 p-4 border-t border-border bg-card/50">
-          <span className="text-sm text-muted-foreground">
-            {selected.size > 0 ? `${selected.size} selected` : "Select characters to add"}
-          </span>
-          <Button 
-            onClick={handleConfirm}
-            disabled={selected.size === 0}
-            data-testid="button-confirm-add-claims"
-          >
-            Add {selected.size > 0 ? `${selected.size} ` : ""}Claim{selected.size !== 1 ? "s" : ""}
-          </Button>
-        </div>
+        {!singleSelect && (
+          <div className="flex items-center justify-between gap-3 p-4 border-t border-border bg-card/50">
+            <span className="text-sm text-muted-foreground">
+              {selected.size > 0 ? `${selected.size} selected` : "Select characters to add"}
+            </span>
+            <Button 
+              onClick={handleConfirm}
+              disabled={selected.size === 0}
+              data-testid="button-confirm-add-claims"
+            >
+              Add {selected.size > 0 ? `${selected.size} ` : ""}Claim{selected.size !== 1 ? "s" : ""}
+            </Button>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );
@@ -1427,7 +1446,6 @@ function CircleNodeContent({
   const claims = player.claims ?? [];
   const primaryId = claims?.[0] ?? null;
   const primaryChar = primaryId ? resolveClaimDescriptor(primaryId) : null;
-  const extraCount = claims.length > 1 ? claims.length - 1 : 0;
   const isDead = player.status === 'dead' || player.status === 'exiled';
 
   const tokenSize = Math.round(nodeSize * 0.62);
@@ -1481,18 +1499,6 @@ function CircleNodeContent({
         </span>
       )}
 
-      {extraCount > 0 && (
-        <span
-          className={cn(
-            "absolute -bottom-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full border flex items-center justify-center text-[9px] font-semibold leading-none",
-            teamBadge(primaryChar?.team ?? 'townsfolk')
-          )}
-          data-testid={`badge-candidates-${player.id}`}
-        >
-          +{extraCount}
-        </span>
-      )}
-
       {isDead && (
         <div
           className="absolute inset-0 rounded-full pointer-events-none flex items-end justify-center overflow-hidden"
@@ -1510,6 +1516,7 @@ export function CircleSeatingChart({
   currentDay,
   deathRecords = [],
   onSelectPlayer,
+  onOpenPrimaryPicker,
   onReorderPlayers,
   onSetCirclePosition,
   onSetMultipleCirclePositions,
@@ -1519,6 +1526,7 @@ export function CircleSeatingChart({
   currentDay: number;
   deathRecords?: DeathRecord[];
   onSelectPlayer: (playerId: string) => void;
+  onOpenPrimaryPicker?: (playerId: string) => void;
   onReorderPlayers: (activeId: string, overId: string) => void;
   onSetCirclePosition: (playerId: string, x: number, y: number) => void;
   onSetMultipleCirclePositions: (updates: { playerId: string; x: number; y: number }[]) => void;
@@ -1692,6 +1700,7 @@ export function CircleSeatingChart({
                 position={{ x: displayX, y: displayY }}
                 nodeSize={nodeSize}
                 onSelectPlayer={onSelectPlayer}
+                onOpenPrimaryPicker={onOpenPrimaryPicker}
                 isDragging={isBeingDragged}
                 angleDeg={angleDeg}
                 deathRecord={deathRecord}
@@ -1709,6 +1718,7 @@ function DraggableCircleNode({
   position,
   nodeSize,
   onSelectPlayer,
+  onOpenPrimaryPicker,
   isDragging,
   angleDeg,
   deathRecord = null,
@@ -1717,6 +1727,7 @@ function DraggableCircleNode({
   position: { x: number; y: number };
   nodeSize: number;
   onSelectPlayer: (playerId: string) => void;
+  onOpenPrimaryPicker?: (playerId: string) => void;
   isDragging: boolean;
   angleDeg: number;
   deathRecord?: DeathRecord | null;
@@ -1727,54 +1738,108 @@ function DraggableCircleNode({
 
   const isBottom = angleDeg > 0 && angleDeg < 180;
   const isActive = player.status === 'alive';
+  const isDead = player.status === 'dead' || player.status === 'exiled';
   const displayName = player.name.length > 9 ? player.name.slice(0, 8) + '…' : player.name;
   const phaseStamp = deathPhaseLabel(deathRecord);
 
+  const extraClaims = (player.claims ?? [])
+    .slice(1)
+    .map(id => resolveClaimDescriptor(id))
+    .filter((c): c is ClaimDescriptor => c !== null);
+  const shownExtras = extraClaims.slice(0, 3);
+  const hiddenExtras = extraClaims.length - shownExtras.length;
+
   return (
-    <button
-      ref={setNodeRef}
-      {...attributes}
-      {...listeners}
-      onClick={() => !isDragging && onSelectPlayer(player.id)}
-      className={cn(
-        "absolute touch-none z-10",
-        isDragging && "z-30",
-        !isDragging && "hover-elevate active-elevate-2"
-      )}
+    <div
+      className={cn("absolute", isDragging ? "z-30" : "z-10")}
       style={{
         left: position.x,
         top: position.y,
         width: nodeSize,
         height: nodeSize,
         transition: isDragging ? 'none' : 'left 200ms ease, top 200ms ease',
-        transform: isDragging ? 'scale(1.15)' : 'scale(1)',
-        borderRadius: '50%',
-        boxShadow: isDragging ? '0 0 8px 3px rgba(201, 162, 39, 0.7), 0 0 20px 6px rgba(201, 162, 39, 0.35)' : 'none',
       }}
       data-testid={`circle-node-${player.id}`}
     >
       <span
         className={cn(
-          "absolute left-1/2 -translate-x-1/2 font-display text-[11px] font-medium whitespace-nowrap pointer-events-none",
-          !isActive && "text-muted-foreground line-through",
-          isActive && "text-foreground"
+          "absolute left-1/2 -translate-x-1/2 flex flex-col items-center gap-0.5 pointer-events-none",
         )}
         style={isBottom ? { top: nodeSize + 2 } : { bottom: nodeSize + 2 }}
       >
-        {displayName}
-        {phaseStamp && (
-          <span className="ml-1 text-[#c79fe6]" data-testid={`text-seat-death-${player.id}`}>
-            † {phaseStamp}
+        <span
+          className={cn(
+            "font-display text-[11px] font-medium whitespace-nowrap",
+            !isActive && "text-muted-foreground line-through",
+            isActive && "text-foreground"
+          )}
+        >
+          {displayName}
+          {phaseStamp && (
+            <span className="ml-1 text-[#c79fe6]" data-testid={`text-seat-death-${player.id}`}>
+              † {phaseStamp}
+            </span>
+          )}
+        </span>
+        {extraClaims.length > 0 && (
+          <span className="flex flex-wrap justify-center gap-0.5 max-w-[88px]">
+            {shownExtras.map(c => (
+              <span
+                key={c.id}
+                className={cn(
+                  "px-1 py-[1px] rounded text-[8px] leading-none border",
+                  isDead ? "text-muted-foreground border-muted-foreground/30 bg-transparent" : candidateChipClass(c.team, false)
+                )}
+                data-testid={`chip-seat-extra-${c.id}-${player.id}`}
+              >
+                {c.name.length > 6 ? c.name.slice(0, 5) + '…' : c.name}
+              </span>
+            ))}
+            {hiddenExtras > 0 && (
+              <span
+                className="px-1 py-[1px] rounded text-[8px] leading-none text-muted-foreground"
+                data-testid={`chip-seat-extra-more-${player.id}`}
+              >
+                +{hiddenExtras}
+              </span>
+            )}
           </span>
         )}
       </span>
-      <CircleNodeContent
-        player={player}
-        nodeSize={nodeSize}
-        isDragging={isDragging}
-        nameOutside={true}
-      />
-    </button>
+      <button
+        ref={setNodeRef}
+        {...attributes}
+        {...listeners}
+        onClick={() => !isDragging && onOpenPrimaryPicker?.(player.id)}
+        className={cn(
+          "w-full h-full rounded-full touch-none",
+          !isDragging && "hover-elevate active-elevate-2"
+        )}
+        style={{
+          transform: isDragging ? 'scale(1.15)' : 'scale(1)',
+          boxShadow: isDragging ? '0 0 8px 3px rgba(201, 162, 39, 0.7), 0 0 20px 6px rgba(201, 162, 39, 0.35)' : 'none',
+        }}
+        data-testid={`button-seat-token-${player.id}`}
+      >
+        <CircleNodeContent
+          player={player}
+          nodeSize={nodeSize}
+          isDragging={isDragging}
+          nameOutside={true}
+        />
+      </button>
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          if (!isDragging) onSelectPlayer(player.id);
+        }}
+        className="absolute -bottom-1 -right-1 z-20 w-5 h-5 rounded-full bg-amber-950/90 border border-amber-600/70 text-amber-300 flex items-center justify-center shadow hover:bg-amber-900 hover:border-amber-500 active:scale-95 transition-colors"
+        aria-label={`More options for ${player.name}`}
+        data-testid={`button-seat-more-${player.id}`}
+      >
+        <MoreVertical className="w-3 h-3" />
+      </button>
+    </div>
   );
 }
 
@@ -1786,6 +1851,7 @@ export function GameTrackerView({
   onSetPlayerStatus,
   onAddClaim,
   onAddMultipleClaims,
+  onSetPrimaryClaim,
   onRemoveClaim,
   onSetNotes,
   onUpdatePlayerName,
@@ -1814,6 +1880,7 @@ export function GameTrackerView({
   onSetPlayerStatus: (playerId: string, status: PlayerStatus) => void;
   onAddClaim: (playerId: string, characterId: string) => void;
   onAddMultipleClaims: (playerId: string, characterIds: string[]) => void;
+  onSetPrimaryClaim: (playerId: string, characterId: string) => void;
   onRemoveClaim: (playerId: string, characterId: string) => void;
   onSetNotes: (playerId: string, notes: string) => void;
   onUpdatePlayerName: (playerId: string, name: string) => void;
@@ -1836,6 +1903,7 @@ export function GameTrackerView({
   onResetCirclePositions: () => void;
 }) {
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
+  const [primaryPickerPlayerId, setPrimaryPickerPlayerId] = useState<string | null>(null);
   const [confirmEnd, setConfirmEnd] = useState(false);
   const [showPlayAgainConfirm, setShowPlayAgainConfirm] = useState(false);
   const [showAddTravelerDialog, setShowAddTravelerDialog] = useState(false);
@@ -2316,6 +2384,7 @@ export function GameTrackerView({
           currentDay={game.currentDay}
           deathRecords={game.deathRecords ?? []}
           onSelectPlayer={(playerId) => setSelectedPlayerId(playerId)}
+          onOpenPrimaryPicker={(playerId) => setPrimaryPickerPlayerId(playerId)}
           onReorderPlayers={onReorderPlayers}
           onSetCirclePosition={onSetCirclePosition}
           onSetMultipleCirclePositions={onSetMultipleCirclePositions}
@@ -2485,6 +2554,19 @@ export function GameTrackerView({
         />
       )}
 
+      {primaryPickerPlayerId && (
+        <CharacterPicker
+          open={!!primaryPickerPlayerId}
+          onClose={() => setPrimaryPickerPlayerId(null)}
+          singleSelect
+          onSelect={(characterIds) => {
+            if (characterIds[0]) onSetPrimaryClaim(primaryPickerPlayerId, characterIds[0]);
+            setPrimaryPickerPlayerId(null);
+          }}
+          scriptCharacterIds={scriptCharacterIds}
+        />
+      )}
+
     </div>
   );
 }
@@ -2526,6 +2608,19 @@ export default function Game() {
     updatePlayer(playerId, { name });
   };
 
+  const setPrimaryClaim = (playerId: string, characterId: string) => {
+    if (!game) return;
+    const player = game.players.find(p => p.id === playerId);
+    if (!player) return;
+    const existingClaims = player.claims ?? [];
+    const newClaims = [characterId, ...existingClaims.filter(c => c !== characterId)];
+    const existingRecords = player.claimRecords ?? [];
+    const newRecords = existingRecords.some(r => r.characterId === characterId)
+      ? existingRecords
+      : [...existingRecords, { characterId, addedAt: new Date().toISOString(), day: game.currentDay }];
+    updatePlayer(playerId, { claims: newClaims, claimRecords: newRecords });
+  };
+
   if (isLoading) {
     return (
       <Layout>
@@ -2549,6 +2644,7 @@ export default function Game() {
           onSetPlayerStatus={setPlayerStatus}
           onAddClaim={addClaim}
           onAddMultipleClaims={addMultipleClaims}
+          onSetPrimaryClaim={setPrimaryClaim}
           onRemoveClaim={removeClaim}
           onSetNotes={setNotes}
           onUpdatePlayerName={updatePlayerName}

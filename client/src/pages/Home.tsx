@@ -3,6 +3,7 @@ import { Link } from "wouter";
 import { Gamepad2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import cccBadge from "@/assets/ccc-parchment.png";
 
 export default function Home() {
   return (
@@ -76,6 +77,23 @@ export default function Home() {
               bloodontheclocktower.com
             </a>
           </p>
+          <a
+            href="https://botc.app"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex flex-col items-center gap-1 pt-2 opacity-80 hover:opacity-100 transition-opacity"
+            data-testid="link-ccc-badge"
+          >
+            <img
+              src={cccBadge}
+              alt="Custom Characters Community"
+              className="h-8 w-auto"
+              data-testid="img-ccc-badge"
+            />
+            <span className="text-[10px] text-muted-foreground/60">
+              A reference tool, not a source of official rulings.
+            </span>
+          </a>
         </motion.div>
       </div>
     </Layout>

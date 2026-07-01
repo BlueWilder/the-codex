@@ -26,13 +26,21 @@ function makePlayer(overrides: Partial<GamePlayer> & { id: string; name: string 
 
 const noop = () => {};
 
-function renderChart(players: GamePlayer[], deathRecords: DeathRecord[] = []) {
+function renderChart(
+  players: GamePlayer[],
+  deathRecords: DeathRecord[] = [],
+  opts: {
+    onSelectPlayer?: (playerId: string) => void;
+    onOpenPrimaryPicker?: (playerId: string) => void;
+  } = {},
+) {
   return render(
     <CircleSeatingChart
       players={players}
       currentDay={1}
       deathRecords={deathRecords}
-      onSelectPlayer={noop}
+      onSelectPlayer={opts.onSelectPlayer ?? noop}
+      onOpenPrimaryPicker={opts.onOpenPrimaryPicker ?? noop}
       onReorderPlayers={noop}
       onSetCirclePosition={noop}
       onSetMultipleCirclePositions={noop}
@@ -79,9 +87,40 @@ describe("Circle seat states", () => {
     expect(screen.queryByTestId("badge-candidates-p1")).toBeNull();
   });
 
-  it("shows a +N badge for multiple claims", () => {
+  it("shows extra claims as small chips under the name (no +N badge)", () => {
     renderChart([makePlayer({ id: "p2", name: "Bob", claims: ["imp", "poisoner", "baron"] })]);
-    expect(screen.getByTestId("badge-candidates-p2").textContent).toContain("+2");
+    // The old +N badge is gone; extras render as chips beneath the player name.
+    expect(screen.queryByTestId("badge-candidates-p2")).toBeNull();
+    expect(screen.getByTestId("chip-seat-extra-poisoner-p2")).not.toBeNull();
+    expect(screen.getByTestId("chip-seat-extra-baron-p2")).not.toBeNull();
+    // The primary (imp) is not shown as an extra chip.
+    expect(screen.queryByTestId("chip-seat-extra-imp-p2")).toBeNull();
+  });
+
+  it("collapses more than three extra claims into an overflow chip", () => {
+    renderChart([
+      makePlayer({
+        id: "p6",
+        name: "Fay",
+        claims: ["imp", "poisoner", "baron", "spy", "washerwoman"],
+      }),
+    ]);
+    // Four extras: three chips shown, the fourth folded into a +1 overflow chip.
+    expect(screen.getByTestId("chip-seat-extra-more-p6").textContent).toContain("+1");
+  });
+
+  it("opens the primary claim picker when the seat token is tapped", () => {
+    const onOpenPrimaryPicker = vi.fn();
+    renderChart([makePlayer({ id: "p4", name: "Dana", claims: ["imp"] })], [], { onOpenPrimaryPicker });
+    fireEvent.click(screen.getByTestId("button-seat-token-p4"));
+    expect(onOpenPrimaryPicker).toHaveBeenCalledWith("p4");
+  });
+
+  it("opens the player detail via the + button", () => {
+    const onSelectPlayer = vi.fn();
+    renderChart([makePlayer({ id: "p5", name: "Evan", claims: ["imp"] })], [], { onSelectPlayer });
+    fireEvent.click(screen.getByTestId("button-seat-more-p5"));
+    expect(onSelectPlayer).toHaveBeenCalledWith("p5");
   });
 
   it("shows a no-claim placeholder for an empty seat", () => {

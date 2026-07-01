@@ -21,6 +21,7 @@ import {
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import cccBadge from "@/assets/ccc-parchment.png";
 import {
   Accordion,
   AccordionContent,
@@ -421,6 +422,40 @@ export default function Introduction() {
             </div>
           </Link>
         </motion.section>
+
+        <motion.div
+          {...fadeInUp}
+          transition={{ delay: 1 }}
+          className="mt-12 flex flex-col items-center gap-2 text-center"
+        >
+          <a
+            href="https://botc.app"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="opacity-80 hover:opacity-100 transition-opacity"
+            data-testid="link-ccc-badge"
+          >
+            <img
+              src={cccBadge}
+              alt="Custom Characters Community"
+              className="h-8 w-auto"
+              data-testid="img-ccc-badge"
+            />
+          </a>
+          <p className="text-xs text-muted-foreground/70 max-w-xl" data-testid="text-guide-disclaimer">
+            This guide is a fan-made reference to help you learn, not a source of official rulings. When a question comes up at the table, the Storyteller decides. For the official rules and characters, visit{" "}
+            <a
+              href="https://bloodontheclocktower.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-amber-600 hover:text-amber-500 underline underline-offset-2"
+              data-testid="link-botc-official"
+            >
+              bloodontheclocktower.com
+            </a>
+            .
+          </p>
+        </motion.div>
       </div>
     </Layout>
   );
