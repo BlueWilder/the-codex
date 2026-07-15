@@ -114,15 +114,19 @@ export function useFriends() {
     if (user) {
       createMutation.mutate({ name });
     } else {
+      // Functional update so multiple addFriend calls in the same tick
+      // (e.g. saving several names at once) don't overwrite each other.
       const newFriend: LocalFriend = {
-        id: `local-${Date.now()}`,
+        id: `local-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
         name,
       };
-      const updated = [...localFriends, newFriend];
-      setLocalFriends(updated);
-      saveToLocalStorage(updated);
+      setLocalFriends(prev => {
+        const updated = [...prev, newFriend];
+        saveToLocalStorage(updated);
+        return updated;
+      });
     }
-  }, [user, localFriends, createMutation]);
+  }, [user, createMutation]);
 
   const renameFriend = useCallback((id: string, name: string) => {
     if (user && id.startsWith("db-")) {

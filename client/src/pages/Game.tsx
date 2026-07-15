@@ -6,6 +6,8 @@ import { useLocalScripts, type LocalScript } from "@/hooks/use-local-scripts";
 import { ScriptBuilderDialog } from "@/components/ScriptBuilderDialog";
 import { InlineGameLog } from "@/components/InlineGameLog";
 import { FriendsPicker } from "@/components/FriendsPicker";
+import { CaptureFriendsDialog } from "@/components/CaptureFriendsDialog";
+import { useFriends } from "@/hooks/use-friends";
 import { scanScriptFile } from "@/lib/scan-script";
 import { resolveScriptCharacters, countScriptCharacters } from "@/lib/script-resolve";
 import { ScriptSheet } from "@/components/character/ScriptSheet";
@@ -2007,7 +2009,43 @@ export function GameTrackerView({
   const [editingScript, setEditingScript] = useState<LocalScript | null>(null);
   const [playerFilter, setPlayerFilter] = useState<'all' | 'alive' | 'dead'>('all');
   const [claimPickerPlayerId, setClaimPickerPlayerId] = useState<string | null>(null);
+  const [captureNames, setCaptureNames] = useState<string[] | null>(null);
+  const { friends, addFriend } = useFriends();
   const { getScriptById, isLoading: scriptsLoading, allScripts, addCustomScript, updateCustomScript, customScripts } = useLocalScripts();
+
+  // On Confirm End Game, offer to save typed player names that are not
+  // already friends. Placeholder names ("Player N" / "Traveler N") and
+  // existing friends never trigger the prompt.
+  const handleConfirmEndGame = () => {
+    const isPlaceholder = (n: string) => /^Player \d+$/.test(n) || /^Traveler \d+$/.test(n);
+    const friendNames = new Set(friends.map(f => f.name.trim().toLowerCase()));
+    const seen = new Set<string>();
+    const newNames: string[] = [];
+    for (const p of game.players) {
+      const name = p.name.trim();
+      if (!name || isPlaceholder(name)) continue;
+      const key = name.toLowerCase();
+      if (friendNames.has(key) || seen.has(key)) continue;
+      seen.add(key);
+      newNames.push(name);
+    }
+    if (newNames.length === 0) {
+      onEndGame();
+      return;
+    }
+    setCaptureNames(newNames);
+  };
+
+  const handleCaptureSave = (selectedNames: string[]) => {
+    selectedNames.forEach(name => addFriend(name));
+    setCaptureNames(null);
+    onEndGame();
+  };
+
+  const handleCaptureSkip = () => {
+    setCaptureNames(null);
+    onEndGame();
+  };
   
   const resolvedScript = game.script ? getScriptById(game.script.id) : null;
   const scriptCharacterIds = useMemo(
@@ -2224,7 +2262,7 @@ export function GameTrackerView({
                     Cancel
                   </DropdownMenuItem>
                   <DropdownMenuItem 
-                    onClick={onEndGame} 
+                    onClick={handleConfirmEndGame} 
                     className="text-destructive focus:text-destructive"
                     data-testid="button-confirm-end"
                   >
@@ -2615,6 +2653,13 @@ export function GameTrackerView({
             onSetScript({ id: newScript.id });
           }
         }}
+      />
+
+      <CaptureFriendsDialog
+        open={captureNames !== null}
+        names={captureNames ?? []}
+        onSave={handleCaptureSave}
+        onSkip={handleCaptureSkip}
       />
 
       <AlertDialog open={showPlayAgainConfirm} onOpenChange={setShowPlayAgainConfirm}>
