@@ -1179,11 +1179,11 @@ export const TRAVELLERS: Character[] = [
   { id: 'apprentice', name: 'Apprentice', edition: 'traveler', team: 'traveler', ability: 'On your 1st night, you gain a Townsfolk ability (if good) or a Minion ability (if evil).', firstNightOrder: 8, otherNightOrder: null, setup: false, reminders: ['Is the Apprentice'], flavorQuote: '"Teach me, master."', extendedSummary: 'On your first night, you gain a Townsfolk ability (if good) or Minion ability (if evil). You have this ability for the rest of the game.', tipsAndTricks: ['Gain powerful ability permanently', 'Alignment determines ability type', 'Flexible role'], bluffingAs: ['Traveller with gained ability'] },
   { id: 'matron', name: 'Matron', edition: 'traveler', team: 'traveler', ability: 'Each day, you may choose up to 3 sets of 2 players to swap seats. Players may not leave their seats to talk in private.', firstNightOrder: null, otherNightOrder: null, setup: false, reminders: [], flavorQuote: '"Children, settle down!"', extendedSummary: 'Each day, swap up to 3 pairs of player seats. Players cannot leave seats for private conversations.', tipsAndTricks: ['Control seating arrangements', 'Prevent private talks', 'Affects neighbor-based abilities'], bluffingAs: ['Traveller role'] },
   { id: 'judge', name: 'Judge', edition: 'traveler', team: 'traveler', ability: 'Once per game, if another player nominated, you may choose to force the current execution to pass or fail.', firstNightOrder: null, otherNightOrder: null, setup: false, reminders: ['No Ability'], flavorQuote: '"Order in the court!"', extendedSummary: 'Once per game, after another player nominates, you can force that execution to either succeed or fail, regardless of votes.', tipsAndTricks: ['Override any execution vote', 'Save or condemn at will', 'One-time powerful ability'], bluffingAs: ['Traveller'] },
-  { id: 'bishop', name: 'Bishop', edition: 'traveler', team: 'traveler', ability: 'Only the Storyteller can nominate. At least 1 opposing player must be nominated each day.', firstNightOrder: null, otherNightOrder: null, setup: false, reminders: [], flavorQuote: '"The will of God shall be done."', extendedSummary: 'Only Storyteller nominates while you live. At least one player of opposing alignment to you must be executed each day.', tipsAndTricks: ['Removes player nominations', 'Forced opposing executions', 'Very game-changing'], bluffingAs: ['Traveller role'] },
-  { id: 'voudon', name: 'Voudon', edition: 'traveler', team: 'traveler', ability: 'Only you & the dead can vote. They don\'t need a vote token to do so. A 50% majority isn\'t required.', firstNightOrder: null, otherNightOrder: null, setup: false, reminders: [], flavorQuote: '"The dead speak through me."', extendedSummary: 'Only dead players vote (no tokens needed). Each dead player can vote up to 3 times during the game.', tipsAndTricks: ['Dead control votes', 'Living cannot vote', 'Changes game dynamics entirely'], bluffingAs: ['Traveller'] },
+  { id: 'bishop', name: 'Bishop', edition: 'traveler', team: 'traveler', ability: 'Only the Storyteller can nominate. At least 1 opposing player must be nominated each day.', firstNightOrder: null, otherNightOrder: null, setup: false, reminders: [], flavorQuote: '"The will of God shall be done."', extendedSummary: 'While you live, only the Storyteller can nominate. Each day, the Storyteller must nominate at least one player of the opposing alignment to you.', tipsAndTricks: ['Removes player nominations', 'The Storyteller must nominate at least one opposing player daily', 'Watch who the Storyteller nominates for alignment clues'], bluffingAs: ['Traveller role'] },
+  { id: 'voudon', name: 'Voudon', edition: 'traveler', team: 'traveler', ability: 'Only you & the dead can vote. They don\'t need a vote token to do so. A 50% majority isn\'t required.', firstNightOrder: null, otherNightOrder: null, setup: false, reminders: [], flavorQuote: '"The dead speak through me."', extendedSummary: 'Only the Voudon and dead players can vote, and the dead do not need vote tokens to do so. Executions no longer require a 50% majority, whoever has the most votes that day can be executed.', tipsAndTricks: ['Dead players control votes alongside the Voudon', 'Other living players cannot vote', 'No 50% majority needed, so small vote counts can execute'], bluffingAs: ['Traveller'] },
 
   // Sects & Violets Travellers
-  { id: 'barista', name: 'Barista', edition: 'traveler', team: 'traveler', ability: 'Each night, until dusk, 1) a player becomes sober, healthy & gets true info, or 2) their ability works twice. They learn which.', firstNightOrder: 9, otherNightOrder: 5, setup: false, reminders: ['Sober & Healthy', 'Acts Twice'], flavorQuote: '"Double shot?"', extendedSummary: 'Each night, Storyteller picks either: make one player sober and healthy with true info, OR make their ability work twice.', tipsAndTricks: ['Enhance player abilities', 'Cure drunk/poison or double power', 'Storyteller chooses effect'], bluffingAs: ['Traveller role'] },
+  { id: 'barista', name: 'Barista', edition: 'traveler', team: 'traveler', ability: 'Each night, until dusk, 1) a player becomes sober, healthy & gets true info, or 2) their ability works twice. They learn which.', firstNightOrder: 9, otherNightOrder: 5, setup: false, reminders: ['Sober & Healthy', 'Acts Twice'], flavorQuote: '"Double shot?"', extendedSummary: 'Each night, the Storyteller picks a player and an effect that lasts until dusk: either they become sober and healthy and get true information, or their ability works twice. That player is told which effect they got.', tipsAndTricks: ['Enhance player abilities', 'Cure drunk/poison or double power', 'The affected player learns which effect they received, which is powerful information'], bluffingAs: ['Traveller role'] },
   { id: 'harlot', name: 'Harlot', edition: 'traveler', team: 'traveler', ability: 'Each night*, choose a living player: if they agree, you learn their character, but you both might die.', firstNightOrder: null, otherNightOrder: 8, setup: false, reminders: ['Dead'], flavorQuote: '"Come with me, darling."', extendedSummary: 'Each night, choose a player. If they agree to your visit, you learn their character but either or both of you might die.', tipsAndTricks: ['Risky character learning', 'Both can die from visit', 'Player must agree'], bluffingAs: ['Traveller'] },
   { id: 'butcher', name: 'Butcher', edition: 'traveler', team: 'traveler', ability: 'Each day, after the 1st execution, you may nominate again.', firstNightOrder: null, otherNightOrder: null, setup: false, reminders: [], flavorQuote: '"Who\'s next?"', extendedSummary: 'After the first execution each day, you may make one additional nomination. Enables double executions.', tipsAndTricks: ['Two executions possible', 'Speeds up game', 'Use wisely'], bluffingAs: ['Traveller ability'] },
   { id: 'bonecollector', name: 'Bone Collector', edition: 'traveler', team: 'traveler', ability: 'Once per game, at night*, choose a dead player: they regain their ability until dusk.', firstNightOrder: null, otherNightOrder: 9, setup: false, reminders: ['No Ability', 'Has Ability'], flavorQuote: '"I collect memories."', extendedSummary: 'Once per game, revive a dead player ability until dusk. They can use their ability one more time.', tipsAndTricks: ['Resurrect powerful abilities', 'One-time use', 'Choose wisely'], bluffingAs: ['Traveller'] },
@@ -3393,19 +3393,19 @@ When their amigo is nominated, the Gnome may choose to kill the nominator immedi
     setup: false,
     reminders: ['Protected', 'Something bad'],
     flavorQuote: "Take good care of the newcomers.",
-    extendedSummary: `The Angel protects new or disadvantaged players from being targeted.
+    extendedSummary: `The Angel discourages targeting new players in their first few games.
 
-At the start of the game, the Storyteller declares the Angel is in play and identifies which player(s) it protects (with the player's consent). All players know who is protected, but not their alignment or character.
+At the start of the game, the Storyteller declares the Angel is in play and which new player(s) it watches over. All players know who is protected, but not their alignment or character.
 
-If anyone nominates or kills the protected player, something bad happens to the responsible party — such as being poisoned, losing their vote, or dying. The consequence is the Storyteller's choice.`,
+If a protected new player dies, something bad might happen to whoever the Storyteller judges was most responsible for that death, such as being poisoned, losing their vote, or dying. The consequence (and whether one happens at all) is the Storyteller's choice.`,
     tipsAndTricks: [
       "This is a Fabled - a Storyteller tool, not a regular character.",
-      "It protects new or disadvantaged players so they can learn the game without being targeted early.",
-      "The 'something bad' is up to the Storyteller — it could be poisoning, death, or losing a vote.",
-      "Everyone knows who is protected, so experienced players should avoid targeting them."
+      "It discourages killing new players early so they can learn the game.",
+      "The 'something bad' is up to the Storyteller, and it only *might* happen. It could be poisoning, death, or losing a vote.",
+      "The consequence lands on whoever was most responsible for the death, whether that's the Demon, a nominator, or a voter."
     ],
     bluffingAs: [],
-    howToRun: "At the start of the game, declare that the Angel is in play. Declare which player(s) it protects (with their consent). Mark them with the PROTECTED reminder.\n\nIf a protected player is nominated or killed, something bad happens to the most responsible player. Mark them with the SOMETHING BAD reminder. The consequence is your choice — poisoning, death, losing a vote, etc."
+    howToRun: "At the start of the game, declare that the Angel is in play and which new player(s) it watches over. Mark them with the PROTECTED reminder.\n\nIf a protected player dies, decide who was most responsible for that death and whether something bad happens to them. Mark that player with the SOMETHING BAD reminder. The consequence is your choice, such as poisoning, death, or losing a vote. You may also choose that nothing happens."
   },
   {
     id: 'buddhist',
@@ -3468,19 +3468,19 @@ This creates information through sacrifice: if a player uses the Doomsayer and a
     setup: false,
     reminders: [],
     flavorQuote: "The Devil went down to Georgia...",
-    extendedSummary: `The Fiddler provides an alternate game-ending mechanism — the "fiddle contest."
+    extendedSummary: `The Fiddler provides an alternate game-ending mechanism, a final showdown vote.
 
-Once per game, when the Storyteller decides the game needs to end soon, they activate the Fiddler. All players close their eyes. The Demon wakes and secretly points at a good player. All players open their eyes, and the Storyteller announces the two contestants: the Demon and their chosen opponent.
+Once per game, when the Storyteller decides the game needs to end soon, they activate the Fiddler. All players close their eyes. The Demon wakes and secretly points at a player of the opposing alignment. All players open their eyes, and the Storyteller announces the two contestants: the Demon and their chosen opponent.
 
-After a brief discussion period, all players vote on each contestant. The player with the most votes loses, and their entire team loses the game. On a tie, the good team wins.`,
+After a brief discussion period, all players choose which of the two contestants wins. The contestant with the most support wins the game for their team, and the game ends immediately.`,
     tipsAndTricks: [
       "This is a Fabled - a Storyteller tool, not a regular character.",
       "It gives the Storyteller a way to end a game that's running too long.",
-      "The Demon picks who they think they can beat in a popularity contest.",
-      "On a tie, the good team wins — so evil needs a clear majority to win the fiddle contest."
+      "The Demon picks the opposing player they think the group will vote against.",
+      "Players are choosing a winner, not a loser. Back the contestant you want to win the game."
     ],
     bluffingAs: [],
-    howToRun: "When you decide the game needs to end, declare you are using the Fiddler.\n\nPut all players to sleep. Wake the Demon — they point at a good player. Put the Demon to sleep. Wake all players.\n\nDeclare the Demon and the chosen player are in a fiddle contest. After a minute or two of discussion, run a show-of-hands vote for each contestant. The player with the most votes loses, and their team loses the game. On a tie, the good team wins."
+    howToRun: "When you decide the game needs to end, declare you are using the Fiddler.\n\nPut all players to sleep. Wake the Demon, who points at a player of the opposing alignment. Put the Demon to sleep. Wake all players.\n\nDeclare the Demon and the chosen player are the two contestants. After a minute or two of discussion, all players choose which contestant wins (for example, by a show-of-hands vote for each). The contestant with the most support wins the game for their team, and the game ends."
   },
   {
     id: 'revolutionary',
