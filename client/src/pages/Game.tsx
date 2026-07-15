@@ -896,10 +896,19 @@ export function PlayerDetailDrawer({
   const [showRemoveConfirm, setShowRemoveConfirm] = useState(false);
   const [previewCharacter, setPreviewCharacter] = useState<typeof ALL_CHARACTERS[0] | null>(null);
   const notesSectionRef = useRef<HTMLDivElement>(null);
+  const { friends } = useFriends();
 
   if (!player) return null;
 
   const claimedCharacters = player.claims.map(id => resolveClaimDescriptor(id)).filter(Boolean);
+
+  // Names currently on OTHER seats (case-insensitive), derived live so
+  // renaming a seat away frees that friend again. Self seat excluded.
+  const takenSeatNames = new Set(
+    players
+      .filter(p => p.id !== player.id)
+      .map(p => p.name.trim().toLowerCase()),
+  );
 
   return (
     <>
@@ -970,6 +979,42 @@ export function PlayerDetailDrawer({
                 </Button>
               </DrawerClose>
             </div>
+            {isEditingName && friends.length > 0 && (
+              <div className="mt-3 text-left" data-testid="section-from-friends">
+                <div className="flex items-center gap-1.5 mb-1.5">
+                  <Users className="w-3.5 h-3.5 text-[#c79fe6]" />
+                  <span className="text-xs uppercase tracking-wider font-semibold text-[#c79fe6]">From Friends</span>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {friends.map((friend) => {
+                    const seated = takenSeatNames.has(friend.name.trim().toLowerCase());
+                    return (
+                      <button
+                        key={friend.id}
+                        type="button"
+                        disabled={seated}
+                        onMouseDown={(e) => e.preventDefault()}
+                        onPointerDown={(e) => e.preventDefault()}
+                        onClick={() => setEditedName(friend.name)}
+                        className={cn(
+                          "rounded-md border px-2.5 py-1 text-sm font-serif transition-colors duration-150",
+                          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
+                          seated
+                            ? "border-[#3d2f57]/40 bg-transparent text-muted-foreground/50 cursor-not-allowed"
+                            : "border-[#3d2f57] bg-[#c79fe6]/5 text-[#c79fe6] hover:bg-[#c79fe6]/15"
+                        )}
+                        data-testid={`button-assign-friend-${friend.id}`}
+                      >
+                        {friend.name}
+                        {seated && (
+                          <span className="ml-1.5 text-[10px] uppercase tracking-wider opacity-70">seated</span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </DrawerHeader>
 
           <ScrollArea className="flex-1">

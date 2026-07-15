@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { DndContext } from "@dnd-kit/core";
 import { SortableContext, rectSortingStrategy } from "@dnd-kit/sortable";
 import { CharacterToken } from "@/components/character/CharacterToken";
@@ -334,17 +335,22 @@ function renderDrawer(
   player: GamePlayer,
   opts: { onRemoveClaim?: (id: string) => void } = {},
 ) {
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  });
   return render(
-    <PlayerDetailDrawer
-      player={player}
-      players={[player]}
-      onClose={noop}
-      onToggleAlive={noop}
-      onAddMultipleClaims={noop}
-      onRemoveClaim={opts.onRemoveClaim ?? noop}
-      onSetNotes={noop}
-      onSetPlayerName={noop}
-    />,
+    <QueryClientProvider client={client}>
+      <PlayerDetailDrawer
+        player={player}
+        players={[player]}
+        onClose={noop}
+        onToggleAlive={noop}
+        onAddMultipleClaims={noop}
+        onRemoveClaim={opts.onRemoveClaim ?? noop}
+        onSetNotes={noop}
+        onSetPlayerName={noop}
+      />
+    </QueryClientProvider>,
   );
 }
 
