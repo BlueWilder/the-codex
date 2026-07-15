@@ -2310,58 +2310,68 @@ export function GameTrackerView({
           </div>
         )}
 
-        {/* Role Count */}
+        {/* Merged chip row: Alive/Dead filters + team composition dots */}
         {(() => {
           const roleBreakdown = getBreakdown(regularPlayers.length);
           return (
-            <div className="flex items-center justify-center gap-1.5 px-4 py-2 border-b border-border text-sm flex-wrap" data-testid="section-role-count">
-              <span className="text-blue-400 font-medium" data-testid="text-townsfolk-count">{roleBreakdown.townsfolk} Townsfolk</span>
-              <span className="text-muted-foreground">·</span>
-              <span className="text-green-400 font-medium" data-testid="text-outsiders-count">{roleBreakdown.outsiders} Outsider{roleBreakdown.outsiders !== 1 ? 's' : ''}</span>
-              <span className="text-muted-foreground">·</span>
-              <span className="text-red-400 font-medium" data-testid="text-minions-count">{roleBreakdown.minions} Minion{roleBreakdown.minions !== 1 ? 's' : ''}</span>
-              <span className="text-muted-foreground">·</span>
-              <span className="text-red-700 font-medium" data-testid="text-demon-count">{roleBreakdown.demons} Demon{roleBreakdown.demons !== 1 ? 's' : ''}</span>
-              {travelers.length > 0 && (
-                <>
-                  <span className="text-muted-foreground">·</span>
-                  <span className="text-purple-400 font-medium" data-testid="text-travelers-count">{travelers.length} Traveler{travelers.length !== 1 ? 's' : ''}</span>
-                </>
-              )}
+            <div className="flex items-center justify-center gap-x-3 gap-y-1 px-3 py-1.5 border-b border-border flex-wrap">
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={() => toggleFilter('alive')}
+                  className={cn(
+                    "flex items-baseline gap-1 px-2 py-0.5 rounded-md border transition-colors",
+                    playerFilter === 'alive'
+                      ? "bg-emerald-500/20 border-emerald-500/50"
+                      : "border-transparent hover:bg-muted/40"
+                  )}
+                  data-testid="filter-alive"
+                >
+                  <span className="text-base font-display font-semibold text-emerald-400 tabular-nums">{aliveCount}</span>
+                  <span className="text-xs text-muted-foreground uppercase tracking-wide">Alive</span>
+                </button>
+                <span className="text-muted-foreground/50">/</span>
+                <button
+                  onClick={() => toggleFilter('dead')}
+                  className={cn(
+                    "flex items-baseline gap-1 px-2 py-0.5 rounded-md border transition-colors",
+                    playerFilter === 'dead'
+                      ? "bg-red-500/20 border-red-500/50"
+                      : "border-transparent hover:bg-muted/40"
+                  )}
+                  data-testid="filter-dead"
+                >
+                  <span className="text-base font-display font-semibold text-red-400/80 tabular-nums">{deadCount}</span>
+                  <span className="text-xs text-muted-foreground uppercase tracking-wide">Dead</span>
+                </button>
+              </div>
+              <div className="w-px h-4 bg-border shrink-0" aria-hidden="true" />
+              <div className="flex items-center gap-2.5 text-sm flex-wrap" data-testid="section-role-count">
+                <span className="flex items-center gap-1" data-testid="role-dot-townsfolk">
+                  <span className="w-2 h-2 rounded-full bg-blue-400 shrink-0" />
+                  <span className="text-blue-400 font-medium tabular-nums">{roleBreakdown.townsfolk}</span>
+                </span>
+                <span className="flex items-center gap-1" data-testid="role-dot-outsider">
+                  <span className="w-2 h-2 rounded-full bg-green-400 shrink-0" />
+                  <span className="text-green-400 font-medium tabular-nums">{roleBreakdown.outsiders}</span>
+                </span>
+                <span className="flex items-center gap-1" data-testid="role-dot-minion">
+                  <span className="w-2 h-2 rounded-full bg-red-400 shrink-0" />
+                  <span className="text-red-400 font-medium tabular-nums">{roleBreakdown.minions}</span>
+                </span>
+                <span className="flex items-center gap-1" data-testid="role-dot-demon">
+                  <span className="w-2 h-2 rounded-full bg-red-700 shrink-0" />
+                  <span className="text-red-700 font-medium tabular-nums">{roleBreakdown.demons}</span>
+                </span>
+                {travelers.length > 0 && (
+                  <span className="flex items-center gap-1" data-testid="role-dot-traveler">
+                    <span className="w-2 h-2 rounded-full bg-purple-400 shrink-0" />
+                    <span className="text-purple-400 font-medium tabular-nums">{travelers.length}</span>
+                  </span>
+                )}
+              </div>
             </div>
           );
         })()}
-
-        {/* Core Action Zone - compact Alive/Dead filter line */}
-        <div className="flex items-center justify-center gap-2 px-3 py-2 border-b border-border">
-          <button
-            onClick={() => toggleFilter('alive')}
-            className={cn(
-              "flex items-baseline gap-1.5 px-3 py-1 rounded-md border transition-colors",
-              playerFilter === 'alive'
-                ? "bg-emerald-500/20 border-emerald-500/50"
-                : "border-transparent hover:bg-muted/40"
-            )}
-            data-testid="filter-alive"
-          >
-            <span className="text-xl font-display font-semibold text-emerald-400 tabular-nums">{aliveCount}</span>
-            <span className="text-xs text-muted-foreground uppercase tracking-wide">Alive</span>
-          </button>
-          <span className="text-muted-foreground/50">/</span>
-          <button
-            onClick={() => toggleFilter('dead')}
-            className={cn(
-              "flex items-baseline gap-1.5 px-3 py-1 rounded-md border transition-colors",
-              playerFilter === 'dead'
-                ? "bg-red-500/20 border-red-500/50"
-                : "border-transparent hover:bg-muted/40"
-            )}
-            data-testid="filter-dead"
-          >
-            <span className="text-xl font-display font-semibold text-red-400/80 tabular-nums">{deadCount}</span>
-            <span className="text-xs text-muted-foreground uppercase tracking-wide">Dead</span>
-          </button>
-        </div>
 
         {/* Traveler Row - Conditional */}
         {travelers.length > 0 && (
