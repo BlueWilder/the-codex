@@ -17,6 +17,14 @@ export const customScripts = pgTable("custom_scripts", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Friends (user-specific saved player names)
+export const friends = pgTable("friends", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull(),
+  name: text("name").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Scripts (Official or Custom) - legacy table
 export const scripts = pgTable("scripts", {
   id: serial("id").primaryKey(),
@@ -61,6 +69,15 @@ export const updateCustomScriptSchema = z.object({
   synopsis: z.string().nullable().optional(),
 });
 
+export const insertFriendSchema = createInsertSchema(friends).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const updateFriendSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+});
+
 export const insertScriptSchema = createInsertSchema(scripts).omit({ 
   id: true, 
   createdAt: true 
@@ -76,6 +93,9 @@ export const insertGameSchema = createInsertSchema(games).omit({
 
 export type CustomScript = typeof customScripts.$inferSelect;
 export type InsertCustomScript = z.infer<typeof insertCustomScriptSchema>;
+
+export type Friend = typeof friends.$inferSelect;
+export type InsertFriend = z.infer<typeof insertFriendSchema>;
 
 export type Script = typeof scripts.$inferSelect;
 export type InsertScript = z.infer<typeof insertScriptSchema>;

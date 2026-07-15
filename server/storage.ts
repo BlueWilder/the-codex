@@ -3,10 +3,13 @@ import {
   scripts,
   games,
   customScripts,
+  friends,
   scanRateLimits,
   type InsertScript,
   type InsertGame,
   type InsertCustomScript,
+  type Friend,
+  type InsertFriend,
   type Script,
   type Game,
   type CustomScript,
@@ -25,6 +28,12 @@ export interface IStorage {
   createCustomScript(script: InsertCustomScript): Promise<CustomScript>;
   updateCustomScript(id: number, userId: string, updates: Partial<InsertCustomScript>): Promise<CustomScript | null>;
   deleteCustomScript(id: number, userId: string): Promise<boolean>;
+
+  // Friends (user-specific)
+  getFriends(userId: string): Promise<Friend[]>;
+  createFriend(friend: InsertFriend): Promise<Friend>;
+  updateFriend(id: number, userId: string, data: { name: string }): Promise<Friend | null>;
+  deleteFriend(id: number, userId: string): Promise<boolean>;
 
   // Games
   getGames(): Promise<Game[]>;
@@ -75,6 +84,31 @@ export class DatabaseStorage implements IStorage {
   async deleteCustomScript(id: number, userId: string): Promise<boolean> {
     const result = await db.delete(customScripts)
       .where(and(eq(customScripts.id, id), eq(customScripts.userId, userId)))
+      .returning();
+    return result.length > 0;
+  }
+
+  // Friends (user-specific)
+  async getFriends(userId: string): Promise<Friend[]> {
+    return await db.select().from(friends).where(eq(friends.userId, userId));
+  }
+
+  async createFriend(insertFriend: InsertFriend): Promise<Friend> {
+    const [friend] = await db.insert(friends).values(insertFriend).returning();
+    return friend;
+  }
+
+  async updateFriend(id: number, userId: string, data: { name: string }): Promise<Friend | null> {
+    const [friend] = await db.update(friends)
+      .set({ name: data.name })
+      .where(and(eq(friends.id, id), eq(friends.userId, userId)))
+      .returning();
+    return friend || null;
+  }
+
+  async deleteFriend(id: number, userId: string): Promise<boolean> {
+    const result = await db.delete(friends)
+      .where(and(eq(friends.id, id), eq(friends.userId, userId)))
       .returning();
     return result.length > 0;
   }

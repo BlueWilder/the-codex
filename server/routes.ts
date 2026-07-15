@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import { api } from "@shared/routes";
 import { z } from "zod";
 import { setupAuth, registerAuthRoutes, isAuthenticated } from "./replit_integrations/auth";
-import { updateCustomScriptSchema } from "@shared/schema";
+import { updateCustomScriptSchema, updateFriendSchema } from "@shared/schema";
 import { scanScriptImage } from "./anthropic";
 import { VALID_CHARACTER_NAMES } from "./character-names";
 
@@ -45,6 +45,83 @@ function getScanLimits() {
     globalMax: Number(process.env.SCAN_GLOBAL_MAX ?? 500),
     globalWindowMs: Number(process.env.SCAN_GLOBAL_WINDOW_MS ?? 60 * 60 * 1000),
   };
+}
+
+const createFriendSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+});
+
+// Friends routes (user-specific). Exported separately so tests can mount them
+// with a stubbed auth middleware, mirroring registerScanScriptRoute.
+export function registerFriendRoutes(
+  app: Express,
+  auth: typeof isAuthenticated = isAuthenticated
+): void {
+  app.get("/api/friends", auth, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const friendsList = await storage.getFriends(userId);
+      res.json(friendsList);
+    } catch (error) {
+      console.error("Error fetching friends:", error);
+      res.status(500).json({ message: "Failed to fetch friends" });
+    }
+  });
+
+  app.post("/api/friends", auth, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const parsed = createFriendSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({
+          message: parsed.error.errors[0].message,
+          field: parsed.error.errors[0].path.join('.')
+        });
+      }
+      const friend = await storage.createFriend({ userId, name: parsed.data.name });
+      res.status(201).json(friend);
+    } catch (error) {
+      console.error("Error creating friend:", error);
+      res.status(500).json({ message: "Failed to create friend" });
+    }
+  });
+
+  app.put("/api/friends/:id", auth, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const friendId = Number(req.params.id);
+      const parsed = updateFriendSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({
+          message: parsed.error.errors[0].message,
+          field: parsed.error.errors[0].path.join('.')
+        });
+      }
+      const friend = await storage.updateFriend(friendId, userId, parsed.data);
+      if (!friend) {
+        return res.status(404).json({ message: "Friend not found or unauthorized" });
+      }
+      res.json(friend);
+    } catch (error) {
+      console.error("Error updating friend:", error);
+      res.status(500).json({ message: "Failed to update friend" });
+    }
+  });
+
+  app.delete("/api/friends/:id", auth, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const friendId = Number(req.params.id);
+      const deleted = await storage.deleteFriend(friendId, userId);
+      if (!deleted) {
+        return res.status(404).json({ message: "Friend not found or unauthorized" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting friend:", error);
+      res.status(500).json({ message: "Failed to delete friend" });
+    }
+  });
 }
 
 // Registers the public photo-to-script scanning endpoint. Extracted so it can
@@ -101,6 +178,7 @@ export async function registerRoutes(
   registerAuthRoutes(app);
 
   registerScanScriptRoute(app);
+  registerFriendRoutes(app);
 
   // === Custom Scripts (user-specific) ===
   app.get("/api/custom-scripts", isAuthenticated, async (req: any, res) => {

@@ -1,11 +1,14 @@
+import { useState } from "react";
 import { Layout } from "@/components/ui/Layout";
 import { Link } from "wouter";
-import { Gamepad2 } from "lucide-react";
+import { Gamepad2, Users } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { FriendsManager } from "@/components/FriendsManager";
 import cccBadge from "@/assets/ccc-parchment.png";
 
 export default function Home() {
+  const [friendsOpen, setFriendsOpen] = useState(false);
   return (
     <Layout>
       <div className="max-w-4xl mx-auto text-center space-y-12 py-12">
@@ -42,7 +45,16 @@ export default function Home() {
           <p className="text-sm text-muted-foreground">
             Track players, claims, and votes during your live games.
           </p>
+          <button
+            onClick={() => setFriendsOpen(true)}
+            className="inline-flex items-center gap-1.5 text-sm text-[#c79fe6]/80 hover:text-[#c79fe6] underline underline-offset-4 decoration-[#3d2f57] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background rounded-sm"
+            data-testid="button-manage-friends"
+          >
+            <Users className="w-4 h-4" />
+            Manage Friends
+          </button>
         </motion.div>
+        <FriendsManager open={friendsOpen} onOpenChange={setFriendsOpen} />
 
         <motion.div
           initial={{ opacity: 0 }}
