@@ -53,7 +53,7 @@ export function CharacterCard({ char, isExpanded, onToggle }: {
         <NightBadges char={char} />
         {char.setup && (
           <span className="text-[10px] bg-purple-900/40 px-2 py-0.5 rounded text-purple-300 border border-purple-700/30 flex items-center gap-1">
-            <Settings className="w-3 h-3" /> Setup
+            <Settings className="w-3.5 h-3.5" /> Setup
           </span>
         )}
         <JinxBadge count={jinxes.length} />

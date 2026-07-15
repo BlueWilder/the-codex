@@ -110,6 +110,7 @@ function AddTravelerDialog({
                   key={char.id}
                   onClick={() => setSelectedClaim(selectedClaim === char.id ? null : char.id)}
                   className={cn(
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
                     "w-full text-left px-2 py-1.5 rounded-md text-sm flex items-center gap-2",
                     selectedClaim === char.id 
                       ? "bg-purple-900/40 border border-purple-700" 
@@ -118,7 +119,7 @@ function AddTravelerDialog({
                   data-testid={`button-claim-${char.id}`}
                 >
                   {char.name}
-                  {selectedClaim === char.id && <Check className="w-3 h-3 ml-auto text-purple-400" />}
+                  {selectedClaim === char.id && <Check className="w-3.5 h-3.5 ml-auto text-purple-400" />}
                 </button>
               ))}
               {travelerCharacters.length === 0 && (
@@ -319,7 +320,7 @@ export function SetupWizard({ onStart }: { onStart: (count: number, names: strin
           <div className="text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-2">Script</div>
           <button
             onClick={() => setScriptDrawerOpen(true)}
-            className="w-full flex-1 text-left flex items-center gap-3 rounded-lg hover-elevate -m-1 p-1"
+            className="w-full flex-1 text-left flex items-center gap-3 rounded-lg hover-elevate -m-1 p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
             data-testid="button-script-selector"
           >
             {selectedScript ? (
@@ -397,7 +398,8 @@ export function SetupWizard({ onStart }: { onStart: (count: number, names: strin
         <ScriptSheet characters={sheetCharacters} scriptName={selectedScript.name} />
       ) : (
         <div className="py-12 text-center text-muted-foreground" data-testid="text-script-nudge">
-          Pick a script to see the full character sheet.
+          <Scroll className="w-12 h-12 mx-auto mb-3 opacity-30" />
+          <p className="text-sm">Pick a script to see the full character sheet.</p>
         </div>
       )}
 
@@ -416,6 +418,7 @@ export function SetupWizard({ onStart }: { onStart: (count: number, names: strin
             <button
               onClick={() => handleSelectScript(null)}
               className={cn(
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
                 "w-full text-left p-4 rounded-lg border transition-colors",
                 !selectedScript
                   ? "bg-amber-900/30 border-amber-600 ring-1 ring-amber-500/50"
@@ -441,6 +444,7 @@ export function SetupWizard({ onStart }: { onStart: (count: number, names: strin
                 key={script.id}
                 onClick={() => handleSelectScript(script)}
                 className={cn(
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
                   "w-full text-left p-4 rounded-lg border transition-colors",
                   selectedScript?.id === script.id
                     ? "bg-amber-900/30 border-amber-600 ring-1 ring-amber-500/50"
@@ -467,6 +471,7 @@ export function SetupWizard({ onStart }: { onStart: (count: number, names: strin
                 key={script.id}
                 onClick={() => handleSelectScript(script)}
                 className={cn(
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
                   "w-full text-left p-4 rounded-lg border transition-colors",
                   selectedScript?.id === script.id
                     ? "bg-teal-900/30 border-teal-600 ring-1 ring-teal-500/50"
@@ -499,7 +504,7 @@ export function SetupWizard({ onStart }: { onStart: (count: number, names: strin
               >
                 <button
                   onClick={() => handleSelectScript(script)}
-                  className="flex-1 flex items-center gap-3 hover-elevate rounded-lg -m-2 p-2"
+                  className="flex-1 flex items-center gap-3 hover-elevate rounded-lg -m-2 p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
                   data-testid={`button-script-${script.id}`}
                 >
                   <Scroll className="w-5 h-5 text-purple-500/70" />
@@ -530,7 +535,7 @@ export function SetupWizard({ onStart }: { onStart: (count: number, names: strin
                 setScriptDrawerOpen(false);
                 setShowScriptBuilder(true);
               }}
-              className="w-full text-left p-4 rounded-lg border border-dashed border-purple-700/50 hover-elevate transition-colors flex items-center gap-3"
+              className="w-full text-left p-4 rounded-lg border border-dashed border-purple-700/50 hover-elevate transition-colors flex items-center gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
               data-testid="button-create-custom-script"
             >
               <Plus className="w-5 h-5 text-purple-500/70" />
@@ -539,7 +544,7 @@ export function SetupWizard({ onStart }: { onStart: (count: number, names: strin
             <button
               onClick={() => scanInputRef.current?.click()}
               disabled={scanning}
-              className="w-full text-left p-4 rounded-lg border border-dashed border-amber-700/50 hover-elevate transition-colors flex items-center gap-3 disabled:opacity-60"
+              className="w-full text-left p-4 rounded-lg border border-dashed border-amber-700/50 hover-elevate transition-colors flex items-center gap-3 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
               data-testid="button-scan-paper-script"
             >
               {scanning ? (
@@ -752,6 +757,7 @@ export function CharacterPicker({
                     key={char.id}
                     onClick={() => handleSelectRow(char.id)}
                     className={cn(
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
                       "w-full text-left p-3 rounded-lg border transition-colors flex items-center gap-3",
                       "hover-elevate active-elevate-2",
                       teamBadge(char.team),
@@ -889,11 +895,11 @@ export function PlayerDetailDrawer({
                       setEditedName(player.name);
                       setIsEditingName(true);
                     }}
-                    className="font-display text-xl text-amber-500 hover:underline hover:underline-offset-2 text-left"
+                    className="font-display text-xl text-amber-500 hover:underline hover:underline-offset-2 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
                     data-testid="button-edit-player-name"
                   >
                     {player.name}
-                    <Pencil className="w-3 h-3 inline ml-1.5 opacity-50" />
+                    <Pencil className="w-3.5 h-3.5 inline ml-1.5 opacity-50" />
                   </button>
                 )}
                 {player.isTraveler && (
@@ -1035,7 +1041,7 @@ export function PlayerDetailDrawer({
                         {char.id !== GENERIC_TRAVELLER_ID ? (
                           <button
                             type="button"
-                            className="inline-flex items-center gap-1.5 text-base font-semibold cursor-pointer"
+                            className="inline-flex items-center gap-1.5 text-base font-semibold cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
                             onClick={() => {
                               const full = ALL_CHARACTERS.find(c => c.id === char.id);
                               if (full) setPreviewCharacter(full);
@@ -1051,7 +1057,7 @@ export function PlayerDetailDrawer({
                         )}
                         <button
                           type="button"
-                          className="inline-flex items-center justify-center w-7 h-7 rounded-full hover:bg-background/40 transition-colors"
+                          className="inline-flex items-center justify-center w-7 h-7 rounded-full hover:bg-background/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
                           onClick={() => onRemoveClaim(char.id)}
                           title={`Remove ${char.name} claim`}
                           aria-label={`Remove ${char.name} claim`}
@@ -1331,7 +1337,7 @@ export function SortablePlayerCard({
           {...attributes}
           {...listeners}
           onClick={(e) => e.stopPropagation()}
-          className="touch-none cursor-grab active:cursor-grabbing flex items-center justify-center w-9 h-9 -ml-1 shrink-0 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 active:bg-muted"
+          className="touch-none cursor-grab active:cursor-grabbing flex items-center justify-center w-9 h-9 -ml-1 shrink-0 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 active:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
           data-testid={`button-drag-${player.id}`}
         >
           <GripVertical className="w-5 h-5" />
@@ -1346,7 +1352,7 @@ export function SortablePlayerCard({
 
         <button
           onClick={(e) => { e.stopPropagation(); onSelect(); }}
-          className="relative shrink-0 mt-0.5"
+          className="relative shrink-0 mt-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
           title={`View ${player.name}`}
           data-testid={`button-token-${player.id}`}
         >
@@ -1387,6 +1393,7 @@ export function SortablePlayerCard({
             <button
               onClick={(e) => { e.stopPropagation(); onSelect(); }}
               className={cn(
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
                 "font-display font-semibold text-base text-left hover:underline truncate min-w-0",
                 isActive ? "text-amber-100" : "text-muted-foreground line-through"
               )}
@@ -1411,12 +1418,13 @@ export function SortablePlayerCard({
                 >
                   <button
                     onClick={(e) => { e.stopPropagation(); onRemoveClaim(char.id); }}
-                    className={cn("inline-flex items-center gap-1 text-xs font-sans whitespace-nowrap rounded-full border px-2.5 py-1 font-semibold transition-colors hover:opacity-80", candidateChipClass(char.team, idx === 0))}
+                    className={cn(
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background","inline-flex items-center gap-1 text-xs font-sans whitespace-nowrap rounded-full border px-2.5 py-1 font-semibold transition-colors hover:opacity-80", candidateChipClass(char.team, idx === 0))}
                     title={`Remove ${char.name} claim`}
                     data-testid={`button-claim-badge-${char.id}-${player.id}`}
                   >
                     {char.name}
-                    <X className="w-3 h-3 opacity-60" />
+                    <X className="w-3.5 h-3.5 opacity-60" />
                   </button>
                 </div>
               ))
@@ -1430,7 +1438,7 @@ export function SortablePlayerCard({
             )}
             <button
               onClick={(e) => { e.stopPropagation(); onOpenClaimPicker(); }}
-              className="inline-flex items-center justify-center w-6 h-6 rounded-full border border-dashed border-amber-700/60 text-amber-400 hover:bg-amber-900/20 hover:border-amber-600 transition-colors shrink-0"
+              className="inline-flex items-center justify-center w-6 h-6 rounded-full border border-dashed border-amber-700/60 text-amber-400 hover:bg-amber-900/20 hover:border-amber-600 transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
               title="Add claim"
               data-testid={`button-add-claim-${player.id}`}
             >
@@ -1447,6 +1455,7 @@ export function SortablePlayerCard({
             <button
               onClick={(e) => { e.stopPropagation(); onToggleAlive(); }}
               className={cn(
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
                 "flex items-center justify-center w-8 h-8 rounded-lg border transition-colors",
                 isDead
                   ? "bg-red-900/40 border-red-700/60 text-red-400 hover:bg-red-900/60"
@@ -1705,7 +1714,7 @@ export function CircleSeatingChart({
       {hasCustomPositions && (
         <button
           onClick={onResetCirclePositions}
-          className="flex items-center gap-1.5 text-sm px-3 py-1 rounded-full border border-amber-700/50 bg-amber-950/30 text-amber-400 hover:bg-amber-900/40 hover:border-amber-600/60 mb-2 transition-colors"
+          className="flex items-center gap-1.5 text-sm px-3 py-1 rounded-full border border-amber-700/50 bg-amber-950/30 text-amber-400 hover:bg-amber-900/40 hover:border-amber-600/60 mb-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
           data-testid="reset-circle-layout"
         >
           <RotateCcw className="w-3.5 h-3.5" />
@@ -1849,6 +1858,7 @@ function DraggableCircleNode({
         {...listeners}
         onClick={() => !isDragging && onOpenPrimaryPicker?.(player.id)}
         className={cn(
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
           "w-full h-full rounded-full touch-none",
           !isDragging && "hover-elevate active-elevate-2"
         )}
@@ -1870,11 +1880,11 @@ function DraggableCircleNode({
           e.stopPropagation();
           if (!isDragging) onSelectPlayer(player.id);
         }}
-        className="absolute -bottom-1 -right-1 z-20 w-5 h-5 rounded-full bg-amber-950/90 border border-amber-600/70 text-amber-300 flex items-center justify-center shadow hover:bg-amber-900 hover:border-amber-500 active:scale-95 transition-colors"
+        className="absolute -bottom-1 -right-1 z-20 w-5 h-5 rounded-full bg-amber-950/90 border border-amber-600/70 text-amber-300 flex items-center justify-center shadow hover:bg-amber-900 hover:border-amber-500 active:scale-95 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
         aria-label={`More options for ${player.name}`}
         data-testid={`button-seat-more-${player.id}`}
       >
-        <MoreVertical className="w-3 h-3" />
+        <MoreVertical className="w-3.5 h-3.5" />
       </button>
     </div>
   );
@@ -2063,7 +2073,7 @@ export function GameTrackerView({
           <Popover open={scriptPopoverOpen} onOpenChange={setScriptPopoverOpen}>
             <PopoverTrigger asChild>
               <button
-                className="flex items-center gap-1.5 px-2 py-1.5 rounded-md hover-elevate active-elevate-2 flex-1 max-w-[75%]"
+                className="flex items-center gap-1.5 px-2 py-1.5 rounded-md hover-elevate active-elevate-2 flex-1 max-w-[75%] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
                 data-testid="button-change-script"
               >
                 <Scroll className="w-4 h-4 text-amber-500 shrink-0" />
@@ -2078,6 +2088,7 @@ export function GameTrackerView({
                 <div className="px-2 py-1 text-xs text-muted-foreground font-medium">Select Script</div>
                 <button
                   className={cn(
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
                     "w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-sm text-left hover-elevate",
                     !game.script && "bg-accent"
                   )}
@@ -2099,7 +2110,7 @@ export function GameTrackerView({
                     )}
                   >
                     <button
-                      className="flex-1 flex items-center gap-2 text-left hover-elevate rounded-md -m-1 p-1"
+                      className="flex-1 flex items-center gap-2 text-left hover-elevate rounded-md -m-1 p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
                       onClick={() => {
                         onSetScript({ id: script.id });
                         setScriptPopoverOpen(false);
@@ -2117,7 +2128,7 @@ export function GameTrackerView({
                     </button>
                     {!script.isOfficial && (
                       <button
-                        className="p-1 rounded hover-elevate"
+                        className="p-1 rounded hover-elevate focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
                         onClick={(e) => {
                           e.stopPropagation();
                           setEditingScript(script);
@@ -2126,13 +2137,13 @@ export function GameTrackerView({
                         }}
                         data-testid={`button-edit-active-script-${script.id}`}
                       >
-                        <Pencil className="w-3 h-3 text-muted-foreground" />
+                        <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
                       </button>
                     )}
                   </div>
                 ))}
                 <button
-                  className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-sm text-left hover-elevate text-purple-400 border-t border-border mt-1 pt-2"
+                  className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-sm text-left hover-elevate text-purple-400 border-t border-border mt-1 pt-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
                   onClick={() => {
                     setEditingScript(null);
                     setShowScriptBuilder(true);
@@ -2218,7 +2229,7 @@ export function GameTrackerView({
         {scoreboardCollapsed && (
           <button
             onClick={() => setScoreboardCollapsed(false)}
-            className="flex items-center justify-between w-full px-3 py-2 border-b border-border hover-elevate"
+            className="flex items-center justify-between w-full px-3 py-2 border-b border-border hover-elevate focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
             data-testid="button-expand-scoreboard"
           >
             <div className="flex items-center gap-3 text-sm">
@@ -2319,6 +2330,7 @@ export function GameTrackerView({
                 <button
                   onClick={() => toggleFilter('alive')}
                   className={cn(
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
                     "flex items-baseline gap-1 px-2 py-0.5 rounded-md border transition-colors",
                     playerFilter === 'alive'
                       ? "bg-emerald-500/20 border-emerald-500/50"
@@ -2333,6 +2345,7 @@ export function GameTrackerView({
                 <button
                   onClick={() => toggleFilter('dead')}
                   className={cn(
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
                     "flex items-baseline gap-1 px-2 py-0.5 rounded-md border transition-colors",
                     playerFilter === 'dead'
                       ? "bg-red-500/20 border-red-500/50"
@@ -2457,7 +2470,8 @@ export function GameTrackerView({
           />
         ) : (
           <div className="py-12 text-center text-muted-foreground" data-testid="text-script-nudge-game">
-            Pick a script to see the full character sheet.
+            <Scroll className="w-12 h-12 mx-auto mb-3 opacity-30" />
+            <p className="text-sm">Pick a script to see the full character sheet.</p>
           </div>
         )
       )}
@@ -2478,6 +2492,7 @@ export function GameTrackerView({
             type="button"
             onClick={() => { setActiveTab(tab); setScoreboardCollapsed(collapse); }}
             className={cn(
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
               "flex flex-col items-center gap-0.5 rounded-lg px-2 py-1.5 text-xs font-sans font-medium transition-colors",
               activeTab === tab
                 ? "bg-primary/15 text-primary"

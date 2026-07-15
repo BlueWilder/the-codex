@@ -12,7 +12,7 @@ export default function Scripts() {
       <div className="space-y-8 max-w-5xl mx-auto">
         <div className="flex items-center justify-between border-b border-border pb-6">
           <h1 className="text-4xl font-display text-amber-500">Grimoires & Scripts</h1>
-          <Link href="/script-builder" className="px-4 py-2 bg-red-900/80 hover:bg-red-800 text-red-100 rounded-lg flex items-center gap-2 transition-all shadow-lg shadow-black/20 hover:shadow-red-900/20 border border-red-800/50">
+          <Link href="/script-builder" className="px-4 py-2 bg-red-900/80 hover:bg-red-800 text-red-100 rounded-lg flex items-center gap-2 transition-all duration-150 shadow-lg shadow-black/20 hover:shadow-red-900/20 border border-red-800/50">
             <Feather className="w-4 h-4" />
             <span>Create Script</span>
           </Link>
@@ -24,7 +24,7 @@ export default function Scripts() {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {OFFICIAL_SCRIPTS.map((script) => (
-              <div key={script.id} className="bg-card border border-border rounded-xl p-6 hover:border-amber-600/40 transition-all hover:bg-card/80 group">
+              <div key={script.id} className="bg-card border border-border rounded-xl p-6 hover:border-amber-600/40 transition-all duration-150 hover:bg-card/80 group">
                 <div className="mb-4">
                   <span className="text-xs uppercase tracking-widest text-amber-500/60 font-semibold border border-amber-900/30 px-2 py-1 rounded">Official</span>
                 </div>
@@ -49,7 +49,7 @@ export default function Scripts() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {customScripts?.map((script) => (
-                <div key={script.id} className="bg-card border border-border rounded-xl p-6 hover:border-amber-600/40 transition-all hover:bg-card/80 group">
+                <div key={script.id} className="bg-card border border-border rounded-xl p-6 hover:border-amber-600/40 transition-all duration-150 hover:bg-card/80 group">
                   <div className="mb-4">
                     <span className="text-xs uppercase tracking-widest text-emerald-500/60 font-semibold border border-emerald-900/30 px-2 py-1 rounded">Custom</span>
                   </div>

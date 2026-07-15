@@ -32,7 +32,7 @@ export default function Home() {
           <Button
             asChild
             size="lg"
-            className="bg-amber-600 hover:bg-amber-500 text-black font-semibold text-base px-8 py-6 rounded-xl shadow-lg shadow-amber-900/30 transition-all duration-300 hover:-translate-y-0.5"
+            className="bg-amber-600 hover:bg-amber-500 text-black font-semibold text-base px-8 py-6 rounded-xl shadow-lg shadow-amber-900/30 transition-all duration-150 hover:-translate-y-0.5"
           >
             <Link href="/game" data-testid="link-enter-game-mode">
               <Gamepad2 className="w-5 h-5 mr-2" />

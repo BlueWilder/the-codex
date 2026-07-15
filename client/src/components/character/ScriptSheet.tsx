@@ -142,7 +142,7 @@ function CharRow({ char, sortOrder, onSelect }: { char: Character; sortOrder: Sc
       <button
         type="button"
         onClick={onSelect}
-        className="flex items-start gap-3 py-2 w-full text-left rounded-md transition-colors hover:bg-[#e8dcbe]/70"
+        className="flex items-start gap-3 py-2 w-full text-left rounded-md transition-colors hover:bg-[#e8dcbe]/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
         data-testid={`button-script-char-${char.id}`}
       >
         {inner}
@@ -174,7 +174,7 @@ function NightRow({ char, position, onSelect }: { char: Character; position: num
       <button
         type="button"
         onClick={onSelect}
-        className="flex items-center gap-3 py-3 w-full text-left rounded-md transition-colors hover:bg-[#e8dcbe]/70"
+        className="flex items-center gap-3 py-3 w-full text-left rounded-md transition-colors hover:bg-[#e8dcbe]/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
         data-testid={`button-script-char-${char.id}`}
       >
         {inner}
@@ -258,7 +258,8 @@ export function ScriptSheet({
               key={value}
               onClick={() => handleSort(value)}
               className={cn(
-                "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold tracking-wider transition-all whitespace-nowrap",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
+                "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold tracking-wider transition-all duration-150 whitespace-nowrap",
                 sortOrder === value
                   ? "bg-[#7a5c2e] text-[#f4ecd8]"
                   : "bg-transparent text-[#6b5836] hover:bg-[#dccfa9]"
@@ -284,7 +285,8 @@ export function ScriptSheet({
                 key={value}
                 onClick={() => setNightView(value)}
                 className={cn(
-                  "px-2.5 py-1 rounded-full text-[11px] font-bold tracking-wider transition-all whitespace-nowrap",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
+                  "px-2.5 py-1 rounded-full text-[11px] font-bold tracking-wider transition-all duration-150 whitespace-nowrap",
                   nightView === value
                     ? "bg-[#7a5c2e] text-[#f4ecd8]"
                     : "bg-transparent text-[#6b5836] hover:bg-[#dccfa9]"

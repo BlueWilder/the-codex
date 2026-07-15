@@ -37,7 +37,7 @@ export function Navigation() {
                 href={item.href}
                 aria-label={item.label}
                 className={cn(
-                  "flex items-center md:space-x-2 px-2.5 md:px-3 py-2 rounded-lg transition-all duration-300",
+                  "flex items-center md:space-x-2 px-2.5 md:px-3 py-2 rounded-lg transition-all duration-150",
                   location === item.href
                     ? "text-amber-500 bg-amber-950/30 shadow-[0_0_10px_rgba(245,158,11,0.1)]"
                     : "text-muted-foreground hover:text-amber-200 hover:bg-white/5"

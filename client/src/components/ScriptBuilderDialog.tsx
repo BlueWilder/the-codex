@@ -282,8 +282,8 @@ export function ScriptBuilderDialog({
               {importMessage.type === 'warning' && <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" />}
               {importMessage.type === 'error' && <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" />}
               <span className="flex-1">{importMessage.text}</span>
-              <button onClick={() => setImportMessage(null)} className="shrink-0 opacity-60 hover:opacity-100">
-                <X className="w-3 h-3" />
+              <button onClick={() => setImportMessage(null)} className="shrink-0 opacity-60 hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background">
+                <X className="w-3.5 h-3.5" />
               </button>
             </div>
           )}
@@ -298,7 +298,7 @@ export function ScriptBuilderDialog({
                   onClick={() => { setShowImport(true); setImportMessage(null); }}
                   data-testid="button-import-json"
                 >
-                  <Upload className="w-3 h-3" /> Import JSON
+                  <Upload className="w-3.5 h-3.5" /> Import JSON
                 </Button>
                 <Button
                   variant="outline"
@@ -308,7 +308,7 @@ export function ScriptBuilderDialog({
                   onClick={() => scanInputRef.current?.click()}
                   data-testid="button-scan-photo"
                 >
-                  {scanning ? <Loader2 className="w-3 h-3 animate-spin" /> : <Camera className="w-3 h-3" />}
+                  {scanning ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Camera className="w-3.5 h-3.5" />}
                   {scanning ? "Scanning..." : "Scan Photo"}
                 </Button>
                 <input
@@ -325,7 +325,7 @@ export function ScriptBuilderDialog({
               <div className="border border-border rounded-lg p-3 space-y-2 bg-card">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-medium text-amber-200/80">Import from BOTC Script Tool</span>
-                  <button onClick={() => { setShowImport(false); setImportJson(""); }} className="text-muted-foreground hover:text-foreground">
+                  <button onClick={() => { setShowImport(false); setImportJson(""); }} className="text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background">
                     <X className="w-3.5 h-3.5" />
                   </button>
                 </div>
@@ -344,11 +344,11 @@ export function ScriptBuilderDialog({
                     disabled={!importJson.trim()}
                     data-testid="button-import-confirm"
                   >
-                    <FileText className="w-3 h-3" /> Import
+                    <FileText className="w-3.5 h-3.5" /> Import
                   </Button>
                   <label className="cursor-pointer">
                     <Button variant="outline" size="sm" className="h-7 text-xs gap-1 pointer-events-none" asChild>
-                      <span><Upload className="w-3 h-3" /> Upload .json</span>
+                      <span><Upload className="w-3.5 h-3.5" /> Upload .json</span>
                     </Button>
                     <input
                       ref={fileInputRef}
@@ -393,7 +393,8 @@ export function ScriptBuilderDialog({
               key={f}
               onClick={() => setTeamFilter(f)}
               className={cn(
-                "px-2 py-0.5 md:px-3 md:py-1 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-wider transition-all border",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
+                "px-2 py-0.5 md:px-3 md:py-1 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-wider transition-all duration-150 border",
                 teamFilter === f 
                   ? "bg-amber-900/50 text-amber-100 border-amber-600" 
                   : "bg-transparent text-muted-foreground border-transparent hover:bg-white/5"
@@ -431,7 +432,8 @@ export function ScriptBuilderDialog({
                 key={char.id}
                 onClick={() => toggleCharacter(char.id)}
                 className={cn(
-                  "p-1.5 md:p-2 rounded-lg border text-left transition-all",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
+                  "p-1.5 md:p-2 rounded-lg border text-left transition-all duration-150",
                   teamSurface(char.team),
                   selectedCharacters.has(char.id) 
                     ? "ring-2 ring-amber-500" 
@@ -442,7 +444,7 @@ export function ScriptBuilderDialog({
                 <div className="flex items-center justify-between gap-1">
                   <span className="text-[11px] md:text-xs font-bold truncate">{char.name}</span>
                   {selectedCharacters.has(char.id) && (
-                    <Check className="w-3 h-3 text-amber-500 shrink-0" />
+                    <Check className="w-3.5 h-3.5 text-amber-500 shrink-0" />
                   )}
                 </div>
                 <div className="flex items-center justify-between">

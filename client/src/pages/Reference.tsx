@@ -85,7 +85,8 @@ export default function Reference() {
                 <button
                   onClick={() => setScriptFilter(script.id)}
                   className={cn(
-                    "px-4 py-1.5 text-xs font-sans font-bold uppercase tracking-wider transition-all border whitespace-nowrap",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
+                    "px-4 py-1.5 text-xs font-sans font-bold uppercase tracking-wider transition-all duration-150 border whitespace-nowrap",
                     script.isCommunity ? "rounded-l-full" : "rounded-full",
                     scriptFilter === script.id 
                       ? "bg-red-900/50 text-red-100 border-red-600" 
@@ -109,11 +110,11 @@ export default function Reference() {
                         setShowScriptBuilder(true);
                       }
                     }}
-                    className="px-1.5 py-1.5 rounded-r-full text-xs text-muted-foreground hover:bg-white/10 transition-colors"
+                    className="px-1.5 py-1.5 rounded-r-full text-xs text-muted-foreground hover:bg-white/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
                     title="Copy & edit script"
                     data-testid={`button-copy-script-${script.id}`}
                   >
-                    <Pencil className="w-3 h-3" />
+                    <Pencil className="w-3.5 h-3.5" />
                   </button>
                 )}
               </div>
@@ -127,7 +128,8 @@ export default function Reference() {
                     <button
                       onClick={() => setScriptFilter(`custom:${script.id}`)}
                       className={cn(
-                        "px-3 py-1.5 rounded-l-full text-xs font-sans font-bold tracking-wider transition-all border whitespace-nowrap",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
+                        "px-3 py-1.5 rounded-l-full text-xs font-sans font-bold tracking-wider transition-all duration-150 border whitespace-nowrap",
                         scriptFilter === `custom:${script.id}`
                           ? "bg-purple-900/50 text-purple-100 border-purple-600"
                           : "bg-transparent text-muted-foreground border-transparent hover:bg-white/5"
@@ -141,11 +143,11 @@ export default function Reference() {
                         setEditingScript(script);
                         setShowScriptBuilder(true);
                       }}
-                      className="px-1.5 py-1.5 text-xs text-muted-foreground border-y border-transparent hover:bg-white/10 transition-colors"
+                      className="px-1.5 py-1.5 text-xs text-muted-foreground border-y border-transparent hover:bg-white/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
                       title="Edit script"
                       data-testid={`button-edit-script-${script.id}`}
                     >
-                      <Pencil className="w-3 h-3" />
+                      <Pencil className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={() => {
@@ -154,11 +156,11 @@ export default function Reference() {
                         }
                         deleteCustomScript(script.id);
                       }}
-                      className="px-1.5 py-1.5 rounded-r-full text-xs text-muted-foreground border-y border-r border-transparent hover:bg-red-900/30 hover:text-red-400 transition-colors"
+                      className="px-1.5 py-1.5 rounded-r-full text-xs text-muted-foreground border-y border-r border-transparent hover:bg-red-900/30 hover:text-red-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
                       title="Delete script"
                       data-testid={`button-delete-script-${script.id}`}
                     >
-                      <Trash2 className="w-3 h-3" />
+                      <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 ))}
@@ -170,10 +172,10 @@ export default function Reference() {
                 setEditingScript(null);
                 setShowScriptBuilder(true);
               }}
-              className="px-3 py-1.5 rounded-full text-xs font-sans font-bold tracking-wider transition-all border border-dashed border-purple-700/50 whitespace-nowrap flex items-center gap-1 text-purple-400 hover:bg-purple-900/20"
+              className="px-3 py-1.5 rounded-full text-xs font-sans font-bold tracking-wider transition-all duration-150 border border-dashed border-purple-700/50 whitespace-nowrap flex items-center gap-1 text-purple-400 hover:bg-purple-900/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
               data-testid="button-create-custom-script"
             >
-              <Plus className="w-3 h-3" />
+              <Plus className="w-3.5 h-3.5" />
               New Script
             </button>
           </div>
@@ -184,7 +186,8 @@ export default function Reference() {
                 key={f}
                 onClick={() => setTeamFilter(f)}
                 className={cn(
-                  "px-4 py-1.5 rounded-full text-xs font-sans font-bold uppercase tracking-wider transition-all border",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
+                  "px-4 py-1.5 rounded-full text-xs font-sans font-bold uppercase tracking-wider transition-all duration-150 border",
                   teamFilter === f 
                     ? "bg-amber-900/50 text-amber-100 border-amber-600" 
                     : "bg-transparent text-muted-foreground border-transparent hover:bg-white/5"
