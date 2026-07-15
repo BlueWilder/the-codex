@@ -2,6 +2,7 @@ import { User, VenetianMask, PersonStanding, Footprints, Star } from "lucide-rea
 import { cn } from "@/lib/utils";
 import { getCharacterById } from "@/lib/game-data";
 import { teamCard, teamRing } from "@/lib/team-style";
+import { characterIcon } from "@/lib/character-icons";
 
 /**
  * A horned demon drawn inline so the Demon glyph is not a stock lucide icon.
@@ -71,7 +72,7 @@ export function CharacterToken({
 }: CharacterTokenProps) {
   const char = characterId ? getCharacterById(characterId) : undefined;
   const resolvedTeam = team ?? char?.team ?? "townsfolk";
-  const iconUrl = char?.icon;
+  const iconUrl = char?.icon ?? (char ? characterIcon(char.id) : undefined);
   const Glyph = getTeamGlyph(resolvedTeam);
 
   return (

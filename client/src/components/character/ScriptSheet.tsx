@@ -2,6 +2,7 @@ import { useState } from "react";
 import { User, VenetianMask, PersonStanding, Footprints, Star, LayoutList, Clock, type LucideIcon } from "lucide-react";
 import { type Character, type Jinx, JINXES } from "@/lib/game-data";
 import { cn } from "@/lib/utils";
+import { characterIcon } from "@/lib/character-icons";
 import { nightOrderValue, getFirstNightChars, getOtherNightChars, type ScriptSort } from "@/lib/night-order";
 
 type NightView = "first" | "other";
@@ -100,11 +101,14 @@ function charWakes(char: Character): boolean {
 function Token({ char, sortOrder }: { char: Character; sortOrder: ScriptSort }) {
   const sheet = teamSheet(char.team);
   const Icon = getTeamToken(char.team);
+  const icon = characterIcon(char.id);
   const showNumber = sortOrder === "night" && charWakes(char);
   return (
-    <div className={cn("shrink-0 w-10 h-10 rounded-full border-2 flex items-center justify-center", sheet.ring, sheet.tokenBg)}>
+    <div className={cn("shrink-0 w-10 h-10 rounded-full border-2 flex items-center justify-center overflow-hidden", sheet.ring, sheet.tokenBg)}>
       {showNumber ? (
         <span className={cn("text-sm font-bold", sheet.text)}>{nightOrderValue(char)}</span>
+      ) : icon ? (
+        <img src={icon} alt="" className="w-full h-full rounded-full object-cover" />
       ) : (
         <Icon className={cn("w-5 h-5", sheet.text)} />
       )}
@@ -373,16 +377,21 @@ export function ScriptSheet({
 function JinxToken({ char }: { char: Character }) {
   const sheet = teamSheet(char.team);
   const Icon = getTeamToken(char.team);
+  const icon = characterIcon(char.id);
   return (
     <div
       className={cn(
-        "shrink-0 w-8 h-8 rounded-full border-2 flex items-center justify-center",
+        "shrink-0 w-8 h-8 rounded-full border-2 flex items-center justify-center overflow-hidden",
         sheet.ring,
         sheet.tokenBg,
       )}
       title={char.name}
     >
-      <Icon className={cn("w-4 h-4", sheet.text)} />
+      {icon ? (
+        <img src={icon} alt="" className="w-full h-full rounded-full object-cover" />
+      ) : (
+        <Icon className={cn("w-4 h-4", sheet.text)} />
+      )}
     </div>
   );
 }

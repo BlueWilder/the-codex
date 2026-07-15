@@ -62,8 +62,18 @@ describe("CharacterToken", () => {
     expect(screen.getByTestId("tok").getAttribute("data-team")).toBe("traveler");
   });
 
-  it("falls back to a placeholder glyph when there is no icon art", () => {
+  it("renders official token art when the character has an icon", () => {
     render(<CharacterToken characterId="washerwoman" data-testid="tok" />);
+    const tok = screen.getByTestId("tok");
+    expect(tok.getAttribute("data-team")).toBe("townsfolk");
+    expect(tok.getAttribute("data-glyph")).toBe("image");
+    const img = tok.querySelector("img");
+    expect(img).not.toBeNull();
+    expect(img?.getAttribute("src")).toBe("/characters/tb/washerwoman_g.webp");
+  });
+
+  it("falls back to a placeholder glyph when there is no icon art", () => {
+    render(<CharacterToken team="townsfolk" data-testid="tok" />);
     const tok = screen.getByTestId("tok");
     expect(tok.getAttribute("data-team")).toBe("townsfolk");
     expect(tok.getAttribute("data-glyph")).toBe("glyph");
