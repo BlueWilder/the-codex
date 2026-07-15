@@ -5,6 +5,7 @@ import { ALL_CHARACTERS, OFFICIAL_SCRIPTS, getJinxesForCharacter, getCharacterBy
 import { useLocalScripts, type LocalScript } from "@/hooks/use-local-scripts";
 import { ScriptBuilderDialog } from "@/components/ScriptBuilderDialog";
 import { InlineGameLog } from "@/components/InlineGameLog";
+import { FriendsPicker } from "@/components/FriendsPicker";
 import { scanScriptFile } from "@/lib/scan-script";
 import { resolveScriptCharacters, countScriptCharacters } from "@/lib/script-resolve";
 import { ScriptSheet } from "@/components/character/ScriptSheet";
@@ -236,6 +237,9 @@ export function SetupWizard({ onStart }: { onStart: (count: number, names: strin
   const [editingScript, setEditingScript] = useState<LocalScript | null>(null);
   const [scannedCharacters, setScannedCharacters] = useState<Set<string> | null>(null);
   const [scanning, setScanning] = useState(false);
+  const [assignedNames, setAssignedNames] = useState<string[]>([]);
+  const [assignedFriendIds, setAssignedFriendIds] = useState<string[]>([]);
+  const [friendsPickerOpen, setFriendsPickerOpen] = useState(false);
   const scanInputRef = useRef<HTMLInputElement>(null);
   const { allScripts, customScripts, addCustomScriptAsync, updateCustomScript, getScriptById } = useLocalScripts();
   const { toast } = useToast();
@@ -293,10 +297,21 @@ export function SetupWizard({ onStart }: { onStart: (count: number, names: strin
   };
 
   const getDefaultName = (index: number) => {
+    if (assignedNames[index]) {
+      return assignedNames[index];
+    }
     if (playerCount > 15 && index >= 15) {
       return `Traveler ${index - 14}`;
     }
     return `Player ${index + 1}`;
+  };
+
+  const handleAssignFriends = (ids: string[], names: string[]) => {
+    setAssignedFriendIds(ids);
+    setAssignedNames(names);
+    if (names.length > playerCount) {
+      setPlayerCount(Math.min(20, names.length));
+    }
   };
 
   const handleStartGame = () => {
@@ -368,6 +383,28 @@ export function SetupWizard({ onStart }: { onStart: (count: number, names: strin
               <ChevronUp className="w-5 h-5" />
             </Button>
           </div>
+          <button
+            onClick={() => setFriendsPickerOpen(true)}
+            className="mt-2 w-full flex items-center justify-center gap-1.5 rounded-md border border-[#3d2f57] bg-[#c79fe6]/5 px-3 py-1.5 text-sm text-[#c79fe6] hover:bg-[#c79fe6]/15 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
+            data-testid="button-add-from-friends"
+          >
+            <Users className="w-3.5 h-3.5" />
+            Add from Friends
+          </button>
+          {assignedNames.length > 0 && (
+            <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground" data-testid="text-assigned-friends">
+              <span className="flex-1 truncate">
+                {assignedNames.length} added: {assignedNames.join(", ")}
+              </span>
+              <button
+                onClick={() => { setAssignedNames([]); setAssignedFriendIds([]); }}
+                className="shrink-0 rounded-md px-1.5 py-0.5 text-muted-foreground hover:text-red-400 hover:bg-red-500/15 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
+                data-testid="button-clear-assigned-friends"
+              >
+                Clear
+              </button>
+            </div>
+          )}
         </Card>
       </div>
 
@@ -408,6 +445,13 @@ export function SetupWizard({ onStart }: { onStart: (count: number, names: strin
           <Play className="w-4 h-4 mr-2" /> Start Game
         </Button>
       </div>
+
+      <FriendsPicker
+        open={friendsPickerOpen}
+        onOpenChange={setFriendsPickerOpen}
+        initialIds={assignedFriendIds}
+        onConfirm={handleAssignFriends}
+      />
 
       <Drawer open={scriptDrawerOpen} onOpenChange={setScriptDrawerOpen}>
         <DrawerContent className="max-h-[85vh]">
