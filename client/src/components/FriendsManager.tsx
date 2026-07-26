@@ -24,27 +24,47 @@ export function FriendsManager({ open, onOpenChange }: FriendsManagerProps) {
   const [newName, setNewName] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
+  const [addError, setAddError] = useState<string | null>(null);
+  const [renameError, setRenameError] = useState<string | null>(null);
+
+  const isDuplicateName = (name: string, excludeId?: string) =>
+    friends.some(
+      (f) =>
+        f.id !== excludeId &&
+        f.name.trim().toLowerCase() === name.toLowerCase(),
+    );
 
   const handleAdd = () => {
     const trimmed = newName.trim();
     if (!trimmed) return;
+    if (isDuplicateName(trimmed)) {
+      setAddError(`${trimmed} is already in your friends list.`);
+      return;
+    }
     addFriend(trimmed);
     setNewName("");
+    setAddError(null);
   };
 
   const startRename = (id: string, currentName: string) => {
     setEditingId(id);
     setEditName(currentName);
+    setRenameError(null);
   };
 
   const commitRename = () => {
     if (!editingId) return;
     const trimmed = editName.trim();
     if (trimmed) {
+      if (isDuplicateName(trimmed, editingId)) {
+        setRenameError(`${trimmed} is already in your friends list.`);
+        return;
+      }
       renameFriend(editingId, trimmed);
     }
     setEditingId(null);
     setEditName("");
+    setRenameError(null);
   };
 
   return (
@@ -63,7 +83,10 @@ export function FriendsManager({ open, onOpenChange }: FriendsManagerProps) {
         <div className="flex gap-2">
           <Input
             value={newName}
-            onChange={(e) => setNewName(e.target.value)}
+            onChange={(e) => {
+              setNewName(e.target.value);
+              if (addError) setAddError(null);
+            }}
             onKeyDown={(e) => e.key === "Enter" && handleAdd()}
             placeholder="Friend's name"
             className="border-[#3d2f57] focus-visible:ring-[#c79fe6]/50"
@@ -79,6 +102,16 @@ export function FriendsManager({ open, onOpenChange }: FriendsManagerProps) {
             Add
           </Button>
         </div>
+        {addError && (
+          <p
+            role="status"
+            aria-live="polite"
+            className="-mt-2 text-xs text-red-400"
+            data-testid="text-add-friend-duplicate"
+          >
+            {addError}
+          </p>
+        )}
 
         <div className="space-y-1.5 max-h-72 overflow-y-auto pr-1">
           {isLoading ? (
@@ -96,14 +129,18 @@ export function FriendsManager({ open, onOpenChange }: FriendsManagerProps) {
             friends.map((friend) => (
               <div
                 key={friend.id}
-                className="flex items-center gap-2 rounded-lg border border-[#3d2f57]/60 bg-[#c79fe6]/5 px-3 py-2 transition-colors duration-150"
+                className="rounded-lg border border-[#3d2f57]/60 bg-[#c79fe6]/5 px-3 py-2 transition-colors duration-150"
                 data-testid={`friend-row-${friend.id}`}
               >
+                <div className="flex items-center gap-2">
                 {editingId === friend.id ? (
                   <>
                     <Input
                       value={editName}
-                      onChange={(e) => setEditName(e.target.value)}
+                      onChange={(e) => {
+                        setEditName(e.target.value);
+                        if (renameError) setRenameError(null);
+                      }}
                       onKeyDown={(e) => e.key === "Enter" && commitRename()}
                       autoFocus
                       className="h-8 border-[#3d2f57] focus-visible:ring-[#c79fe6]/50"
@@ -140,6 +177,17 @@ export function FriendsManager({ open, onOpenChange }: FriendsManagerProps) {
                       <X className="w-4 h-4" />
                     </button>
                   </>
+                )}
+                </div>
+                {editingId === friend.id && renameError && (
+                  <p
+                    role="status"
+                    aria-live="polite"
+                    className="mt-1 text-xs text-red-400"
+                    data-testid={`text-rename-friend-duplicate-${friend.id}`}
+                  >
+                    {renameError}
+                  </p>
                 )}
               </div>
             ))
