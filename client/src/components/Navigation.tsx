@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import logoImage from "@/assets/logo.png";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
+import { GlobalMenu } from "@/components/GlobalMenu";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -47,6 +48,8 @@ export function Navigation() {
                 <span className="hidden md:inline text-sm font-sans font-medium">{item.label}</span>
               </Link>
             ))}
+
+            <GlobalMenu />
 
             {!isLoading && (
               user ? (
