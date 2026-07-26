@@ -9,7 +9,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Users, Pencil, X, Check, Plus } from "lucide-react";
-import { useFriends } from "@/hooks/use-friends";
+import { useFriends, friendErrorMessage } from "@/hooks/use-friends";
 
 const FOCUS_RING =
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background";
@@ -41,9 +41,13 @@ export function FriendsManager({ open, onOpenChange }: FriendsManagerProps) {
       setAddError(`${trimmed} is already in your friends list.`);
       return;
     }
-    addFriend(trimmed);
-    setNewName("");
-    setAddError(null);
+    addFriend(trimmed).then(
+      () => {
+        setNewName("");
+        setAddError(null);
+      },
+      (err) => setAddError(friendErrorMessage(err)),
+    );
   };
 
   const startRename = (id: string, currentName: string) => {
@@ -60,7 +64,9 @@ export function FriendsManager({ open, onOpenChange }: FriendsManagerProps) {
         setRenameError(`${trimmed} is already in your friends list.`);
         return;
       }
-      renameFriend(editingId, trimmed);
+      renameFriend(editingId, trimmed).catch((err) =>
+        setRenameError(friendErrorMessage(err)),
+      );
     }
     setEditingId(null);
     setEditName("");

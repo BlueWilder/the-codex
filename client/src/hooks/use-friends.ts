@@ -15,6 +15,22 @@ interface DbFriend {
   createdAt: string;
 }
 
+// apiRequest throws `Error("<status>: <body>")`. Pull a human-readable
+// message out of that (the body is usually JSON with a `message` field).
+export function friendErrorMessage(error: unknown): string {
+  const fallback = "Something went wrong. Please try again.";
+  if (!(error instanceof Error)) return fallback;
+  const match = error.message.match(/^\d+:\s*(.*)$/s);
+  const body = match ? match[1] : error.message;
+  try {
+    const parsed = JSON.parse(body);
+    if (parsed && typeof parsed.message === "string") return parsed.message;
+  } catch {
+    // not JSON — fall through
+  }
+  return body || fallback;
+}
+
 const FRIENDS_KEY = "clocktower_friends";
 const FRIENDS_UPDATED_EVENT = "clocktower_friends_updated";
 
@@ -110,9 +126,9 @@ export function useFriends() {
 
   const isLoading = authLoading || (user ? dbLoading : localLoading);
 
-  const addFriend = useCallback((name: string) => {
+  const addFriend = useCallback(async (name: string) => {
     if (user) {
-      createMutation.mutate({ name });
+      await createMutation.mutateAsync({ name });
     } else {
       // Functional update so multiple addFriend calls in the same tick
       // (e.g. saving several names at once) don't overwrite each other.
@@ -128,10 +144,10 @@ export function useFriends() {
     }
   }, [user, createMutation]);
 
-  const renameFriend = useCallback((id: string, name: string) => {
+  const renameFriend = useCallback(async (id: string, name: string) => {
     if (user && id.startsWith("db-")) {
       const dbId = parseInt(id.replace("db-", ""));
-      updateMutation.mutate({ id: dbId, name });
+      await updateMutation.mutateAsync({ id: dbId, name });
     } else {
       const updated = localFriends.map(f =>
         f.id === id ? { ...f, name } : f

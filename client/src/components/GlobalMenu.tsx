@@ -13,6 +13,7 @@ import {
 import { FriendsManager } from "@/components/FriendsManager";
 import { useFriends } from "@/hooks/use-friends";
 
+
 export function GlobalMenu() {
   const { friends, addFriend } = useFriends();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -32,9 +33,13 @@ export function GlobalMenu() {
       setFeedback({ kind: "duplicate", name: trimmed });
       return;
     }
-    addFriend(trimmed);
-    setQuickName("");
-    setFeedback({ kind: "added", name: trimmed });
+    addFriend(trimmed).then(
+      () => {
+        setQuickName("");
+        setFeedback({ kind: "added", name: trimmed });
+      },
+      () => setFeedback({ kind: "duplicate", name: trimmed }),
+    );
   };
 
   return (

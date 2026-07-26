@@ -78,7 +78,18 @@ export function registerFriendRoutes(
           field: parsed.error.errors[0].path.join('.')
         });
       }
-      const friend = await storage.createFriend({ userId, name: parsed.data.name });
+      const name = parsed.data.name.trim();
+      if (!name) {
+        return res.status(400).json({ message: "Name is required", field: "name" });
+      }
+      const existing = await storage.getFriends(userId);
+      if (existing.some(f => f.name.trim().toLowerCase() === name.toLowerCase())) {
+        return res.status(409).json({
+          message: `${name} is already in your friends list.`,
+          field: "name",
+        });
+      }
+      const friend = await storage.createFriend({ userId, name });
       res.status(201).json(friend);
     } catch (error) {
       console.error("Error creating friend:", error);
@@ -97,7 +108,18 @@ export function registerFriendRoutes(
           field: parsed.error.errors[0].path.join('.')
         });
       }
-      const friend = await storage.updateFriend(friendId, userId, parsed.data);
+      const name = parsed.data.name.trim();
+      if (!name) {
+        return res.status(400).json({ message: "Name is required", field: "name" });
+      }
+      const existing = await storage.getFriends(userId);
+      if (existing.some(f => f.id !== friendId && f.name.trim().toLowerCase() === name.toLowerCase())) {
+        return res.status(409).json({
+          message: `${name} is already in your friends list.`,
+          field: "name",
+        });
+      }
+      const friend = await storage.updateFriend(friendId, userId, { name });
       if (!friend) {
         return res.status(404).json({ message: "Friend not found or unauthorized" });
       }

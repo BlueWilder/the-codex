@@ -132,3 +132,51 @@ describe("/api/friends CRUD and scoping", () => {
     expect(list.body).toEqual([]);
   });
 });
+
+describe("/api/friends duplicate name enforcement", () => {
+  it("rejects a duplicate name on create (case-insensitive, trimmed) with 409", async () => {
+    await request(app).post("/api/friends").set("X-Test-User", USER_A).send({ name: "Ana" });
+
+    const dup = await request(app)
+      .post("/api/friends")
+      .set("X-Test-User", USER_A)
+      .send({ name: "  aNa  " });
+    expect(dup.status).toBe(409);
+    expect(dup.body.message).toMatch(/already in your friends list/);
+
+    // A different user may still use the same name.
+    const other = await request(app)
+      .post("/api/friends")
+      .set("X-Test-User", USER_B)
+      .send({ name: "Ana" });
+    expect(other.status).toBe(201);
+  });
+
+  it("rejects renames that collide with another friend, but allows re-casing the same friend", async () => {
+    const ana = await request(app).post("/api/friends").set("X-Test-User", USER_A).send({ name: "Ana" });
+    await request(app).post("/api/friends").set("X-Test-User", USER_A).send({ name: "Bob" });
+
+    const collide = await request(app)
+      .put(`/api/friends/${ana.body.id}`)
+      .set("X-Test-User", USER_A)
+      .send({ name: " bob " });
+    expect(collide.status).toBe(409);
+    expect(collide.body.message).toMatch(/already in your friends list/);
+
+    const recase = await request(app)
+      .put(`/api/friends/${ana.body.id}`)
+      .set("X-Test-User", USER_A)
+      .send({ name: "ANA" });
+    expect(recase.status).toBe(200);
+    expect(recase.body.name).toBe("ANA");
+  });
+
+  it("stores the trimmed name on create", async () => {
+    const res = await request(app)
+      .post("/api/friends")
+      .set("X-Test-User", USER_A)
+      .send({ name: "  Cara  " });
+    expect(res.status).toBe(201);
+    expect(res.body.name).toBe("Cara");
+  });
+});
