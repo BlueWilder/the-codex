@@ -28,9 +28,12 @@ export default defineConfig({
         },
       },
       {
-        // Server suite. These tests currently connect to the live DATABASE_URL
-        // and one of them truncates a table, so do NOT run this project until
-        // the storage layer is injectable. Run `--project client` instead.
+        // Server suite. Storage is injected and the Anthropic SDK is mocked,
+        // so these tests issue no queries and are safe to run. They do still
+        // import server/db.ts, which throws unless DATABASE_URL is set, but a
+        // pg Pool opens no connection until something queries it. The
+        // `*.integration-test.ts` files are the ones that read and write a real
+        // (throwaway) database, and this `.test.ts` glob does not match them.
         resolve,
         test: {
           name: "server",
