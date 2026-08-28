@@ -15,12 +15,11 @@ No em dashes in user-facing copy. Use commas, periods, or parentheses.
 Durable rules for every build/update prompt on this repo. Prompts may reference this section instead of restating these.
 
 - No em dashes in user-facing copy. Use commas, periods, or parentheses.
-- data-testid on every new interactive or display element. Formats: button-<action>, input-<field>, text-<label>, step-<name>. Match existing names (e.g. button-next-step, input-player-name-N, text-player-count).
+- data-testid on every new interactive or display element. Formats: button-<action>, input-<field>, text-<label>, step-<name>. Match existing names (e.g. button-start-game, input-script-synopsis, text-player-count).
 - Tests live in tests/**/*.test.{ts,tsx} (vitest, jsdom, @testing-library/react, per-file jsdom directive). Any prompt that adds, removes, or alters a user-facing flow must add or update a test there.
-- Two known pre-existing TypeScript errors exist in ScriptBuilderDialog.tsx and GameTracker.tsx. Do NOT fix them as a side effect; report only, unless the task is explicitly to fix them.
-- The /game route renders client/src/pages/Game.tsx. GameSetup.tsx and GameTracker.tsx are a separate, older DB-backed flow that is NOT on /game. Do not edit them unless the task names them.
+- The /game route renders client/src/pages/Game.tsx. GameSetup.tsx is a separate, older DB-backed page that is not routed. Do not edit it unless the task names it.
 - Stay in scope. Do not silently fix adjacent bugs or refactor outside the named change. Report drift for follow-up.
-- Shared character UI lives in client/src/components/character/ (ScriptView, CharacterCard, TeamBadge, NightBadges, JinxList). Reuse it; do not duplicate card grids or team-color logic. Team colors flow from lib/team-style.ts; night order from lib/night-order.ts; script resolution from lib/script-resolve.ts.
+- Shared character UI lives in client/src/components/character/ (ScriptView, ScriptSheet, CharacterCard, TeamBadge, NightBadges, JinxList). Reuse it; do not duplicate card grids or team-color logic. Team colors flow from lib/team-style.ts; night order from lib/night-order.ts; script resolution from lib/script-resolve.ts.
 - Dark gothic only, no light mode, no external brand palette.
 - Use Checkpoints after each major feature works. Store secrets in env vars, never hardcode. Report every file changed and flag any system file (.replit, .gitignore) touched.
 
@@ -38,7 +37,7 @@ Durable rules for every build/update prompt on this repo. Prompts may reference 
 
 ### Design System
 - **Theme**: dark gothic only. There is NO light mode. Do not add light-mode styling or apply any external brand palette. The Codex has its own identity: charcoal background, parchment text, antique gold and amber accents, crimson primary.
-- **Team color system**: driven by `getTeamColor` in `client/src/pages/Reference.tsx`. Each team tints the card text, border, and background. Values: Townsfolk `text-blue-400`, Outsider `text-blue-200`, Minion `text-red-400`, Demon `text-red-600`, Traveler `text-slate-300`, Fabled `text-[#efc344]` (gold). Preserve this per-team tinting on any card surface.
+- **Team color system**: driven by `teamCard` in `client/src/lib/team-style.ts`. Each team tints the card text, border, and background. Values: Townsfolk `text-blue-400`, Outsider `text-blue-200`, Minion `text-red-400`, Demon `text-red-600`, Traveler `text-slate-300`, Fabled `text-[#efc344]` (gold). Preserve this per-team tinting on any card surface.
 - **Storyteller accent**: the "How to Run" host instructions use a fixed amethyst (`#c79fe6`) regardless of team, inside a panel with border `#3d2f57`, a Wand2 icon, and a small "Storyteller" tag. Applied in `CharacterCard.tsx`. Keep host-facing content visually distinct from player-facing content.
 
 ### Backend Architecture
@@ -82,8 +81,8 @@ Character data is stored client-side in `client/src/lib/game-data.ts` with full 
   - Experimental characters: 71 verified against wiki with fixes applied:
     - Jan 2026: Psychopath, Organ Grinder, Vizier, Riot, Alchemist, Lycanthrope, Nightwatchman, Boomdandy
     - Mar 2026: Wizard (completely wrong ability), Princess (completely wrong ability), Deus ex Fiasco (completely wrong ability), Damsel (wording), Snitch (wording), Al-Hadikhia (wording), Plague Doctor (wording), Yaggababble (wording)
-- **Built-in Scripts**: Trouble Brewing, Bad Moon Rising, Sects & Violets (official, with synopses), The Wild Hunt (community, by Logan & Brad), The Ship of Theseus (community, by TopazChicken)
-- **Custom Script Synopsis**: Optional synopsis text field in script editor; stored in DB (`synopsis` column on `customScripts` table) or localStorage; displayed on Night Sheet with same collapsible block as base scripts
+- **Built-in Scripts**: Trouble Brewing, Bad Moon Rising, Sects & Violets (official, with synopses), The Wild Hunt (community, by Logan & Brad), The Ship of Theseus (community, by TopazChicken), Leviathan Awakens (community, by TopazChicken)
+- **Custom Script Synopsis**: Optional synopsis text field in script editor; stored in DB (`synopsis` column on `customScripts` table) or localStorage
   - Community scripts use experimental characters; Reference page filter uses `OFFICIAL_SCRIPTS` character lists instead of `edition` matching
 
 ### Introduction Page
@@ -99,45 +98,32 @@ A beginner-friendly guide at `/introduction` explaining Blood on the Clocktower 
 
 ### Game Mode (Player Tracker)
 A localStorage-based player tracking tool at `/game` for note-taking during games:
-- **Setup wizard**: 4-step linear flow, script-first: (1) Select a Script (or All Characters), (2) read-only ScriptView preview of the chosen script, (3) player count (5-20), (4) player names. No Player/Storyteller role fork.
-- **Script selection**: official, community, or custom scripts, with Create Custom Script and Scan Paper Script (saved as custom, auto-selected) inline. All Characters skips the preview.
-- **Preview**: reuses the shared read-only ScriptView (client/src/components/character/ScriptView.tsx); characters resolved via resolveScriptCharacters(script, { includeTravellers: false, includeFabled: false }) so the preview matches the in-game claim picker.
+- **Setup screen**: a single screen, script-first: select a script (or All Characters), set the player count (5-20), then Start Game. No Player/Storyteller role fork.
+- **Script selection**: official, community, or custom scripts, with Create Custom Script and Scan Paper Script (saved as custom, auto-selected) inline.
+- **Preview**: the selected script renders inline as a ScriptSheet (client/src/components/character/ScriptSheet.tsx); characters resolved via resolveScriptCharacters(script, { includeTravellers: false, includeFabled: false }) so the preview matches the in-game claim picker.
 - **Player cards**: Grid display showing name, alive/dead status, claim badges, indicator icons
-- **Player detail drawer**: Claims (with team color-coded badges), notes, nomination history by day
+- **Player detail drawer**: Claims (with team color-coded badges) and notes
   - Claims section appears first (more frequently accessed during play)
   - Tapping a claim badge opens character preview with ability, tips, and link to full reference
   - Travelers excluded from claims list (they're always known before game starts)
   - "Convert to Traveler" option for mid-game player conversion
-- **Trust slider**: Horizontal gradient bar (red→tan→green) on each player card with draggable brass knob (0-100 scale, 50=neutral). Disabled with reduced opacity for dead players. Component: `client/src/components/TrustSlider.tsx`
-- **Day tracker**: Scoreboard-style header with alive/dead counts, votes to execute, available votes, and script name badge
-- **View modes**: List view and Circle seating chart view (toggle in header)
+- **Day tracker**: Scoreboard-style header with the current phase (Night N / Day N), previous/next chapter controls, alive/dead counts, and traveler count. Collapses to a compact summary bar.
+- **View modes**: four tabs in a bottom nav: Grim (circle seating chart), List, Notebook, Script
   - Circle view arranges players in a full 360° circle; scoreboard auto-collapses to a compact summary bar to maximize space
   - Free-drag positioning: players can be dragged anywhere on the circle canvas; custom positions saved as normalized `circleX`/`circleY` (0-1) on `GamePlayer`
   - Dragging a player re-sorts the players array clockwise from 12 o'clock, which also updates list view order
   - "Circle Up" button appears when custom positions exist; clears all `circleX`/`circleY` to restore default circle
 - **Persistence**: Game state saved to localStorage, survives page refresh
-- **Nomination system**: Dual recording modes:
-  - **Full Vote Record**: Track individual player votes with auto ghost vote handling
-  - **Quick Log**: Simple vote count and result entry (Failed/On Block/Executed) without individual voter tracking
-- **Chopping Block system**: Official BOTC execution rules:
-  - First nomination reaching vote threshold goes on the block
-  - Subsequent nominations with higher votes replace the current block
-  - Equal votes create a tie (no execution in BOTC rules)
-  - Block indicator in game header shows current status (single player or tied)
-  - Modal for resolving block: execute, no execution, or keep block
-  - Day change prompts when unresolved block exists
-  - Result types: `on_the_block`, `passed`, `executed`, `failed`
-- **Hook**: `client/src/hooks/use-player-game.ts` manages all game state with types for GamePlayer, VoteRecord, PlayerGame, GameScriptRef, Nomination (with isQuickLog, result fields), and choppingBlock array for tracking block nominations
+- **Hook**: `client/src/hooks/use-player-game.ts` manages all game state with types for GamePlayer, ClaimRecord, DeathRecord, TravelerEvent, NotebookNote, PlayerGame, and GameScriptRef
 - **Script sync**: `client/src/hooks/use-local-scripts.ts` provides reactive script storage shared across all pages with cross-tab sync via storage events
 
 ### Game Log
-A chronological event viewer accessible via "Log" button in game header:
-- **Event types tracked**: Claims (with timestamp/day), nominations (with outcomes), deaths (execution/night/exile), ghost votes used, traveler joins/leaves/exiles
-- **Organization**: Events grouped by day, with day/night sections within each day
-- **Filtering**: Filter by event type (All, Claims, Votes, Deaths, Travelers)
-- **Data structures**: ClaimRecord, DeathRecord, TravelerEvent, GhostVoteEvent interfaces in use-player-game.ts
-- **Historical accuracy**: Nomination outcomes (passed/failed, vote counts) are stored at creation time to ensure accuracy regardless of future game state changes
-- **Component**: `client/src/components/GameLogDialog.tsx`
+A chronological event viewer in the Notebook tab of the game tracker:
+- **Event types tracked**: Claims (with timestamp/day), deaths (execution/night/exile), traveler joins/leaves/exiles
+- **Organization**: Events grouped by chapter (day plus phase)
+- **Filtering**: Filter by event type (All, Claims, Deaths, Travelers)
+- **Data structures**: ClaimRecord, DeathRecord, TravelerEvent, NotebookNote interfaces in use-player-game.ts
+- **Component**: `client/src/components/InlineGameLog.tsx`
 
 ### User Authentication & Cloud Scripts
 Authentication system for saving custom scripts to the cloud:
@@ -155,7 +141,7 @@ Authentication system for saving custom scripts to the cloud:
 
 ### Database
 - **PostgreSQL**: Primary database accessed via `DATABASE_URL` environment variable
-- **connect-pg-simple**: Session storage (available but not yet implemented)
+- **connect-pg-simple**: Session storage, backing the Replit Auth sessions in `server/replit_integrations/auth/replitAuth.ts`
 
 ### Third-Party Libraries
 - **Radix UI**: Accessible component primitives
