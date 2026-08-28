@@ -15,7 +15,7 @@ Everything in replit.md applies. These rules cover mechanics that differ for Cla
 
 ### Verify before reporting done
 - Run the typecheck with `npm run check` before claiming a task is complete. It currently passes clean, so treat any error it reports as one your change introduced. The test suite is `npx vitest run` (there is no test script in package.json).
-- vitest currently connects to the live database, so do not run the test suite until that is fixed.
+- npx vitest run is safe and needs no database. Do not run the *.integration-test.ts files against production.
 
 ### Shared repo
 - Replit Agent also works in this repo. Files may have changed since your last session. Read before you write.
