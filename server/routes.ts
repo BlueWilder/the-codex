@@ -1,6 +1,6 @@
 import type { Express } from "express";
 import type { Server } from "http";
-import { storage } from "./storage";
+import { storage, type IStorage } from "./storage";
 import { api } from "@shared/routes";
 import { z } from "zod";
 import { setupAuth, registerAuthRoutes, isAuthenticated } from "./replit_integrations/auth";
@@ -55,12 +55,13 @@ const createFriendSchema = z.object({
 // with a stubbed auth middleware, mirroring registerScanScriptRoute.
 export function registerFriendRoutes(
   app: Express,
-  auth: typeof isAuthenticated = isAuthenticated
+  auth: typeof isAuthenticated = isAuthenticated,
+  store: IStorage = storage
 ): void {
   app.get("/api/friends", auth, async (req: any, res) => {
     try {
       const userId = req.user?.claims?.sub;
-      const friendsList = await storage.getFriends(userId);
+      const friendsList = await store.getFriends(userId);
       res.json(friendsList);
     } catch (error) {
       console.error("Error fetching friends:", error);
@@ -82,14 +83,14 @@ export function registerFriendRoutes(
       if (!name) {
         return res.status(400).json({ message: "Name is required", field: "name" });
       }
-      const existing = await storage.getFriends(userId);
+      const existing = await store.getFriends(userId);
       if (existing.some(f => f.name.trim().toLowerCase() === name.toLowerCase())) {
         return res.status(409).json({
           message: `${name} is already in your friends list.`,
           field: "name",
         });
       }
-      const friend = await storage.createFriend({ userId, name });
+      const friend = await store.createFriend({ userId, name });
       res.status(201).json(friend);
     } catch (error) {
       console.error("Error creating friend:", error);
@@ -112,14 +113,14 @@ export function registerFriendRoutes(
       if (!name) {
         return res.status(400).json({ message: "Name is required", field: "name" });
       }
-      const existing = await storage.getFriends(userId);
+      const existing = await store.getFriends(userId);
       if (existing.some(f => f.id !== friendId && f.name.trim().toLowerCase() === name.toLowerCase())) {
         return res.status(409).json({
           message: `${name} is already in your friends list.`,
           field: "name",
         });
       }
-      const friend = await storage.updateFriend(friendId, userId, { name });
+      const friend = await store.updateFriend(friendId, userId, { name });
       if (!friend) {
         return res.status(404).json({ message: "Friend not found or unauthorized" });
       }
@@ -134,7 +135,7 @@ export function registerFriendRoutes(
     try {
       const userId = req.user?.claims?.sub;
       const friendId = Number(req.params.id);
-      const deleted = await storage.deleteFriend(friendId, userId);
+      const deleted = await store.deleteFriend(friendId, userId);
       if (!deleted) {
         return res.status(404).json({ message: "Friend not found or unauthorized" });
       }
@@ -148,7 +149,7 @@ export function registerFriendRoutes(
 
 // Registers the public photo-to-script scanning endpoint. Extracted so it can
 // be mounted in isolation (without auth/DB setup) by integration tests.
-export function registerScanScriptRoute(app: Express): void {
+export function registerScanScriptRoute(app: Express, store: IStorage = storage): void {
   // === Scan paper script (Claude vision) ===
   app.post("/api/scan-script", async (req, res) => {
     const { perMax, perWindowMs, globalMax, globalWindowMs } = getScanLimits();
@@ -160,14 +161,14 @@ export function registerScanScriptRoute(app: Express): void {
       ? `user:${userId}`
       : `ip:${req.ip || req.socket.remoteAddress || "unknown"}`;
 
-    const clientAllowed = await storage.checkScanRateLimit(clientKey, perMax, perWindowMs);
+    const clientAllowed = await store.checkScanRateLimit(clientKey, perMax, perWindowMs);
     if (!clientAllowed) {
       return res.status(429).json({ message: "Too many scans. Please wait a few minutes and try again." });
     }
 
     // Global backstop: only counts requests that already passed the per-client
     // cap, so an abuser rotating IPs still drains a shared site-wide budget.
-    const globalAllowed = await storage.checkScanRateLimit(GLOBAL_SCAN_KEY, globalMax, globalWindowMs);
+    const globalAllowed = await store.checkScanRateLimit(GLOBAL_SCAN_KEY, globalMax, globalWindowMs);
     if (!globalAllowed) {
       return res.status(429).json({ message: "The scanner is busy right now. Please try again in a little while." });
     }

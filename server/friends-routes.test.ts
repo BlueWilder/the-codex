@@ -1,13 +1,18 @@
 import express, { type Express, type RequestHandler } from "express";
 import request from "supertest";
 import { beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { InMemoryStorage } from "./test-storage";
 
 // Mounts the friends routes with a stubbed auth middleware that reads the
 // user id from the X-Test-User header (401 when missing), so we can exercise
 // auth gating and per-user scoping without a real OIDC session.
+//
+// Storage is injected too, so this suite needs no database. The Drizzle
+// persistence and scoping predicates are pinned separately in
+// friends-persistence.integration-test.ts.
+const store = new InMemoryStorage();
+
 let app: Express;
-let db: typeof import("./db").db;
-let friends: typeof import("@shared/schema").friends;
 
 const testAuth: RequestHandler = (req: any, res, next) => {
   const userId = req.headers["x-test-user"];
@@ -23,17 +28,14 @@ const USER_B = "test-friend-user-b";
 
 beforeAll(async () => {
   const { registerFriendRoutes } = await import("./routes");
-  ({ db } = await import("./db"));
-  ({ friends } = await import("@shared/schema"));
 
   app = express();
   app.use(express.json());
-  registerFriendRoutes(app, testAuth);
+  registerFriendRoutes(app, testAuth, store);
 });
 
-beforeEach(async () => {
-  const { inArray } = await import("drizzle-orm");
-  await db.delete(friends).where(inArray(friends.userId, [USER_A, USER_B]));
+beforeEach(() => {
+  store.reset();
 });
 
 describe("/api/friends auth", () => {
@@ -54,9 +56,8 @@ describe("/api/friends CRUD and scoping", () => {
     expect(res.status).toBe(201);
     expect(res.body.name).toBe("Ana");
 
-    // Verify directly in the database, not just the returned object.
-    const { eq } = await import("drizzle-orm");
-    const rows = await db.select().from(friends).where(eq(friends.id, res.body.id));
+    // Verify what actually reached storage, not just the returned object.
+    const rows = (await store.getFriends(USER_A)).filter(f => f.id === res.body.id);
     expect(rows).toHaveLength(1);
     expect(rows[0].userId).toBe(USER_A);
     expect(rows[0].name).toBe("Ana");

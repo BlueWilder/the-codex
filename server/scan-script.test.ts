@@ -1,6 +1,7 @@
 import express, { type Express } from "express";
 import request from "supertest";
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { InMemoryStorage } from "./test-storage";
 
 // Mock the Anthropic SDK so no real network/paid API call happens. The mocked
 // `messages.create` is controlled per-test to simulate what the model returns.
@@ -16,10 +17,12 @@ vi.mock("@anthropic-ai/sdk", () => ({
 // dummy one so requests reach the (mocked) scanning logic.
 process.env.ANTHROPIC_API_KEY = "test-key";
 
+// Storage is injected, so this suite needs no database. The SQL behind the
+// rate limiter is pinned separately in scan-rate-limit.integration-test.ts.
+const store = new InMemoryStorage();
+
 let app: Express;
 let VALID_CHARACTER_NAMES: string[];
-let db: typeof import("./db").db;
-let scanRateLimits: typeof import("@shared/schema").scanRateLimits;
 
 // Each test uses a distinct client IP so the per-client rate limiter state does
 // not bleed between tests. `trust proxy` makes Express honour X-Forwarded-For.
@@ -38,20 +41,18 @@ function modelReturns(names: unknown): void {
 beforeAll(async () => {
   const { registerScanScriptRoute } = await import("./routes");
   ({ VALID_CHARACTER_NAMES } = await import("./character-names"));
-  ({ db } = await import("./db"));
-  ({ scanRateLimits } = await import("@shared/schema"));
 
   app = express();
   app.use(express.json({ limit: "12mb" }));
   app.set("trust proxy", true);
-  registerScanScriptRoute(app);
+  registerScanScriptRoute(app, store);
 });
 
-beforeEach(async () => {
+beforeEach(() => {
   createMock.mockReset();
-  // Clear persisted rate-limit counters (per-client AND the shared global
-  // backstop) so tests are deterministic and don't bleed across runs.
-  await db.delete(scanRateLimits);
+  // Clear rate-limit counters (per-client AND the shared global backstop) so
+  // tests are deterministic and don't bleed across runs.
+  store.reset();
   // Default the global backstop high so per-client tests aren't affected by it;
   // individual tests override SCAN_GLOBAL_MAX when exercising the backstop.
   process.env.SCAN_GLOBAL_MAX = "10000";
