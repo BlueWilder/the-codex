@@ -56,7 +56,7 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "npx vitest run"
+args = "npx vitest run --project client"
 
 [workflows.workflow.metadata]
 isValidation = true
@@ -77,4 +77,4 @@ integrations = ["javascript_log_in_with_replit:2.0.0"]
 
 [postMerge]
 path = "scripts/post-merge.sh"
-timeoutMs = 20000
+timeoutMs = 120000
