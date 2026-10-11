@@ -1,6 +1,8 @@
 import { Layout } from "@/components/ui/Layout";
 import { useState, useMemo, useEffect, useRef } from "react";
-import { usePlayerGame, getBreakdown, isPlayerActive, type GamePlayer, type GameScriptRef, type PlayerStatus, type DeathRecord } from "@/hooks/use-player-game";
+import { usePlayerGame, getBreakdown, isPlayerActive } from "@/features/game/state/use-player-game";
+import type { GamePlayer, GameScriptRef, PlayerStatus, DeathRecord } from "@/features/game/types";
+import { useGameTracker } from "@/features/game/state/use-game-tracker";
 import { ALL_CHARACTERS, OFFICIAL_SCRIPTS, getJinxesForCharacter, getCharacterById } from "@/lib/game-data";
 import { useLocalScripts, type LocalScript } from "@/hooks/use-local-scripts";
 import { ScriptBuilderDialog } from "@/components/ScriptBuilderDialog";
@@ -2779,7 +2781,6 @@ export default function Game() {
     createGame,
     endGame,
     playAgain,
-    updatePlayer,
     addClaim,
     addMultipleClaims,
     removeClaim,
@@ -2803,24 +2804,9 @@ export default function Game() {
     setCirclePosition,
     setMultipleCirclePositions,
     resetCirclePositions,
-  } = usePlayerGame();
-
-  const updatePlayerName = (playerId: string, name: string) => {
-    updatePlayer(playerId, { name });
-  };
-
-  const setPrimaryClaim = (playerId: string, characterId: string) => {
-    if (!game) return;
-    const player = game.players.find(p => p.id === playerId);
-    if (!player) return;
-    const existingClaims = player.claims ?? [];
-    const newClaims = [characterId, ...existingClaims.filter(c => c !== characterId)];
-    const existingRecords = player.claimRecords ?? [];
-    const newRecords = existingRecords.some(r => r.characterId === characterId)
-      ? existingRecords
-      : [...existingRecords, { characterId, addedAt: new Date().toISOString(), day: game.currentDay }];
-    updatePlayer(playerId, { claims: newClaims, claimRecords: newRecords });
-  };
+    updatePlayerName,
+    setPrimaryClaim,
+  } = useGameTracker();
 
   if (isLoading) {
     return (

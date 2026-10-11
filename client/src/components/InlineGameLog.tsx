@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { 
   type PlayerGame, 
   type DeathRecord,
-} from "@/hooks/use-player-game";
+} from "@/features/game/state/use-player-game";
 import { deathPhaseLabel } from "@/lib/death-phase";
 import { ALL_CHARACTERS } from "@/lib/game-data";
 import { 

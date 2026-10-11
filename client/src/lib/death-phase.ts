@@ -1,4 +1,4 @@
-import type { DeathRecord } from "@/hooks/use-player-game";
+import type { DeathRecord } from "@/features/game/state/use-player-game";
 
 export function latestDeathRecord(
   deathRecords: DeathRecord[],
