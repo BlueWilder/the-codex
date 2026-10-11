@@ -8,8 +8,8 @@ import { sortCharacters, getFirstNightChars, getOtherNightChars, type ScriptSort
 
 /**
  * Shared, script-scoped character view. Renders a grid of the shared
- * CharacterCard for a resolved list of characters, so Reference, Game,
- * and Storyteller flows reuse the same expand/collapse card AND the same
+ * CharacterCard for a resolved list of characters, so Reference and Game
+ * reuse the same expand/collapse card AND the same
  * sort toggle instead of duplicating the grid markup or sort logic.
  *
  * Resolution and filtering are left to the caller (see `lib/script-resolve.ts`);

@@ -44,7 +44,7 @@ export function resolveScriptCharacters(
 
 /**
  * Canonical character count for a script card. Derives the count from
- * `resolveScriptCharacters` so every flow (Game, Storyteller) shows the same
+ * `resolveScriptCharacters` so every surface shows the same
  * number for the same script, consistent with what the resolver considers part
  * of the script.
  */
