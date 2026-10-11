@@ -11,3 +11,10 @@ export type {
   GameScriptRef,
   PlayerGame,
 } from "@/features/game/state/use-player-game";
+
+
+export interface ClaimDescriptor {
+  id: string;
+  name: string;
+  team: string;
+}

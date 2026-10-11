@@ -1,12 +1,10 @@
 import { Layout } from "@/components/ui/Layout";
 import { useState, useMemo, useEffect, useRef } from "react";
-import { usePlayerGame, getBreakdown, isPlayerActive } from "@/features/game/state/use-player-game";
-import type { GamePlayer, GameScriptRef, PlayerStatus, DeathRecord } from "@/features/game/types";
+import { usePlayerGame, getBreakdown } from "@/features/game/state/use-player-game";
 import { useGameTracker } from "@/features/game/state/use-game-tracker";
-import { ALL_CHARACTERS, OFFICIAL_SCRIPTS, getJinxesForCharacter, getCharacterById } from "@/lib/game-data";
+import { ALL_CHARACTERS, getJinxesForCharacter, getCharacterById } from "@/lib/game-data";
 import { useLocalScripts, type LocalScript } from "@/hooks/use-local-scripts";
 import { ScriptBuilderDialog } from "@/components/ScriptBuilderDialog";
-import { InlineGameLog } from "@/components/InlineGameLog";
 import { FriendsPicker } from "@/components/FriendsPicker";
 import { CaptureFriendsDialog } from "@/components/CaptureFriendsDialog";
 import { useFriends } from "@/hooks/use-friends";
@@ -14,9 +12,8 @@ import { scanScriptFile } from "@/lib/scan-script";
 import { resolveScriptCharacters, countScriptCharacters } from "@/lib/script-resolve";
 import { ScriptSheet } from "@/components/character/ScriptSheet";
 import { CharacterCard } from "@/components/character/CharacterCard";
-import { latestDeathRecord, deathPhaseLabel } from "@/lib/death-phase";
 import { useToast } from "@/hooks/use-toast";
-import { ChevronRight, ChevronLeft, Play, X, Plus, Check, Search, Moon, Sun, ChevronUp, ChevronDown, FileText, Loader2, GripVertical, UserPlus, ArrowRight, BookOpen, HandMetal, Ban, LogOut, Trash2, Pencil, MoreVertical, RotateCcw, Info, ExternalLink, Users, Skull, Scroll, Hand, Target, Theater, ArrowDownUp, Camera, LayoutList, NotebookText, ScrollText } from "lucide-react";
+import { ChevronRight, ChevronLeft, Play, X, Plus, Check, Search, Moon, Sun, ChevronUp, ChevronDown, FileText, Loader2, UserPlus, BookOpen, Ban, LogOut, Trash2, Pencil, MoreVertical, RotateCcw, Info, ExternalLink, Users, Skull, Scroll, Theater, Camera, LayoutList, NotebookText, ScrollText } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -30,16 +27,22 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, TouchSensor, useSensor, useSensors, DragEndEvent, DragOverlay, DragStartEvent, useDraggable } from "@dnd-kit/core";
-import { SortableContext, sortableKeyboardCoordinates, useSortable, rectSortingStrategy } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
-import { teamBadge, teamInputAccent, teamCard, teamRing } from "@/lib/team-style";
-import { CharacterToken } from "@/components/character/CharacterToken";
+import { teamBadge } from "@/lib/team-style";
 import { TeamBadge } from "@/components/character/TeamBadge";
 import { NightBadges } from "@/components/character/NightBadges";
 import { JinxBadge } from "@/components/character/JinxBadge";
 import { JinxList } from "@/components/character/JinxList";
+import { type ClaimDescriptor, type GamePlayer, type GameScriptRef, type PlayerStatus } from "@/features/game/types";
+import { GENERIC_TRAVELLER_ID, resolveClaimDescriptor, candidateChipClass } from "@/features/game/claims";
+import { CircleSeatingChart } from "@/features/game/views/CircleView";
+import { ListView } from "@/features/game/views/ListView";
+import { GameScriptView } from "@/features/game/views/GameScriptView";
+import { NotebookView } from "@/features/game/views/NotebookView";
+
+// Components that moved into features/game are re-exported here so existing
+// imports from "@/pages/Game" (including the test suite) keep working.
+export { CircleSeatingChart } from "@/features/game/views/CircleView";
+export { SortablePlayerCard } from "@/features/game/views/ListView";
 
 function AddTravelerDialog({
   open,
@@ -653,22 +656,6 @@ export function SetupWizard({ onStart }: { onStart: (count: number, names: strin
       />
     </div>
   );
-}
-
-const GENERIC_TRAVELLER_ID = 'generic-traveller';
-
-interface ClaimDescriptor {
-  id: string;
-  name: string;
-  team: string;
-}
-
-function resolveClaimDescriptor(id: string): ClaimDescriptor | null {
-  if (id === GENERIC_TRAVELLER_ID) {
-    return { id: GENERIC_TRAVELLER_ID, name: 'Traveller', team: 'traveler' };
-  }
-  const char = ALL_CHARACTERS.find(c => c.id === id);
-  return char ? { id: char.id, name: char.name, team: char.team } : null;
 }
 
 export function CharacterPicker({ 
@@ -1355,634 +1342,6 @@ export function PlayerDetailDrawer({
   );
 }
 
-/**
- * Candidate chip styling. The primary claim renders as a filled team-colored
- * pill (the existing badge style); alternates render outlined (team text + ring
- * border on a transparent background). Both reuse team-style values; no new
- * colors are introduced here.
- */
-function candidateChipClass(team: string, isPrimary: boolean): string {
-  if (isPrimary) return teamBadge(team);
-  const text = teamCard(team).split(' ').find((c) => c.startsWith('text-')) ?? 'text-foreground';
-  return cn('bg-transparent', text, teamRing(team));
-}
-
-export function SortablePlayerCard({
-  player,
-  game,
-  seatNumber,
-  onSelect,
-  onToggleAlive,
-  onOpenClaimPicker,
-  onRemoveClaim,
-}: {
-  player: GamePlayer;
-  game: NonNullable<ReturnType<typeof usePlayerGame>["game"]>;
-  seatNumber: number;
-  onSelect: () => void;
-  onToggleAlive: () => void;
-  onOpenClaimPicker: () => void;
-  onRemoveClaim: (characterId: string) => void;
-}) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: player.id });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition: isDragging 
-      ? 'transform 150ms cubic-bezier(0.22, 1, 0.36, 1)' 
-      : transition || 'transform 200ms cubic-bezier(0.22, 1, 0.36, 1)',
-  };
-
-  const claimedChars = player.claims.map(id => resolveClaimDescriptor(id)).filter(Boolean);
-  const primaryChar = claimedChars[0] ?? null;
-  const hasNotes = player.notes.trim().length > 0;
-
-  const isActive = player.status === 'alive';
-  // Gate every dead visual (greyed row, shroud, dagger) on CURRENT status, not
-  // on the existence of a death record, so a resurrected player renders as a
-  // normal living seat. Matches the circle node's isDead gate.
-  const isDead = player.status === 'dead' || player.status === 'exiled';
-  const deathRecord = isDead ? latestDeathRecord(game.deathRecords ?? [], player.id) : null;
-  const phaseStamp = deathPhaseLabel(deathRecord);
-
-  return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      onClick={onSelect}
-      className={cn(
-        "rounded-md border border-border/60 bg-card/40 p-2 cursor-pointer",
-        isDead && "opacity-60",
-        isDragging && "opacity-80 shadow-lg z-50 scale-[1.02]",
-        player.isTraveler && "border-purple-700/50"
-      )}
-      data-testid={`card-player-${player.id}`}
-    >
-      <div className="flex items-start gap-2">
-        <button
-          {...attributes}
-          {...listeners}
-          onClick={(e) => e.stopPropagation()}
-          className="touch-none cursor-grab active:cursor-grabbing flex items-center justify-center w-9 h-9 -ml-1 shrink-0 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 active:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
-          data-testid={`button-drag-${player.id}`}
-        >
-          <GripVertical className="w-5 h-5" />
-        </button>
-
-        <span
-          className="shrink-0 mt-1.5 w-5 text-center text-sm font-mono tabular-nums text-muted-foreground"
-          data-testid={`text-seat-number-${player.id}`}
-        >
-          {seatNumber}
-        </span>
-
-        <button
-          onClick={(e) => { e.stopPropagation(); onSelect(); }}
-          className="relative shrink-0 mt-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
-          title={`View ${player.name}`}
-          data-testid={`button-token-${player.id}`}
-        >
-          {primaryChar ? (
-            <CharacterToken
-              characterId={primaryChar.id}
-              team={primaryChar.team}
-              size={40}
-              muted={isDead}
-              data-testid={`token-list-${player.id}`}
-            />
-          ) : (
-            <span
-              className="inline-flex items-center justify-center rounded-full border-2 border-dashed border-muted-foreground/40 text-muted-foreground/60 bg-background/40"
-              style={{ width: 40, height: 40 }}
-              data-testid={`token-list-${player.id}`}
-            >
-              <Plus className="w-4 h-4" />
-            </span>
-          )}
-          {isDead && (
-            <span
-              className="absolute inset-0 rounded-full pointer-events-none flex items-end justify-center overflow-hidden"
-              data-testid={`overlay-shroud-${player.id}`}
-            >
-              <span className="absolute inset-0 rounded-full bg-[#c79fe6]/15 border-2 border-[#3d2f57]" />
-            </span>
-          )}
-        </button>
-
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5 flex-wrap">
-            {player.isTraveler && (
-              <Badge variant="secondary" className="bg-purple-900/40 text-purple-300 border-purple-700 text-xs shrink-0">
-                T
-              </Badge>
-            )}
-            <button
-              onClick={(e) => { e.stopPropagation(); onSelect(); }}
-              className={cn(
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
-                "font-display font-semibold text-base text-left hover:underline truncate min-w-0",
-                isActive ? "text-amber-100" : "text-muted-foreground line-through"
-              )}
-              data-testid={`button-player-name-${player.id}`}
-            >
-              {player.name}
-            </button>
-            {phaseStamp && (
-              <span className="text-[#c79fe6] text-sm shrink-0" data-testid={`text-seat-death-${player.id}`}>
-                † {phaseStamp}
-              </span>
-            )}
-          </div>
-
-          <div className="flex flex-wrap items-center gap-1.5 mt-1.5" data-testid={`claims-row-${player.id}`}>
-            {claimedChars.length > 0 ? (
-              claimedChars.map((char, idx) => char && (
-                <div
-                  key={char.id}
-                  className="inline-flex items-center gap-1"
-                  data-testid={`chip-candidate-${player.id}-${char.id}`}
-                >
-                  <button
-                    onClick={(e) => { e.stopPropagation(); onRemoveClaim(char.id); }}
-                    className={cn(
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background","inline-flex items-center gap-1 text-xs font-sans whitespace-nowrap rounded-full border px-2.5 py-1 font-semibold transition-colors hover:opacity-80", candidateChipClass(char.team, idx === 0))}
-                    title={`Remove ${char.name} claim`}
-                    data-testid={`button-claim-badge-${char.id}-${player.id}`}
-                  >
-                    {char.name}
-                    <X className="w-3.5 h-3.5 opacity-60" />
-                  </button>
-                </div>
-              ))
-            ) : (
-              <span
-                className="text-xs italic text-muted-foreground/60"
-                data-testid={`text-no-claim-${player.id}`}
-              >
-                no claim yet
-              </span>
-            )}
-            <button
-              onClick={(e) => { e.stopPropagation(); onOpenClaimPicker(); }}
-              className="inline-flex items-center justify-center w-6 h-6 rounded-full border border-dashed border-amber-700/60 text-amber-400 hover:bg-amber-900/20 hover:border-amber-600 transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
-              title="Add claim"
-              data-testid={`button-add-claim-${player.id}`}
-            >
-              <Plus className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        </div>
-
-        <div className="flex flex-col items-end gap-1 shrink-0">
-          <div className="flex items-center gap-1 h-4">
-            {hasNotes && <FileText className="w-3.5 h-3.5 text-muted-foreground" />}
-          </div>
-          {!player.isTraveler && (
-            <button
-              onClick={(e) => { e.stopPropagation(); onToggleAlive(); }}
-              className={cn(
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
-                "flex items-center justify-center w-8 h-8 rounded-lg border transition-colors",
-                isDead
-                  ? "bg-red-900/40 border-red-700/60 text-red-400 hover:bg-red-900/60"
-                  : "border-muted-foreground/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground"
-              )}
-              title={isDead ? "Revive player" : "Mark as dead"}
-              data-testid={`button-toggle-dead-${player.id}`}
-            >
-              <Skull className="w-4 h-4" />
-            </button>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/** Pull just the text color token out of the single team-style source. */
-function seatRoleTextColor(team: string): string {
-  return teamCard(team).split(' ').find((c) => c.startsWith('text-')) ?? 'text-foreground';
-}
-
-function CircleNodeContent({
-  player,
-  nodeSize,
-  isOverlay = false,
-}: {
-  player: GamePlayer;
-  nodeSize: number;
-  isDragging?: boolean;
-  isOverlay?: boolean;
-  nameOutside?: boolean;
-}) {
-  const claims = player.claims ?? [];
-  const primaryId = claims?.[0] ?? null;
-  const primaryChar = primaryId ? resolveClaimDescriptor(primaryId) : null;
-  const isDead = player.status === 'dead' || player.status === 'exiled';
-
-  const tokenSize = Math.round(nodeSize * 0.62);
-  const roleName = primaryChar?.name ?? null;
-
-  return (
-    <div
-      className={cn(
-        "relative flex flex-col items-center justify-center rounded-full text-center",
-        isOverlay && "shadow-2xl scale-110"
-      )}
-      style={{ width: nodeSize, height: nodeSize }}
-      data-testid={`token-seat-${player.id}`}
-    >
-      {primaryChar ? (
-        <CharacterToken
-          characterId={primaryId ?? undefined}
-          team={primaryChar.team}
-          size={tokenSize}
-          muted={isDead}
-        />
-      ) : (
-        <div
-          className={cn(
-            "flex items-center justify-center rounded-full border-2 border-dashed border-muted-foreground/40 text-muted-foreground/60",
-            isDead && "opacity-40"
-          )}
-          style={{ width: tokenSize, height: tokenSize }}
-        >
-          <Plus style={{ width: Math.round(tokenSize * 0.45), height: Math.round(tokenSize * 0.45) }} />
-        </div>
-      )}
-
-      {roleName ? (
-        <span
-          className={cn(
-            "mt-0.5 text-[9px] leading-tight font-medium truncate px-1",
-            isDead ? "text-muted-foreground" : seatRoleTextColor(primaryChar?.team ?? 'townsfolk')
-          )}
-          style={{ maxWidth: nodeSize - 6 }}
-          data-testid={`text-seat-role-${player.id}`}
-        >
-          {roleName.length > 9 ? roleName.slice(0, 8) + '…' : roleName}
-        </span>
-      ) : (
-        <span
-          className="mt-0.5 text-[9px] leading-tight italic text-muted-foreground/60 px-1"
-          data-testid={`text-seat-noclaim-${player.id}`}
-        >
-          no claim
-        </span>
-      )}
-
-      {isDead && (
-        <div
-          className="absolute inset-0 rounded-full pointer-events-none flex items-end justify-center overflow-hidden"
-          data-testid={`overlay-shroud-${player.id}`}
-        >
-          <div className="absolute inset-0 rounded-full bg-[#c79fe6]/15 border-2 border-[#3d2f57]" />
-        </div>
-      )}
-    </div>
-  );
-}
-
-export function CircleSeatingChart({
-  players,
-  currentDay,
-  deathRecords = [],
-  onSelectPlayer,
-  onOpenPrimaryPicker,
-  onReorderPlayers,
-  onSetCirclePosition,
-  onSetMultipleCirclePositions,
-  onResetCirclePositions,
-}: {
-  players: GamePlayer[];
-  currentDay: number;
-  deathRecords?: DeathRecord[];
-  onSelectPlayer: (playerId: string) => void;
-  onOpenPrimaryPicker?: (playerId: string) => void;
-  onReorderPlayers: (activeId: string, overId: string) => void;
-  onSetCirclePosition: (playerId: string, x: number, y: number) => void;
-  onSetMultipleCirclePositions: (updates: { playerId: string; x: number; y: number }[]) => void;
-  onResetCirclePositions: () => void;
-}) {
-  const [dimensions, setDimensions] = useState({ width: 300, height: 300 });
-  const [activeId, setActiveId] = useState<string | null>(null);
-  const [dragDelta, setDragDelta] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        delay: 200,
-        tolerance: 5,
-      },
-    }),
-    useSensor(TouchSensor, {
-      activationConstraint: {
-        delay: 200,
-        tolerance: 5,
-      },
-    })
-  );
-
-  useEffect(() => {
-    const updateDimensions = () => {
-      const width = Math.min(window.innerWidth - 32, 500);
-      setDimensions({ width, height: width });
-    };
-    updateDimensions();
-    window.addEventListener('resize', updateDimensions);
-    return () => window.removeEventListener('resize', updateDimensions);
-  }, []);
-
-  const playerCount = players.length;
-  const centerX = dimensions.width / 2;
-  const centerY = dimensions.height / 2;
-  const nodeSize = playerCount <= 8 ? 76 : playerCount <= 12 ? 66 : playerCount <= 15 ? 56 : 50;
-  const radius = Math.min(centerX, centerY) - nodeSize / 2 - 8;
-
-  const getDefaultPosition = (index: number) => {
-    const angle = (-90 + (index / playerCount) * 360) * (Math.PI / 180);
-    return {
-      x: centerX + radius * Math.cos(angle) - nodeSize / 2,
-      y: centerY + radius * Math.sin(angle) - nodeSize / 2,
-    };
-  };
-
-  const getPlayerPosition = (player: GamePlayer, index: number) => {
-    if (player.circleX !== undefined && player.circleY !== undefined) {
-      return {
-        x: player.circleX * dimensions.width - nodeSize / 2,
-        y: player.circleY * dimensions.height - nodeSize / 2,
-      };
-    }
-    return getDefaultPosition(index);
-  };
-
-  const getPlayerAngleDeg = (player: GamePlayer, index: number) => {
-    const pos = getPlayerPosition(player, index);
-    const px = pos.x + nodeSize / 2;
-    const py = pos.y + nodeSize / 2;
-    const deg = Math.atan2(py - centerY, px - centerX) * (180 / Math.PI);
-    return ((deg % 360) + 360) % 360;
-  };
-
-  const hasCustomPositions = players.some(p => p.circleX !== undefined);
-
-  const handleDragStart = (event: DragStartEvent) => {
-    setActiveId(event.active.id as string);
-    setDragDelta({ x: 0, y: 0 });
-    if (navigator.vibrate) {
-      navigator.vibrate(30);
-    }
-  };
-
-  const handleDragMove = (event: { delta: { x: number; y: number } }) => {
-    setDragDelta(event.delta);
-  };
-
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, delta } = event;
-    const playerId = active.id as string;
-    const playerIndex = players.findIndex(p => p.id === playerId);
-    if (playerIndex === -1) {
-      setActiveId(null);
-      setDragDelta({ x: 0, y: 0 });
-      return;
-    }
-
-    const hasMoved = Math.abs(delta.x) > 3 || Math.abs(delta.y) > 3;
-    if (hasMoved) {
-      const currentPos = getPlayerPosition(players[playerIndex], playerIndex);
-      const newCenterX = currentPos.x + nodeSize / 2 + delta.x;
-      const newCenterY = currentPos.y + nodeSize / 2 + delta.y;
-      const clampedX = Math.max(0, Math.min(1, newCenterX / dimensions.width));
-      const clampedY = Math.max(0, Math.min(1, newCenterY / dimensions.height));
-
-      const minDist = nodeSize * 0.8;
-      const updates: { playerId: string; x: number; y: number }[] = [
-        { playerId, x: clampedX, y: clampedY },
-      ];
-
-      players.forEach((other, i) => {
-        if (other.id === playerId) return;
-        const otherPos = getPlayerPosition(other, i);
-        const otherCenterX = otherPos.x + nodeSize / 2;
-        const otherCenterY = otherPos.y + nodeSize / 2;
-        const dx = otherCenterX - newCenterX;
-        const dy = otherCenterY - newCenterY;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-
-        if (dist < minDist) {
-          const angle = dist > 1 ? Math.atan2(dy, dx) : Math.random() * Math.PI * 2;
-          const pushDist = (minDist * 1.2 - dist);
-          const nudgedX = (otherCenterX + Math.cos(angle) * pushDist) / dimensions.width;
-          const nudgedY = (otherCenterY + Math.sin(angle) * pushDist) / dimensions.height;
-          updates.push({
-            playerId: other.id,
-            x: Math.max(0, Math.min(1, nudgedX)),
-            y: Math.max(0, Math.min(1, nudgedY)),
-          });
-        }
-      });
-
-      if (updates.length > 1) {
-        onSetMultipleCirclePositions(updates);
-      } else {
-        onSetCirclePosition(playerId, clampedX, clampedY);
-      }
-    }
-
-    setActiveId(null);
-    setDragDelta({ x: 0, y: 0 });
-  };
-
-  return (
-    <div className="flex flex-col items-center pt-4 pb-4 px-2">
-      {hasCustomPositions && (
-        <button
-          onClick={onResetCirclePositions}
-          className="flex items-center gap-1.5 text-sm px-3 py-1 rounded-full border border-amber-700/50 bg-amber-950/30 text-amber-400 hover:bg-amber-900/40 hover:border-amber-600/60 mb-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
-          data-testid="reset-circle-layout"
-        >
-          <RotateCcw className="w-3.5 h-3.5" />
-          Circle Up
-        </button>
-      )}
-      <DndContext
-        sensors={sensors}
-        onDragStart={handleDragStart}
-        onDragMove={handleDragMove}
-        onDragEnd={handleDragEnd}
-      >
-        <div
-          className="relative overflow-visible"
-          style={{ width: dimensions.width, height: dimensions.height }}
-        >
-          {players.map((player, index) => {
-            const pos = getPlayerPosition(player, index);
-            const isBeingDragged = activeId === player.id;
-            const displayX = isBeingDragged ? pos.x + dragDelta.x : pos.x;
-            const displayY = isBeingDragged ? pos.y + dragDelta.y : pos.y;
-            const angleDeg = getPlayerAngleDeg(player, index);
-            const deathRecord = latestDeathRecord(deathRecords, player.id);
-
-            return (
-              <DraggableCircleNode
-                key={player.id}
-                player={player}
-                position={{ x: displayX, y: displayY }}
-                nodeSize={nodeSize}
-                onSelectPlayer={onSelectPlayer}
-                onOpenPrimaryPicker={onOpenPrimaryPicker}
-                isDragging={isBeingDragged}
-                angleDeg={angleDeg}
-                deathRecord={deathRecord}
-              />
-            );
-          })}
-        </div>
-      </DndContext>
-    </div>
-  );
-}
-
-function DraggableCircleNode({
-  player,
-  position,
-  nodeSize,
-  onSelectPlayer,
-  onOpenPrimaryPicker,
-  isDragging,
-  angleDeg,
-  deathRecord = null,
-}: {
-  player: GamePlayer;
-  position: { x: number; y: number };
-  nodeSize: number;
-  onSelectPlayer: (playerId: string) => void;
-  onOpenPrimaryPicker?: (playerId: string) => void;
-  isDragging: boolean;
-  angleDeg: number;
-  deathRecord?: DeathRecord | null;
-}) {
-  const { attributes, listeners, setNodeRef } = useDraggable({
-    id: player.id,
-  });
-
-  const isBottom = angleDeg > 0 && angleDeg < 180;
-  const isActive = player.status === 'alive';
-  const isDead = player.status === 'dead' || player.status === 'exiled';
-  const displayName = player.name.length > 9 ? player.name.slice(0, 8) + '…' : player.name;
-  const phaseStamp = deathPhaseLabel(deathRecord);
-
-  const extraClaims = (player.claims ?? [])
-    .slice(1)
-    .map(id => resolveClaimDescriptor(id))
-    .filter((c): c is ClaimDescriptor => c !== null);
-  const shownExtras = extraClaims.slice(0, 3);
-  const hiddenExtras = extraClaims.length - shownExtras.length;
-
-  return (
-    <div
-      className={cn("absolute", isDragging ? "z-30" : "z-10")}
-      style={{
-        left: position.x,
-        top: position.y,
-        width: nodeSize,
-        height: nodeSize,
-        transition: isDragging ? 'none' : 'left 200ms ease, top 200ms ease',
-      }}
-      data-testid={`circle-node-${player.id}`}
-    >
-      <span
-        className={cn(
-          "absolute left-1/2 -translate-x-1/2 flex flex-col items-center gap-0.5 pointer-events-none",
-        )}
-        style={isBottom ? { top: nodeSize + 2 } : { bottom: nodeSize + 2 }}
-      >
-        <span
-          className={cn(
-            "font-display text-[11px] font-medium whitespace-nowrap",
-            !isActive && "text-muted-foreground line-through",
-            isActive && "text-foreground"
-          )}
-        >
-          {displayName}
-          {phaseStamp && (
-            <span className="ml-1 text-[#c79fe6]" data-testid={`text-seat-death-${player.id}`}>
-              † {phaseStamp}
-            </span>
-          )}
-        </span>
-        {extraClaims.length > 0 && (
-          <span className="flex flex-wrap justify-center gap-0.5 max-w-[88px]">
-            {shownExtras.map(c => (
-              <span
-                key={c.id}
-                className={cn(
-                  "px-1 py-[1px] rounded text-[8px] leading-none border",
-                  isDead ? "text-muted-foreground border-muted-foreground/30 bg-transparent" : candidateChipClass(c.team, false)
-                )}
-                data-testid={`chip-seat-extra-${c.id}-${player.id}`}
-              >
-                {c.name.length > 6 ? c.name.slice(0, 5) + '…' : c.name}
-              </span>
-            ))}
-            {hiddenExtras > 0 && (
-              <span
-                className="px-1 py-[1px] rounded text-[8px] leading-none text-muted-foreground"
-                data-testid={`chip-seat-extra-more-${player.id}`}
-              >
-                +{hiddenExtras}
-              </span>
-            )}
-          </span>
-        )}
-      </span>
-      <button
-        ref={setNodeRef}
-        {...attributes}
-        {...listeners}
-        onClick={() => !isDragging && onOpenPrimaryPicker?.(player.id)}
-        className={cn(
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
-          "w-full h-full rounded-full touch-none",
-          !isDragging && "hover-elevate active-elevate-2"
-        )}
-        style={{
-          transform: isDragging ? 'scale(1.15)' : 'scale(1)',
-          boxShadow: isDragging ? '0 0 8px 3px rgba(201, 162, 39, 0.7), 0 0 20px 6px rgba(201, 162, 39, 0.35)' : 'none',
-        }}
-        data-testid={`button-seat-token-${player.id}`}
-      >
-        <CircleNodeContent
-          player={player}
-          nodeSize={nodeSize}
-          isDragging={isDragging}
-          nameOutside={true}
-        />
-      </button>
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          if (!isDragging) onSelectPlayer(player.id);
-        }}
-        className="absolute -bottom-1 -right-1 z-20 w-5 h-5 rounded-full bg-amber-950/90 border border-amber-600/70 text-amber-300 flex items-center justify-center shadow hover:bg-amber-900 hover:border-amber-500 active:scale-95 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
-        aria-label={`More options for ${player.name}`}
-        data-testid={`button-seat-more-${player.id}`}
-      >
-        <MoreVertical className="w-3.5 h-3.5" />
-      </button>
-    </div>
-  );
-}
-
 export function GameTrackerView({
   game,
   onEndGame,
@@ -2136,19 +1495,6 @@ export function GameTrackerView({
   useEffect(() => {
     setSelectedSheetCharId(null);
   }, [resolvedScript?.id]);
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 100, tolerance: 8 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
-  );
-
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-    if (over && active.id !== over.id) {
-      onReorderPlayers(active.id as string, over.id as string);
-    }
-  };
 
   const handleAdvancePhase = () => {
     onAdvancePhase();
@@ -2535,36 +1881,16 @@ export function GameTrackerView({
 
       {/* Tab Content */}
       {activeTab === 'list' && (
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-          <div className="flex justify-end mb-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onReversePlayers}
-              className="text-xs text-muted-foreground hover:text-foreground gap-1"
-              data-testid="button-reverse-order"
-            >
-              <ArrowDownUp className="w-3.5 h-3.5" />
-              Reverse Order
-            </Button>
-          </div>
-          <SortableContext items={filteredPlayers.map(p => p.id)} strategy={rectSortingStrategy}>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {filteredPlayers.map((player) => (
-                <SortablePlayerCard
-                  key={player.id}
-                  player={player}
-                  game={game}
-                  seatNumber={game.players.findIndex(p => p.id === player.id) + 1}
-                  onSelect={() => setSelectedPlayerId(player.id)}
-                  onToggleAlive={() => onToggleAlive(player.id)}
-                  onOpenClaimPicker={() => setClaimPickerPlayerId(player.id)}
-                  onRemoveClaim={(charId) => onRemoveClaim(player.id, charId)}
-                />
-              ))}
-            </div>
-          </SortableContext>
-        </DndContext>
+        <ListView
+          game={game}
+          filteredPlayers={filteredPlayers}
+          onReorderPlayers={onReorderPlayers}
+          onReversePlayers={onReversePlayers}
+          onSelectPlayer={(playerId) => setSelectedPlayerId(playerId)}
+          onToggleAlive={onToggleAlive}
+          onOpenClaimPicker={(playerId) => setClaimPickerPlayerId(playerId)}
+          onRemoveClaim={onRemoveClaim}
+        />
       )}
       
       {activeTab === 'circle' && (
@@ -2582,27 +1908,20 @@ export function GameTrackerView({
       )}
       
       {activeTab === 'log' && (
-        <InlineGameLog
+        <NotebookView
           game={game}
-          onUpdateGameNotes={onSetGameNotes}
+          onSetGameNotes={onSetGameNotes}
           onAddNotebookNote={onAddNotebookNote}
           onRemoveNotebookNote={onRemoveNotebookNote}
         />
       )}
 
       {activeTab === 'script' && (
-        resolvedScript ? (
-          <ScriptSheet
-            characters={sheetCharacters}
-            scriptName={resolvedScript.name}
-            onCharacterSelect={(id) => setSelectedSheetCharId(id)}
-          />
-        ) : (
-          <div className="py-12 text-center text-muted-foreground" data-testid="text-script-nudge-game">
-            <Scroll className="w-12 h-12 mx-auto mb-3 opacity-30" />
-            <p className="text-sm">Pick a script to see the full character sheet.</p>
-          </div>
-        )
+        <GameScriptView
+          scriptName={resolvedScript ? resolvedScript.name : null}
+          characters={sheetCharacters}
+          onCharacterSelect={(id) => setSelectedSheetCharId(id)}
+        />
       )}
 
       {/* Bottom Navigation - thumb-reachable view switcher */}
