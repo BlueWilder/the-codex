@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
+import { Link } from "wouter";
 import { usePlayerGame, getBreakdown } from "@/features/game/state/use-player-game";
 import { getCharacterById } from "@/lib/game-data";
 import { useLocalScripts, type LocalScript } from "@/hooks/use-local-scripts";
@@ -6,7 +7,7 @@ import { ScriptBuilderDialog } from "@/components/ScriptBuilderDialog";
 import { CaptureFriendsDialog } from "@/components/CaptureFriendsDialog";
 import { useFriends } from "@/hooks/use-friends";
 import { resolveScriptCharacters } from "@/lib/script-resolve";
-import { ChevronRight, ChevronLeft, X, Plus, Check, Moon, Sun, ChevronDown, FileText, UserPlus, BookOpen, Pencil, MoreVertical, RotateCcw, Users, Skull, Scroll, Theater, LayoutList, NotebookText, ScrollText } from "lucide-react";
+import { ArrowLeft, ChevronRight, ChevronLeft, X, Plus, Check, Moon, Sun, ChevronDown, FileText, UserPlus, BookOpen, Pencil, MoreVertical, RotateCcw, Users, Skull, Theater, LayoutList, NotebookText, ScrollText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -91,7 +92,6 @@ export function GameTrackerView({
   const [scriptPopoverOpen, setScriptPopoverOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'list' | 'circle' | 'log' | 'script'>('list');
   const [selectedSheetCharId, setSelectedSheetCharId] = useState<string | null>(null);
-  const [scoreboardCollapsed, setScoreboardCollapsed] = useState(false);
   const [showScriptBuilder, setShowScriptBuilder] = useState(false);
   const [editingScript, setEditingScript] = useState<LocalScript | null>(null);
   const [playerFilter, setPlayerFilter] = useState<'all' | 'alive' | 'dead'>('all');
@@ -187,9 +187,6 @@ export function GameTrackerView({
   const alivePlayers = game.players.filter(p => p.status === 'alive');
   const aliveCount = alivePlayers.length;
   const deadCount = game.players.filter(p => p.status === 'dead').length;
-  const exiledCount = game.players.filter(p => p.status === 'exiled').length;
-  const leftCount = game.players.filter(p => p.status === 'left').length;
-  const aliveTravelers = travelers.filter(p => p.status === 'alive');
 
   // Phase spine: Night N = (day N, 'night'), Day N = (day N, 'day').
   const isNight = game.phase === 'night';
@@ -222,103 +219,120 @@ export function GameTrackerView({
 
   return (
     <div className="space-y-4">
-      {/* Dashboard Card */}
-      <div className="bg-card border border-border rounded-lg overflow-hidden">
-        {/* Script Header Row */}
-        <div className="flex items-center justify-between gap-2 px-3 py-2 border-b border-border">
-          <Popover open={scriptPopoverOpen} onOpenChange={setScriptPopoverOpen}>
-            <PopoverTrigger asChild>
-              <button
-                className="flex items-center gap-1.5 px-2 py-1.5 rounded-md hover-elevate active-elevate-2 flex-1 max-w-[75%] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
-                data-testid="button-change-script"
-              >
-                <Scroll className="w-4 h-4 text-amber-500 shrink-0" />
-                <span className="font-display text-amber-500 truncate">
-                  {resolvedScript ? resolvedScript.name : "No Script"}
-                </span>
-                <ChevronDown className="w-3.5 h-3.5 text-amber-500/50 shrink-0" />
-              </button>
-            </PopoverTrigger>
-            <PopoverContent className="w-64 p-2" align="start">
-              <div className="space-y-1">
-                <div className="px-2 py-1 text-xs text-muted-foreground font-medium">Select Script</div>
+      {/* Header: back, script name and seat summary, game menu, phase pill */}
+      <header className="game-chrome -mx-4 -mt-4 border-b px-2 pt-2 pb-3" data-testid="header-game">
+        <div className="flex items-center gap-1">
+          <Link
+            href="/"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[var(--shell-inactive)] transition-colors hover:text-[var(--shell-gold)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            aria-label="Back to home"
+            data-testid="button-back-home"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Link>
+
+          <div className="flex min-w-0 flex-1 flex-col items-center">
+            <Popover open={scriptPopoverOpen} onOpenChange={setScriptPopoverOpen}>
+              <PopoverTrigger asChild>
                 <button
-                  className={cn(
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
-                    "w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-sm text-left hover-elevate",
-                    !game.script && "bg-accent"
-                  )}
-                  onClick={() => {
-                    onSetScript(null);
-                    setScriptPopoverOpen(false);
-                  }}
-                  data-testid="button-script-none"
+                  className="flex max-w-full items-center gap-1 rounded-md px-2 py-0.5 hover-elevate active-elevate-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
+                  data-testid="button-change-script"
                 >
-                  <X className="w-3.5 h-3.5 text-muted-foreground" />
-                  <span>No Script (All Characters)</span>
+                  <span className="truncate font-display text-xl leading-tight text-[var(--shell-gold)]">
+                    {resolvedScript ? resolvedScript.name : "No Script"}
+                  </span>
+                  <ChevronDown className="h-4 w-4 shrink-0 text-[var(--shell-gold)] opacity-60" />
                 </button>
-                {allScripts.map((script) => (
-                  <div
-                    key={script.id}
+              </PopoverTrigger>
+              <PopoverContent className="w-64 p-2" align="start">
+                <div className="space-y-1">
+                  <div className="px-2 py-1 text-xs text-muted-foreground font-medium">Select Script</div>
+                  <button
                     className={cn(
-                      "w-full flex items-center gap-1 px-2 py-1.5 rounded-md text-sm",
-                      game.script?.id === script.id && "bg-accent"
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
+                      "w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-sm text-left hover-elevate",
+                      !game.script && "bg-accent"
                     )}
+                    onClick={() => {
+                      onSetScript(null);
+                      setScriptPopoverOpen(false);
+                    }}
+                    data-testid="button-script-none"
                   >
-                    <button
-                      className="flex-1 flex items-center gap-2 text-left hover-elevate rounded-md -m-1 p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
-                      onClick={() => {
-                        onSetScript({ id: script.id });
-                        setScriptPopoverOpen(false);
-                      }}
-                      data-testid={`button-script-${script.id}`}
-                    >
-                      {script.isCommunity ? (
-                        <Users className="w-3.5 h-3.5 text-teal-500/70" />
-                      ) : script.isOfficial ? (
-                        <BookOpen className="w-3.5 h-3.5 text-amber-500/70" />
-                      ) : (
-                        <FileText className="w-3.5 h-3.5 text-purple-500/70" />
+                    <X className="w-3.5 h-3.5 text-muted-foreground" />
+                    <span>No Script (All Characters)</span>
+                  </button>
+                  {allScripts.map((script) => (
+                    <div
+                      key={script.id}
+                      className={cn(
+                        "w-full flex items-center gap-1 px-2 py-1.5 rounded-md text-sm",
+                        game.script?.id === script.id && "bg-accent"
                       )}
-                      <span className="truncate">{script.name}</span>
-                    </button>
-                    {!script.isOfficial && (
+                    >
                       <button
-                        className="p-1 rounded hover-elevate focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setEditingScript(script);
-                          setShowScriptBuilder(true);
+                        className="flex-1 flex items-center gap-2 text-left hover-elevate rounded-md -m-1 p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
+                        onClick={() => {
+                          onSetScript({ id: script.id });
                           setScriptPopoverOpen(false);
                         }}
-                        data-testid={`button-edit-active-script-${script.id}`}
+                        data-testid={`button-script-${script.id}`}
                       >
-                        <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
+                        {script.isCommunity ? (
+                          <Users className="w-3.5 h-3.5 text-teal-500/70" />
+                        ) : script.isOfficial ? (
+                          <BookOpen className="w-3.5 h-3.5 text-amber-500/70" />
+                        ) : (
+                          <FileText className="w-3.5 h-3.5 text-purple-500/70" />
+                        )}
+                        <span className="truncate">{script.name}</span>
                       </button>
-                    )}
-                  </div>
-                ))}
-                <button
-                  className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-sm text-left hover-elevate text-purple-400 border-t border-border mt-1 pt-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
-                  onClick={() => {
-                    setEditingScript(null);
-                    setShowScriptBuilder(true);
-                    setScriptPopoverOpen(false);
-                  }}
-                  data-testid="button-create-custom-script-active"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Create Custom Script</span>
-                </button>
-              </div>
-            </PopoverContent>
-          </Popover>
+                      {!script.isOfficial && (
+                        <button
+                          className="p-1 rounded hover-elevate focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingScript(script);
+                            setShowScriptBuilder(true);
+                            setScriptPopoverOpen(false);
+                          }}
+                          data-testid={`button-edit-active-script-${script.id}`}
+                        >
+                          <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                  <button
+                    className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-sm text-left hover-elevate text-purple-400 border-t border-border mt-1 pt-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
+                    onClick={() => {
+                      setEditingScript(null);
+                      setShowScriptBuilder(true);
+                      setScriptPopoverOpen(false);
+                    }}
+                    data-testid="button-create-custom-script-active"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Create Custom Script</span>
+                  </button>
+                </div>
+              </PopoverContent>
+            </Popover>
+            <span className="game-label mt-0.5 text-[var(--shell-inactive)]" data-testid="text-seat-summary">
+              {game.players.length} seats · {aliveCount} alive
+            </span>
+          </div>
 
-          {/* Overflow Menu */}
+          {/* Game menu */}
           <DropdownMenu onOpenChange={(open) => { if (!open) setConfirmEnd(false); }}>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" data-testid="button-overflow-menu">
-                <MoreVertical className="w-4 h-4" />
+              <Button
+                variant="ghost"
+                size="icon"
+                className="shrink-0 text-[var(--shell-inactive)] hover:text-[var(--shell-gold)]"
+                data-testid="button-overflow-menu"
+              >
+                <MoreVertical className="w-5 h-5" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent
@@ -360,6 +374,15 @@ export function GameTrackerView({
                     <Theater className="w-4 h-4 mr-2" />
                     Add Traveler
                   </DropdownMenuItem>
+                  {prevChapter && (
+                    <DropdownMenuItem
+                      onClick={onRegressPhase}
+                      data-testid="button-phase-prev"
+                    >
+                      <ChevronLeft className="w-4 h-4 mr-2" />
+                      Back to {phaseLabel(prevChapter.day, prevChapter.phase)}
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem 
                     onClick={() => setShowPlayAgainConfirm(true)}
                     data-testid="button-play-again"
@@ -382,219 +405,136 @@ export function GameTrackerView({
           </DropdownMenu>
         </div>
 
-        {scoreboardCollapsed && (
-          <button
-            onClick={() => setScoreboardCollapsed(false)}
-            className="flex items-center justify-between w-full px-3 py-2 border-b border-border hover-elevate focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
-            data-testid="button-expand-scoreboard"
-          >
-            <div className="flex items-center gap-3 text-sm">
-              <div className="flex items-center gap-1.5">
-                {isNight ? (
-                  <Moon className="w-3.5 h-3.5 text-indigo-300" />
-                ) : (
-                  <Sun className="w-3.5 h-3.5 text-amber-400" />
-                )}
-                <span className={cn("font-sans font-medium", isNight ? "text-indigo-300" : "text-amber-400")}>{currentPhaseLabel}</span>
-              </div>
-              <span className="text-muted-foreground">·</span>
-              <span className="text-emerald-400 font-medium">{aliveCount}A</span>
-              <span className="text-muted-foreground">/</span>
-              <span className="text-red-400/80 font-medium">{deadCount}D</span>
-            </div>
-            <ChevronDown className="w-4 h-4 text-muted-foreground" />
-          </button>
-        )}
-
-        <div className={cn(scoreboardCollapsed && "hidden")}>
-        {/* Phase Spine - prev chapter, current phase, next chapter */}
+        {/* Phase pill: the current phase is the active segment, the next phase is a button */}
         <div
-          className={cn(
-            "flex items-stretch justify-between gap-1.5 px-2 py-2.5 border-b border-border",
-            isNight ? "bg-indigo-950/20" : "bg-amber-950/10"
-          )}
+          className="mt-3 flex items-center gap-1 rounded-full border border-[var(--shell-border)] bg-black/40 p-1"
+          data-testid="pill-phase"
         >
-          {/* Previous chapter pill (hidden at Night 1, the start of time) */}
-          {prevChapter ? (
-            <Button
-              variant="outline"
-              onClick={onRegressPhase}
-              className="flex items-center gap-1 px-2 h-10 min-w-0"
-              data-testid="button-phase-prev"
-            >
-              <ChevronLeft className="w-4 h-4 shrink-0" />
-              {prevChapter.phase === 'night' ? (
-                <Moon className="w-4 h-4 text-indigo-300 shrink-0" />
-              ) : (
-                <Sun className="w-4 h-4 text-amber-400 shrink-0" />
-              )}
-              <span className="text-xs font-sans text-muted-foreground whitespace-nowrap">{phaseLabel(prevChapter.day, prevChapter.phase)}</span>
-            </Button>
-          ) : (
-            <div className="w-[44px] shrink-0" aria-hidden="true" />
-          )}
-
-          {/* Current phase pill */}
           <div
-            className={cn(
-              "flex-1 flex items-center justify-center gap-2 h-10 px-2 border rounded-md min-w-0",
-              isNight
-                ? "bg-indigo-900/30 border-indigo-700/40"
-                : "bg-amber-900/30 border-amber-700/30"
-            )}
+            className="flex flex-1 items-center justify-center gap-2 rounded-full bg-[var(--shell-gold)] px-3 py-1.5 text-[var(--shell-chrome)]"
             data-testid="text-phase-current"
           >
-            {isNight ? (
-              <Moon className="w-5 h-5 text-indigo-300 shrink-0" />
-            ) : (
-              <Sun className="w-5 h-5 text-amber-400 shrink-0" />
-            )}
-            <span className={cn("font-sans text-lg truncate", isNight ? "text-indigo-200" : "text-amber-400")}>{currentPhaseLabel}</span>
+            {isNight ? <Moon className="h-4 w-4 shrink-0" /> : <Sun className="h-4 w-4 shrink-0" />}
+            <span className="font-display text-base font-semibold">{currentPhaseLabel}</span>
           </div>
-
-          {/* Next chapter pill */}
-          <Button
-            variant="outline"
+          <button
+            type="button"
             onClick={handleAdvancePhase}
-            className="flex items-center gap-1 px-2 h-10 min-w-0"
+            className="flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-1.5 text-[var(--shell-inactive)] transition-colors hover:text-[var(--shell-gold)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             data-testid="button-phase-next"
           >
-            <span className="text-xs font-sans text-muted-foreground whitespace-nowrap">{phaseLabel(nextChapter.day, nextChapter.phase)}</span>
-            {nextChapter.phase === 'night' ? (
-              <Moon className="w-4 h-4 text-indigo-300 shrink-0" />
-            ) : (
-              <Sun className="w-4 h-4 text-amber-400 shrink-0" />
-            )}
-            <ChevronRight className="w-4 h-4 shrink-0" />
-          </Button>
+            {nextChapter.phase === 'night' ? <Moon className="h-4 w-4 shrink-0" /> : <Sun className="h-4 w-4 shrink-0" />}
+            <span className="game-label">{phaseLabel(nextChapter.day, nextChapter.phase)}</span>
+            <ChevronRight className="h-4 w-4 shrink-0" />
+          </button>
         </div>
-
-        {/* Night context line. Days have no special banner. */}
-        {isNight && (
-          <div className="flex items-center justify-center gap-2 px-4 py-2.5 border-b border-border text-base text-indigo-300/80" data-testid="text-night-context">
-            <Moon className="w-4 h-4 shrink-0" />
-            <span>Night falls. Mark any deaths, then move to the day.</span>
-          </div>
-        )}
-
-        {/* Merged chip row: Alive/Dead filters + team composition dots */}
-        {(() => {
-          const roleBreakdown = getBreakdown(regularPlayers.length);
-          return (
-            <div className="flex items-center justify-center gap-x-3 gap-y-1 px-3 py-1.5 border-b border-border flex-wrap">
-              <div className="flex items-center gap-1.5">
-                <button
-                  onClick={() => toggleFilter('alive')}
-                  className={cn(
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
-                    "flex items-baseline gap-1 px-2 py-0.5 rounded-md border transition-colors",
-                    playerFilter === 'alive'
-                      ? "bg-emerald-500/20 border-emerald-500/50"
-                      : "border-transparent hover:bg-muted/40"
-                  )}
-                  data-testid="filter-alive"
-                >
-                  <span className="text-base font-display font-semibold text-emerald-400 tabular-nums">{aliveCount}</span>
-                  <span className="text-xs text-muted-foreground uppercase tracking-wide">Alive</span>
-                </button>
-                <span className="text-muted-foreground/50">/</span>
-                <button
-                  onClick={() => toggleFilter('dead')}
-                  className={cn(
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
-                    "flex items-baseline gap-1 px-2 py-0.5 rounded-md border transition-colors",
-                    playerFilter === 'dead'
-                      ? "bg-red-500/20 border-red-500/50"
-                      : "border-transparent hover:bg-muted/40"
-                  )}
-                  data-testid="filter-dead"
-                >
-                  <span className="text-base font-display font-semibold text-red-400/80 tabular-nums">{deadCount}</span>
-                  <span className="text-xs text-muted-foreground uppercase tracking-wide">Dead</span>
-                </button>
-              </div>
-              <div className="w-px h-4 bg-border shrink-0" aria-hidden="true" />
-              <div className="flex items-center gap-2.5 text-sm flex-wrap" data-testid="section-role-count">
-                <span className="flex items-center gap-1" data-testid="role-dot-townsfolk">
-                  <span className="w-2 h-2 rounded-full bg-blue-400 shrink-0" />
-                  <span className="text-blue-400 font-medium tabular-nums">{roleBreakdown.townsfolk}</span>
-                </span>
-                <span className="flex items-center gap-1" data-testid="role-dot-outsider">
-                  <span className="w-2 h-2 rounded-full bg-green-400 shrink-0" />
-                  <span className="text-green-400 font-medium tabular-nums">{roleBreakdown.outsiders}</span>
-                </span>
-                <span className="flex items-center gap-1" data-testid="role-dot-minion">
-                  <span className="w-2 h-2 rounded-full bg-red-400 shrink-0" />
-                  <span className="text-red-400 font-medium tabular-nums">{roleBreakdown.minions}</span>
-                </span>
-                <span className="flex items-center gap-1" data-testid="role-dot-demon">
-                  <span className="w-2 h-2 rounded-full bg-red-700 shrink-0" />
-                  <span className="text-red-700 font-medium tabular-nums">{roleBreakdown.demons}</span>
-                </span>
-                {travelers.length > 0 && (
-                  <span className="flex items-center gap-1" data-testid="role-dot-traveler">
-                    <span className="w-2 h-2 rounded-full bg-purple-400 shrink-0" />
-                    <span className="text-purple-400 font-medium tabular-nums">{travelers.length}</span>
-                  </span>
-                )}
-              </div>
-            </div>
-          );
-        })()}
-
-        {/* Traveler Row - Conditional */}
-        {travelers.length > 0 && (
-          <div className="flex items-center justify-between gap-3 flex-wrap px-3 py-2 border-t border-border bg-purple-950/20">
-            <span className="text-sm text-purple-300">
-              {aliveTravelers.length}/{travelers.length} Travelers
-              {(exiledCount > 0 || leftCount > 0) && (
-                <span className="text-purple-400/60 ml-1">
-                  ({exiledCount > 0 && `${exiledCount} exiled`}{exiledCount > 0 && leftCount > 0 && ', '}{leftCount > 0 && `${leftCount} left`})
-                </span>
-              )}
-            </span>
-          </div>
-        )}
-
-        </div>
-
-      </div>
+      </header>
 
       {/* Tab Content */}
       {activeTab === 'list' && (
-        <ListView
-          game={game}
-          filteredPlayers={filteredPlayers}
-          onReorderPlayers={onReorderPlayers}
-          onReversePlayers={onReversePlayers}
-          onSelectPlayer={(playerId) => setSelectedPlayerId(playerId)}
-          onToggleAlive={onToggleAlive}
-          onOpenClaimPicker={(playerId) => setClaimPickerPlayerId(playerId)}
-          onRemoveClaim={onRemoveClaim}
-        />
+        <div className="game-panel" data-testid="panel-list">
+          {/* Merged chip row: Alive/Dead filters + team composition dots */}
+          {(() => {
+            const roleBreakdown = getBreakdown(regularPlayers.length);
+            return (
+              <div className="flex items-center justify-center gap-x-3 gap-y-1 px-3 py-1.5 border-b border-border flex-wrap">
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={() => toggleFilter('alive')}
+                    className={cn(
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
+                      "flex items-baseline gap-1 px-2 py-0.5 rounded-md border transition-colors",
+                      playerFilter === 'alive'
+                        ? "bg-emerald-500/20 border-emerald-500/50"
+                        : "border-transparent hover:bg-muted/40"
+                    )}
+                    data-testid="filter-alive"
+                  >
+                    <span className="text-base font-display font-semibold text-emerald-400 tabular-nums">{aliveCount}</span>
+                    <span className="text-xs text-muted-foreground uppercase tracking-wide">Alive</span>
+                  </button>
+                  <span className="text-muted-foreground/50">/</span>
+                  <button
+                    onClick={() => toggleFilter('dead')}
+                    className={cn(
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
+                      "flex items-baseline gap-1 px-2 py-0.5 rounded-md border transition-colors",
+                      playerFilter === 'dead'
+                        ? "bg-red-500/20 border-red-500/50"
+                        : "border-transparent hover:bg-muted/40"
+                    )}
+                    data-testid="filter-dead"
+                  >
+                    <span className="text-base font-display font-semibold text-red-400/80 tabular-nums">{deadCount}</span>
+                    <span className="text-xs text-muted-foreground uppercase tracking-wide">Dead</span>
+                  </button>
+                </div>
+                <div className="w-px h-4 bg-border shrink-0" aria-hidden="true" />
+                <div className="flex items-center gap-2.5 text-sm flex-wrap" data-testid="section-role-count">
+                  <span className="flex items-center gap-1" data-testid="role-dot-townsfolk">
+                    <span className="w-2 h-2 rounded-full bg-blue-400 shrink-0" />
+                    <span className="text-blue-400 font-medium tabular-nums">{roleBreakdown.townsfolk}</span>
+                  </span>
+                  <span className="flex items-center gap-1" data-testid="role-dot-outsider">
+                    <span className="w-2 h-2 rounded-full bg-green-400 shrink-0" />
+                    <span className="text-green-400 font-medium tabular-nums">{roleBreakdown.outsiders}</span>
+                  </span>
+                  <span className="flex items-center gap-1" data-testid="role-dot-minion">
+                    <span className="w-2 h-2 rounded-full bg-red-400 shrink-0" />
+                    <span className="text-red-400 font-medium tabular-nums">{roleBreakdown.minions}</span>
+                  </span>
+                  <span className="flex items-center gap-1" data-testid="role-dot-demon">
+                    <span className="w-2 h-2 rounded-full bg-red-700 shrink-0" />
+                    <span className="text-red-700 font-medium tabular-nums">{roleBreakdown.demons}</span>
+                  </span>
+                  {travelers.length > 0 && (
+                    <span className="flex items-center gap-1" data-testid="role-dot-traveler">
+                      <span className="w-2 h-2 rounded-full bg-purple-400 shrink-0" />
+                      <span className="text-purple-400 font-medium tabular-nums">{travelers.length}</span>
+                    </span>
+                  )}
+                </div>
+              </div>
+            );
+          })()}
+          <ListView
+            game={game}
+            filteredPlayers={filteredPlayers}
+            onReorderPlayers={onReorderPlayers}
+            onReversePlayers={onReversePlayers}
+            onSelectPlayer={(playerId) => setSelectedPlayerId(playerId)}
+            onToggleAlive={onToggleAlive}
+            onOpenClaimPicker={(playerId) => setClaimPickerPlayerId(playerId)}
+            onRemoveClaim={onRemoveClaim}
+          />
+        </div>
       )}
       
       {activeTab === 'circle' && (
-        <CircleSeatingChart
-          players={game.players}
-          currentDay={game.currentDay}
-          deathRecords={game.deathRecords ?? []}
-          onSelectPlayer={(playerId) => setSelectedPlayerId(playerId)}
-          onOpenPrimaryPicker={(playerId) => setPrimaryPickerPlayerId(playerId)}
-          onReorderPlayers={onReorderPlayers}
-          onSetCirclePosition={onSetCirclePosition}
-          onSetMultipleCirclePositions={onSetMultipleCirclePositions}
-          onResetCirclePositions={onResetCirclePositions}
-        />
+        <div className="game-panel" data-testid="panel-circle">
+          <CircleSeatingChart
+            players={game.players}
+            currentDay={game.currentDay}
+            deathRecords={game.deathRecords ?? []}
+            onSelectPlayer={(playerId) => setSelectedPlayerId(playerId)}
+            onOpenPrimaryPicker={(playerId) => setPrimaryPickerPlayerId(playerId)}
+            onReorderPlayers={onReorderPlayers}
+            onSetCirclePosition={onSetCirclePosition}
+            onSetMultipleCirclePositions={onSetMultipleCirclePositions}
+            onResetCirclePositions={onResetCirclePositions}
+          />
+        </div>
       )}
       
       {activeTab === 'log' && (
-        <NotebookView
-          game={game}
-          onSetGameNotes={onSetGameNotes}
-          onAddNotebookNote={onAddNotebookNote}
-          onRemoveNotebookNote={onRemoveNotebookNote}
-        />
+        <div className="game-panel" data-testid="panel-notes">
+          <NotebookView
+            game={game}
+            onSetGameNotes={onSetGameNotes}
+            onAddNotebookNote={onAddNotebookNote}
+            onRemoveNotebookNote={onRemoveNotebookNote}
+          />
+        </div>
       )}
 
       {activeTab === 'script' && (
@@ -605,32 +545,33 @@ export function GameTrackerView({
         />
       )}
 
-      {/* Bottom Navigation - thumb-reachable view switcher */}
+      {/* Bottom navigation: thumb-reachable view switcher */}
       <nav
-        className="sticky bottom-0 z-40 mt-2 grid grid-cols-4 gap-1 rounded-t-xl border-t border-border bg-background/95 px-2 py-2 backdrop-blur supports-[backdrop-filter]:bg-background/80"
+        className="game-chrome sticky bottom-0 z-40 -mx-4 grid grid-cols-4 gap-1 border-t px-2 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]"
         data-testid="nav-tracker"
       >
         {([
-          { tab: 'circle', label: 'Grim', icon: Users, testId: 'nav-grim', collapse: true },
-          { tab: 'list', label: 'List', icon: LayoutList, testId: 'nav-list', collapse: false },
-          { tab: 'log', label: 'Notebook', icon: NotebookText, testId: 'nav-notebook', collapse: false },
-          { tab: 'script', label: 'Script', icon: ScrollText, testId: 'nav-script', collapse: true },
-        ] as const).map(({ tab, label, icon: Icon, testId, collapse }) => (
+          { tab: 'circle', label: 'Circle', icon: Users, testId: 'nav-grim' },
+          { tab: 'list', label: 'List', icon: LayoutList, testId: 'nav-list' },
+          { tab: 'script', label: 'Script', icon: ScrollText, testId: 'nav-script' },
+          { tab: 'log', label: 'Notes', icon: NotebookText, testId: 'nav-notebook' },
+        ] as const).map(({ tab, label, icon: Icon, testId }) => (
           <button
             key={tab}
             type="button"
-            onClick={() => { setActiveTab(tab); setScoreboardCollapsed(collapse); }}
+            onClick={() => setActiveTab(tab)}
             className={cn(
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
-              "flex flex-col items-center gap-0.5 rounded-lg px-2 py-1.5 text-xs font-sans font-medium transition-colors",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+              "flex flex-col items-center gap-1 rounded-lg px-2 py-1.5 transition-colors",
               activeTab === tab
-                ? "bg-primary/15 text-primary"
-                : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                ? "text-[var(--shell-gold)]"
+                : "text-[var(--shell-inactive)] hover:text-[var(--parchment-panel)]"
             )}
+            aria-current={activeTab === tab ? "page" : undefined}
             data-testid={testId}
           >
             <Icon className="w-5 h-5" />
-            <span>{label}</span>
+            <span className="font-sans text-[11px] font-semibold uppercase tracking-wider">{label}</span>
           </button>
         ))}
       </nav>

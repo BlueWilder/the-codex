@@ -204,6 +204,7 @@ export function ScriptSheet({
   onSortChange,
   defaultSortOrder = "team",
   onCharacterSelect,
+  className,
 }: {
   characters: Character[];
   scriptName?: string;
@@ -211,6 +212,8 @@ export function ScriptSheet({
   onSortChange?: (s: ScriptSort) => void;
   defaultSortOrder?: ScriptSort;
   onCharacterSelect?: (characterId: string) => void;
+  /** Merged onto the sheet's outer frame (e.g. Game Mode's panel radius and padding). */
+  className?: string;
 }) {
   const [internalSort, setInternalSort] = useState<ScriptSort>(defaultSortOrder);
   const [nightView, setNightView] = useState<NightView>("first");
@@ -247,7 +250,10 @@ export function ScriptSheet({
 
   return (
     <div
-      className="rounded-xl border border-[#d8c9a3] bg-[#f4ecd8] bg-gradient-to-b from-[#f7f0df] to-[#efe4c8] p-5 md:p-6 shadow-inner"
+      className={cn(
+        "rounded-xl border border-[#d8c9a3] bg-[#f4ecd8] bg-gradient-to-b from-[#f7f0df] to-[#efe4c8] p-5 md:p-6 shadow-inner",
+        className,
+      )}
       data-testid="script-sheet"
     >
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4 border-b border-[#d8c9a3] pb-3">
