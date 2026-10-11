@@ -1,14 +1,11 @@
 import type { IStorage } from "./storage";
 import type {
   Script,
-  Game,
   CustomScript,
   Friend,
   InsertScript,
-  InsertGame,
   InsertCustomScript,
   InsertFriend,
-  UpdateGameRequest,
 } from "@shared/schema";
 
 /**
@@ -28,7 +25,6 @@ export class InMemoryStorage implements IStorage {
   private scripts: Script[] = [];
   private customScripts: CustomScript[] = [];
   private friends: Friend[] = [];
-  private games: Game[] = [];
   private rateLimits = new Map<string, { count: number; resetAt: number }>();
   private nextId = 1;
 
@@ -37,7 +33,6 @@ export class InMemoryStorage implements IStorage {
     this.scripts = [];
     this.customScripts = [];
     this.friends = [];
-    this.games = [];
     this.rateLimits.clear();
     this.nextId = 1;
   }
@@ -45,10 +40,6 @@ export class InMemoryStorage implements IStorage {
   // Scripts
   async getScripts(): Promise<Script[]> {
     return [...this.scripts];
-  }
-
-  async getScript(id: number): Promise<Script | undefined> {
-    return this.scripts.find((s) => s.id === id);
   }
 
   async createScript(script: InsertScript): Promise<Script> {
@@ -127,42 +118,6 @@ export class InMemoryStorage implements IStorage {
     if (i === -1) return false;
     this.friends.splice(i, 1);
     return true;
-  }
-
-  // Games
-  async getGames(): Promise<Game[]> {
-    return [...this.games];
-  }
-
-  async getGame(id: number): Promise<Game | undefined> {
-    return this.games.find((g) => g.id === id);
-  }
-
-  async createGame(game: InsertGame): Promise<Game> {
-    const row = {
-      ...game,
-      id: this.nextId++,
-      name: game.name ?? "New Game",
-      scriptId: game.scriptId ?? null,
-      playerCount: game.playerCount ?? 0,
-      isFinished: game.isFinished ?? false,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    } as Game;
-    this.games.push(row);
-    return row;
-  }
-
-  async updateGame(id: number, updates: UpdateGameRequest): Promise<Game> {
-    const row = this.games.find((g) => g.id === id);
-    if (!row) throw new Error(`Game ${id} not found`);
-    Object.assign(row, updates, { updatedAt: new Date() });
-    return row;
-  }
-
-  async deleteGame(id: number): Promise<void> {
-    const i = this.games.findIndex((g) => g.id === id);
-    if (i !== -1) this.games.splice(i, 1);
   }
 
   /**

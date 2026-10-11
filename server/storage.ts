@@ -1,26 +1,21 @@
 import { db } from "./db";
 import {
   scripts,
-  games,
   customScripts,
   friends,
   scanRateLimits,
   type InsertScript,
-  type InsertGame,
   type InsertCustomScript,
   type Friend,
   type InsertFriend,
   type Script,
-  type Game,
   type CustomScript,
-  type UpdateGameRequest
 } from "@shared/schema";
 import { eq, and, sql } from "drizzle-orm";
 
 export interface IStorage {
-  // Scripts
+  // Legacy official scripts table. Only startup seeding uses these.
   getScripts(): Promise<Script[]>;
-  getScript(id: number): Promise<Script | undefined>;
   createScript(script: InsertScript): Promise<Script>;
 
   // Custom Scripts (user-specific)
@@ -35,27 +30,15 @@ export interface IStorage {
   updateFriend(id: number, userId: string, data: { name: string }): Promise<Friend | null>;
   deleteFriend(id: number, userId: string): Promise<boolean>;
 
-  // Games
-  getGames(): Promise<Game[]>;
-  getGame(id: number): Promise<Game | undefined>;
-  createGame(game: InsertGame): Promise<Game>;
-  updateGame(id: number, updates: UpdateGameRequest): Promise<Game>;
-  deleteGame(id: number): Promise<void>;
-
   // Rate limiting. `key` identifies the bucket to count against: a per-client
   // key (user id or IP) or a shared site-wide key for the global backstop.
   checkScanRateLimit(key: string, max: number, windowMs: number): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
-  // Scripts
+  // Legacy official scripts table (startup seeding only)
   async getScripts(): Promise<Script[]> {
     return await db.select().from(scripts);
-  }
-
-  async getScript(id: number): Promise<Script | undefined> {
-    const [script] = await db.select().from(scripts).where(eq(scripts.id, id));
-    return script;
   }
 
   async createScript(insertScript: InsertScript): Promise<Script> {
@@ -111,33 +94,6 @@ export class DatabaseStorage implements IStorage {
       .where(and(eq(friends.id, id), eq(friends.userId, userId)))
       .returning();
     return result.length > 0;
-  }
-
-  // Games
-  async getGames(): Promise<Game[]> {
-    return await db.select().from(games);
-  }
-
-  async getGame(id: number): Promise<Game | undefined> {
-    const [game] = await db.select().from(games).where(eq(games.id, id));
-    return game;
-  }
-
-  async createGame(insertGame: InsertGame): Promise<Game> {
-    const [game] = await db.insert(games).values(insertGame).returning();
-    return game;
-  }
-
-  async updateGame(id: number, updates: UpdateGameRequest): Promise<Game> {
-    const [updated] = await db.update(games)
-      .set(updates)
-      .where(eq(games.id, id))
-      .returning();
-    return updated;
-  }
-
-  async deleteGame(id: number): Promise<void> {
-    await db.delete(games).where(eq(games.id, id));
   }
 
   // Rate limiting (atomic, shared across servers/restarts via PostgreSQL)
