@@ -10,7 +10,7 @@ interface RouteMeta {
 
 const ROUTE_META: Record<string, RouteMeta> = {
   "/": {
-    title: "The Codex | Blood on the Clocktower Character Reference",
+    title: "The Codex (Claude Code test)",
     description:
       "The Codex is your complete Blood on the Clocktower companion app. Browse characters, abilities, scripts, and strategies for Trouble Brewing, Bad Moon Rising, and Sects & Violets.",
     ogType: "website",
