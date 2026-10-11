@@ -11,10 +11,8 @@ import { useFriends } from "@/hooks/use-friends";
 import { scanScriptFile } from "@/lib/scan-script";
 import { resolveScriptCharacters, countScriptCharacters } from "@/lib/script-resolve";
 import { ScriptSheet } from "@/components/character/ScriptSheet";
-import { CharacterCard } from "@/components/character/CharacterCard";
 import { useToast } from "@/hooks/use-toast";
-import { ChevronRight, ChevronLeft, Play, X, Plus, Check, Search, Moon, Sun, ChevronUp, ChevronDown, FileText, Loader2, UserPlus, BookOpen, Ban, LogOut, Trash2, Pencil, MoreVertical, RotateCcw, Info, ExternalLink, Users, Skull, Scroll, Theater, Camera, LayoutList, NotebookText, ScrollText } from "lucide-react";
-import { Checkbox } from "@/components/ui/checkbox";
+import { ChevronRight, ChevronLeft, Play, X, Plus, Check, Moon, Sun, ChevronUp, ChevronDown, FileText, Loader2, UserPlus, BookOpen, Ban, LogOut, Trash2, Pencil, MoreVertical, RotateCcw, Info, ExternalLink, Users, Skull, Scroll, Theater, Camera, LayoutList, NotebookText, ScrollText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,209 +30,23 @@ import { TeamBadge } from "@/components/character/TeamBadge";
 import { NightBadges } from "@/components/character/NightBadges";
 import { JinxBadge } from "@/components/character/JinxBadge";
 import { JinxList } from "@/components/character/JinxList";
-import { type ClaimDescriptor, type GamePlayer, type GameScriptRef, type PlayerStatus } from "@/features/game/types";
 import { GENERIC_TRAVELLER_ID, resolveClaimDescriptor, candidateChipClass } from "@/features/game/claims";
 import { CircleSeatingChart } from "@/features/game/views/CircleView";
 import { ListView } from "@/features/game/views/ListView";
+import { type GamePlayer, type GameScriptRef, type PlayerStatus } from "@/features/game/types";
 import { GameScriptView } from "@/features/game/views/GameScriptView";
 import { NotebookView } from "@/features/game/views/NotebookView";
+import { AddTravelerDialog } from "@/features/game/dialogs/AddTravelerDialog";
+import { AddPlayerDialog } from "@/features/game/dialogs/AddPlayerDialog";
+import { CharacterPicker } from "@/features/game/dialogs/CharacterPicker";
+import { ScriptCharacterDrawer } from "@/features/game/dialogs/ScriptCharacterDrawer";
+import { PlayAgainDialog } from "@/features/game/dialogs/PlayAgainDialog";
 
 // Components that moved into features/game are re-exported here so existing
 // imports from "@/pages/Game" (including the test suite) keep working.
 export { CircleSeatingChart } from "@/features/game/views/CircleView";
 export { SortablePlayerCard } from "@/features/game/views/ListView";
-
-function AddTravelerDialog({
-  open,
-  onClose,
-  onAddTraveler,
-}: {
-  open: boolean;
-  onClose: () => void;
-  onAddTraveler: (name: string, initialClaims?: string[]) => void;
-}) {
-  const [name, setName] = useState("");
-  const [selectedClaim, setSelectedClaim] = useState<string | null>(null);
-  const [claimSearch, setClaimSearch] = useState("");
-
-  const travelerCharacters = useMemo(() => {
-    let chars = ALL_CHARACTERS.filter(c => c.team === "traveler");
-    if (claimSearch) {
-      chars = chars.filter(c => c.name.toLowerCase().includes(claimSearch.toLowerCase()));
-    }
-    return chars;
-  }, [claimSearch]);
-
-  const resetState = () => {
-    setName("");
-    setSelectedClaim(null);
-    setClaimSearch("");
-  };
-
-  const handleAdd = () => {
-    if (!name.trim()) return;
-    const claims = selectedClaim ? [selectedClaim] : [];
-    onAddTraveler(name.trim(), claims);
-    resetState();
-    onClose();
-  };
-
-  const handleClose = () => {
-    resetState();
-    onClose();
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="max-w-sm">
-        <DialogHeader>
-          <DialogTitle className="text-amber-500 font-display">Add Traveler</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4">
-          <div>
-            <label className="text-sm text-muted-foreground mb-1 block">Traveler Name</label>
-            <Input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Traveler name"
-              data-testid="input-traveler-name"
-            />
-          </div>
-          <div>
-            <label className="text-sm text-muted-foreground mb-1 block">Character Claim (optional)</label>
-            <div className="relative mb-2">
-              <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                value={claimSearch}
-                onChange={(e) => setClaimSearch(e.target.value)}
-                placeholder="Search travelers..."
-                className="pl-8"
-                data-testid="input-search-traveler-claim"
-              />
-            </div>
-            <div className="max-h-32 overflow-y-auto space-y-1">
-              {travelerCharacters.map(char => (
-                <button
-                  key={char.id}
-                  onClick={() => setSelectedClaim(selectedClaim === char.id ? null : char.id)}
-                  className={cn(
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
-                    "w-full text-left px-2 py-1.5 rounded-md text-sm flex items-center gap-2",
-                    selectedClaim === char.id 
-                      ? "bg-purple-900/40 border border-purple-700" 
-                      : "hover-elevate"
-                  )}
-                  data-testid={`button-claim-${char.id}`}
-                >
-                  {char.name}
-                  {selectedClaim === char.id && <Check className="w-3.5 h-3.5 ml-auto text-purple-400" />}
-                </button>
-              ))}
-              {travelerCharacters.length === 0 && (
-                <p className="text-sm text-muted-foreground text-center py-2">No travelers found</p>
-              )}
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="ghost" className="flex-1" onClick={handleClose}>
-              Cancel
-            </Button>
-            <Button className="flex-1" onClick={handleAdd} disabled={!name.trim()} data-testid="button-confirm-add-traveler">
-              <Plus className="w-4 h-4 mr-2" />
-              Add Traveler
-            </Button>
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-function AddPlayerDialog({
-  open,
-  onClose,
-  onAddPlayer,
-  players,
-}: {
-  open: boolean;
-  onClose: () => void;
-  onAddPlayer: (name: string, insertAfterPlayerId: string | null) => void;
-  players: GamePlayer[];
-}) {
-  const [name, setName] = useState(`Player ${players.length + 1}`);
-  const [insertAfter, setInsertAfter] = useState<string>("__end__");
-
-  const resetState = () => {
-    setName(`Player ${players.length + 1}`);
-    setInsertAfter("__end__");
-  };
-
-  const handleAdd = () => {
-    if (!name.trim()) return;
-    onAddPlayer(name.trim(), insertAfter === "__beginning__" ? null : insertAfter);
-    resetState();
-    onClose();
-  };
-
-  const handleAddAsTraveler = () => {
-    onClose();
-  };
-
-  const handleClose = () => {
-    resetState();
-    onClose();
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="max-w-sm">
-        <DialogHeader>
-          <DialogTitle className="text-amber-500 font-display">Add Player</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4">
-          <div>
-            <label className="text-sm text-muted-foreground mb-1 block">Player Name</label>
-            <Input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Player name"
-              data-testid="input-new-player-name"
-            />
-          </div>
-          <div>
-            <label className="text-sm text-muted-foreground mb-1 block">Insert After</label>
-            <select
-              value={insertAfter}
-              onChange={(e) => setInsertAfter(e.target.value)}
-              className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm"
-              data-testid="select-insert-position"
-            >
-              <option value="__beginning__">At beginning</option>
-              {players.map(p => (
-                <option key={p.id} value={p.id}>{p.name}</option>
-              ))}
-              <option value="__end__">At end</option>
-            </select>
-          </div>
-          <p className="text-xs text-amber-600 flex items-center gap-1">
-            <span className="text-amber-500">Warning:</span> Adding players mid-game may affect balance. Consider Traveler instead.
-          </p>
-          <div className="flex gap-2">
-            <Button variant="ghost" className="flex-1" onClick={handleClose} data-testid="button-cancel-add-player">
-              Cancel
-            </Button>
-            <Button className="flex-1" onClick={handleAdd} disabled={!name.trim()} data-testid="button-confirm-add-player">
-              <Plus className="w-4 h-4 mr-2" />
-              Add Player
-            </Button>
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-
+export { CharacterPicker } from "@/features/game/dialogs/CharacterPicker";
 
 export function SetupWizard({ onStart }: { onStart: (count: number, names: string[], script?: GameScriptRef | null) => void }) {
   const [playerCount, setPlayerCount] = useState(8);
@@ -655,196 +467,6 @@ export function SetupWizard({ onStart }: { onStart: (count: number, names: strin
         }}
       />
     </div>
-  );
-}
-
-export function CharacterPicker({ 
-  open, 
-  onClose, 
-  onSelect,
-  onRemove,
-  excludeIds = [],
-  scriptCharacterIds,
-  singleSelect = false,
-  primaryClaimId,
-  title,
-}: { 
-  open: boolean; 
-  onClose: () => void; 
-  onSelect: (characterIds: string[]) => void;
-  onRemove?: (characterId: string) => void;
-  excludeIds?: string[];
-  scriptCharacterIds?: string[] | null;
-  singleSelect?: boolean;
-  primaryClaimId?: string;
-  title?: string;
-}) {
-  const [search, setSearch] = useState("");
-  const [selected, setSelected] = useState<Set<string>>(new Set());
-
-  const filteredCharacters = useMemo(() => {
-    const term = search.toLowerCase();
-    const getTeamOrder = (team: string) => {
-      switch (team) {
-        case 'townsfolk': return 0;
-        case 'outsider': return 1;
-        case 'minion': return 2;
-        case 'demon': return 3;
-        case 'traveler': return 4;
-        case 'fabled': return 5;
-        default: return 6;
-      }
-    };
-    return ALL_CHARACTERS.filter(c => {
-      if (excludeIds.includes(c.id)) return false;
-      if (c.team === 'traveler' || c.team === 'fabled') return false;
-      if (scriptCharacterIds && scriptCharacterIds.length > 0 && !scriptCharacterIds.includes(c.id)) return false;
-      return c.name.toLowerCase().includes(term) || c.team.toLowerCase().includes(term);
-    }).sort((a, b) => {
-      const orderDiff = getTeamOrder(a.team) - getTeamOrder(b.team);
-      if (orderDiff !== 0) return orderDiff;
-      return a.name.localeCompare(b.name);
-    });
-  }, [search, excludeIds, scriptCharacterIds]);
-
-  const pickerOptions = useMemo<ClaimDescriptor[]>(() => {
-    const opts: ClaimDescriptor[] = filteredCharacters.map(c => ({
-      id: c.id,
-      name: c.name,
-      team: c.team,
-    }));
-    const term = search.toLowerCase();
-    const travellerAlreadyClaimed = excludeIds.includes(GENERIC_TRAVELLER_ID);
-    const matchesSearch =
-      !term || "traveller".includes(term) || "traveler".includes(term);
-    if (!travellerAlreadyClaimed && matchesSearch) {
-      opts.push({ id: GENERIC_TRAVELLER_ID, name: "Traveller", team: "traveler" });
-    }
-    return opts;
-  }, [filteredCharacters, search, excludeIds]);
-
-  const toggleCharacter = (charId: string) => {
-    setSelected(prev => {
-      const next = new Set(prev);
-      if (next.has(charId)) {
-        next.delete(charId);
-      } else {
-        next.add(charId);
-      }
-      return next;
-    });
-  };
-
-  const handleConfirm = () => {
-    if (selected.size > 0) {
-      onSelect(Array.from(selected));
-    }
-    setSelected(new Set());
-    setSearch("");
-    onClose();
-  };
-
-  const handleSelectRow = (charId: string) => {
-    if (singleSelect) {
-      if (primaryClaimId && charId === primaryClaimId) {
-        onRemove?.(charId);
-      } else {
-        onSelect([charId]);
-      }
-      setSelected(new Set());
-      setSearch("");
-      onClose();
-      return;
-    }
-    toggleCharacter(charId);
-  };
-
-  const handleClose = () => {
-    setSelected(new Set());
-    setSearch("");
-    onClose();
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={(o) => !o && handleClose()}>
-      <DialogContent className="max-w-md p-0" onOpenAutoFocus={(e) => e.preventDefault()}>
-        <div className="flex flex-col max-h-[70vh] overflow-hidden p-6 pb-0">
-          <DialogHeader className="mb-4">
-            <DialogTitle className="font-display text-amber-500">{title ?? (singleSelect ? "Set Claim" : "Select Characters")}</DialogTitle>
-          </DialogHeader>
-          <div className="relative mb-4 flex-shrink-0">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search characters..."
-              className="pl-10"
-              data-testid="input-search-character"
-            />
-          </div>
-          <div className="flex-1 overflow-y-auto -mx-2 px-2">
-            <div className="space-y-1 pb-4">
-              {pickerOptions.map(char => {
-                const isPrimary = singleSelect && primaryClaimId === char.id;
-                const isSelected = singleSelect ? isPrimary : selected.has(char.id);
-                return (
-                  <button
-                    key={char.id}
-                    onClick={() => handleSelectRow(char.id)}
-                    className={cn(
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
-                      "w-full text-left p-3 rounded-lg border transition-colors flex items-center gap-3",
-                      "hover-elevate active-elevate-2",
-                      teamBadge(char.team),
-                      isSelected && "ring-2 ring-amber-500 ring-offset-1 ring-offset-background"
-                    )}
-                    title={isPrimary ? `Tap to remove ${char.name} claim` : undefined}
-                    data-testid={`button-select-character-${char.id}`}
-                  >
-                    {!singleSelect && (
-                      <Checkbox 
-                        checked={isSelected} 
-                        className="pointer-events-none"
-                        data-testid={`checkbox-character-${char.id}`}
-                      />
-                    )}
-                    {isPrimary && (
-                      <Check className="w-4 h-4 text-amber-500 shrink-0" data-testid={`icon-current-claim-${char.id}`} />
-                    )}
-                    <span className="font-medium">{char.name}</span>
-                    <span className="ml-auto flex items-center gap-2">
-                      {isPrimary && (
-                        <span className="text-xs text-amber-500/80" data-testid={`text-tap-to-remove-${char.id}`}>
-                          Tap to remove
-                        </span>
-                      )}
-                      <TeamBadge team={char.team} variant="label" />
-                    </span>
-                  </button>
-                );
-              })}
-              {pickerOptions.length === 0 && (
-                <p className="text-center text-muted-foreground py-8">No characters found</p>
-              )}
-            </div>
-          </div>
-        </div>
-        {!singleSelect && (
-          <div className="flex items-center justify-between gap-3 p-4 border-t border-border bg-card/50">
-            <span className="text-sm text-muted-foreground">
-              {selected.size > 0 ? `${selected.size} selected` : "Select characters to add"}
-            </span>
-            <Button 
-              onClick={handleConfirm}
-              disabled={selected.size === 0}
-              data-testid="button-confirm-add-claims"
-            >
-              Add {selected.size > 0 ? `${selected.size} ` : ""}Claim{selected.size !== 1 ? "s" : ""}
-            </Button>
-          </div>
-        )}
-      </DialogContent>
-    </Dialog>
   );
 }
 
@@ -1954,24 +1576,10 @@ export function GameTrackerView({
         ))}
       </nav>
 
-      <Drawer
-        open={!!selectedSheetChar}
-        onOpenChange={(open) => { if (!open) setSelectedSheetCharId(null); }}
-      >
-        <DrawerContent
-          className="max-h-[85vh]"
-          data-testid={selectedSheetChar ? `drawer-character-${selectedSheetChar.id}` : undefined}
-        >
-          <DrawerHeader className="sr-only">
-            <DrawerTitle>{selectedSheetChar?.name ?? "Character"}</DrawerTitle>
-          </DrawerHeader>
-          <div className="overflow-y-auto px-4 pb-8">
-            {selectedSheetChar && (
-              <CharacterCard char={selectedSheetChar} isExpanded onToggle={() => {}} />
-            )}
-          </div>
-        </DrawerContent>
-      </Drawer>
+      <ScriptCharacterDrawer
+        character={selectedSheetChar}
+        onClose={() => setSelectedSheetCharId(null)}
+      />
 
       <PlayerDetailDrawer
         player={selectedPlayer}
@@ -2028,35 +1636,11 @@ export function GameTrackerView({
         onSkip={handleCaptureSkip}
       />
 
-      <AlertDialog open={showPlayAgainConfirm} onOpenChange={setShowPlayAgainConfirm}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Start a new game with the same players?</AlertDialogTitle>
-            <AlertDialogDescription asChild>
-              <div className="space-y-3">
-                <p>This will reset:</p>
-                <ul className="list-disc list-inside text-sm space-y-1 text-muted-foreground">
-                  <li>All claims</li>
-                  <li>All deaths</li>
-                  <li>Day counter</li>
-                  <li>Game notes</li>
-                  <li>All travelers will be removed</li>
-                </ul>
-                <p className="text-sm">Player names and script selection will be kept.</p>
-              </div>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel data-testid="button-cancel-play-again">Cancel</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={onPlayAgain}
-              data-testid="button-confirm-play-again"
-            >
-              Play Again
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <PlayAgainDialog
+        open={showPlayAgainConfirm}
+        onOpenChange={setShowPlayAgainConfirm}
+        onPlayAgain={onPlayAgain}
+      />
 
       {claimPickerPlayerId && (
         <CharacterPicker
