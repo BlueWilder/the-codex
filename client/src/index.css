@@ -52,6 +52,60 @@
   --radius: 0.5rem;
 }
 
+/*
+ * Game Mode: "parchment sheet in a dark shell".
+ * Parchment, rule, ink and team values are taken from the Script tab's
+ * ScriptSheet (components/character/ScriptSheet.tsx) so the whole game screen
+ * matches that sheet. Raised card, gold, attention and shell chrome have no
+ * ScriptSheet equivalent and come from the Game Mode design spec.
+ */
+:root {
+  /* Dark shell. The page background itself stays --background + body glow. */
+  --shell-chrome: #0a0804;          /* header and bottom nav */
+  --shell-border: #2a2012;
+  --shell-gold: #d9a441;            /* titles, active nav item */
+  --shell-inactive: #8c8070;        /* inactive nav items */
+  --attention: #e8800d;
+
+  /* Parchment surfaces (ScriptSheet) */
+  --parchment-panel: #f4ecd8;
+  --parchment-panel-from: #f7f0df;  /* panel gradient, top */
+  --parchment-panel-to: #efe4c8;    /* panel gradient, bottom */
+  --parchment-raised: #fbf6ea;      /* cards inside a panel */
+  --parchment-border: #d8c9a3;
+  --parchment-rule: #d8c9a3;        /* ScriptSheet uses one value for border and rules */
+  --parchment-control: #e8dcbe;     /* segmented control track, row hover */
+  --parchment-control-border: #cbb98e; /* control border, dashed empty seat */
+  --parchment-control-hover: #dccfa9;
+
+  /* Parchment ink (ScriptSheet) */
+  --parchment-ink: #2a2016;         /* names, headings */
+  --parchment-ink-body: #4a3c28;    /* ability text, body copy */
+  --parchment-ink-muted: #6b5836;
+  --parchment-ink-faint: #9a8252;
+  --parchment-ink-link: #7a5c2e;    /* accents, active control fill */
+
+  /* Team colors on parchment (ScriptSheet). Dark-shell team colors stay in lib/team-style.ts. */
+  --parchment-townsfolk: #1e40af;
+  --parchment-townsfolk-tint: #dbeafe;
+  --parchment-townsfolk-ring: rgb(29 78 216 / 0.6);
+  --parchment-outsider: #2563eb;
+  --parchment-outsider-tint: #eff6ff;
+  --parchment-outsider-ring: rgb(59 130 246 / 0.6);
+  --parchment-minion: #b91c1c;
+  --parchment-minion-tint: #fee2e2;
+  --parchment-minion-ring: rgb(220 38 38 / 0.6);
+  --parchment-demon: #7f1d1d;
+  --parchment-demon-tint: #fee2e2;
+  --parchment-demon-ring: rgb(153 27 27 / 0.7);
+  --parchment-traveler: #334155;
+  --parchment-traveler-tint: #f1f5f9;
+  --parchment-traveler-ring: rgb(100 116 139 / 0.6);
+  --parchment-fabled: #9a7d0a;
+  --parchment-fabled-tint: #fdf6dd;
+  --parchment-fabled-ring: #efc344;
+}
+
 @layer base {
   body {
     @apply bg-background text-foreground antialiased;
@@ -93,5 +147,63 @@
 
   .font-fraunces {
     font-family: var(--font-fraunces);
+  }
+
+  /*
+   * Re-points the shared shadcn color variables at parchment values, so
+   * components that use semantic classes (text-foreground, border-border,
+   * bg-card, Input, Textarea) render as ink on parchment inside a panel.
+   */
+  .parchment-scope {
+    --background: 42 68% 95%;       /* raised */
+    --foreground: 30 31% 13%;       /* ink */
+    --card: 42 68% 95%;
+    --card-foreground: 30 31% 13%;
+    --muted: 43 48% 83%;            /* control */
+    --muted-foreground: 38 33% 32%; /* ink-muted */
+    --accent: 43 48% 83%;
+    --accent-foreground: 30 31% 13%;
+    --border: 43 40% 74%;           /* border / rule */
+    --input: 43 40% 74%;
+    --ring: 36 45% 33%;             /* ink-link */
+    color: var(--parchment-ink);
+  }
+
+  /* Headings inside parchment drop the shell's amber + drop shadow. */
+  .parchment-scope :where(h1, h2, h3, h4, h5, h6) {
+    color: var(--parchment-ink);
+    filter: none;
+  }
+
+  /* Header and bottom nav on the dark shell. */
+  .game-chrome {
+    background-color: var(--shell-chrome);
+    border-color: var(--shell-border);
+  }
+
+  /* One parchment panel per game tab: 14px radius, 12px padding. */
+  .game-panel {
+    @apply parchment-scope;
+    border-radius: 14px;
+    border: 1px solid var(--parchment-border);
+    background-color: var(--parchment-panel);
+    background-image: linear-gradient(to bottom, var(--parchment-panel-from), var(--parchment-panel-to));
+    padding: 12px;
+  }
+
+  /* Raised card inside a panel: 1px border, 10px radius. */
+  .game-card {
+    border-radius: 10px;
+    border: 1px solid var(--parchment-border);
+    background-color: var(--parchment-raised);
+  }
+
+  /* Small caps label (Plus Jakarta Sans). */
+  .game-label {
+    font-family: var(--font-sans);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
   }
 }

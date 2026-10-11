@@ -78,3 +78,70 @@ export function teamRing(team: string): string {
   const badge = (TEAM_STYLES[team as Team] ?? FALLBACK).badge;
   return badge.split(' ').find((c) => c.startsWith('border-')) ?? '';
 }
+
+/**
+ * Team colors for parchment surfaces in Game Mode. Values live as CSS
+ * variables in index.css (taken from the Script tab's ScriptSheet); the dark
+ * shell keeps using the TEAM_STYLES map above. Class strings are written out
+ * in full so Tailwind can see them.
+ */
+interface ParchmentTeamStyle {
+  /** Team-colored text. */
+  text: string;
+  /** Light team tint, for medallion and chip fills. */
+  tint: string;
+  /** Team ring color, as the ScriptSheet token ring. */
+  ring: string;
+  /** Solid team-colored border, for the believed claim. */
+  border: string;
+}
+
+const PARCHMENT_TEAM: Record<Team, ParchmentTeamStyle> = {
+  townsfolk: {
+    text: 'text-[var(--parchment-townsfolk)]',
+    tint: 'bg-[var(--parchment-townsfolk-tint)]',
+    ring: 'border-[var(--parchment-townsfolk-ring)]',
+    border: 'border-[var(--parchment-townsfolk)]',
+  },
+  outsider: {
+    text: 'text-[var(--parchment-outsider)]',
+    tint: 'bg-[var(--parchment-outsider-tint)]',
+    ring: 'border-[var(--parchment-outsider-ring)]',
+    border: 'border-[var(--parchment-outsider)]',
+  },
+  minion: {
+    text: 'text-[var(--parchment-minion)]',
+    tint: 'bg-[var(--parchment-minion-tint)]',
+    ring: 'border-[var(--parchment-minion-ring)]',
+    border: 'border-[var(--parchment-minion)]',
+  },
+  demon: {
+    text: 'text-[var(--parchment-demon)]',
+    tint: 'bg-[var(--parchment-demon-tint)]',
+    ring: 'border-[var(--parchment-demon-ring)]',
+    border: 'border-[var(--parchment-demon)]',
+  },
+  traveler: {
+    text: 'text-[var(--parchment-traveler)]',
+    tint: 'bg-[var(--parchment-traveler-tint)]',
+    ring: 'border-[var(--parchment-traveler-ring)]',
+    border: 'border-[var(--parchment-traveler)]',
+  },
+  fabled: {
+    text: 'text-[var(--parchment-fabled)]',
+    tint: 'bg-[var(--parchment-fabled-tint)]',
+    ring: 'border-[var(--parchment-fabled-ring)]',
+    border: 'border-[var(--parchment-fabled)]',
+  },
+};
+
+const PARCHMENT_FALLBACK: ParchmentTeamStyle = {
+  text: 'text-[var(--parchment-ink-muted)]',
+  tint: 'bg-[var(--parchment-raised)]',
+  ring: 'border-[var(--parchment-border)]',
+  border: 'border-[var(--parchment-border)]',
+};
+
+export function teamParchment(team: string): ParchmentTeamStyle {
+  return PARCHMENT_TEAM[team as Team] ?? PARCHMENT_FALLBACK;
+}
