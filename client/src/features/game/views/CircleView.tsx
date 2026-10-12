@@ -1,10 +1,9 @@
 import { useState, useEffect, useRef } from "react";
-import { latestDeathRecord, deathPhaseLabel } from "@/lib/death-phase";
 import { MoreVertical, RotateCcw, Skull } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DndContext, PointerSensor, TouchSensor, useSensor, useSensors, DragEndEvent, DragStartEvent, useDraggable } from "@dnd-kit/core";
 import { teamParchment } from "@/lib/team-style";
-import { type ClaimDescriptor, type GamePlayer, type DeathRecord } from "@/features/game/types";
+import { type ClaimDescriptor, type GamePlayer } from "@/features/game/types";
 import { resolveClaimDescriptor } from "@/features/game/claims";
 
 /**
@@ -18,14 +17,12 @@ function CircleNodeContent({
   seatNumber,
   nodeSize,
   labelShiftX = 0,
-  deathRecord = null,
 }: {
   player: GamePlayer;
   seatNumber: number;
   nodeSize: number;
   /** Horizontal nudge of the name block toward the ring's center (side seats). */
   labelShiftX?: number;
-  deathRecord?: DeathRecord | null;
 }) {
   const claims = player.claims ?? [];
   const primaryId = claims[0] ?? null;
@@ -33,7 +30,6 @@ function CircleNodeContent({
   const isDead = player.status === 'dead' || player.status === 'exiled';
   const isActive = player.status === 'alive';
   const team = primaryChar ? teamParchment(primaryChar.team) : null;
-  const phaseStamp = deathPhaseLabel(deathRecord);
 
   // 72px medallion: 26px number, 15px name, 12px claim. Smaller rings scale down.
   const scale = nodeSize / 72;
@@ -122,14 +118,6 @@ function CircleNodeContent({
             no claim
           </span>
         )}
-        {phaseStamp && (
-          <span
-            className="font-sans text-[10px] font-semibold leading-tight text-[var(--parchment-ink-muted)]"
-            data-testid={`text-seat-death-${player.id}`}
-          >
-            † {phaseStamp}
-          </span>
-        )}
         {extraClaims.length > 0 && (
           <span className="mt-0.5 flex flex-wrap justify-center gap-0.5">
             {shownExtras.map(c => (
@@ -162,9 +150,7 @@ function CircleNodeContent({
 
 export function CircleSeatingChart({
   players,
-  currentDay,
-  phase,
-  deathRecords = [],
+  centerLabel,
   onSelectPlayer,
   onOpenPrimaryPicker,
   onReorderPlayers,
@@ -173,10 +159,8 @@ export function CircleSeatingChart({
   onResetCirclePositions,
 }: {
   players: GamePlayer[];
-  currentDay: number;
-  /** Shown with currentDay in the middle of the ring. */
-  phase?: 'day' | 'night';
-  deathRecords?: DeathRecord[];
+  /** Shown in the middle of the ring (the script name); nothing when absent. */
+  centerLabel?: string;
   onSelectPlayer: (playerId: string) => void;
   onOpenPrimaryPicker?: (playerId: string) => void;
   onReorderPlayers: (activeId: string, overId: string) => void;
@@ -342,8 +326,6 @@ export function CircleSeatingChart({
     setDragDelta({ x: 0, y: 0 });
   };
 
-  const phaseText = phase === 'day' ? `Day ${currentDay}` : phase === 'night' ? `Night ${currentDay}` : null;
-
   return (
     <div className="flex flex-col items-center">
       {hasCustomPositions && (
@@ -372,8 +354,8 @@ export function CircleSeatingChart({
               style={{ left: centerX, top: centerY }}
               data-testid="circle-center"
             >
-              {phaseText && (
-                <span className="font-display text-2xl text-[var(--parchment-ink)]">{phaseText}</span>
+              {centerLabel && (
+                <span className="max-w-[60%] font-display text-xl leading-tight text-[var(--parchment-ink)]">{centerLabel}</span>
               )}
               <span className="font-serif text-sm italic text-[var(--parchment-ink-muted)]">hold a seat to move it</span>
             </div>
@@ -382,7 +364,6 @@ export function CircleSeatingChart({
               const isBeingDragged = activeId === player.id;
               const displayX = isBeingDragged ? pos.x + dragDelta.x : pos.x;
               const displayY = isBeingDragged ? pos.y + dragDelta.y : pos.y;
-              const deathRecord = latestDeathRecord(deathRecords, player.id);
 
               return (
                 <DraggableCircleNode
@@ -395,7 +376,6 @@ export function CircleSeatingChart({
                   onSelectPlayer={onSelectPlayer}
                   onOpenPrimaryPicker={onOpenPrimaryPicker}
                   isDragging={isBeingDragged}
-                  deathRecord={deathRecord}
                 />
               );
             })}
@@ -415,7 +395,6 @@ function DraggableCircleNode({
   onSelectPlayer,
   onOpenPrimaryPicker,
   isDragging,
-  deathRecord = null,
 }: {
   player: GamePlayer;
   seatNumber: number;
@@ -425,7 +404,6 @@ function DraggableCircleNode({
   onSelectPlayer: (playerId: string) => void;
   onOpenPrimaryPicker?: (playerId: string) => void;
   isDragging: boolean;
-  deathRecord?: DeathRecord | null;
 }) {
   const { attributes, listeners, setNodeRef } = useDraggable({
     id: player.id,
@@ -460,7 +438,6 @@ function DraggableCircleNode({
           seatNumber={seatNumber}
           nodeSize={nodeSize}
           labelShiftX={labelShiftX}
-          deathRecord={deathRecord}
         />
       </button>
       <button

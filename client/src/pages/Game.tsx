@@ -26,8 +26,6 @@ export default function Game() {
     toggleAlive,
     setPlayerStatus,
     setNotes,
-    advancePhase,
-    regressPhase,
     reorderPlayers,
     reversePlayers,
     clearScript,
@@ -74,8 +72,6 @@ export default function Game() {
           onRemoveClaim={removeClaim}
           onSetNotes={setNotes}
           onUpdatePlayerName={updatePlayerName}
-          onAdvancePhase={advancePhase}
-          onRegressPhase={regressPhase}
           onReorderPlayers={reorderPlayers}
           onReversePlayers={reversePlayers}
           onClearScript={clearScript}

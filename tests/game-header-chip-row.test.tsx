@@ -81,25 +81,23 @@ function renderTracker(game: PlayerGame) {
 }
 
 describe("GameTrackerView merged header chip row", () => {
-  it("renders one row with alive/dead filters and team dots, not the old verbose text", () => {
+  it("renders no alive/dead filter or team-count row, and not the old verbose text", () => {
     renderTracker(makeGame());
-    expect(screen.getByTestId("filter-alive")).toBeTruthy();
-    expect(screen.getByTestId("filter-dead")).toBeTruthy();
-    const dots = screen.getByTestId("section-role-count");
-    expect(dots).toBeTruthy();
+    expect(screen.queryByTestId("filter-alive")).toBeNull();
+    expect(screen.queryByTestId("filter-dead")).toBeNull();
+    expect(screen.queryByTestId("section-role-count")).toBeNull();
     // Old verbose format is gone
     expect(screen.queryByText(/5 Townsfolk/)).toBeNull();
     expect(screen.queryByTestId("text-townsfolk-count")).toBeNull();
-    // Dots + counts (7 players: 5/0/1/1)
-    expect(screen.getByTestId("role-dot-townsfolk").textContent).toBe("5");
-    expect(screen.getByTestId("role-dot-outsider").textContent).toBe("0");
-    expect(screen.getByTestId("role-dot-minion").textContent).toBe("1");
-    expect(screen.getByTestId("role-dot-demon").textContent).toBe("1");
-    // No travelers, so no traveler dot
+    // No team-count dots
+    expect(screen.queryByTestId("role-dot-townsfolk")).toBeNull();
+    expect(screen.queryByTestId("role-dot-outsider")).toBeNull();
+    expect(screen.queryByTestId("role-dot-minion")).toBeNull();
+    expect(screen.queryByTestId("role-dot-demon")).toBeNull();
     expect(screen.queryByTestId("role-dot-traveler")).toBeNull();
   });
 
-  it("shows the traveler dot only when travelers exist", () => {
+  it("lists a traveler seat without a traveler count dot", () => {
     const players = makePlayers(7);
     players.push({
       id: "t1",
@@ -111,31 +109,17 @@ describe("GameTrackerView merged header chip row", () => {
       isTraveler: true,
     });
     renderTracker(makeGame({ players, playerCount: 8 }));
-    expect(screen.getByTestId("role-dot-traveler").textContent).toBe("1");
+    expect(screen.queryByTestId("role-dot-traveler")).toBeNull();
+    expect(screen.getByTestId("card-player-t1")).toBeTruthy();
   });
 
-  it("shows correct alive/dead counts and filters the seat list on tap, toggling off on second tap", () => {
+  it("shows every seat, alive and dead, with no filter controls", () => {
     const game = makeGame({ players: makePlayers(7, ["p2", "p5"]) });
     renderTracker(game);
-    const alive = screen.getByTestId("filter-alive");
-    const dead = screen.getByTestId("filter-dead");
-    expect(alive.textContent).toContain("5");
-    expect(dead.textContent).toContain("2");
+    expect(screen.queryByTestId("filter-alive")).toBeNull();
+    expect(screen.queryByTestId("filter-dead")).toBeNull();
 
-    // All 7 seats visible initially
-    expect(screen.getAllByTestId(/^card-player-/).length).toBe(7);
-
-    // Filter alive
-    fireEvent.click(alive);
-    expect(screen.getAllByTestId(/^card-player-/).length).toBe(5);
-    // Toggle off
-    fireEvent.click(alive);
-    expect(screen.getAllByTestId(/^card-player-/).length).toBe(7);
-
-    // Filter dead
-    fireEvent.click(dead);
-    expect(screen.getAllByTestId(/^card-player-/).length).toBe(2);
-    fireEvent.click(dead);
+    // All 7 seats visible, including the two dead ones
     expect(screen.getAllByTestId(/^card-player-/).length).toBe(7);
   });
 });

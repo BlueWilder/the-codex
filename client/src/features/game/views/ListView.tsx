@@ -1,5 +1,4 @@
 import { usePlayerGame } from "@/features/game/state/use-player-game";
-import { latestDeathRecord, deathPhaseLabel } from "@/lib/death-phase";
 import { X, Plus, FileText, GripVertical, Skull, ArrowDownUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, TouchSensor, useSensor, useSensors, DragEndEvent } from "@dnd-kit/core";
@@ -11,7 +10,6 @@ import { type ClaimDescriptor, type GamePlayer } from "@/features/game/types";
 
 export function SortablePlayerCard({
   player,
-  game,
   seatNumber,
   onSelect,
   onToggleAlive,
@@ -19,7 +17,6 @@ export function SortablePlayerCard({
   onRemoveClaim,
 }: {
   player: GamePlayer;
-  game: NonNullable<ReturnType<typeof usePlayerGame>["game"]>;
   seatNumber: number;
   onSelect: () => void;
   onToggleAlive: () => void;
@@ -50,12 +47,8 @@ export function SortablePlayerCard({
   const hasNotes = player.notes.trim().length > 0;
 
   const isActive = player.status === 'alive';
-  // Gate every dead visual (dimmed row, skull, dagger) on CURRENT status, not
-  // on the existence of a death record, so a resurrected player renders as a
-  // normal living seat. Matches the circle node's isDead gate.
+  // Dead visuals follow the seat's current status (a plain alive/dead toggle).
   const isDead = player.status === 'dead' || player.status === 'exiled';
-  const deathRecord = isDead ? latestDeathRecord(game.deathRecords ?? [], player.id) : null;
-  const phaseStamp = deathPhaseLabel(deathRecord);
 
   // Believed claim first, then the claim it replaced ("was X"), then other
   // candidates. Every chip removes its claim when tapped, as before.
@@ -137,11 +130,6 @@ export function SortablePlayerCard({
           >
             {player.name}
           </button>
-          {phaseStamp && (
-            <span className="shrink-0 font-sans text-xs font-semibold text-[var(--parchment-ink-muted)]" data-testid={`text-seat-death-${player.id}`}>
-              † {phaseStamp}
-            </span>
-          )}
         </div>
 
         <div className="mt-1 flex flex-wrap items-center gap-1" data-testid={`claims-row-${player.id}`}>
@@ -220,7 +208,7 @@ export function SortablePlayerCard({
  */
 export function ListView({
   game,
-  filteredPlayers,
+  players,
   onReorderPlayers,
   onReversePlayers,
   onSelectPlayer,
@@ -229,7 +217,7 @@ export function ListView({
   onRemoveClaim,
 }: {
   game: NonNullable<ReturnType<typeof usePlayerGame>["game"]>;
-  filteredPlayers: GamePlayer[];
+  players: GamePlayer[];
   onReorderPlayers: (activeId: string, overId: string) => void;
   onReversePlayers: () => void;
   onSelectPlayer: (playerId: string) => void;
@@ -263,13 +251,12 @@ export function ListView({
           Reverse Order
         </button>
       </div>
-      <SortableContext items={filteredPlayers.map(p => p.id)} strategy={rectSortingStrategy}>
+      <SortableContext items={players.map(p => p.id)} strategy={rectSortingStrategy}>
         <div className="divide-y divide-[var(--parchment-rule)]">
-          {filteredPlayers.map((player) => (
+          {players.map((player) => (
             <SortablePlayerCard
               key={player.id}
               player={player}
-              game={game}
               seatNumber={game.players.findIndex(p => p.id === player.id) + 1}
               onSelect={() => onSelectPlayer(player.id)}
               onToggleAlive={() => onToggleAlive(player.id)}

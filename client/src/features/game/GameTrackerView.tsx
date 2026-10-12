@@ -1,13 +1,13 @@
 import { useState, useMemo, useEffect } from "react";
 import { Link } from "wouter";
-import { usePlayerGame, getBreakdown } from "@/features/game/state/use-player-game";
+import { usePlayerGame } from "@/features/game/state/use-player-game";
 import { getCharacterById } from "@/lib/game-data";
 import { useLocalScripts, type LocalScript } from "@/hooks/use-local-scripts";
 import { ScriptBuilderDialog } from "@/components/ScriptBuilderDialog";
 import { CaptureFriendsDialog } from "@/components/CaptureFriendsDialog";
 import { useFriends } from "@/hooks/use-friends";
 import { resolveScriptCharacters } from "@/lib/script-resolve";
-import { ArrowLeft, ChevronRight, ChevronLeft, X, Plus, Check, Moon, Sun, ChevronDown, FileText, UserPlus, BookOpen, Pencil, MoreVertical, RotateCcw, Users, Skull, Theater, LayoutList, NotebookText, ScrollText } from "lucide-react";
+import { ArrowLeft, X, Plus, Check, ChevronDown, FileText, UserPlus, BookOpen, Pencil, MoreVertical, RotateCcw, Users, Skull, Theater, LayoutList, NotebookText, ScrollText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -36,8 +36,6 @@ export function GameTrackerView({
   onRemoveClaim,
   onSetNotes,
   onUpdatePlayerName,
-  onAdvancePhase,
-  onRegressPhase,
   onReorderPlayers,
   onReversePlayers,
   onClearScript,
@@ -65,8 +63,6 @@ export function GameTrackerView({
   onRemoveClaim: (playerId: string, characterId: string) => void;
   onSetNotes: (playerId: string, notes: string) => void;
   onUpdatePlayerName: (playerId: string, name: string) => void;
-  onAdvancePhase: () => void;
-  onRegressPhase: () => void;
   onReorderPlayers: (activeId: string, overId: string) => void;
   onReversePlayers: () => void;
   onClearScript: () => void;
@@ -94,7 +90,6 @@ export function GameTrackerView({
   const [selectedSheetCharId, setSelectedSheetCharId] = useState<string | null>(null);
   const [showScriptBuilder, setShowScriptBuilder] = useState(false);
   const [editingScript, setEditingScript] = useState<LocalScript | null>(null);
-  const [playerFilter, setPlayerFilter] = useState<'all' | 'alive' | 'dead'>('all');
   const [claimPickerPlayerId, setClaimPickerPlayerId] = useState<string | null>(null);
   const [captureNames, setCaptureNames] = useState<string[] | null>(null);
   const { friends, addFriend } = useFriends();
@@ -177,50 +172,14 @@ export function GameTrackerView({
     setSelectedSheetCharId(null);
   }, [resolvedScript?.id]);
 
-  const handleAdvancePhase = () => {
-    onAdvancePhase();
-  };
-
   const selectedPlayer = game.players.find(p => p.id === selectedPlayerId) || null;
-  const regularPlayers = game.players.filter(p => !p.isTraveler);
-  const travelers = game.players.filter(p => p.isTraveler);
   const alivePlayers = game.players.filter(p => p.status === 'alive');
   const aliveCount = alivePlayers.length;
-  const deadCount = game.players.filter(p => p.status === 'dead').length;
-
-  // Phase spine: Night N = (day N, 'night'), Day N = (day N, 'day').
-  const isNight = game.phase === 'night';
-  const phaseLabel = (day: number, phase: 'day' | 'night') =>
-    phase === 'day' ? `Day ${day}` : `Night ${day}`;
-  const currentPhaseLabel = phaseLabel(game.currentDay, game.phase);
-  // The chapter before the current one (null at Night 1, the start of time).
-  const prevChapter = isNight
-    ? (game.currentDay > 1 ? { day: game.currentDay - 1, phase: 'day' as const } : null)
-    : { day: game.currentDay, phase: 'night' as const };
-  // The chapter after the current one.
-  const nextChapter = isNight
-    ? { day: game.currentDay, phase: 'day' as const }
-    : { day: game.currentDay + 1, phase: 'night' as const };
-
-  // Filter players based on current filter
-  const filteredPlayers = useMemo(() => {
-    if (playerFilter === 'alive') {
-      return game.players.filter(p => p.status === 'alive');
-    } else if (playerFilter === 'dead') {
-      return game.players.filter(p => p.status !== 'alive');
-    }
-    return game.players;
-  }, [game.players, playerFilter]);
-
-  // Toggle filter on tap
-  const toggleFilter = (filter: 'alive' | 'dead') => {
-    setPlayerFilter(prev => prev === filter ? 'all' : filter);
-  };
 
   return (
     <div className="space-y-4">
-      {/* Header: back, script name and seat summary, game menu, phase pill */}
-      <header className="game-chrome -mx-4 -mt-4 border-b px-2 pt-2 pb-3" data-testid="header-game">
+      {/* Header: back, script name and seat summary, game menu */}
+      <header className="game-chrome -mx-4 -mt-4 border-b px-2 py-2" data-testid="header-game">
         <div className="flex items-center gap-1">
           <Link
             href="/"
@@ -374,15 +333,6 @@ export function GameTrackerView({
                     <Theater className="w-4 h-4 mr-2" />
                     Add Traveler
                   </DropdownMenuItem>
-                  {prevChapter && (
-                    <DropdownMenuItem
-                      onClick={onRegressPhase}
-                      data-testid="button-phase-prev"
-                    >
-                      <ChevronLeft className="w-4 h-4 mr-2" />
-                      Back to {phaseLabel(prevChapter.day, prevChapter.phase)}
-                    </DropdownMenuItem>
-                  )}
                   <DropdownMenuItem 
                     onClick={() => setShowPlayAgainConfirm(true)}
                     data-testid="button-play-again"
@@ -404,100 +354,14 @@ export function GameTrackerView({
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-
-        {/* Phase pill: the current phase is the active segment, the next phase is a button */}
-        <div
-          className="mt-3 flex items-center gap-1 rounded-full border border-[var(--shell-border)] bg-black/40 p-1"
-          data-testid="pill-phase"
-        >
-          <div
-            className="flex flex-1 items-center justify-center gap-2 rounded-full bg-[var(--shell-gold)] px-3 py-1.5 text-[var(--shell-chrome)]"
-            data-testid="text-phase-current"
-          >
-            {isNight ? <Moon className="h-4 w-4 shrink-0" /> : <Sun className="h-4 w-4 shrink-0" />}
-            <span className="font-display text-base font-semibold">{currentPhaseLabel}</span>
-          </div>
-          <button
-            type="button"
-            onClick={handleAdvancePhase}
-            className="flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-1.5 text-[var(--shell-inactive)] transition-colors hover:text-[var(--shell-gold)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            data-testid="button-phase-next"
-          >
-            {nextChapter.phase === 'night' ? <Moon className="h-4 w-4 shrink-0" /> : <Sun className="h-4 w-4 shrink-0" />}
-            <span className="game-label">{phaseLabel(nextChapter.day, nextChapter.phase)}</span>
-            <ChevronRight className="h-4 w-4 shrink-0" />
-          </button>
-        </div>
       </header>
 
       {/* Tab Content */}
       {activeTab === 'list' && (
         <div className="game-panel" data-testid="panel-list">
-          {/* Merged chip row: Alive/Dead filters + team composition dots */}
-          {(() => {
-            const roleBreakdown = getBreakdown(regularPlayers.length);
-            return (
-              <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-b border-[var(--parchment-rule)] pb-2.5">
-                <div className="flex items-center gap-1 rounded-full border border-[var(--parchment-control-border)] bg-[var(--parchment-control)] p-0.5">
-                  <button
-                    onClick={() => toggleFilter('alive')}
-                    className={cn(
-                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
-                      "flex items-baseline gap-1 rounded-full px-2.5 py-0.5 transition-colors",
-                      playerFilter === 'alive'
-                        ? "bg-[var(--parchment-ink-link)] text-[var(--parchment-panel)]"
-                        : "text-[var(--parchment-ink)] hover:bg-[var(--parchment-control-hover)]"
-                    )}
-                    data-testid="filter-alive"
-                  >
-                    <span className="font-display text-base tabular-nums">{aliveCount}</span>
-                    <span className="game-label opacity-80">Alive</span>
-                  </button>
-                  <button
-                    onClick={() => toggleFilter('dead')}
-                    className={cn(
-                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
-                      "flex items-baseline gap-1 rounded-full px-2.5 py-0.5 transition-colors",
-                      playerFilter === 'dead'
-                        ? "bg-[var(--parchment-ink-link)] text-[var(--parchment-panel)]"
-                        : "text-[var(--parchment-ink)] hover:bg-[var(--parchment-control-hover)]"
-                    )}
-                    data-testid="filter-dead"
-                  >
-                    <span className="font-display text-base tabular-nums">{deadCount}</span>
-                    <span className="game-label opacity-80">Dead</span>
-                  </button>
-                </div>
-                <div className="flex flex-wrap items-center gap-2.5 font-sans text-sm font-semibold" data-testid="section-role-count">
-                  <span className="flex items-center gap-1" data-testid="role-dot-townsfolk">
-                    <span className="w-2 h-2 rounded-full bg-[var(--parchment-townsfolk)] shrink-0" />
-                    <span className="text-[var(--parchment-townsfolk)] tabular-nums">{roleBreakdown.townsfolk}</span>
-                  </span>
-                  <span className="flex items-center gap-1" data-testid="role-dot-outsider">
-                    <span className="w-2 h-2 rounded-full bg-[var(--parchment-outsider)] shrink-0" />
-                    <span className="text-[var(--parchment-outsider)] tabular-nums">{roleBreakdown.outsiders}</span>
-                  </span>
-                  <span className="flex items-center gap-1" data-testid="role-dot-minion">
-                    <span className="w-2 h-2 rounded-full bg-[var(--parchment-minion)] shrink-0" />
-                    <span className="text-[var(--parchment-minion)] tabular-nums">{roleBreakdown.minions}</span>
-                  </span>
-                  <span className="flex items-center gap-1" data-testid="role-dot-demon">
-                    <span className="w-2 h-2 rounded-full bg-[var(--parchment-demon)] shrink-0" />
-                    <span className="text-[var(--parchment-demon)] tabular-nums">{roleBreakdown.demons}</span>
-                  </span>
-                  {travelers.length > 0 && (
-                    <span className="flex items-center gap-1" data-testid="role-dot-traveler">
-                      <span className="w-2 h-2 rounded-full bg-[var(--parchment-traveler)] shrink-0" />
-                      <span className="text-[var(--parchment-traveler)] tabular-nums">{travelers.length}</span>
-                    </span>
-                  )}
-                </div>
-              </div>
-            );
-          })()}
           <ListView
             game={game}
-            filteredPlayers={filteredPlayers}
+            players={game.players}
             onReorderPlayers={onReorderPlayers}
             onReversePlayers={onReversePlayers}
             onSelectPlayer={(playerId) => setSelectedPlayerId(playerId)}
@@ -512,9 +376,7 @@ export function GameTrackerView({
         <div className="game-panel px-0" data-testid="panel-circle">
           <CircleSeatingChart
             players={game.players}
-            currentDay={game.currentDay}
-            phase={game.phase}
-            deathRecords={game.deathRecords ?? []}
+            centerLabel={resolvedScript?.name}
             onSelectPlayer={(playerId) => setSelectedPlayerId(playerId)}
             onOpenPrimaryPicker={(playerId) => setPrimaryPickerPlayerId(playerId)}
             onReorderPlayers={onReorderPlayers}

@@ -296,7 +296,6 @@ export function PlayerDetailDrawer({
                       const isBelieved = idx === 0;
                       const full = char.id !== GENERIC_TRAVELLER_ID ? ALL_CHARACTERS.find(c => c.id === char.id) : undefined;
                       const icon = full ? characterIcon(full.id) : undefined;
-                      const record = (player.claimRecords ?? []).find(r => r.characterId === char.id);
                       return (
                         <div
                           key={char.id}
@@ -346,11 +345,6 @@ export function PlayerDetailDrawer({
                             </div>
                             {full && (
                               <p className="mt-0.5 font-serif text-sm leading-snug text-[var(--parchment-ink-body)]">{full.ability}</p>
-                            )}
-                            {record && (
-                              <p className="mt-1 font-serif text-sm italic text-[var(--parchment-ink-muted)]" data-testid={`text-claim-note-${char.id}-${player.id}`}>
-                                Claimed Day {record.day}
-                              </p>
                             )}
                           </div>
                         </div>

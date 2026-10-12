@@ -75,7 +75,7 @@ describe("InlineGameLog phase chapters", () => {
     // Night 2 chapter holds the night death.
     const n2 = screen.getByTestId("notebook-chapter-n2");
     expect(n2.textContent).toContain("Alice");
-    expect(n2.textContent).toContain("died in the night");
+    expect(n2.textContent).toContain("died");
     // The day-1 execution lives in the Day 1 chapter, not a night chapter.
     const d1 = screen.getByTestId("notebook-chapter-d1");
     expect(d1.textContent).toContain("Bob");

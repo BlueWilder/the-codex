@@ -142,16 +142,16 @@ describe("Circle seat states", () => {
     expect(screen.queryByTestId("text-seat-role-p3")).toBeNull();
   });
 
-  it("stamps the death phase as a dagger label for a dead player", () => {
+  it("shows a dead seat with no death phase stamp", () => {
     renderChart(
       [makePlayer({ id: "p4", name: "Dan", status: "dead", claims: ["imp"] })],
       [{ playerId: "p4", day: 2, type: "night", phase: "night" }],
     );
     expect(screen.getByTestId("overlay-shroud-p4")).not.toBeNull();
-    expect(screen.getByTestId("text-seat-death-p4").textContent).toContain("N2");
+    expect(screen.queryByTestId("text-seat-death-p4")).toBeNull();
   });
 
-  it("picks the final death deterministically when records share a day", () => {
+  it("shows no death phase stamp when death records share a day", () => {
     renderChart(
       [makePlayer({ id: "p5", name: "Eve", status: "dead", claims: ["imp"] })],
       [
@@ -159,8 +159,8 @@ describe("Circle seat states", () => {
         { playerId: "p5", day: 3, type: "night", phase: "night" },
       ],
     );
-    // Same day: the 'day' phase is later than 'night', so the stamp must be D3.
-    expect(screen.getByTestId("text-seat-death-p5").textContent).toContain("D3");
+    // Day/night is no longer tracked or shown, so there is no stamp.
+    expect(screen.queryByTestId("text-seat-death-p5")).toBeNull();
   });
 });
 
@@ -259,12 +259,12 @@ describe("List row states", () => {
     expect(screen.getByTestId("button-add-claim-p3")).not.toBeNull();
   });
 
-  it("greys a dead seat with a shroud and a dagger phase stamp", () => {
+  it("greys a dead seat with a shroud and no phase stamp", () => {
     renderRow(makePlayer({ id: "p4", name: "Dan", status: "dead", claims: ["imp"] }), {
       deathRecords: [{ playerId: "p4", day: 2, type: "night", phase: "night" }],
     });
     expect(screen.getByTestId("overlay-shroud-p4")).not.toBeNull();
-    expect(screen.getByTestId("text-seat-death-p4").textContent).toContain("N2");
+    expect(screen.queryByTestId("text-seat-death-p4")).toBeNull();
   });
 });
 
@@ -390,13 +390,14 @@ describe("List row resurrection", () => {
     expect(screen.queryByTestId("text-seat-death-p1")).toBeNull();
   });
 
-  it("shows the latest death phase for a player who re-dies after resurrection", () => {
+  it("shows a re-killed player as dead with no death phase stamp", () => {
     renderRow(makePlayer({ id: "p2", name: "Bob", status: "dead", claims: ["imp"] }), {
       deathRecords: [
         { playerId: "p2", day: 1, type: "night", phase: "night" },
         { playerId: "p2", day: 2, type: "execution", phase: "day" },
       ],
     });
-    expect(screen.getByTestId("text-seat-death-p2").textContent).toContain("D2");
+    expect(screen.getByTestId("overlay-shroud-p2")).not.toBeNull();
+    expect(screen.queryByTestId("text-seat-death-p2")).toBeNull();
   });
 });

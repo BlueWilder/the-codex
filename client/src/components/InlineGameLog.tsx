@@ -7,15 +7,12 @@ import {
   type PlayerGame, 
   type DeathRecord,
 } from "@/features/game/state/use-player-game";
-import { deathPhaseLabel } from "@/lib/death-phase";
 import { ALL_CHARACTERS } from "@/lib/game-data";
 import { 
   Theater, 
   Skull, 
   UserPlus, 
   UserMinus, 
-  Sun, 
-  Moon,
   Filter,
   FileText,
   Plus,
@@ -78,7 +75,7 @@ export function InlineGameLog({
           id: `claim-${player.id}-${record.characterId}-${idx}`,
           type: 'claim',
           day: record.day,
-          phase: 'day',
+          phase: 'night',
           timestamp: record.addedAt,
           playerId: player.id,
           playerName: player.name,
@@ -99,7 +96,7 @@ export function InlineGameLog({
           description = 'was executed';
           break;
         case 'night':
-          description = 'died in the night';
+          description = 'died';
           break;
         case 'exile':
           description = 'was exiled';
@@ -181,7 +178,7 @@ export function InlineGameLog({
   
   const notebookNotes = game.notebookNotes ?? [];
   
-  // Build the phase spine: Night 1, Day 1, Night 2, Day 2, ...
+  // Chapter order for saved games that recorded phases (Night 1, Day 1, ...).
   const chapters = useMemo(() => {
     const eventDays = events.map(e => e.day);
     const noteDays = notebookNotes.map(n => n.day);
@@ -253,7 +250,12 @@ export function InlineGameLog({
         ))}
       </div>
       
-      <div className="space-y-6">
+      <div className="space-y-1.5">
+        {/*
+          The app no longer tracks day or night, so chapters render without
+          headings: one running list. Chapter wrappers stay, in spine order,
+          so saved games that did record phases keep their order.
+        */}
         {visibleChapters.map(({ day, phase }) => {
           const chapterEvents = filteredEvents.filter(
             e => e.day === day && e.phase === phase,
@@ -261,90 +263,49 @@ export function InlineGameLog({
           const chapterNotes = notebookNotes.filter(
             n => n.day === day && n.phase === phase,
           );
-          const live = isLiveChapter(day, phase);
-          const isNight = phase === 'night';
-          
+          const rows = [
+            ...chapterEvents.map(event => ({ at: event.timestamp, key: event.id, node: <EventRow key={event.id} event={event} /> })),
+            ...chapterNotes.map(note => ({
+              at: note.createdAt,
+              key: note.id,
+              node: <NoteRow key={note.id} id={note.id} text={note.text} onRemove={onRemoveNotebookNote} />,
+            })),
+          ].sort((a, b) => a.at.localeCompare(b.at));
+
           return (
             <div
               key={chapterKey(day, phase)}
-              className="space-y-2"
+              className="space-y-1.5"
               data-testid={`notebook-chapter-${chapterKey(day, phase)}`}
             >
-              <div className="flex items-center gap-2">
-                {isNight ? (
-                  <Moon className="w-4 h-4 text-indigo-400" />
-                ) : (
-                  <Sun className="w-4 h-4 text-amber-400" />
-                )}
-                <span
-                  className={cn(
-                    "text-sm font-display",
-                    isNight ? "text-indigo-400" : "text-amber-400",
-                  )}
-                >
-                  {isNight ? 'Night' : 'Day'} {day}
-                </span>
-                {live && (
-                  <Badge
-                    variant="outline"
-                    className="text-[10px] border-[#3d2f57] text-[#c79fe6]"
-                    data-testid="badge-live-chapter"
-                  >
-                    Now
-                  </Badge>
-                )}
-              </div>
-              
-              <div className="ml-6 space-y-1.5">
-                {chapterEvents.map(event => (
-                  <EventRow key={event.id} event={event} />
-                ))}
-                
-                {chapterNotes.map(note => (
-                  <NoteRow
-                    key={note.id}
-                    id={note.id}
-                    text={note.text}
-                    onRemove={onRemoveNotebookNote}
-                  />
-                ))}
-                
-                {chapterEvents.length === 0 && chapterNotes.length === 0 && (
-                  <p className="text-xs text-muted-foreground/60 italic">
-                    Nothing recorded for this phase yet.
-                  </p>
-                )}
-                
-                {live && (
-                  <div className="flex items-center gap-2 pt-1">
-                    <Input
-                      value={noteDraft}
-                      onChange={(e) => setNoteDraft(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          handleAddNote();
-                        }
-                      }}
-                      placeholder="Add a note for this phase..."
-                      className="h-8 text-sm bg-muted/30 border-border"
-                      data-testid="input-notebook-note"
-                    />
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="h-8 px-2 shrink-0"
-                      onClick={handleAddNote}
-                      data-testid="button-add-notebook-note"
-                    >
-                      <Plus className="w-4 h-4" />
-                    </Button>
-                  </div>
-                )}
-              </div>
+              {rows.map(r => r.node)}
             </div>
           );
         })}
+          <div className="flex items-center gap-2 pt-2">
+            <Input
+              value={noteDraft}
+              onChange={(e) => setNoteDraft(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleAddNote();
+                }
+              }}
+              placeholder="Add a note..."
+              className="h-8 text-sm bg-muted/30 border-border"
+              data-testid="input-notebook-note"
+            />
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-8 px-2 shrink-0"
+              onClick={handleAddNote}
+              data-testid="button-add-notebook-note"
+            >
+              <Plus className="w-4 h-4" />
+            </Button>
+          </div>
         
         {events.length === 0 && notebookNotes.length === 0 && visibleChapters.length === 0 && (
           <div className="text-center py-12 text-muted-foreground">
@@ -369,7 +330,6 @@ export function InlineGameLog({
 
 function EventRow({ event }: { event: GameEvent }) {
   const Icon = event.icon;
-  const deathStamp = event.type === 'death' ? deathPhaseLabel(event.deathRecord) : null;
   
   return (
     <div 
@@ -383,11 +343,6 @@ function EventRow({ event }: { event: GameEvent }) {
         {event.details && (
           <span className="text-xs text-muted-foreground/70 ml-1">
             ({event.details})
-          </span>
-        )}
-        {deathStamp && (
-          <span className="text-xs text-[#c79fe6] ml-1">
-            † {deathStamp}
           </span>
         )}
       </div>
