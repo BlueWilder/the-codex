@@ -33,7 +33,14 @@ The `/game` page lives in `client/src/features/game/`. `pages/Game.tsx` is a thi
 - `types.ts`: game model types (re-exported from state) and `ClaimDescriptor`. `claims.ts`: claim display helpers shared by views and dialogs.
 - `GameSetup.tsx` (`SetupWizard`): script picker, player count, friends, start.
 - `GameTrackerView.tsx`: the active game shell (script header, scoreboard, tab switch, bottom nav). It owns the UI state (selected player, open pickers and dialogs, active tab) and wires the views and dialogs.
-- `views/`: one file per bottom tab. `CircleView.tsx` (Grim, `CircleSeatingChart` with drag positioning), `ListView.tsx` (List, `SortablePlayerCard` with drag-to-reorder), `NotebookView.tsx`, `GameScriptView.tsx` (named to stay distinct from `components/character/ScriptView`).
+- `views/`: one file per bottom tab. `CircleView.tsx` (Circle tab, internal key `circle`, test id `nav-grim`; `CircleSeatingChart` with drag positioning), `ListView.tsx` (List, `SortablePlayerCard` with drag-to-reorder), `NotebookView.tsx` (Notes tab, key `log`, test id `nav-notebook`), `GameScriptView.tsx` (named to stay distinct from `components/character/ScriptView`).
 - `PlayerDetailDrawer.tsx`: the per-player claims and notes drawer.
 - `dialogs/`: one file per dialog or drawer (`AddPlayerDialog`, `AddTravelerDialog`, `CharacterPicker`, `PlayAgainDialog`, `ScriptCharacterDrawer`).
 - Tests import several of these from `@/pages/Game`, which re-exports them. Keep those re-exports when moving or renaming a component.
+
+### Game Mode visual system
+Active game screens use "parchment sheet in a dark shell". Tokens are CSS variables in `client/src/index.css`; parchment, ink and team values come from the Script tab's `ScriptSheet`, so keep the two in step. Setup, Reference and Home are not on this system.
+- Shell: `--shell-chrome`, `--shell-border`, `--shell-gold` (titles, active nav), `--shell-inactive`, `--attention`. Page background stays `--background` + the body glow.
+- Parchment: `--parchment-panel` (+ `-from`/`-to` gradient), `--parchment-raised`, `--parchment-border`, `--parchment-rule`, `--parchment-control` (+ `-border`, `-hover`), ink `--parchment-ink`, `-ink-body`, `-ink-muted`, `-ink-faint`, `-ink-link`.
+- Team on parchment: `--parchment-<team>`, `-tint`, `-ring`; use `teamParchment(team)` from `lib/team-style.ts`. Dark-shell team colors stay in `teamCard`/`teamBadge`/`teamRing`.
+- Panel pattern: each tab renders one `.game-panel` (14px radius, 12px padding) on the shell; cards inside use `.game-card` (raised, 1px border, 10px radius); small caps labels use `.game-label`; header and nav use `.game-chrome`. `.game-panel` and `.parchment-scope` re-point the shadcn color variables, so semantic classes (`text-foreground`, `border-border`, `Input`) render as ink on parchment inside them. Radix portals (dialogs, popovers) render outside the panel and stay dark unless given `.parchment-scope` themselves.
