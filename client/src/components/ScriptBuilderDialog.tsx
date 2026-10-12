@@ -17,6 +17,8 @@ interface ScriptBuilderDialogProps {
   onSave: (name: string, characterIds: string[], synopsis?: string) => void | Promise<void>;
   title?: string;
   editMode?: boolean;
+  /** Open with the JSON import panel already showing (Home's Import button). */
+  initialShowImport?: boolean;
 }
 
 export function ScriptBuilderDialog({
@@ -28,6 +30,7 @@ export function ScriptBuilderDialog({
   onSave,
   title = "Create Custom Script",
   editMode = false,
+  initialShowImport = false,
 }: ScriptBuilderDialogProps) {
   const [scriptName, setScriptName] = useState(initialName);
   const [synopsis, setSynopsis] = useState(initialSynopsis);
@@ -54,13 +57,13 @@ export function ScriptBuilderDialog({
       setScriptName(initialName);
       setSynopsis(initialSynopsis);
       setSearch("");
-      setShowImport(false);
+      setShowImport(initialShowImport);
       setImportJson("");
       setImportMessage(null);
       setScanning(false);
       setSaving(false);
     }
-  }, [open, initialCharacters, initialName, initialSynopsis]);
+  }, [open, initialCharacters, initialName, initialSynopsis, initialShowImport]);
 
   const handleScanUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

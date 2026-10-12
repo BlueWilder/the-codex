@@ -34,8 +34,11 @@ describe("Home landing colophon", () => {
     expect(botc.getAttribute("rel")).toBe("noopener noreferrer");
   });
 
-  it("keeps the existing Enter Game Mode CTA", () => {
+  it("no longer shows the Enter Game Mode button or the Manage Friends link", () => {
     renderHome();
-    expect(screen.getByTestId("link-enter-game-mode")).toBeTruthy();
+    expect(screen.queryByTestId("link-enter-game-mode")).toBeNull();
+    expect(screen.queryByTestId("button-manage-friends")).toBeNull();
+    // The Community Created Content mark stays in the footer.
+    expect(screen.getByTestId("img-ccc-badge")).toBeTruthy();
   });
 });

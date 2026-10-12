@@ -1,13 +1,13 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { getBreakdown } from "@/features/game/state/use-player-game";
 import { useLocalScripts, type LocalScript } from "@/hooks/use-local-scripts";
 import { ScriptBuilderDialog } from "@/components/ScriptBuilderDialog";
 import { FriendsPicker } from "@/components/FriendsPicker";
-import { scanScriptFile } from "@/lib/scan-script";
+import { useScriptScan } from "@/hooks/use-script-scan";
+import { CustomScriptList } from "@/components/CustomScriptList";
 import { resolveScriptCharacters, countScriptCharacters } from "@/lib/script-resolve";
 import { ScriptSheet } from "@/components/character/ScriptSheet";
-import { useToast } from "@/hooks/use-toast";
-import { ChevronRight, Play, Plus, ChevronUp, ChevronDown, Loader2, BookOpen, Pencil, Users, Scroll, Camera } from "lucide-react";
+import { ChevronRight, Play, ChevronUp, ChevronDown, Loader2, BookOpen, Users, Scroll, Camera } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -25,13 +25,16 @@ export function SetupWizard({ onStart }: { onStart: (count: number, names: strin
   const [showScriptBuilder, setShowScriptBuilder] = useState(false);
   const [editingScript, setEditingScript] = useState<LocalScript | null>(null);
   const [scannedCharacters, setScannedCharacters] = useState<Set<string> | null>(null);
-  const [scanning, setScanning] = useState(false);
   const [assignedNames, setAssignedNames] = useState<string[]>([]);
   const [assignedFriendIds, setAssignedFriendIds] = useState<string[]>([]);
   const [friendsPickerOpen, setFriendsPickerOpen] = useState(false);
-  const scanInputRef = useRef<HTMLInputElement>(null);
   const { allScripts, customScripts, addCustomScriptAsync, updateCustomScript, getScriptById } = useLocalScripts();
-  const { toast } = useToast();
+  const { inputRef: scanInputRef, scanning, openPicker: openScanPicker, onFileChange: handleScanScript } = useScriptScan((ids) => {
+    setEditingScript(null);
+    setScannedCharacters(ids);
+    setScriptDrawerOpen(false);
+    setShowScriptBuilder(true);
+  });
 
   useEffect(() => {
     localStorage.removeItem("clocktower_st_session");
@@ -42,47 +45,6 @@ export function SetupWizard({ onStart }: { onStart: (count: number, names: strin
   const handleSelectScript = (script: LocalScript | null) => {
     setSelectedScript(script);
     setScriptDrawerOpen(false);
-  };
-
-  const handleScanScript = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (scanInputRef.current) scanInputRef.current.value = '';
-    if (!file) return;
-    setScanning(true);
-    try {
-      const { matchedIds, unmatchedNames } = await scanScriptFile(file);
-      if (matchedIds.length === 0) {
-        toast({
-          title: "No characters recognized",
-          description: "Couldn't read any characters from that photo. Try a clearer, well-lit shot.",
-          variant: "destructive",
-        });
-        return;
-      }
-      setEditingScript(null);
-      setScannedCharacters(new Set(matchedIds));
-      setScriptDrawerOpen(false);
-      setShowScriptBuilder(true);
-      if (unmatchedNames.length > 0) {
-        toast({
-          title: `Found ${matchedIds.length} characters`,
-          description: `Couldn't match: ${unmatchedNames.join(', ')}. Review and edit before saving.`,
-        });
-      } else {
-        toast({
-          title: `Found ${matchedIds.length} characters`,
-          description: "Review and edit your scanned script before saving.",
-        });
-      }
-    } catch (err) {
-      toast({
-        title: "Scan failed",
-        description: err instanceof Error ? err.message : "Could not scan that photo. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setScanning(false);
-    }
   };
 
   const getDefaultName = (index: number) => {
@@ -325,57 +287,24 @@ export function SetupWizard({ onStart }: { onStart: (count: number, names: strin
             <div className="pt-2 pb-1">
               <span className="game-label text-[var(--parchment-townsfolk)]">Custom Scripts</span>
             </div>
-            {customScripts.map(script => (
-              <div
-                key={script.id}
-                className={cn(
-                  "w-full text-left p-3 transition-colors flex items-center gap-2",
-                  selectedScript?.id === script.id
-                    ? "game-card border-[1.5px] border-[var(--parchment-ink-link)] bg-[var(--parchment-control)]"
-                    : "game-card"
-                )}
-              >
-                <button
-                  onClick={() => handleSelectScript(script)}
-                  className="flex-1 flex items-center gap-3 hover-elevate rounded-lg -m-2 p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
-                  data-testid={`button-script-${script.id}`}
-                >
-                  <Scroll className="h-5 w-5 text-[var(--parchment-ink-link)]" />
-                  <div>
-                    <div className="font-display text-lg font-semibold leading-tight text-[var(--parchment-ink)]">{script.name}</div>
-                    <div className="font-serif text-sm text-[var(--parchment-ink-muted)]">{countScriptCharacters(script)} characters</div>
-                  </div>
-                </button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setEditingScript(script);
-                    setScriptDrawerOpen(false);
-                    setShowScriptBuilder(true);
-                  }}
-                  data-testid={`button-edit-script-${script.id}`}
-                >
-                  <Pencil className="h-4 w-4 text-[var(--parchment-ink-muted)]" />
-                </Button>
-              </div>
-            ))}
-            <button
-              onClick={() => {
+            <CustomScriptList
+              scripts={customScripts}
+              selectedId={selectedScript?.id}
+              onSelect={handleSelectScript}
+              onEdit={(script) => {
+                setEditingScript(script);
+                setScriptDrawerOpen(false);
+                setShowScriptBuilder(true);
+              }}
+              onCreate={() => {
                 setEditingScript(null);
                 setScannedCharacters(null);
                 setScriptDrawerOpen(false);
                 setShowScriptBuilder(true);
               }}
-              className="w-full text-left p-3 rounded-[10px] border border-dashed border-[var(--parchment-control-border)] hover:bg-[var(--parchment-control)] transition-colors flex items-center gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
-              data-testid="button-create-custom-script"
-            >
-              <Plus className="h-5 w-5 text-[var(--parchment-ink-link)]" />
-              <div className="font-display text-lg font-semibold text-[var(--parchment-ink-link)]">Create Custom Script</div>
-            </button>
+            />
             <button
-              onClick={() => scanInputRef.current?.click()}
+              onClick={openScanPicker}
               disabled={scanning}
               className="w-full text-left p-3 rounded-[10px] border border-dashed border-[var(--parchment-control-border)] hover:bg-[var(--parchment-control)] transition-colors flex items-center gap-3 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
               data-testid="button-scan-paper-script"

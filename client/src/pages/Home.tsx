@@ -1,81 +1,209 @@
-import { useState } from "react";
-import { Layout } from "@/components/ui/Layout";
-import { Link } from "wouter";
-import { Gamepad2, Users } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Link, useLocation } from "wouter";
 import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
-import { FriendsManager } from "@/components/FriendsManager";
+import { Camera, ChevronRight, Library, Loader2, Upload } from "lucide-react";
+import { Layout } from "@/components/ui/Layout";
+import { ScriptBuilderDialog } from "@/components/ScriptBuilderDialog";
+import { CustomScriptList } from "@/components/CustomScriptList";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { usePlayerGame } from "@/features/game/state/use-player-game";
+import { useLocalScripts, type LocalScript } from "@/hooks/use-local-scripts";
+import { useScriptScan } from "@/hooks/use-script-scan";
+import { resolveScriptCharacters } from "@/lib/script-resolve";
 import cccBadge from "@/assets/ccc-parchment.png";
 
+/** Play cards shown before the "All N scripts" link expands the list. */
+const PLAY_PREVIEW_COUNT = 6;
+
+/** Where a Play card sends the player: setup with this script chosen. */
+export function newGamePath(scriptId: string) {
+  return `/game?script=${encodeURIComponent(scriptId)}`;
+}
+
+/** "25 characters · 13 / 4 / 4 / 4", or "22 characters · official". */
+function scriptMeta(script: LocalScript) {
+  const chars = resolveScriptCharacters(script);
+  const total = `${chars.length} ${chars.length === 1 ? "character" : "characters"}`;
+  if (script.isOfficial && !script.isCommunity) return `${total} · official`;
+  const count = (team: string) => chars.filter(c => c.team === team).length;
+  return `${total} · ${count("townsfolk")} / ${count("outsider")} / ${count("minion")} / ${count("demon")}`;
+}
+
+type BuilderMode =
+  | { kind: "create" }
+  | { kind: "edit"; script: LocalScript }
+  | { kind: "scan"; characterIds: Set<string> }
+  | { kind: "import" };
+
+const EMPTY_SET = new Set<string>();
+
 export default function Home() {
-  const [friendsOpen, setFriendsOpen] = useState(false);
+  const [, navigate] = useLocation();
+  const { game } = usePlayerGame();
+  const { allScripts, customScripts, getScriptById, addCustomScriptAsync, updateCustomScript } = useLocalScripts();
+  const [showAllScripts, setShowAllScripts] = useState(false);
+  const [pendingScript, setPendingScript] = useState<LocalScript | null>(null);
+  const [myScriptsOpen, setMyScriptsOpen] = useState(false);
+  const [builder, setBuilder] = useState<BuilderMode | null>(null);
+  const scan = useScriptScan((characterIds) => setBuilder({ kind: "scan", characterIds }));
+
+  // Custom scripts first, then official, then community.
+  const playScripts = useMemo(
+    () => [
+      ...customScripts,
+      ...allScripts.filter(s => s.isOfficial && !s.isCommunity),
+      ...allScripts.filter(s => s.isOfficial && s.isCommunity),
+    ],
+    [allScripts, customScripts],
+  );
+  const visibleScripts = showAllScripts ? playScripts : playScripts.slice(0, PLAY_PREVIEW_COUNT);
+  const hiddenCount = playScripts.length - visibleScripts.length;
+
+  const resumeScriptName = game?.script
+    ? getScriptById(game.script.id)?.name ?? "Saved game"
+    : "No Script";
+  const aliveCount = game ? game.players.filter(p => p.status === "alive").length : 0;
+
+  const startWithScript = (script: LocalScript) => {
+    if (game) {
+      setPendingScript(script);
+      return;
+    }
+    navigate(newGamePath(script.id));
+  };
+
+  // Stable builder props: the dialog resets itself when these change identity.
+  const builderCharacters = useMemo(() => {
+    if (builder?.kind === "edit") return new Set(builder.script.characterIds);
+    if (builder?.kind === "scan") return builder.characterIds;
+    return EMPTY_SET;
+  }, [builder]);
+
   return (
     <Layout>
-      <div className="max-w-4xl mx-auto text-center space-y-12 py-12">
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.95 }}
+      <div className="mx-auto max-w-xl pb-8">
+        {/* Brand */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.97 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8 }}
-          className="space-y-4"
+          transition={{ duration: 0.6 }}
+          className="mb-6 pt-2 text-center"
+          data-testid="section-brand"
         >
-          <h1 className="text-5xl md:text-7xl font-bold bg-gradient-to-b from-amber-400 to-amber-700 bg-clip-text text-transparent drop-shadow-sm font-display">
+          <h1 className="bg-gradient-to-b from-amber-400 to-amber-700 bg-clip-text font-display text-[44px] font-bold leading-tight text-transparent drop-shadow-sm">
             Codex
           </h1>
-          <p className="text-xl text-amber-100/60 font-serif max-w-2xl mx-auto italic">
+          <p className="mx-auto mt-1 max-w-[300px] font-serif text-base italic text-[var(--shell-inactive)]" data-testid="text-home-quote">
             "Do not dare to hope, for the demon devours hope before all else."
           </p>
         </motion.div>
 
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3, duration: 0.5 }}
-          className="flex flex-col items-center gap-3"
-        >
-          <Button
-            asChild
-            size="lg"
-            className="bg-amber-600 hover:bg-amber-500 text-black font-semibold text-base px-8 py-6 rounded-xl shadow-lg shadow-amber-900/30 transition-all duration-150 hover:-translate-y-0.5"
-          >
-            <Link href="/game" data-testid="link-enter-game-mode">
-              <Gamepad2 className="w-5 h-5 mr-2" />
-              Enter Game Mode
+        {/* Resume: only with a saved game */}
+        {game && (
+          <section className="mb-6" data-testid="section-resume">
+            <h2 className="mb-2 font-display text-[30px] leading-tight text-[var(--shell-gold)]">Resume</h2>
+            <Link
+              href="/game"
+              className="game-panel flex items-center gap-3 p-3.5 transition-[filter] hover:brightness-[1.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              data-testid="card-resume"
+            >
+              <span className="min-w-0 flex-1">
+                <span className="block truncate font-display text-[19px] leading-tight text-[var(--parchment-ink)]" data-testid="text-resume-script">
+                  {resumeScriptName}
+                </span>
+                <span className="block font-serif text-sm text-[var(--parchment-ink-muted)]" data-testid="text-resume-summary">
+                  {game.players.length} seats · {aliveCount} alive
+                </span>
+              </span>
+              <ChevronRight className="h-5 w-5 shrink-0 text-[var(--parchment-ink-faint)]" />
             </Link>
-          </Button>
-          <p className="text-sm text-muted-foreground">
-            Track players, claims, and votes during your live games.
-          </p>
-          <button
-            onClick={() => setFriendsOpen(true)}
-            className="inline-flex items-center gap-1.5 text-sm text-[#c79fe6]/80 hover:text-[#c79fe6] underline underline-offset-4 decoration-[#3d2f57] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background rounded-sm"
-            data-testid="button-manage-friends"
-          >
-            <Users className="w-4 h-4" />
-            Manage Friends
-          </button>
-        </motion.div>
-        <FriendsManager open={friendsOpen} onOpenChange={setFriendsOpen} />
+          </section>
+        )}
 
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.6, duration: 0.6 }}
-          className="pt-8 space-y-3 border-t border-amber-900/20"
-        >
-          <p className="text-sm text-muted-foreground">
+        {/* Play */}
+        <section data-testid="section-play">
+          <div className="mb-2 flex items-baseline justify-between gap-3">
+            <h2 className="font-display text-[30px] leading-tight text-[var(--shell-gold)]">Play</h2>
+            <span className="font-serif text-base italic text-[var(--shell-inactive)]">pick a script</span>
+          </div>
+          <div className="game-panel space-y-2" data-testid="panel-play">
+            {visibleScripts.map(script => (
+              <button
+                key={script.id}
+                type="button"
+                onClick={() => startWithScript(script)}
+                className="game-card flex w-full items-center gap-3 p-3 text-left transition-colors hover:bg-[var(--parchment-control)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                data-testid={`button-play-script-${script.id}`}
+              >
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate font-display text-lg leading-tight text-[var(--parchment-ink)]">{script.name}</span>
+                  <span className="block font-serif text-sm text-[var(--parchment-ink-muted)]" data-testid={`text-play-meta-${script.id}`}>
+                    {scriptMeta(script)}
+                  </span>
+                </span>
+                <ChevronRight className="h-4 w-4 shrink-0 text-[var(--parchment-ink-faint)]" />
+              </button>
+            ))}
+            {hiddenCount > 0 && (
+              <button
+                type="button"
+                onClick={() => setShowAllScripts(true)}
+                className="w-full rounded-md py-2 text-center font-sans text-xs font-bold uppercase tracking-wider text-[var(--parchment-ink-link)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                data-testid="button-all-scripts"
+              >
+                All {playScripts.length} scripts
+              </button>
+            )}
+          </div>
+
+          {/* Script tools */}
+          <div className="mt-3 grid grid-cols-3 gap-2">
+            {([
+              { key: "scan", label: scan.scanning ? "Scanning" : "Scan", icon: scan.scanning ? Loader2 : Camera, onClick: scan.openPicker, testId: "button-home-scan" },
+              { key: "import", label: "Import", icon: Upload, onClick: () => setBuilder({ kind: "import" }), testId: "button-home-import" },
+              { key: "mine", label: "My scripts", icon: Library, onClick: () => setMyScriptsOpen(true), testId: "button-home-my-scripts" },
+            ] as const).map(({ key, label, icon: Icon, onClick, testId }) => (
+              <button
+                key={key}
+                type="button"
+                onClick={onClick}
+                disabled={key === "scan" && scan.scanning}
+                className="game-chrome flex h-[72px] flex-col items-center justify-center gap-1.5 rounded-[14px] border text-[var(--shell-gold)] transition-colors hover:brightness-125 disabled:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                data-testid={testId}
+              >
+                <Icon className={key === "scan" && scan.scanning ? "h-5 w-5 animate-spin" : "h-5 w-5"} />
+                <span className="font-sans text-xs font-semibold">{label}</span>
+              </button>
+            ))}
+          </div>
+          <input
+            ref={scan.inputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            className="hidden"
+            onChange={scan.onFileChange}
+            data-testid="input-home-scan"
+          />
+        </section>
+
+        {/* Footer */}
+        <footer className="mt-10 space-y-3 border-t border-[var(--shell-border)] pt-6 text-center" data-testid="footer-home">
+          <p className="text-xs text-muted-foreground">
             Created by{" "}
             <a
               href="https://mageproductions.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="font-semibold text-amber-600 hover:text-amber-500 underline underline-offset-2"
+              className="font-semibold text-amber-600 underline underline-offset-2 hover:text-amber-500"
               data-testid="link-mage-productions"
             >
               Mage Productions
             </a>
           </p>
           <p
-            className="text-xs leading-relaxed text-muted-foreground/70 max-w-2xl mx-auto"
+            className="mx-auto max-w-2xl text-xs leading-relaxed text-muted-foreground"
             data-testid="text-attribution"
           >
             This is an unofficial fan-made reference tool for Blood on the Clocktower. Blood on the Clocktower and all associated characters, names, and imagery are the property of Steven Medway and The Pandemonium Institute. This tool is not affiliated with, endorsed, or sponsored by The Pandemonium Institute. For the official game, visit{" "}
@@ -83,7 +211,7 @@ export default function Home() {
               href="https://bloodontheclocktower.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-amber-600 hover:text-amber-500 underline underline-offset-2"
+              className="text-amber-600 underline underline-offset-2 hover:text-amber-500"
               data-testid="link-botc-official"
             >
               bloodontheclocktower.com
@@ -93,7 +221,7 @@ export default function Home() {
             href="https://botc.app"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex flex-col items-center gap-1 pt-2 opacity-80 hover:opacity-100 transition-opacity"
+            className="inline-flex flex-col items-center gap-1 pt-1 opacity-80 transition-opacity hover:opacity-100"
             data-testid="link-ccc-badge"
           >
             <img
@@ -106,8 +234,90 @@ export default function Home() {
               A reference tool, not a source of official rulings.
             </span>
           </a>
-        </motion.div>
+        </footer>
       </div>
+
+      {/* Replace the saved game? */}
+      <AlertDialog open={!!pendingScript} onOpenChange={(open) => { if (!open) setPendingScript(null); }}>
+        <AlertDialogContent className="parchment-scope rounded-[14px] border-[var(--parchment-border)] bg-[var(--parchment-panel)]" data-testid="dialog-replace-game">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="font-display text-2xl font-semibold text-[var(--parchment-ink)]">Replace your current game?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Your saved game is replaced when you start a new one with {pendingScript?.name}. Until you press Start Game, Resume still opens it.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="button-cancel-replace-game">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (pendingScript) navigate(newGamePath(pendingScript.id));
+                setPendingScript(null);
+              }}
+              data-testid="button-confirm-replace-game"
+            >
+              New game
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* My scripts: the custom script list, tap to play, pencil to edit */}
+      <Drawer open={myScriptsOpen} onOpenChange={setMyScriptsOpen}>
+        <DrawerContent className="parchment-scope max-h-[85vh] border-[var(--parchment-border)] bg-[var(--parchment-panel)]" data-testid="drawer-my-scripts">
+          <DrawerHeader className="text-left">
+            <DrawerTitle className="font-display text-2xl font-semibold text-[var(--parchment-ink)]">My scripts</DrawerTitle>
+          </DrawerHeader>
+          <div className="space-y-2 overflow-y-auto px-3.5 pb-6">
+            {customScripts.length === 0 && (
+              <p className="pb-1 font-serif text-base italic text-[var(--parchment-ink-muted)]" data-testid="text-no-custom-scripts">
+                No custom scripts yet.
+              </p>
+            )}
+            <CustomScriptList
+              scripts={customScripts}
+              onSelect={(script) => {
+                setMyScriptsOpen(false);
+                startWithScript(script);
+              }}
+              onEdit={(script) => {
+                setMyScriptsOpen(false);
+                setBuilder({ kind: "edit", script });
+              }}
+              onCreate={() => {
+                setMyScriptsOpen(false);
+                setBuilder({ kind: "create" });
+              }}
+            />
+          </div>
+        </DrawerContent>
+      </Drawer>
+
+      {/* The existing script builder, opened for create, edit, scan review or import */}
+      <ScriptBuilderDialog
+        open={builder !== null}
+        onOpenChange={(open) => { if (!open) setBuilder(null); }}
+        initialCharacters={builderCharacters}
+        initialName={builder?.kind === "edit" ? builder.script.name : builder?.kind === "scan" ? "Scanned Script" : ""}
+        initialSynopsis={builder?.kind === "edit" ? builder.script.synopsis ?? "" : ""}
+        initialShowImport={builder?.kind === "import"}
+        title={
+          builder?.kind === "edit"
+            ? "Edit Custom Script"
+            : builder?.kind === "scan"
+              ? "Review Scanned Script"
+              : builder?.kind === "import"
+                ? "Import Script"
+                : "Create Custom Script"
+        }
+        editMode={builder?.kind === "edit"}
+        onSave={async (name, characterIds, synopsis) => {
+          if (builder?.kind === "edit") {
+            updateCustomScript(builder.script.id, name, characterIds, synopsis);
+          } else {
+            await addCustomScriptAsync(name, characterIds, synopsis);
+          }
+        }}
+      />
     </Layout>
   );
 }
