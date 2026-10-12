@@ -8,8 +8,7 @@ import { CharacterToken } from "@/components/character/CharacterToken";
 import {
   CircleSeatingChart,
   SortablePlayerCard,
-  CharacterPicker,
-  PlayerDetailDrawer,
+  SeatSheet,
 } from "@/pages/Game";
 import { latestDeathRecord, deathPhaseLabel } from "@/lib/death-phase";
 import type { GamePlayer, DeathRecord } from "@/hooks/use-player-game";
@@ -34,7 +33,6 @@ function renderChart(
   deathRecords: DeathRecord[] = [],
   opts: {
     onSelectPlayer?: (playerId: string) => void;
-    onOpenPrimaryPicker?: (playerId: string) => void;
   } = {},
 ) {
   return render(
@@ -43,7 +41,6 @@ function renderChart(
       currentDay={1}
       deathRecords={deathRecords}
       onSelectPlayer={opts.onSelectPlayer ?? noop}
-      onOpenPrimaryPicker={opts.onOpenPrimaryPicker ?? noop}
       onReorderPlayers={noop}
       onSetCirclePosition={noop}
       onSetMultipleCirclePositions={noop}
@@ -92,7 +89,7 @@ describe("CharacterToken", () => {
 });
 
 describe("Circle seat states", () => {
-  it("shows the primary sigil and role for a single claim", () => {
+  it("shows the claim's team and name for a single claim", () => {
     renderChart([makePlayer({ id: "p1", name: "Alice", claims: ["imp"] })]);
     const seat = screen.getByTestId("token-seat-p1");
     expect(within(seat).getByTestId("text-seat-role-p1").textContent).toContain("Imp");
@@ -100,40 +97,43 @@ describe("Circle seat states", () => {
     expect(screen.queryByTestId("badge-candidates-p1")).toBeNull();
   });
 
-  it("shows extra claims as small chips under the name (no +N badge)", () => {
-    renderChart([makePlayer({ id: "p2", name: "Bob", claims: ["imp", "poisoner", "baron"] })]);
-    // The old +N badge is gone; extras render as chips beneath the player name.
-    expect(screen.queryByTestId("badge-candidates-p2")).toBeNull();
-    expect(screen.getByTestId("chip-seat-extra-poisoner-p2")).not.toBeNull();
-    expect(screen.getByTestId("chip-seat-extra-baron-p2")).not.toBeNull();
-    // The primary (imp) is not shown as an extra chip.
-    expect(screen.queryByTestId("chip-seat-extra-imp-p2")).toBeNull();
-  });
-
-  it("collapses more than three extra claims into an overflow chip", () => {
+  it("shows only the most recently added claim under the name", () => {
     renderChart([
       makePlayer({
-        id: "p6",
-        name: "Fay",
-        claims: ["imp", "poisoner", "baron", "spy", "washerwoman"],
+        id: "p2",
+        name: "Bob",
+        claims: ["imp", "poisoner", "baron"],
+        claimRecords: [
+          { characterId: "imp", addedAt: "2026-01-01T09:00:00.000Z", day: 1 },
+          { characterId: "poisoner", addedAt: "2026-01-01T11:00:00.000Z", day: 1 },
+          { characterId: "baron", addedAt: "2026-01-01T10:00:00.000Z", day: 1 },
+        ],
       }),
     ]);
-    // Four extras: three chips shown, the fourth folded into a +1 overflow chip.
-    expect(screen.getByTestId("chip-seat-extra-more-p6").textContent).toContain("+1");
+    const seat = screen.getByTestId("token-seat-p2");
+    expect(within(seat).getByTestId("text-seat-role-p2").textContent).toBe("Poisoner");
+    expect(seat.querySelector("[data-team='minion']")).not.toBeNull();
+    // Older claims are not listed on the seat; the sheet holds them.
+    expect(screen.queryByTestId("badge-candidates-p2")).toBeNull();
+    expect(screen.queryAllByTestId(/^chip-seat-extra-/)).toHaveLength(0);
+    expect(screen.queryByText(/^was /)).toBeNull();
   });
 
-  it("opens the primary claim picker when the seat token is tapped", () => {
-    const onOpenPrimaryPicker = vi.fn();
-    renderChart([makePlayer({ id: "p4", name: "Dana", claims: ["imp"] })], [], { onOpenPrimaryPicker });
-    fireEvent.click(screen.getByTestId("button-seat-token-p4"));
-    expect(onOpenPrimaryPicker).toHaveBeenCalledWith("p4");
+  it("falls back to the last claim in a legacy save without claim records", () => {
+    renderChart([makePlayer({ id: "p6", name: "Fay", claims: ["imp", "poisoner", "baron"] })]);
+    expect(screen.getByTestId("text-seat-role-p6").textContent).toBe("Baron");
   });
 
-  it("opens the player detail via the + button", () => {
+  it("opens the seat sheet when the seat token is tapped", () => {
     const onSelectPlayer = vi.fn();
-    renderChart([makePlayer({ id: "p5", name: "Evan", claims: ["imp"] })], [], { onSelectPlayer });
-    fireEvent.click(screen.getByTestId("button-seat-more-p5"));
-    expect(onSelectPlayer).toHaveBeenCalledWith("p5");
+    renderChart([makePlayer({ id: "p4", name: "Dana", claims: ["imp"] })], [], { onSelectPlayer });
+    fireEvent.click(screen.getByTestId("button-seat-token-p4"));
+    expect(onSelectPlayer).toHaveBeenCalledWith("p4");
+  });
+
+  it("has no separate seat options button; the seat itself opens the sheet", () => {
+    renderChart([makePlayer({ id: "p5", name: "Evan", claims: ["imp"] })]);
+    expect(screen.queryByTestId("button-seat-more-p5")).toBeNull();
   });
 
   it("shows a no-claim placeholder for an empty seat", () => {
@@ -207,7 +207,7 @@ function renderRow(
     seatNumber?: number;
     deathRecords?: DeathRecord[];
     onSelect?: () => void;
-    onRemoveClaim?: (id: string) => void;
+    onToggleAlive?: () => void;
   } = {},
 ) {
   const game = makeGame([player], opts.deathRecords ?? []);
@@ -219,9 +219,7 @@ function renderRow(
           game={game}
           seatNumber={opts.seatNumber ?? 1}
           onSelect={opts.onSelect ?? noop}
-          onToggleAlive={noop}
-          onOpenClaimPicker={noop}
-          onRemoveClaim={opts.onRemoveClaim ?? noop}
+          onToggleAlive={opts.onToggleAlive ?? noop}
         />
       </SortableContext>
     </DndContext>,
@@ -229,34 +227,56 @@ function renderRow(
 }
 
 describe("List row states", () => {
-  it("shows the seat number, a primary token, and a filled primary chip for a single claim", () => {
+  it("shows the seat number, the claim's team, and the claim in team color for a single claim", () => {
     renderRow(makePlayer({ id: "p1", name: "Alice", claims: ["imp"] }), { seatNumber: 4 });
     expect(screen.getByTestId("text-seat-number-p1").textContent).toBe("4");
     const token = screen.getByTestId("token-list-p1");
     expect(token.getAttribute("data-team")).toBe("demon");
-    const chip = screen.getByTestId("button-claim-badge-imp-p1");
-    // The primary chip is filled: it carries the team badge background, not bg-transparent.
-    expect(chip.className).not.toContain("bg-transparent");
+    const claim = screen.getByTestId("text-claim-p1");
+    expect(claim.textContent).toBe("Imp");
+    expect(claim.className).toContain("text-[var(--parchment-demon)]");
     expect(screen.queryByTestId("text-no-claim-p1")).toBeNull();
   });
 
-  it("renders the primary filled and alternates outlined", () => {
-    renderRow(makePlayer({ id: "p2", name: "Bob", claims: ["imp", "poisoner"] }));
-    const primary = screen.getByTestId("button-claim-badge-imp-p2");
-    const alternate = screen.getByTestId("button-claim-badge-poisoner-p2");
-    expect(primary.className).not.toContain("bg-transparent");
-    expect(alternate.className).toContain("bg-transparent");
-    // No crown marker renders; the primary is shown by the filled chip alone.
+  it("shows only the most recently added claim, with no believed or was labels", () => {
+    renderRow(
+      makePlayer({
+        id: "p2",
+        name: "Bob",
+        claims: ["imp", "poisoner"],
+        claimRecords: [
+          { characterId: "imp", addedAt: "2026-01-01T09:00:00.000Z", day: 1 },
+          { characterId: "poisoner", addedAt: "2026-01-01T10:00:00.000Z", day: 1 },
+        ],
+      }),
+    );
+    expect(screen.getByTestId("text-claim-p2").textContent).toBe("Poisoner");
+    expect(screen.getByTestId("token-list-p2").getAttribute("data-team")).toBe("minion");
+    expect(screen.queryByText("Imp")).toBeNull();
+    expect(screen.queryByText(/^was /)).toBeNull();
     expect(screen.queryByTestId("text-primary-claim-p2")).toBeNull();
     expect(screen.queryByTestId("button-set-primary-poisoner")).toBeNull();
   });
 
-  it("shows a dashed token and a no-claim hint for an empty seat", () => {
+  it("shows a no-claim hint for an empty seat", () => {
     renderRow(makePlayer({ id: "p3", name: "Cara", claims: [] }));
     expect(screen.getByTestId("token-list-p3")).not.toBeNull();
     expect(screen.getByTestId("text-no-claim-p3")).not.toBeNull();
     expect(screen.queryAllByTestId(/^chip-candidate-p3-/)).toHaveLength(0);
-    expect(screen.getByTestId("button-add-claim-p3")).not.toBeNull();
+    // Claims are added in the seat sheet, not from the row.
+    expect(screen.queryByTestId("button-add-claim-p3")).toBeNull();
+  });
+
+  it("uses the shared alive/dead toggle: a smiley while alive, a skull when dead", () => {
+    const { unmount } = renderRow(makePlayer({ id: "p5", name: "Eve", claims: [] }));
+    const alive = screen.getByTestId("button-toggle-dead-p5");
+    expect(alive.getAttribute("data-state")).toBe("alive");
+    expect(alive.querySelector(".lucide-smile")).not.toBeNull();
+    unmount();
+    renderRow(makePlayer({ id: "p6", name: "Fin", status: "dead", claims: [] }));
+    const dead = screen.getByTestId("button-toggle-dead-p6");
+    expect(dead.getAttribute("data-state")).toBe("dead");
+    expect(dead.querySelector(".lucide-skull")).not.toBeNull();
   });
 
   it("greys a dead seat with a shroud and no phase stamp", () => {
@@ -269,83 +289,65 @@ describe("List row states", () => {
 });
 
 describe("List row tap isolation", () => {
-  it("tapping the row background opens the drawer", () => {
+  it("tapping the row background opens the seat sheet", () => {
     const onSelect = vi.fn();
     renderRow(makePlayer({ id: "p0", name: "Zed", claims: ["imp"] }), { onSelect });
     fireEvent.click(screen.getByTestId("card-player-p0"));
     expect(onSelect).toHaveBeenCalledTimes(1);
   });
 
-  it("removing a claim does not open the drawer", () => {
+  it("toggling alive does not open the seat sheet", () => {
     const onSelect = vi.fn();
-    const onRemoveClaim = vi.fn();
+    const onToggleAlive = vi.fn();
     renderRow(makePlayer({ id: "p1", name: "Alice", claims: ["imp"] }), {
       onSelect,
-      onRemoveClaim,
+      onToggleAlive,
     });
-    fireEvent.click(screen.getByTestId("button-claim-badge-imp-p1"));
-    expect(onRemoveClaim).toHaveBeenCalledWith("imp");
+    fireEvent.click(screen.getByTestId("button-toggle-dead-p1"));
+    expect(onToggleAlive).toHaveBeenCalledTimes(1);
     expect(onSelect).not.toHaveBeenCalled();
   });
 });
 
-describe("Set Claim picker (single select)", () => {
-  it("marks the current primary claim and removes it when tapped again", () => {
-    const onSelect = vi.fn();
-    const onRemove = vi.fn();
-    render(
-      <CharacterPicker
-        open
-        onClose={noop}
-        singleSelect
-        primaryClaimId="imp"
-        onSelect={onSelect}
-        onRemove={onRemove}
-      />,
-    );
-    // The current primary is marked with a check and a "tap to remove" hint.
-    expect(screen.getByTestId("icon-current-claim-imp")).not.toBeNull();
-    expect(screen.getByTestId("text-tap-to-remove-imp")).not.toBeNull();
-    // Tapping the current primary removes it (deselect), not re-select.
-    fireEvent.click(screen.getByTestId("button-select-character-imp"));
-    expect(onRemove).toHaveBeenCalledWith("imp");
-    expect(onSelect).not.toHaveBeenCalled();
+describe("Seat sheet replaces the Set Claim picker", () => {
+  it("dims a character already claimed, with no check or tap-to-remove, and ignores taps", () => {
+    const onAddClaim = vi.fn();
+    const onRemoveClaim = vi.fn();
+    renderSheet(makePlayer({ id: "p1", name: "Alice", claims: ["imp"] }), { onAddClaim, onRemoveClaim });
+    expect(screen.queryByTestId("icon-current-claim-imp")).toBeNull();
+    expect(screen.queryByTestId("text-tap-to-remove-imp")).toBeNull();
+    const imp = screen.getByTestId("button-select-character-imp");
+    expect(imp.className).toContain("opacity-60");
+    fireEvent.click(imp);
+    expect(onRemoveClaim).not.toHaveBeenCalled();
+    expect(onAddClaim).not.toHaveBeenCalled();
   });
 
-  it("sets a different character as the new primary", () => {
-    const onSelect = vi.fn();
-    const onRemove = vi.fn();
-    render(
-      <CharacterPicker
-        open
-        onClose={noop}
-        singleSelect
-        primaryClaimId="imp"
-        onSelect={onSelect}
-        onRemove={onRemove}
-      />,
-    );
+  it("adds a different character alongside instead of setting it as primary", () => {
+    const onAddClaim = vi.fn();
+    const onRemoveClaim = vi.fn();
+    renderSheet(makePlayer({ id: "p1", name: "Alice", claims: ["imp"] }), { onAddClaim, onRemoveClaim });
     fireEvent.click(screen.getByTestId("button-select-character-poisoner"));
-    expect(onSelect).toHaveBeenCalledWith(["poisoner"]);
-    expect(onRemove).not.toHaveBeenCalled();
+    expect(onAddClaim).toHaveBeenCalledWith("poisoner");
+    expect(onRemoveClaim).not.toHaveBeenCalled();
   });
 });
 
-function renderDrawer(
+function renderSheet(
   player: GamePlayer,
-  opts: { onRemoveClaim?: (id: string) => void } = {},
+  opts: { onRemoveClaim?: (id: string) => void; onAddClaim?: (id: string) => void } = {},
 ) {
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   });
   return render(
     <QueryClientProvider client={client}>
-      <PlayerDetailDrawer
+      <SeatSheet
         player={player}
         players={[player]}
         onClose={noop}
         onToggleAlive={noop}
-        onAddMultipleClaims={noop}
+        onAddClaim={opts.onAddClaim ?? noop}
         onRemoveClaim={opts.onRemoveClaim ?? noop}
         onSetNotes={noop}
         onSetPlayerName={noop}
@@ -354,10 +356,10 @@ function renderDrawer(
   );
 }
 
-describe("Player detail drawer claims", () => {
-  it("removes a claim via the x on each chip (primary and extra)", () => {
+describe("Seat sheet claims", () => {
+  it("removes a claim via the x on each chip", () => {
     const onRemoveClaim = vi.fn();
-    renderDrawer(makePlayer({ id: "p1", name: "Alice", claims: ["imp", "poisoner"] }), {
+    renderSheet(makePlayer({ id: "p1", name: "Alice", claims: ["imp", "poisoner"] }), {
       onRemoveClaim,
     });
     fireEvent.click(screen.getByTestId("button-remove-claim-imp-p1"));
@@ -366,16 +368,16 @@ describe("Player detail drawer claims", () => {
     expect(onRemoveClaim).toHaveBeenCalledWith("poisoner");
   });
 
-  it("keeps the info button distinct from the remove control", () => {
+  it("tapping a claim chip neither removes nor promotes it", () => {
     const onRemoveClaim = vi.fn();
-    renderDrawer(makePlayer({ id: "p2", name: "Bob", claims: ["imp"] }), { onRemoveClaim });
-    // The info button opens the preview and must not trigger removal.
-    fireEvent.click(screen.getByTestId("button-claim-info-imp-p2"));
+    renderSheet(makePlayer({ id: "p2", name: "Bob", claims: ["imp", "poisoner"] }), { onRemoveClaim });
+    fireEvent.click(screen.getByTestId("chip-claim-poisoner-p2"));
     expect(onRemoveClaim).not.toHaveBeenCalled();
+    expect(screen.queryByTestId("tag-believed-p2")).toBeNull();
   });
 
   it("shows an empty state when the seat has no claims", () => {
-    renderDrawer(makePlayer({ id: "p3", name: "Cara", claims: [] }));
+    renderSheet(makePlayer({ id: "p3", name: "Cara", claims: [] }));
     expect(screen.getByTestId("text-no-claims-p3")).not.toBeNull();
     expect(screen.queryByTestId("chip-primary-p3")).toBeNull();
   });

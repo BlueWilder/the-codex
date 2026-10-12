@@ -8,9 +8,7 @@ import { GameTrackerView } from "@/features/game/GameTrackerView";
 // imports from "@/pages/Game" (including the test suite) keep working.
 export { CircleSeatingChart } from "@/features/game/views/CircleView";
 export { SortablePlayerCard } from "@/features/game/views/ListView";
-export { CharacterPicker } from "@/features/game/dialogs/CharacterPicker";
 export { SetupWizard } from "@/features/game/GameSetup";
-export { PlayerDetailDrawer } from "@/features/game/PlayerDetailDrawer";
 export { SeatSheet } from "@/features/game/SeatSheet";
 export { GameTrackerView } from "@/features/game/GameTrackerView";
 
@@ -22,7 +20,6 @@ export default function Game() {
     endGame,
     playAgain,
     addClaim,
-    addMultipleClaims,
     removeClaim,
     toggleAlive,
     setPlayerStatus,
@@ -67,7 +64,6 @@ export default function Game() {
           onToggleAlive={toggleAlive}
           onSetPlayerStatus={setPlayerStatus}
           onAddClaim={addClaim}
-          onAddMultipleClaims={addMultipleClaims}
           onRemoveClaim={removeClaim}
           onSetNotes={setNotes}
           onUpdatePlayerName={updatePlayerName}

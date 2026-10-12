@@ -1,8 +1,9 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { SeatSheet } from "@/pages/Game";
+import { SeatSheet, GameTrackerView } from "@/pages/Game";
+import { useGameTracker } from "@/features/game/state/use-game-tracker";
 import type { GamePlayer } from "@/hooks/use-player-game";
 
 function makePlayer(overrides: Partial<GamePlayer> & { id: string; name: string }): GamePlayer {
@@ -226,5 +227,126 @@ describe("Seat sheet note", () => {
     expect(note.getAttribute("data-state")).toBe("open");
     fireEvent.change(note, { target: { value: "quiet, claimed chef" } });
     expect(onSetNotes).toHaveBeenCalledWith("quiet, claimed chef");
+  });
+});
+
+describe("Seat sheet with live game state", () => {
+  const GAME_KEY = "clocktower_player_game";
+
+  function seedGame() {
+    localStorage.setItem(
+      GAME_KEY,
+      JSON.stringify({
+        id: "flow",
+        createdAt: new Date().toISOString(),
+        playerCount: 5,
+        breakdown: { townsfolk: 3, outsiders: 0, minions: 1, demons: 1 },
+        currentDay: 1,
+        phase: "night",
+        players: ["Alice", "Bob", "Cara", "Dan", "Eve"].map((name, i) => ({
+          id: `player-${i}`,
+          name,
+          isAlive: true,
+          status: "alive",
+          notes: "",
+          claims: [],
+        })),
+        script: null,
+      }),
+    );
+  }
+
+  function Harness() {
+    const t = useGameTracker();
+    if (!t.game) return null;
+    return (
+      <GameTrackerView
+        game={t.game}
+        onEndGame={t.endGame}
+        onPlayAgain={t.playAgain}
+        onToggleAlive={t.toggleAlive}
+        onSetPlayerStatus={t.setPlayerStatus}
+        onAddClaim={t.addClaim}
+        onRemoveClaim={t.removeClaim}
+        onSetNotes={t.setNotes}
+        onUpdatePlayerName={t.updatePlayerName}
+        onReorderPlayers={t.reorderPlayers}
+        onReversePlayers={t.reversePlayers}
+        onClearScript={t.clearScript}
+        onSetScript={t.setScript}
+        onAddTraveler={t.addTraveler}
+        onConvertToTraveler={t.convertToTraveler}
+        onRemoveTraveler={t.removeTraveler}
+        onSetGameNotes={t.setGameNotes}
+        onAddNotebookNote={t.addNotebookNote}
+        onRemoveNotebookNote={t.removeNotebookNote}
+        onAddPlayer={t.addPlayer}
+        onRemovePlayer={t.removePlayer}
+        onSetCirclePosition={t.setCirclePosition}
+        onSetMultipleCirclePositions={t.setMultipleCirclePositions}
+        onResetCirclePositions={t.resetCirclePositions}
+      />
+    );
+  }
+
+  it("adds and removes claims, toggles dead and keeps a note, then List and Circle show the newest claim", async () => {
+    seedGame();
+    const client = new QueryClient({
+      defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+    });
+    render(
+      <QueryClientProvider client={client}>
+        <Harness />
+      </QueryClientProvider>,
+    );
+
+    fireEvent.click(await screen.findByTestId("card-player-player-1"));
+    const sheet = await screen.findByTestId("sheet-seat-player-1");
+    expect(within(sheet).getByTestId("text-seat-sheet-name").textContent).toBe("Bob");
+
+    // Add two claims; the sheet stays open and each becomes a chip.
+    fireEvent.click(within(sheet).getByTestId("button-select-character-chef"));
+    fireEvent.click(within(sheet).getByTestId("button-select-character-imp"));
+    expect(within(sheet).getByTestId("chip-claim-chef-player-1")).toBeTruthy();
+    expect(within(sheet).getByTestId("chip-claim-imp-player-1")).toBeTruthy();
+    expect(within(sheet).getByTestId("button-select-character-imp").getAttribute("data-claimed")).toBe("true");
+    expect(screen.getByTestId("text-claim-player-1").textContent).toBe("Imp");
+
+    // Remove one; the newest remaining claim shows on the row.
+    fireEvent.click(within(sheet).getByTestId("button-remove-claim-imp-player-1"));
+    expect(within(sheet).queryByTestId("chip-claim-imp-player-1")).toBeNull();
+    expect(screen.getByTestId("text-claim-player-1").textContent).toBe("Chef");
+
+    // Toggle dead from the sheet header.
+    fireEvent.click(within(sheet).getByTestId("button-toggle-alive"));
+    expect(within(sheet).getByTestId("button-toggle-alive").getAttribute("data-state")).toBe("dead");
+
+    // Write a note.
+    fireEvent.change(within(sheet).getByTestId("textarea-notes"), { target: { value: "Bluffing?" } });
+
+    // Close the sheet.
+    fireEvent.keyDown(sheet, { key: "Escape" });
+    await waitFor(() => expect(screen.queryByTestId("sheet-seat-player-1")).toBeNull());
+
+    // List: newest claim in team color, dead treatment, shared toggle on skull.
+    expect(screen.getByTestId("text-claim-player-1").textContent).toBe("Chef");
+    expect(screen.getByTestId("overlay-shroud-player-1")).toBeTruthy();
+    expect(screen.getByTestId("button-toggle-dead-player-1").getAttribute("data-state")).toBe("dead");
+
+    // Circle: same claim under the name, dead seat shows the skull.
+    fireEvent.click(screen.getByTestId("nav-grim"));
+    expect((await screen.findByTestId("text-seat-role-player-1")).textContent).toBe("Chef");
+    expect(screen.getByTestId("overlay-shroud-player-1")).toBeTruthy();
+
+    // Tapping the circle seat opens the same sheet.
+    fireEvent.click(screen.getByTestId("button-seat-token-player-1"));
+    expect(await screen.findByTestId("sheet-seat-player-1")).toBeTruthy();
+
+    // Everything persisted under the existing storage key.
+    const saved = JSON.parse(localStorage.getItem(GAME_KEY)!);
+    const bob = saved.players.find((p: GamePlayer) => p.id === "player-1");
+    expect(bob.claims).toEqual(["chef"]);
+    expect(bob.status).toBe("dead");
+    expect(bob.notes).toBe("Bluffing?");
   });
 });

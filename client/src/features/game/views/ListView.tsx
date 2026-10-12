@@ -1,27 +1,24 @@
 import { usePlayerGame } from "@/features/game/state/use-player-game";
-import { X, Plus, FileText, GripVertical, Skull, ArrowDownUp } from "lucide-react";
+import { FileText, GripVertical, Skull, ArrowDownUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, TouchSensor, useSensor, useSensors, DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, sortableKeyboardCoordinates, useSortable, rectSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { resolveClaimDescriptor, previousClaimId } from "@/features/game/claims";
+import { resolveClaimDescriptor, latestClaimId } from "@/features/game/claims";
 import { teamParchment } from "@/lib/team-style";
-import { type ClaimDescriptor, type GamePlayer } from "@/features/game/types";
+import { AliveToggle, isSeatDead } from "@/features/game/AliveToggle";
+import { type GamePlayer } from "@/features/game/types";
 
 export function SortablePlayerCard({
   player,
   seatNumber,
   onSelect,
   onToggleAlive,
-  onOpenClaimPicker,
-  onRemoveClaim,
 }: {
   player: GamePlayer;
   seatNumber: number;
   onSelect: () => void;
   onToggleAlive: () => void;
-  onOpenClaimPicker: () => void;
-  onRemoveClaim: (characterId: string) => void;
 }) {
   const {
     attributes,
@@ -39,24 +36,15 @@ export function SortablePlayerCard({
       : transition || 'transform 200ms cubic-bezier(0.22, 1, 0.36, 1)',
   };
 
-  const claimedChars = player.claims
-    .map(id => resolveClaimDescriptor(id))
-    .filter((c): c is ClaimDescriptor => c !== null);
-  const primaryChar = claimedChars[0] ?? null;
-  const wasId = previousClaimId(player);
+  // The row shows the claim this player made most recently; the seat sheet
+  // holds the full list.
+  const latestId = latestClaimId(player);
+  const latestChar = latestId ? resolveClaimDescriptor(latestId) : null;
+  const latestTeam = latestChar ? teamParchment(latestChar.team) : null;
   const hasNotes = player.notes.trim().length > 0;
 
   const isActive = player.status === 'alive';
-  // Dead visuals follow the seat's current status (a plain alive/dead toggle).
-  const isDead = player.status === 'dead' || player.status === 'exiled';
-
-  // Believed claim first, then the claim it replaced ("was X"), then other
-  // candidates. Every chip removes its claim when tapped, as before.
-  const ordered = [
-    ...claimedChars.slice(0, 1),
-    ...claimedChars.filter(c => c.id === wasId),
-    ...claimedChars.slice(1).filter(c => c.id !== wasId),
-  ];
+  const isDead = isSeatDead(player);
 
   return (
     <div
@@ -94,7 +82,7 @@ export function SortablePlayerCard({
               ? "border-2 border-[var(--parchment-ink)] bg-[var(--parchment-raised)] text-[var(--parchment-ink)]"
               : "bg-[var(--parchment-ink)] text-[var(--parchment-panel)]"
           )}
-          data-team={primaryChar?.team}
+          data-team={latestChar?.team}
           data-testid={`token-list-${player.id}`}
         >
           {isDead ? (
@@ -132,34 +120,15 @@ export function SortablePlayerCard({
           </button>
         </div>
 
-        <div className="mt-1 flex flex-wrap items-center gap-1" data-testid={`claims-row-${player.id}`}>
-          {ordered.length > 0 ? (
-            ordered.map((char, idx) => {
-              const team = teamParchment(char.team);
-              const isPrimary = idx === 0;
-              const isWas = !isPrimary && char.id === wasId;
-              return (
-                <div key={char.id} className="inline-flex items-center" data-testid={`chip-candidate-${player.id}-${char.id}`}>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); onRemoveClaim(char.id); }}
-                    className={cn(
-                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                      // Typed like the Script sheet's names (Fraunces, heavy weight)
-                      // with a solid team outline, so pills read as crisply as the sheet.
-                      "inline-flex items-center gap-1 whitespace-nowrap rounded-full border px-2 py-0.5 font-display text-[15px] leading-tight transition-opacity hover:opacity-80",
-                      isPrimary && cn(team.tint, team.text, team.border, "font-semibold"),
-                      isWas && "bg-transparent border-[var(--parchment-control-border)] font-medium text-[var(--parchment-ink-muted)]",
-                      !isPrimary && !isWas && cn("bg-transparent font-semibold", team.text, team.border)
-                    )}
-                    title={`Remove ${char.name} claim`}
-                    data-testid={`button-claim-badge-${char.id}-${player.id}`}
-                  >
-                    {isWas ? `was ${char.name}` : char.name}
-                    <X className="h-3 w-3 opacity-60" />
-                  </button>
-                </div>
-              );
-            })
+        <div className="mt-0.5 flex min-w-0" data-testid={`claims-row-${player.id}`}>
+          {latestChar ? (
+            <span
+              className={cn("min-w-0 truncate font-display text-[15px] font-semibold leading-tight", latestTeam?.text)}
+              data-team={latestChar.team}
+              data-testid={`text-claim-${player.id}`}
+            >
+              {latestChar.name}
+            </span>
           ) : (
             <span
               className="font-serif text-[15px] italic text-[var(--parchment-ink-faint)]"
@@ -168,35 +137,18 @@ export function SortablePlayerCard({
               no claim yet
             </span>
           )}
-          <button
-            onClick={(e) => { e.stopPropagation(); onOpenClaimPicker(); }}
-            className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-dashed border-[var(--parchment-control-border)] text-[var(--parchment-ink-link)] transition-colors hover:bg-[var(--parchment-control)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            title="Add claim"
-            data-testid={`button-add-claim-${player.id}`}
-          >
-            <Plus className="w-3.5 h-3.5" />
-          </button>
         </div>
       </div>
 
       <div className="flex shrink-0 items-center gap-1">
         {hasNotes && <FileText className="h-4 w-4 text-[var(--parchment-ink-faint)]" aria-label="Has notes" />}
-        {!player.isTraveler && (
-          <button
-            onClick={(e) => { e.stopPropagation(); onToggleAlive(); }}
-            className={cn(
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-              "flex h-8 w-8 items-center justify-center rounded-full border transition-colors",
-              isDead
-                ? "border-[var(--parchment-ink)] bg-[var(--parchment-ink)] text-[var(--parchment-panel)]"
-                : "border-[var(--parchment-rule)] text-[var(--parchment-ink-muted)] hover:bg-[var(--parchment-control)]"
-            )}
-            title={isDead ? "Revive player" : "Mark as dead"}
-            data-testid={`button-toggle-dead-${player.id}`}
-          >
-            <Skull className="w-4 h-4" />
-          </button>
-        )}
+        <AliveToggle
+          isDead={isDead}
+          playerName={player.name}
+          onToggle={onToggleAlive}
+          size={36}
+          data-testid={`button-toggle-dead-${player.id}`}
+        />
       </div>
     </div>
   );
@@ -213,8 +165,6 @@ export function ListView({
   onReversePlayers,
   onSelectPlayer,
   onToggleAlive,
-  onOpenClaimPicker,
-  onRemoveClaim,
 }: {
   game: NonNullable<ReturnType<typeof usePlayerGame>["game"]>;
   players: GamePlayer[];
@@ -222,8 +172,6 @@ export function ListView({
   onReversePlayers: () => void;
   onSelectPlayer: (playerId: string) => void;
   onToggleAlive: (playerId: string) => void;
-  onOpenClaimPicker: (playerId: string) => void;
-  onRemoveClaim: (playerId: string, characterId: string) => void;
 }) {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -260,8 +208,6 @@ export function ListView({
               seatNumber={game.players.findIndex(p => p.id === player.id) + 1}
               onSelect={() => onSelectPlayer(player.id)}
               onToggleAlive={() => onToggleAlive(player.id)}
-              onOpenClaimPicker={() => onOpenClaimPicker(player.id)}
-              onRemoveClaim={(charId) => onRemoveClaim(player.id, charId)}
             />
           ))}
         </div>

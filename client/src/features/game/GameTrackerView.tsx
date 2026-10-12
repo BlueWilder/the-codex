@@ -19,10 +19,9 @@ import { GameScriptView } from "@/features/game/views/GameScriptView";
 import { NotebookView } from "@/features/game/views/NotebookView";
 import { AddTravelerDialog } from "@/features/game/dialogs/AddTravelerDialog";
 import { AddPlayerDialog } from "@/features/game/dialogs/AddPlayerDialog";
-import { CharacterPicker } from "@/features/game/dialogs/CharacterPicker";
 import { ScriptCharacterDrawer } from "@/features/game/dialogs/ScriptCharacterDrawer";
 import { PlayAgainDialog } from "@/features/game/dialogs/PlayAgainDialog";
-import { PlayerDetailDrawer } from "@/features/game/PlayerDetailDrawer";
+import { SeatSheet } from "@/features/game/SeatSheet";
 
 export function GameTrackerView({
   game,
@@ -31,7 +30,6 @@ export function GameTrackerView({
   onToggleAlive,
   onSetPlayerStatus,
   onAddClaim,
-  onAddMultipleClaims,
   onRemoveClaim,
   onSetNotes,
   onUpdatePlayerName,
@@ -57,7 +55,6 @@ export function GameTrackerView({
   onToggleAlive: (playerId: string) => void;
   onSetPlayerStatus: (playerId: string, status: PlayerStatus) => void;
   onAddClaim: (playerId: string, characterId: string) => void;
-  onAddMultipleClaims: (playerId: string, characterIds: string[]) => void;
   onRemoveClaim: (playerId: string, characterId: string) => void;
   onSetNotes: (playerId: string, notes: string) => void;
   onUpdatePlayerName: (playerId: string, name: string) => void;
@@ -78,7 +75,6 @@ export function GameTrackerView({
   onResetCirclePositions: () => void;
 }) {
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
-  const [primaryPickerPlayerId, setPrimaryPickerPlayerId] = useState<string | null>(null);
   const [confirmEnd, setConfirmEnd] = useState(false);
   const [showPlayAgainConfirm, setShowPlayAgainConfirm] = useState(false);
   const [showAddTravelerDialog, setShowAddTravelerDialog] = useState(false);
@@ -88,7 +84,6 @@ export function GameTrackerView({
   const [selectedSheetCharId, setSelectedSheetCharId] = useState<string | null>(null);
   const [showScriptBuilder, setShowScriptBuilder] = useState(false);
   const [editingScript, setEditingScript] = useState<LocalScript | null>(null);
-  const [claimPickerPlayerId, setClaimPickerPlayerId] = useState<string | null>(null);
   const [captureNames, setCaptureNames] = useState<string[] | null>(null);
   const { friends, addFriend } = useFriends();
   const { getScriptById, isLoading: scriptsLoading, allScripts, addCustomScript, updateCustomScript, customScripts } = useLocalScripts();
@@ -364,8 +359,6 @@ export function GameTrackerView({
             onReversePlayers={onReversePlayers}
             onSelectPlayer={(playerId) => setSelectedPlayerId(playerId)}
             onToggleAlive={onToggleAlive}
-            onOpenClaimPicker={(playerId) => setClaimPickerPlayerId(playerId)}
-            onRemoveClaim={onRemoveClaim}
           />
         </div>
       )}
@@ -376,7 +369,6 @@ export function GameTrackerView({
             players={game.players}
             centerLabel={resolvedScript?.name}
             onSelectPlayer={(playerId) => setSelectedPlayerId(playerId)}
-            onOpenPrimaryPicker={(playerId) => setPrimaryPickerPlayerId(playerId)}
             onReorderPlayers={onReorderPlayers}
             onSetCirclePosition={onSetCirclePosition}
             onSetMultipleCirclePositions={onSetMultipleCirclePositions}
@@ -440,21 +432,25 @@ export function GameTrackerView({
         onClose={() => setSelectedSheetCharId(null)}
       />
 
-      <PlayerDetailDrawer
+      <SeatSheet
         player={selectedPlayer}
         players={game.players}
+        scriptCharacterIds={scriptCharacterIds}
         onClose={() => setSelectedPlayerId(null)}
         onToggleAlive={() => selectedPlayerId && onToggleAlive(selectedPlayerId)}
         onSetPlayerStatus={(status) => selectedPlayerId && onSetPlayerStatus(selectedPlayerId, status)}
-        onAddMultipleClaims={(charIds) => selectedPlayerId && onAddMultipleClaims(selectedPlayerId, charIds)}
+        onAddClaim={(charId) => selectedPlayerId && onAddClaim(selectedPlayerId, charId)}
         onRemoveClaim={(charId) => selectedPlayerId && onRemoveClaim(selectedPlayerId, charId)}
         onSetNotes={(notes) => selectedPlayerId && onSetNotes(selectedPlayerId, notes)}
         onSetPlayerName={(name) => selectedPlayerId && onUpdatePlayerName(selectedPlayerId, name)}
-        onRemoveTraveler={selectedPlayer?.isTraveler ? () => selectedPlayerId && onRemoveTraveler(selectedPlayerId) : undefined}
-        onRemovePlayer={() => selectedPlayerId && onRemovePlayer(selectedPlayerId)}
         onConvertToTraveler={!selectedPlayer?.isTraveler ? () => selectedPlayerId && onConvertToTraveler(selectedPlayerId) : undefined}
-        canRemovePlayer={game.players.length > 1}
-        scriptCharacterIds={scriptCharacterIds}
+        // A traveler leaving is logged (removeTraveler); other seats are removed outright.
+        onRemovePlayer={() => {
+          if (!selectedPlayerId) return;
+          if (selectedPlayer?.isTraveler) onRemoveTraveler(selectedPlayerId);
+          else onRemovePlayer(selectedPlayerId);
+        }}
+        canRemovePlayer={!!selectedPlayer?.isTraveler || game.players.length > 1}
       />
 
       <AddTravelerDialog
@@ -500,38 +496,6 @@ export function GameTrackerView({
         onOpenChange={setShowPlayAgainConfirm}
         onPlayAgain={onPlayAgain}
       />
-
-      {claimPickerPlayerId && (
-        <CharacterPicker
-          open={!!claimPickerPlayerId}
-          onClose={() => setClaimPickerPlayerId(null)}
-          onSelect={(characterIds) => {
-            onAddMultipleClaims(claimPickerPlayerId, characterIds);
-            setClaimPickerPlayerId(null);
-          }}
-          excludeIds={game.players.find(p => p.id === claimPickerPlayerId)?.claims || []}
-          scriptCharacterIds={scriptCharacterIds}
-        />
-      )}
-
-      {primaryPickerPlayerId && (
-        <CharacterPicker
-          open={!!primaryPickerPlayerId}
-          onClose={() => setPrimaryPickerPlayerId(null)}
-          singleSelect
-          primaryClaimId={game.players.find(p => p.id === primaryPickerPlayerId)?.claims?.[0]}
-          onSelect={(characterIds) => {
-            if (characterIds[0]) onAddClaim(primaryPickerPlayerId, characterIds[0]);
-            setPrimaryPickerPlayerId(null);
-          }}
-          onRemove={(characterId) => {
-            onRemoveClaim(primaryPickerPlayerId, characterId);
-            setPrimaryPickerPlayerId(null);
-          }}
-          scriptCharacterIds={scriptCharacterIds}
-        />
-      )}
-
     </div>
   );
 }

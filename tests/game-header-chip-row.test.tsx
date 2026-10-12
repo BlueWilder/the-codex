@@ -54,7 +54,6 @@ function renderTracker(game: PlayerGame) {
         onToggleAlive={noop}
         onSetPlayerStatus={noop}
         onAddClaim={noop}
-        onAddMultipleClaims={noop}
         onRemoveClaim={noop}
         onSetNotes={noop}
         onUpdatePlayerName={noop}

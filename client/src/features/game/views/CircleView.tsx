@@ -1,13 +1,14 @@
 import { useState, useEffect, useRef } from "react";
-import { MoreVertical, RotateCcw, Skull } from "lucide-react";
+import { RotateCcw, Skull } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DndContext, PointerSensor, TouchSensor, useSensor, useSensors, DragEndEvent, DragStartEvent, useDraggable } from "@dnd-kit/core";
 import { teamParchment } from "@/lib/team-style";
-import { type ClaimDescriptor, type GamePlayer } from "@/features/game/types";
-import { resolveClaimDescriptor } from "@/features/game/claims";
+import { type GamePlayer } from "@/features/game/types";
+import { resolveClaimDescriptor, latestClaimId } from "@/features/game/claims";
+import { isSeatDead } from "@/features/game/AliveToggle";
 
 /**
- * Seat medallion plus the name and believed claim under it. States:
+ * Seat medallion plus the name and newest claim under it. States:
  * claimed (team tint, 3px team ring), no claim (raised fill, dashed ring,
  * muted number), dead (raised fill, ink ring, skull, whole seat at 50%,
  * name struck through). Font sizes scale with the medallion size.
@@ -24,12 +25,11 @@ function CircleNodeContent({
   /** Horizontal nudge of the name block toward the ring's center (side seats). */
   labelShiftX?: number;
 }) {
-  const claims = player.claims ?? [];
-  const primaryId = claims[0] ?? null;
-  const primaryChar = primaryId ? resolveClaimDescriptor(primaryId) : null;
-  const isDead = player.status === 'dead' || player.status === 'exiled';
+  const latestId = latestClaimId(player);
+  const latestChar = latestId ? resolveClaimDescriptor(latestId) : null;
+  const isDead = isSeatDead(player);
   const isActive = player.status === 'alive';
-  const team = primaryChar ? teamParchment(primaryChar.team) : null;
+  const team = latestChar ? teamParchment(latestChar.team) : null;
 
   // 72px medallion: 26px number, 15px name, 12px claim. Smaller rings scale down.
   const scale = nodeSize / 72;
@@ -38,12 +38,6 @@ function CircleNodeContent({
   const claimPx = Math.max(10, Math.round(12 * scale));
   const labelWidth = nodeSize + 18;
 
-  const extraClaims = claims
-    .slice(1)
-    .map(id => resolveClaimDescriptor(id))
-    .filter((c): c is ClaimDescriptor => c !== null);
-  const shownExtras = extraClaims.slice(0, 3);
-  const hiddenExtras = extraClaims.length - shownExtras.length;
 
   return (
     <div
@@ -63,7 +57,7 @@ function CircleNodeContent({
               ? cn(team.tint, team.ring)
               : "border-dashed border-[var(--parchment-control-border)] bg-[var(--parchment-raised)]",
         )}
-        data-team={primaryChar?.team}
+        data-team={latestChar?.team}
       >
         {isDead ? (
           <span
@@ -101,13 +95,13 @@ function CircleNodeContent({
         >
           {player.name}
         </span>
-        {primaryChar ? (
+        {latestChar ? (
           <span
             className={cn("max-w-full truncate font-serif leading-tight", team?.text)}
             style={{ fontSize: claimPx }}
             data-testid={`text-seat-role-${player.id}`}
           >
-            {primaryChar.name}
+            {latestChar.name}
           </span>
         ) : (
           <span
@@ -116,31 +110,6 @@ function CircleNodeContent({
             data-testid={`text-seat-noclaim-${player.id}`}
           >
             no claim
-          </span>
-        )}
-        {extraClaims.length > 0 && (
-          <span className="mt-0.5 flex flex-wrap justify-center gap-0.5">
-            {shownExtras.map(c => (
-              <span
-                key={c.id}
-                className={cn(
-                  "rounded border bg-transparent px-1 py-[1px] font-sans text-[8px] leading-none",
-                  teamParchment(c.team).text,
-                  teamParchment(c.team).ring,
-                )}
-                data-testid={`chip-seat-extra-${c.id}-${player.id}`}
-              >
-                {c.name.length > 6 ? c.name.slice(0, 5) + '…' : c.name}
-              </span>
-            ))}
-            {hiddenExtras > 0 && (
-              <span
-                className="px-1 py-[1px] font-sans text-[8px] leading-none text-[var(--parchment-ink-muted)]"
-                data-testid={`chip-seat-extra-more-${player.id}`}
-              >
-                +{hiddenExtras}
-              </span>
-            )}
           </span>
         )}
       </div>
@@ -152,7 +121,6 @@ export function CircleSeatingChart({
   players,
   centerLabel,
   onSelectPlayer,
-  onOpenPrimaryPicker,
   onReorderPlayers,
   onSetCirclePosition,
   onSetMultipleCirclePositions,
@@ -162,7 +130,6 @@ export function CircleSeatingChart({
   /** Shown in the middle of the ring (the script name); nothing when absent. */
   centerLabel?: string;
   onSelectPlayer: (playerId: string) => void;
-  onOpenPrimaryPicker?: (playerId: string) => void;
   onReorderPlayers: (activeId: string, overId: string) => void;
   onSetCirclePosition: (playerId: string, x: number, y: number) => void;
   onSetMultipleCirclePositions: (updates: { playerId: string; x: number; y: number }[]) => void;
@@ -374,7 +341,6 @@ export function CircleSeatingChart({
                   nodeSize={nodeSize}
                   labelShiftX={getLabelShiftX(player, index)}
                   onSelectPlayer={onSelectPlayer}
-                  onOpenPrimaryPicker={onOpenPrimaryPicker}
                   isDragging={isBeingDragged}
                 />
               );
@@ -393,7 +359,6 @@ function DraggableCircleNode({
   nodeSize,
   labelShiftX = 0,
   onSelectPlayer,
-  onOpenPrimaryPicker,
   isDragging,
 }: {
   player: GamePlayer;
@@ -402,7 +367,6 @@ function DraggableCircleNode({
   nodeSize: number;
   labelShiftX?: number;
   onSelectPlayer: (playerId: string) => void;
-  onOpenPrimaryPicker?: (playerId: string) => void;
   isDragging: boolean;
 }) {
   const { attributes, listeners, setNodeRef } = useDraggable({
@@ -425,7 +389,7 @@ function DraggableCircleNode({
         ref={setNodeRef}
         {...attributes}
         {...listeners}
-        onClick={() => !isDragging && onOpenPrimaryPicker?.(player.id)}
+        onClick={() => !isDragging && onSelectPlayer(player.id)}
         className="h-full w-full touch-none rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
         style={{
           transform: isDragging ? 'scale(1.15)' : undefined,
@@ -439,17 +403,6 @@ function DraggableCircleNode({
           nodeSize={nodeSize}
           labelShiftX={labelShiftX}
         />
-      </button>
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          if (!isDragging) onSelectPlayer(player.id);
-        }}
-        className="absolute -right-1 -top-1 z-10 flex h-6 w-6 items-center justify-center rounded-full border border-[var(--parchment-control-border)] bg-[var(--parchment-raised)] text-[var(--parchment-ink-muted)] shadow-sm transition-colors hover:bg-[var(--parchment-control)] active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
-        aria-label={`More options for ${player.name}`}
-        data-testid={`button-seat-more-${player.id}`}
-      >
-        <MoreVertical className="w-3.5 h-3.5" />
       </button>
     </div>
   );

@@ -39,7 +39,6 @@ function renderTracker(game: PlayerGame, onUpdatePlayerName: (id: string, name: 
         onToggleAlive={noop}
         onSetPlayerStatus={noop}
         onAddClaim={noop}
-        onAddMultipleClaims={noop}
         onRemoveClaim={noop}
         onSetNotes={noop}
         onUpdatePlayerName={onUpdatePlayerName}
@@ -74,17 +73,30 @@ function seedFriends(names: string[]) {
 
 async function openNameEditor(playerId: string) {
   fireEvent.click(screen.getByTestId(`button-player-name-${playerId}`));
+  // Rename lives in the seat sheet's menu; Radix opens it on pointerdown.
+  fireEvent.pointerDown(await screen.findByTestId("button-seat-menu"), {
+    button: 0,
+    ctrlKey: false,
+    pointerType: "mouse",
+  });
   fireEvent.click(await screen.findByTestId("button-edit-player-name"));
   await screen.findByTestId("input-edit-player-name");
 }
 
 beforeEach(() => {
   localStorage.clear();
+  // jsdom has no pointer capture; vaul calls it when the menu's pointerdown
+  // bubbles through the sheet.
+  if (!Element.prototype.setPointerCapture) {
+    Element.prototype.setPointerCapture = () => {};
+    Element.prototype.releasePointerCapture = () => {};
+    Element.prototype.hasPointerCapture = () => false;
+  }
 });
 
 afterEach(() => cleanup());
 
-describe("Assign friend from player drawer", () => {
+describe("Assign friend from the seat sheet", () => {
   it("hides the From Friends section when there are no friends", async () => {
     renderTracker(makeGame(["Player 1", "Player 2"]));
 
