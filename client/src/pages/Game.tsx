@@ -11,6 +11,7 @@ export { SortablePlayerCard } from "@/features/game/views/ListView";
 export { CharacterPicker } from "@/features/game/dialogs/CharacterPicker";
 export { SetupWizard } from "@/features/game/GameSetup";
 export { PlayerDetailDrawer } from "@/features/game/PlayerDetailDrawer";
+export { SeatSheet } from "@/features/game/SeatSheet";
 export { GameTrackerView } from "@/features/game/GameTrackerView";
 
 export default function Game() {
