@@ -437,60 +437,58 @@ export function GameTrackerView({
           {(() => {
             const roleBreakdown = getBreakdown(regularPlayers.length);
             return (
-              <div className="flex items-center justify-center gap-x-3 gap-y-1 px-3 py-1.5 border-b border-border flex-wrap">
-                <div className="flex items-center gap-1.5">
+              <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-b border-[var(--parchment-rule)] pb-2.5">
+                <div className="flex items-center gap-1 rounded-full border border-[var(--parchment-control-border)] bg-[var(--parchment-control)] p-0.5">
                   <button
                     onClick={() => toggleFilter('alive')}
                     className={cn(
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
-                      "flex items-baseline gap-1 px-2 py-0.5 rounded-md border transition-colors",
+                      "flex items-baseline gap-1 rounded-full px-2.5 py-0.5 transition-colors",
                       playerFilter === 'alive'
-                        ? "bg-emerald-500/20 border-emerald-500/50"
-                        : "border-transparent hover:bg-muted/40"
+                        ? "bg-[var(--parchment-ink-link)] text-[var(--parchment-panel)]"
+                        : "text-[var(--parchment-ink)] hover:bg-[var(--parchment-control-hover)]"
                     )}
                     data-testid="filter-alive"
                   >
-                    <span className="text-base font-display font-semibold text-emerald-400 tabular-nums">{aliveCount}</span>
-                    <span className="text-xs text-muted-foreground uppercase tracking-wide">Alive</span>
+                    <span className="font-display text-base tabular-nums">{aliveCount}</span>
+                    <span className="game-label opacity-80">Alive</span>
                   </button>
-                  <span className="text-muted-foreground/50">/</span>
                   <button
                     onClick={() => toggleFilter('dead')}
                     className={cn(
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
-                      "flex items-baseline gap-1 px-2 py-0.5 rounded-md border transition-colors",
+                      "flex items-baseline gap-1 rounded-full px-2.5 py-0.5 transition-colors",
                       playerFilter === 'dead'
-                        ? "bg-red-500/20 border-red-500/50"
-                        : "border-transparent hover:bg-muted/40"
+                        ? "bg-[var(--parchment-ink-link)] text-[var(--parchment-panel)]"
+                        : "text-[var(--parchment-ink)] hover:bg-[var(--parchment-control-hover)]"
                     )}
                     data-testid="filter-dead"
                   >
-                    <span className="text-base font-display font-semibold text-red-400/80 tabular-nums">{deadCount}</span>
-                    <span className="text-xs text-muted-foreground uppercase tracking-wide">Dead</span>
+                    <span className="font-display text-base tabular-nums">{deadCount}</span>
+                    <span className="game-label opacity-80">Dead</span>
                   </button>
                 </div>
-                <div className="w-px h-4 bg-border shrink-0" aria-hidden="true" />
-                <div className="flex items-center gap-2.5 text-sm flex-wrap" data-testid="section-role-count">
+                <div className="flex flex-wrap items-center gap-2.5 font-sans text-sm font-semibold" data-testid="section-role-count">
                   <span className="flex items-center gap-1" data-testid="role-dot-townsfolk">
-                    <span className="w-2 h-2 rounded-full bg-blue-400 shrink-0" />
-                    <span className="text-blue-400 font-medium tabular-nums">{roleBreakdown.townsfolk}</span>
+                    <span className="w-2 h-2 rounded-full bg-[var(--parchment-townsfolk)] shrink-0" />
+                    <span className="text-[var(--parchment-townsfolk)] tabular-nums">{roleBreakdown.townsfolk}</span>
                   </span>
                   <span className="flex items-center gap-1" data-testid="role-dot-outsider">
-                    <span className="w-2 h-2 rounded-full bg-green-400 shrink-0" />
-                    <span className="text-green-400 font-medium tabular-nums">{roleBreakdown.outsiders}</span>
+                    <span className="w-2 h-2 rounded-full bg-[var(--parchment-outsider)] shrink-0" />
+                    <span className="text-[var(--parchment-outsider)] tabular-nums">{roleBreakdown.outsiders}</span>
                   </span>
                   <span className="flex items-center gap-1" data-testid="role-dot-minion">
-                    <span className="w-2 h-2 rounded-full bg-red-400 shrink-0" />
-                    <span className="text-red-400 font-medium tabular-nums">{roleBreakdown.minions}</span>
+                    <span className="w-2 h-2 rounded-full bg-[var(--parchment-minion)] shrink-0" />
+                    <span className="text-[var(--parchment-minion)] tabular-nums">{roleBreakdown.minions}</span>
                   </span>
                   <span className="flex items-center gap-1" data-testid="role-dot-demon">
-                    <span className="w-2 h-2 rounded-full bg-red-700 shrink-0" />
-                    <span className="text-red-700 font-medium tabular-nums">{roleBreakdown.demons}</span>
+                    <span className="w-2 h-2 rounded-full bg-[var(--parchment-demon)] shrink-0" />
+                    <span className="text-[var(--parchment-demon)] tabular-nums">{roleBreakdown.demons}</span>
                   </span>
                   {travelers.length > 0 && (
                     <span className="flex items-center gap-1" data-testid="role-dot-traveler">
-                      <span className="w-2 h-2 rounded-full bg-purple-400 shrink-0" />
-                      <span className="text-purple-400 font-medium tabular-nums">{travelers.length}</span>
+                      <span className="w-2 h-2 rounded-full bg-[var(--parchment-traveler)] shrink-0" />
+                      <span className="text-[var(--parchment-traveler)] tabular-nums">{travelers.length}</span>
                     </span>
                   )}
                 </div>

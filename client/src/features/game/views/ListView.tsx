@@ -2,14 +2,12 @@ import { usePlayerGame } from "@/features/game/state/use-player-game";
 import { latestDeathRecord, deathPhaseLabel } from "@/lib/death-phase";
 import { X, Plus, FileText, GripVertical, Skull, ArrowDownUp } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, TouchSensor, useSensor, useSensors, DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, sortableKeyboardCoordinates, useSortable, rectSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { CharacterToken } from "@/components/character/CharacterToken";
-import { resolveClaimDescriptor, candidateChipClass } from "@/features/game/claims";
-import { type GamePlayer } from "@/features/game/types";
+import { resolveClaimDescriptor, previousClaimId } from "@/features/game/claims";
+import { teamParchment } from "@/lib/team-style";
+import { type ClaimDescriptor, type GamePlayer } from "@/features/game/types";
 
 export function SortablePlayerCard({
   player,
@@ -44,17 +42,28 @@ export function SortablePlayerCard({
       : transition || 'transform 200ms cubic-bezier(0.22, 1, 0.36, 1)',
   };
 
-  const claimedChars = player.claims.map(id => resolveClaimDescriptor(id)).filter(Boolean);
+  const claimedChars = player.claims
+    .map(id => resolveClaimDescriptor(id))
+    .filter((c): c is ClaimDescriptor => c !== null);
   const primaryChar = claimedChars[0] ?? null;
+  const wasId = previousClaimId(player);
   const hasNotes = player.notes.trim().length > 0;
 
   const isActive = player.status === 'alive';
-  // Gate every dead visual (greyed row, shroud, dagger) on CURRENT status, not
+  // Gate every dead visual (dimmed row, skull, dagger) on CURRENT status, not
   // on the existence of a death record, so a resurrected player renders as a
   // normal living seat. Matches the circle node's isDead gate.
   const isDead = player.status === 'dead' || player.status === 'exiled';
   const deathRecord = isDead ? latestDeathRecord(game.deathRecords ?? [], player.id) : null;
   const phaseStamp = deathPhaseLabel(deathRecord);
+
+  // Believed claim first, then the claim it replaced ("was X"), then other
+  // candidates. Every chip removes its claim when tapped, as before.
+  const ordered = [
+    ...claimedChars.slice(0, 1),
+    ...claimedChars.filter(c => c.id === wasId),
+    ...claimedChars.slice(1).filter(c => c.id !== wasId),
+  ];
 
   return (
     <div
@@ -62,149 +71,142 @@ export function SortablePlayerCard({
       style={style}
       onClick={onSelect}
       className={cn(
-        "rounded-md border border-border/60 bg-card/40 p-2 cursor-pointer",
-        isDead && "opacity-60",
-        isDragging && "opacity-80 shadow-lg z-50 scale-[1.02]",
-        player.isTraveler && "border-purple-700/50"
+        "flex cursor-pointer items-center gap-2 py-2.5",
+        isDead && "opacity-[0.55]",
+        isDragging && "relative z-50 rounded-[10px] bg-[var(--parchment-raised)] shadow-lg"
       )}
       data-testid={`card-player-${player.id}`}
     >
-      <div className="flex items-start gap-2">
-        <button
-          {...attributes}
-          {...listeners}
-          onClick={(e) => e.stopPropagation()}
-          className="touch-none cursor-grab active:cursor-grabbing flex items-center justify-center w-9 h-9 -ml-1 shrink-0 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 active:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
-          data-testid={`button-drag-${player.id}`}
-        >
-          <GripVertical className="w-5 h-5" />
-        </button>
+      <button
+        {...attributes}
+        {...listeners}
+        onClick={(e) => e.stopPropagation()}
+        className="-ml-1 flex h-9 w-6 shrink-0 touch-none cursor-grab items-center justify-center rounded-md text-[var(--parchment-ink-faint)] hover:text-[var(--parchment-ink)] active:cursor-grabbing focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        aria-label={`Drag ${player.name} to reorder`}
+        data-testid={`button-drag-${player.id}`}
+      >
+        <GripVertical className="w-4 h-4" />
+      </button>
 
+      <button
+        onClick={(e) => { e.stopPropagation(); onSelect(); }}
+        className="relative shrink-0 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
+        title={`View ${player.name}`}
+        data-testid={`button-token-${player.id}`}
+      >
         <span
-          className="shrink-0 mt-1.5 w-5 text-center text-sm font-mono tabular-nums text-muted-foreground"
-          data-testid={`text-seat-number-${player.id}`}
+          className={cn(
+            "flex h-10 w-10 items-center justify-center rounded-full",
+            isDead
+              ? "border-2 border-[var(--parchment-ink)] bg-[var(--parchment-raised)] text-[var(--parchment-ink)]"
+              : "bg-[var(--parchment-ink)] text-[var(--parchment-panel)]"
+          )}
+          data-team={primaryChar?.team}
+          data-testid={`token-list-${player.id}`}
         >
-          {seatNumber}
-        </span>
-
-        <button
-          onClick={(e) => { e.stopPropagation(); onSelect(); }}
-          className="relative shrink-0 mt-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
-          title={`View ${player.name}`}
-          data-testid={`button-token-${player.id}`}
-        >
-          {primaryChar ? (
-            <CharacterToken
-              characterId={primaryChar.id}
-              team={primaryChar.team}
-              size={40}
-              muted={isDead}
-              data-testid={`token-list-${player.id}`}
-            />
+          {isDead ? (
+            <span data-testid={`overlay-shroud-${player.id}`}>
+              <Skull className="h-5 w-5" aria-label="Dead" />
+            </span>
           ) : (
             <span
-              className="inline-flex items-center justify-center rounded-full border-2 border-dashed border-muted-foreground/40 text-muted-foreground/60 bg-background/40"
-              style={{ width: 40, height: 40 }}
-              data-testid={`token-list-${player.id}`}
+              className="font-display text-lg leading-none tabular-nums"
+              data-testid={`text-seat-number-${player.id}`}
             >
-              <Plus className="w-4 h-4" />
+              {seatNumber}
             </span>
           )}
-          {isDead && (
-            <span
-              className="absolute inset-0 rounded-full pointer-events-none flex items-end justify-center overflow-hidden"
-              data-testid={`overlay-shroud-${player.id}`}
-            >
-              <span className="absolute inset-0 rounded-full bg-[#c79fe6]/15 border-2 border-[#3d2f57]" />
+        </span>
+      </button>
+
+      <div className="min-w-0 flex-1">
+        <div className="flex min-w-0 items-baseline gap-1.5">
+          {player.isTraveler && (
+            <span className="game-label shrink-0 rounded border border-[var(--parchment-traveler-ring)] px-1 text-[var(--parchment-traveler)]">
+              T
             </span>
           )}
-        </button>
-
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5 flex-wrap">
-            {player.isTraveler && (
-              <Badge variant="secondary" className="bg-purple-900/40 text-purple-300 border-purple-700 text-xs shrink-0">
-                T
-              </Badge>
+          <button
+            onClick={(e) => { e.stopPropagation(); onSelect(); }}
+            className={cn(
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+              "min-w-0 truncate text-left font-display text-lg leading-tight text-[var(--parchment-ink)] hover:underline",
+              !isActive && "line-through"
             )}
-            <button
-              onClick={(e) => { e.stopPropagation(); onSelect(); }}
-              className={cn(
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
-                "font-display font-semibold text-base text-left hover:underline truncate min-w-0",
-                isActive ? "text-amber-100" : "text-muted-foreground line-through"
-              )}
-              data-testid={`button-player-name-${player.id}`}
-            >
-              {player.name}
-            </button>
-            {phaseStamp && (
-              <span className="text-[#c79fe6] text-sm shrink-0" data-testid={`text-seat-death-${player.id}`}>
-                † {phaseStamp}
-              </span>
-            )}
-          </div>
+            data-testid={`button-player-name-${player.id}`}
+          >
+            {player.name}
+          </button>
+          {phaseStamp && (
+            <span className="shrink-0 font-sans text-xs font-semibold text-[var(--parchment-ink-muted)]" data-testid={`text-seat-death-${player.id}`}>
+              † {phaseStamp}
+            </span>
+          )}
+        </div>
 
-          <div className="flex flex-wrap items-center gap-1.5 mt-1.5" data-testid={`claims-row-${player.id}`}>
-            {claimedChars.length > 0 ? (
-              claimedChars.map((char, idx) => char && (
-                <div
-                  key={char.id}
-                  className="inline-flex items-center gap-1"
-                  data-testid={`chip-candidate-${player.id}-${char.id}`}
-                >
+        <div className="mt-1 flex flex-wrap items-center gap-1" data-testid={`claims-row-${player.id}`}>
+          {ordered.length > 0 ? (
+            ordered.map((char, idx) => {
+              const team = teamParchment(char.team);
+              const isPrimary = idx === 0;
+              const isWas = !isPrimary && char.id === wasId;
+              return (
+                <div key={char.id} className="inline-flex items-center" data-testid={`chip-candidate-${player.id}-${char.id}`}>
                   <button
                     onClick={(e) => { e.stopPropagation(); onRemoveClaim(char.id); }}
                     className={cn(
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background","inline-flex items-center gap-1 text-xs font-sans whitespace-nowrap rounded-full border px-2.5 py-1 font-semibold transition-colors hover:opacity-80", candidateChipClass(char.team, idx === 0))}
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                      "inline-flex items-center gap-1 whitespace-nowrap rounded-full border px-2 py-0.5 font-serif text-[15px] leading-tight transition-opacity hover:opacity-80",
+                      isPrimary && cn(team.tint, team.text, team.ring, "font-semibold"),
+                      isWas && "bg-transparent border-[var(--parchment-rule)] text-[var(--parchment-ink-muted)]",
+                      !isPrimary && !isWas && cn("bg-transparent", team.text, team.ring)
+                    )}
                     title={`Remove ${char.name} claim`}
                     data-testid={`button-claim-badge-${char.id}-${player.id}`}
                   >
-                    {char.name}
-                    <X className="w-3.5 h-3.5 opacity-60" />
+                    {isWas ? `was ${char.name}` : char.name}
+                    <X className="h-3 w-3 opacity-50" />
                   </button>
                 </div>
-              ))
-            ) : (
-              <span
-                className="text-xs italic text-muted-foreground/60"
-                data-testid={`text-no-claim-${player.id}`}
-              >
-                no claim yet
-              </span>
-            )}
-            <button
-              onClick={(e) => { e.stopPropagation(); onOpenClaimPicker(); }}
-              className="inline-flex items-center justify-center w-6 h-6 rounded-full border border-dashed border-amber-700/60 text-amber-400 hover:bg-amber-900/20 hover:border-amber-600 transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
-              title="Add claim"
-              data-testid={`button-add-claim-${player.id}`}
+              );
+            })
+          ) : (
+            <span
+              className="font-serif text-[15px] italic text-[var(--parchment-ink-faint)]"
+              data-testid={`text-no-claim-${player.id}`}
             >
-              <Plus className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        </div>
-
-        <div className="flex flex-col items-end gap-1 shrink-0">
-          <div className="flex items-center gap-1 h-4">
-            {hasNotes && <FileText className="w-3.5 h-3.5 text-muted-foreground" />}
-          </div>
-          {!player.isTraveler && (
-            <button
-              onClick={(e) => { e.stopPropagation(); onToggleAlive(); }}
-              className={cn(
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
-                "flex items-center justify-center w-8 h-8 rounded-lg border transition-colors",
-                isDead
-                  ? "bg-red-900/40 border-red-700/60 text-red-400 hover:bg-red-900/60"
-                  : "border-muted-foreground/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground"
-              )}
-              title={isDead ? "Revive player" : "Mark as dead"}
-              data-testid={`button-toggle-dead-${player.id}`}
-            >
-              <Skull className="w-4 h-4" />
-            </button>
+              no claim yet
+            </span>
           )}
+          <button
+            onClick={(e) => { e.stopPropagation(); onOpenClaimPicker(); }}
+            className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-dashed border-[var(--parchment-control-border)] text-[var(--parchment-ink-link)] transition-colors hover:bg-[var(--parchment-control)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            title="Add claim"
+            data-testid={`button-add-claim-${player.id}`}
+          >
+            <Plus className="w-3.5 h-3.5" />
+          </button>
         </div>
+      </div>
+
+      <div className="flex shrink-0 items-center gap-1">
+        {hasNotes && <FileText className="h-4 w-4 text-[var(--parchment-ink-faint)]" aria-label="Has notes" />}
+        {!player.isTraveler && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onToggleAlive(); }}
+            className={cn(
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+              "flex h-8 w-8 items-center justify-center rounded-full border transition-colors",
+              isDead
+                ? "border-[var(--parchment-ink)] bg-[var(--parchment-ink)] text-[var(--parchment-panel)]"
+                : "border-[var(--parchment-rule)] text-[var(--parchment-ink-muted)] hover:bg-[var(--parchment-control)]"
+            )}
+            title={isDead ? "Revive player" : "Mark as dead"}
+            data-testid={`button-toggle-dead-${player.id}`}
+          >
+            <Skull className="w-4 h-4" />
+          </button>
+        )}
       </div>
     </div>
   );
@@ -248,20 +250,19 @@ export function ListView({
 
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-      <div className="flex justify-end mb-2">
-        <Button
-          variant="ghost"
-          size="sm"
+      <div className="flex justify-end">
+        <button
+          type="button"
           onClick={onReversePlayers}
-          className="text-xs text-muted-foreground hover:text-foreground gap-1"
+          className="game-label flex items-center gap-1 rounded-md px-1.5 py-1 text-[var(--parchment-ink-muted)] hover:text-[var(--parchment-ink)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           data-testid="button-reverse-order"
         >
           <ArrowDownUp className="w-3.5 h-3.5" />
           Reverse Order
-        </Button>
+        </button>
       </div>
       <SortableContext items={filteredPlayers.map(p => p.id)} strategy={rectSortingStrategy}>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="divide-y divide-[var(--parchment-rule)]">
           {filteredPlayers.map((player) => (
             <SortablePlayerCard
               key={player.id}
