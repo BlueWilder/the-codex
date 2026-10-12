@@ -277,8 +277,8 @@ export function usePlayerGame() {
     if (!game) return;
     const player = game.players.find(p => p.id === playerId);
     if (!player) return;
-    // Keep claimRecords consistent with claims membership. Natural array order
-    // means removing claims[0] promotes the next claim to primary.
+    // Keep claimRecords consistent with claims membership, so the newest
+    // remaining claim (latestClaimId) is still found by its record.
     const existingRecords = player.claimRecords ?? [];
     updatePlayer(playerId, {
       claims: player.claims.filter(c => c !== characterId),

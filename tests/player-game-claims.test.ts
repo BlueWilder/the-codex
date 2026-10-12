@@ -2,6 +2,7 @@
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { usePlayerGame } from "@/hooks/use-player-game";
+import { latestClaimId } from "@/features/game/claims";
 
 const STORAGE_KEY = "clocktower_player_game";
 
@@ -29,8 +30,8 @@ function findPlayer(hook: ReturnType<typeof startGame>, playerId: string) {
   return hook.result.current.game!.players.find((p) => p.id === playerId)!;
 }
 
-describe("ordered claims with a primary candidate", () => {
-  it("records claims in tap order, first tapped becomes primary on an empty seat", () => {
+describe("claims in the order made, newest shown on the seat", () => {
+  it("records claims in tap order; the last one tapped is the newest", () => {
     const hook = startGame();
     const pid = firstPlayerId(hook);
     act(() => {
@@ -38,10 +39,10 @@ describe("ordered claims with a primary candidate", () => {
     });
     const player = findPlayer(hook, pid);
     expect(player.claims).toEqual(["washerwoman", "librarian", "chef"]);
-    expect(player.claims[0]).toBe("washerwoman");
+    expect(latestClaimId(player)).toBe("chef");
   });
 
-  it("appends new claims after existing ones without changing the primary", () => {
+  it("appends new claims after existing ones; the newest moves to the latest add", () => {
     const hook = startGame();
     const pid = firstPlayerId(hook);
     act(() => {
@@ -52,7 +53,7 @@ describe("ordered claims with a primary candidate", () => {
     });
     const player = findPlayer(hook, pid);
     expect(player.claims).toEqual(["washerwoman", "librarian", "chef", "investigator"]);
-    expect(player.claims[0]).toBe("washerwoman");
+    expect(latestClaimId(player)).toBe("investigator");
   });
 
   it("ignores duplicate claims when appending", () => {
@@ -68,21 +69,21 @@ describe("ordered claims with a primary candidate", () => {
     expect(player.claims).toEqual(["washerwoman", "librarian", "chef"]);
   });
 
-  it("removing the primary promotes the next claim to primary", () => {
+  it("removing the newest claim falls back to the one made before it", () => {
     const hook = startGame();
     const pid = firstPlayerId(hook);
     act(() => {
       hook.result.current.addMultipleClaims(pid, ["washerwoman", "librarian", "chef"]);
     });
     act(() => {
-      hook.result.current.removeClaim(pid, "washerwoman");
+      hook.result.current.removeClaim(pid, "chef");
     });
     const player = findPlayer(hook, pid);
-    expect(player.claims).toEqual(["librarian", "chef"]);
-    expect(player.claims[0]).toBe("librarian");
+    expect(player.claims).toEqual(["washerwoman", "librarian"]);
+    expect(latestClaimId(player)).toBe("librarian");
   });
 
-  it("removing a non-primary claim leaves the primary unchanged", () => {
+  it("removing an older claim leaves the newest unchanged", () => {
     const hook = startGame();
     const pid = firstPlayerId(hook);
     act(() => {
@@ -93,7 +94,7 @@ describe("ordered claims with a primary candidate", () => {
     });
     const player = findPlayer(hook, pid);
     expect(player.claims).toEqual(["washerwoman", "chef"]);
-    expect(player.claims[0]).toBe("washerwoman");
+    expect(latestClaimId(player)).toBe("chef");
   });
 
   it("keeps claimRecords consistent with claims after add and remove", () => {
@@ -111,20 +112,44 @@ describe("ordered claims with a primary candidate", () => {
     expect(player.claims).toEqual(["librarian", "chef"]);
   });
 
-  it("the circle node primary reflects claims[0] after the primary is removed", () => {
-    // The circle node reads firstClaim = player.claims[0] (Game.tsx). Removing
-    // the primary promotes the next claim, which surfaces as the seat's claims[0].
+  it("the seat's newest claim follows separate adds, not array position", () => {
+    // Circle and List show latestClaimId(player). Separate adds get later
+    // timestamps, so the newest is the last one added.
     const hook = startGame();
     const pid = firstPlayerId(hook);
     act(() => {
-      hook.result.current.addMultipleClaims(pid, ["washerwoman", "librarian", "chef"]);
+      hook.result.current.addClaim(pid, "washerwoman");
     });
     act(() => {
-      hook.result.current.removeClaim(pid, "washerwoman");
+      hook.result.current.addClaim(pid, "librarian");
+    });
+    act(() => {
+      hook.result.current.removeClaim(pid, "librarian");
     });
     const player = findPlayer(hook, pid);
-    expect(player.claims[0]).toBe("librarian");
-    expect(player.claims).toEqual(["librarian", "chef"]);
+    expect(player.claims).toEqual(["washerwoman"]);
+    expect(latestClaimId(player)).toBe("washerwoman");
+  });
+
+  it("latestClaimId picks the latest record even when claims were reordered", () => {
+    // Saves from before the seat sheet could have moved a claim to the front.
+    const player = {
+      id: "p1",
+      name: "A",
+      isAlive: true,
+      status: "alive" as const,
+      notes: "",
+      claims: ["chef", "washerwoman"],
+      claimRecords: [
+        { characterId: "washerwoman", addedAt: "2026-01-01T10:00:00.000Z", day: 1 },
+        { characterId: "chef", addedAt: "2026-01-01T09:00:00.000Z", day: 1 },
+      ],
+    };
+    expect(latestClaimId(player)).toBe("washerwoman");
+  });
+
+  it("latestClaimId is null without claims", () => {
+    expect(latestClaimId({ id: "p", name: "A", isAlive: true, status: "alive", notes: "", claims: [] })).toBeNull();
   });
 
   it("loads an old saved game with its claim order intact", () => {
@@ -150,6 +175,7 @@ describe("ordered claims with a primary candidate", () => {
     const hook = renderHook(() => usePlayerGame());
     const player = hook.result.current.game!.players[0];
     expect(player.claims).toEqual(["chef", "washerwoman", "librarian"]);
-    expect(player.claims[0]).toBe("chef");
+    // No claim records in a legacy save: the last claim counts as newest.
+    expect(latestClaimId(player)).toBe("librarian");
   });
 });

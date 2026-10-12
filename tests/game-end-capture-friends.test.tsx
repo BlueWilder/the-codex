@@ -40,7 +40,6 @@ function renderTracker(game: PlayerGame, onEndGame: () => void) {
         onSetPlayerStatus={noop}
         onAddClaim={noop}
         onAddMultipleClaims={noop}
-        onSetPrimaryClaim={noop}
         onRemoveClaim={noop}
         onSetNotes={noop}
         onUpdatePlayerName={noop}

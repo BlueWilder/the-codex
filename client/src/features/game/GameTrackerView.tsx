@@ -32,7 +32,6 @@ export function GameTrackerView({
   onSetPlayerStatus,
   onAddClaim,
   onAddMultipleClaims,
-  onSetPrimaryClaim,
   onRemoveClaim,
   onSetNotes,
   onUpdatePlayerName,
@@ -59,7 +58,6 @@ export function GameTrackerView({
   onSetPlayerStatus: (playerId: string, status: PlayerStatus) => void;
   onAddClaim: (playerId: string, characterId: string) => void;
   onAddMultipleClaims: (playerId: string, characterIds: string[]) => void;
-  onSetPrimaryClaim: (playerId: string, characterId: string) => void;
   onRemoveClaim: (playerId: string, characterId: string) => void;
   onSetNotes: (playerId: string, notes: string) => void;
   onUpdatePlayerName: (playerId: string, name: string) => void;
@@ -523,7 +521,7 @@ export function GameTrackerView({
           singleSelect
           primaryClaimId={game.players.find(p => p.id === primaryPickerPlayerId)?.claims?.[0]}
           onSelect={(characterIds) => {
-            if (characterIds[0]) onSetPrimaryClaim(primaryPickerPlayerId, characterIds[0]);
+            if (characterIds[0]) onAddClaim(primaryPickerPlayerId, characterIds[0]);
             setPrimaryPickerPlayerId(null);
           }}
           onRemove={(characterId) => {

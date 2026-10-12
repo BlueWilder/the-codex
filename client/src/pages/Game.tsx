@@ -42,7 +42,6 @@ export default function Game() {
     setMultipleCirclePositions,
     resetCirclePositions,
     updatePlayerName,
-    setPrimaryClaim,
   } = useGameTracker();
 
   if (isLoading) {
@@ -68,7 +67,6 @@ export default function Game() {
           onSetPlayerStatus={setPlayerStatus}
           onAddClaim={addClaim}
           onAddMultipleClaims={addMultipleClaims}
-          onSetPrimaryClaim={setPrimaryClaim}
           onRemoveClaim={removeClaim}
           onSetNotes={setNotes}
           onUpdatePlayerName={updatePlayerName}
