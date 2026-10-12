@@ -511,10 +511,11 @@ export function GameTrackerView({
       )}
       
       {activeTab === 'circle' && (
-        <div className="game-panel" data-testid="panel-circle">
+        <div className="game-panel px-0" data-testid="panel-circle">
           <CircleSeatingChart
             players={game.players}
             currentDay={game.currentDay}
+            phase={game.phase}
             deathRecords={game.deathRecords ?? []}
             onSelectPlayer={(playerId) => setSelectedPlayerId(playerId)}
             onOpenPrimaryPicker={(playerId) => setPrimaryPickerPlayerId(playerId)}
