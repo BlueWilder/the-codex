@@ -63,16 +63,16 @@ export default function Reference() {
   return (
     <Layout>
       <div className="max-w-6xl mx-auto space-y-6">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border pb-6">
-          <h1 className="text-4xl font-display text-amber-500">Character Reference</h1>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[var(--shell-border)] pb-5">
+          <h1 className="text-4xl font-display text-[var(--shell-gold)]">Character Reference</h1>
           
           <div className="relative w-full md:w-64">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--shell-inactive)]" />
             <input 
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search ability..."
-              className="w-full bg-black/20 border border-amber-900/30 rounded-full py-2 pl-9 pr-4 text-sm focus:outline-none focus:border-amber-600/50 transition-colors placeholder:text-muted-foreground/50"
+              className="w-full rounded-full border border-[var(--shell-border)] bg-[var(--shell-chrome)] py-2 pl-9 pr-4 font-serif text-base text-[var(--parchment-panel)] transition-colors placeholder:text-[var(--shell-inactive)] focus:border-[var(--shell-gold)] focus:outline-none"
               data-testid="input-search"
             />
           </div>
@@ -88,9 +88,9 @@ export default function Reference() {
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
                     "px-4 py-1.5 text-xs font-sans font-bold uppercase tracking-wider transition-all duration-150 border whitespace-nowrap",
                     script.isCommunity ? "rounded-l-full" : "rounded-full",
-                    scriptFilter === script.id 
-                      ? "bg-red-900/50 text-red-100 border-red-600" 
-                      : "bg-transparent text-muted-foreground border-transparent hover:bg-white/5"
+                    scriptFilter === script.id
+                      ? "bg-[var(--shell-gold)] text-[var(--shell-chrome)] border-[var(--shell-gold)]"
+                      : "bg-transparent text-[var(--shell-inactive)] border-transparent hover:text-[var(--parchment-panel)] hover:bg-white/5"
                   )}
                   data-testid={`button-script-${script.id}`}
                 >
@@ -110,7 +110,7 @@ export default function Reference() {
                         setShowScriptBuilder(true);
                       }
                     }}
-                    className="px-1.5 py-1.5 rounded-r-full text-xs text-muted-foreground hover:bg-white/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
+                    className="px-1.5 py-1.5 rounded-r-full text-xs text-[var(--shell-inactive)] hover:text-[var(--shell-gold)] hover:bg-white/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
                     title="Copy & edit script"
                     data-testid={`button-copy-script-${script.id}`}
                   >
@@ -122,7 +122,7 @@ export default function Reference() {
             
             {customScripts.length > 0 && (
               <>
-                <div className="w-px h-6 bg-border mx-1" />
+                <div className="w-px h-6 bg-[var(--shell-border)] mx-1" />
                 {customScripts.map((script) => (
                   <div key={script.id} className="flex items-center">
                     <button
@@ -131,8 +131,8 @@ export default function Reference() {
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
                         "px-3 py-1.5 rounded-l-full text-xs font-sans font-bold tracking-wider transition-all duration-150 border whitespace-nowrap",
                         scriptFilter === `custom:${script.id}`
-                          ? "bg-purple-900/50 text-purple-100 border-purple-600"
-                          : "bg-transparent text-muted-foreground border-transparent hover:bg-white/5"
+                          ? "bg-[var(--shell-gold)] text-[var(--shell-chrome)] border-[var(--shell-gold)]"
+                          : "bg-transparent text-[var(--shell-inactive)] border-transparent hover:text-[var(--parchment-panel)] hover:bg-white/5"
                       )}
                       data-testid={`button-load-script-${script.id}`}
                     >
@@ -143,7 +143,7 @@ export default function Reference() {
                         setEditingScript(script);
                         setShowScriptBuilder(true);
                       }}
-                      className="px-1.5 py-1.5 text-xs text-muted-foreground border-y border-transparent hover:bg-white/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
+                      className="px-1.5 py-1.5 text-xs text-[var(--shell-inactive)] border-y border-transparent hover:text-[var(--shell-gold)] hover:bg-white/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
                       title="Edit script"
                       data-testid={`button-edit-script-${script.id}`}
                     >
@@ -156,7 +156,7 @@ export default function Reference() {
                         }
                         deleteCustomScript(script.id);
                       }}
-                      className="px-1.5 py-1.5 rounded-r-full text-xs text-muted-foreground border-y border-r border-transparent hover:bg-red-900/30 hover:text-red-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
+                      className="px-1.5 py-1.5 rounded-r-full text-xs text-[var(--shell-inactive)] border-y border-r border-transparent hover:bg-red-900/30 hover:text-red-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
                       title="Delete script"
                       data-testid={`button-delete-script-${script.id}`}
                     >
@@ -172,7 +172,7 @@ export default function Reference() {
                 setEditingScript(null);
                 setShowScriptBuilder(true);
               }}
-              className="px-3 py-1.5 rounded-full text-xs font-sans font-bold tracking-wider transition-all duration-150 border border-dashed border-purple-700/50 whitespace-nowrap flex items-center gap-1 text-purple-400 hover:bg-purple-900/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
+              className="px-3 py-1.5 rounded-full text-xs font-sans font-bold uppercase tracking-wider transition-all duration-150 border border-dashed border-[var(--shell-gold)] whitespace-nowrap flex items-center gap-1 text-[var(--shell-gold)] hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
               data-testid="button-create-custom-script"
             >
               <Plus className="w-3.5 h-3.5" />
@@ -188,9 +188,9 @@ export default function Reference() {
                 className={cn(
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
                   "px-4 py-1.5 rounded-full text-xs font-sans font-bold uppercase tracking-wider transition-all duration-150 border",
-                  teamFilter === f 
-                    ? "bg-amber-900/50 text-amber-100 border-amber-600" 
-                    : "bg-transparent text-muted-foreground border-transparent hover:bg-white/5"
+                  teamFilter === f
+                    ? "bg-[var(--shell-gold)] text-[var(--shell-chrome)] border-[var(--shell-gold)]"
+                    : "bg-transparent text-[var(--shell-inactive)] border-transparent hover:text-[var(--parchment-panel)] hover:bg-white/5"
                 )}
                 data-testid={`button-filter-${f}`}
               >

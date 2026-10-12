@@ -88,7 +88,7 @@ export function ScriptView({
     <div className={className}>
       <div className={toolbarClassName}>
         {sortOrder === "night" && (
-          <div className="inline-flex items-center gap-1 rounded-full border border-border bg-black/20 p-1">
+          <div className="inline-flex items-center gap-1 rounded-full border border-[var(--shell-border)] bg-[var(--shell-chrome)] p-1">
             {NIGHT_VIEW_OPTIONS.map(({ value, label, icon: Icon, testId }) => (
               <button
                 key={value}
@@ -97,8 +97,8 @@ export function ScriptView({
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
                   "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-sans font-bold tracking-wider transition-all duration-150 whitespace-nowrap",
                   nightView === value
-                    ? "bg-amber-900/50 text-amber-100"
-                    : "bg-transparent text-muted-foreground hover:bg-white/5",
+                    ? "bg-[var(--shell-gold)] text-[var(--shell-chrome)]"
+                    : "bg-transparent text-[var(--shell-inactive)] hover:text-[var(--parchment-panel)] hover:bg-white/5",
                 )}
                 title={label}
                 data-testid={testId}
@@ -109,7 +109,7 @@ export function ScriptView({
             ))}
           </div>
         )}
-        <div className="inline-flex items-center gap-1 rounded-full border border-border bg-black/20 p-1">
+        <div className="inline-flex items-center gap-1 rounded-full border border-[var(--shell-border)] bg-[var(--shell-chrome)] p-1">
           {SORT_OPTIONS.map(({ value, label, icon: Icon, testId }) => (
             <button
               key={value}
@@ -118,8 +118,8 @@ export function ScriptView({
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
                 "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold tracking-wider transition-all duration-150 whitespace-nowrap",
                 sortOrder === value
-                  ? "bg-amber-900/50 text-amber-100"
-                  : "bg-transparent text-muted-foreground hover:bg-white/5",
+                  ? "bg-[var(--shell-gold)] text-[var(--shell-chrome)]"
+                  : "bg-transparent text-[var(--shell-inactive)] hover:text-[var(--parchment-panel)] hover:bg-white/5",
               )}
               title={`Sort ${label}`}
               data-testid={testId}
@@ -131,7 +131,8 @@ export function ScriptView({
         </div>
       </div>
 
-      <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {/* One parchment panel holds every card (Game Mode panel pattern). */}
+      <motion.div layout className="game-panel grid grid-cols-1 gap-2.5 md:grid-cols-2 lg:grid-cols-3">
         {sorted.map((char) => (
           <CharacterCard
             key={char.id}
@@ -142,7 +143,7 @@ export function ScriptView({
         ))}
 
         {sorted.length === 0 && (
-          <div className="col-span-full py-12 text-center text-muted-foreground font-serif italic">
+          <div className="col-span-full py-12 text-center font-serif italic text-[var(--parchment-ink-muted)]">
             {emptyMessage}
           </div>
         )}
