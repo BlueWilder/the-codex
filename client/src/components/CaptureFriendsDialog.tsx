@@ -38,9 +38,9 @@ export function CaptureFriendsDialog({ open, names, onSave, onSkip }: CaptureFri
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => { if (!isOpen) onSkip(); }}>
-      <DialogContent className="max-w-md border-[#3d2f57] bg-background" data-testid="dialog-capture-friends">
+      <DialogContent className="max-w-md parchment-scope rounded-[14px] border-[var(--parchment-border)] bg-[var(--parchment-panel)]" data-testid="dialog-capture-friends">
         <DialogHeader>
-          <DialogTitle className="font-display text-[#c79fe6] flex items-center gap-2">
+          <DialogTitle className="flex items-center gap-2 font-display text-2xl font-semibold text-[var(--parchment-ink)]">
             <Users className="w-5 h-5" />
             Add these players to Friends?
           </DialogTitle>
@@ -60,14 +60,14 @@ export function CaptureFriendsDialog({ open, names, onSave, onSkip }: CaptureFri
                 className={cn(
                   "flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-serif transition-colors duration-150",
                   picked
-                    ? "border-[#c79fe6]/60 bg-[#c79fe6]/15 text-foreground"
-                    : "border-[#3d2f57]/60 bg-[#c79fe6]/5 text-muted-foreground hover:bg-[#c79fe6]/10",
+                    ? "border-[var(--parchment-ink-link)] bg-[var(--parchment-control)] text-[var(--parchment-ink)]"
+                    : "border-[var(--parchment-border)] bg-[var(--parchment-raised)] text-[var(--parchment-ink)] hover:bg-[var(--parchment-control)] text-[var(--parchment-ink-muted)]",
                   FOCUS_RING
                 )}
                 data-testid={`capture-chip-${name}`}
               >
                 {name}
-                {picked && <Check className="w-3.5 h-3.5 text-[#c79fe6]" />}
+                {picked && <Check className="h-3.5 w-3.5 text-[var(--parchment-ink-link)]" />}
               </button>
             );
           })}
@@ -83,7 +83,7 @@ export function CaptureFriendsDialog({ open, names, onSave, onSkip }: CaptureFri
             Not now
           </Button>
           <Button
-            className="flex-1 bg-[#c79fe6]/20 text-[#c79fe6] border border-[#3d2f57] hover:bg-[#c79fe6]/30 transition-colors duration-150"
+            className="flex-1 bg-[var(--parchment-ink-link)] text-[var(--parchment-panel)] border border-[var(--parchment-ink-link)] hover:bg-[var(--parchment-ink)] transition-colors duration-150"
             onClick={() => onSave(selected)}
             data-testid="button-capture-save"
           >

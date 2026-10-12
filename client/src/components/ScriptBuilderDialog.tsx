@@ -6,7 +6,7 @@ import { Check, Search, Upload, FileText, AlertTriangle, CheckCircle2, X, Camera
 import { cn } from "@/lib/utils";
 import { ALL_CHARACTERS } from "@/lib/game-data";
 import { scanScriptFile } from "@/lib/scan-script";
-import { teamSurface } from "@/lib/team-style";
+import { teamParchment } from "@/lib/team-style";
 
 interface ScriptBuilderDialogProps {
   open: boolean;
@@ -238,9 +238,9 @@ export function ScriptBuilderDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col p-4 md:p-6">
+      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col p-4 md:p-6 parchment-scope rounded-[14px] border-[var(--parchment-border)] bg-[var(--parchment-panel)]">
         <DialogHeader className="pb-2">
-          <DialogTitle className="font-display text-lg md:text-xl text-amber-500">
+          <DialogTitle className="font-display text-2xl font-semibold text-[var(--parchment-ink)]">
             {title}
           </DialogTitle>
         </DialogHeader>
@@ -274,9 +274,10 @@ export function ScriptBuilderDialog({
           {importMessage && (
             <div className={cn(
               "flex items-start gap-2 px-3 py-2 rounded-md text-xs",
-              importMessage.type === 'success' && "bg-green-950/30 border border-green-900/40 text-green-300",
-              importMessage.type === 'warning' && "bg-amber-950/30 border border-amber-900/40 text-amber-300",
-              importMessage.type === 'error' && "bg-red-950/30 border border-red-900/40 text-red-300",
+              "border bg-[var(--parchment-raised)] font-serif text-sm",
+              importMessage.type === 'success' && "border-[var(--parchment-border)] text-[var(--parchment-ink-link)]",
+              importMessage.type === 'warning' && "border-[var(--attention)] text-[var(--attention)]",
+              importMessage.type === 'error' && "border-[var(--parchment-minion)] text-[var(--parchment-minion)]",
             )} data-testid="import-message">
               {importMessage.type === 'success' && <CheckCircle2 className="w-3.5 h-3.5 mt-0.5 shrink-0" />}
               {importMessage.type === 'warning' && <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" />}
@@ -322,9 +323,9 @@ export function ScriptBuilderDialog({
                 />
               </div>
             ) : (
-              <div className="border border-border rounded-lg p-3 space-y-2 bg-card">
+              <div className="game-card p-3 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-amber-200/80">Import from BOTC Script Tool</span>
+                  <span className="game-label text-[var(--parchment-ink-link)]">Import from BOTC Script Tool</span>
                   <button onClick={() => { setShowImport(false); setImportJson(""); }} className="text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background">
                     <X className="w-3.5 h-3.5" />
                   </button>
@@ -373,16 +374,16 @@ export function ScriptBuilderDialog({
             )}
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 text-xs">
+          <div className="flex flex-wrap items-center gap-2 font-sans text-xs font-semibold">
             <span className="text-muted-foreground">Selected:</span>
-            <span className="text-blue-400">{teamCounts.townsfolk} TF</span>
-            <span className="text-blue-300">{teamCounts.outsider} OS</span>
-            <span className="text-red-400">{teamCounts.minion} MN</span>
-            <span className={cn("font-bold", hasDemon ? "text-red-500" : "text-red-500/50")}>
+            <span className="text-[var(--parchment-townsfolk)]">{teamCounts.townsfolk} TF</span>
+            <span className="text-[var(--parchment-outsider)]">{teamCounts.outsider} OS</span>
+            <span className="text-[var(--parchment-minion)]">{teamCounts.minion} MN</span>
+            <span className={cn("font-bold text-[var(--parchment-demon)]", !hasDemon && "opacity-60")}>
               {teamCounts.demon} DM {!hasDemon && "(need 1+)"}
             </span>
-            <span className="text-amber-400">{teamCounts.traveler} TR</span>
-            <span className="text-violet-400">{teamCounts.fabled} FB</span>
+            <span className="text-[var(--parchment-traveler)]">{teamCounts.traveler} TR</span>
+            <span className="text-[var(--parchment-fabled)]">{teamCounts.fabled} FB</span>
             <span className="ml-auto font-medium">{selectedCharacters.size} total</span>
           </div>
         </div>
@@ -395,9 +396,9 @@ export function ScriptBuilderDialog({
               className={cn(
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
                 "px-2 py-0.5 md:px-3 md:py-1 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-wider transition-all duration-150 border",
-                teamFilter === f 
-                  ? "bg-amber-900/50 text-amber-100 border-amber-600" 
-                  : "bg-transparent text-muted-foreground border-transparent hover:bg-white/5"
+                teamFilter === f
+                  ? "bg-[var(--parchment-ink-link)] text-[var(--parchment-panel)] border-[var(--parchment-ink-link)]"
+                  : "bg-transparent text-[var(--parchment-ink-muted)] border-transparent hover:bg-[var(--parchment-control)]"
               )}
               data-testid={`builder-filter-${f}`}
             >
@@ -425,7 +426,7 @@ export function ScriptBuilderDialog({
           </Button>
         </div>
 
-        <div className="flex-1 min-h-0 max-h-[45vh] md:max-h-[50vh] overflow-y-auto border border-border rounded-lg p-2 touch-pan-y">
+        <div className="flex-1 min-h-0 max-h-[45vh] md:max-h-[50vh] overflow-y-auto rounded-[10px] border border-[var(--parchment-rule)] p-2 touch-pan-y">
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1.5 md:gap-2">
             {filteredChars.map((char) => (
               <button
@@ -433,23 +434,22 @@ export function ScriptBuilderDialog({
                 onClick={() => toggleCharacter(char.id)}
                 className={cn(
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
-                  "p-1.5 md:p-2 rounded-lg border text-left transition-all duration-150",
-                  teamSurface(char.team),
-                  selectedCharacters.has(char.id) 
-                    ? "ring-2 ring-amber-500" 
-                    : "opacity-60 hover:opacity-100"
+                  "game-card p-1.5 md:p-2 text-left transition-all duration-150",
+                  selectedCharacters.has(char.id)
+                    ? cn("border-[1.5px] bg-[var(--parchment-control)]", teamParchment(char.team).border)
+                    : "opacity-70 hover:opacity-100"
                 )}
                 data-testid={`builder-character-${char.id}`}
               >
                 <div className="flex items-center justify-between gap-1">
-                  <span className="text-[11px] md:text-xs font-bold truncate">{char.name}</span>
+                  <span className={cn("truncate font-display text-[13px] font-semibold md:text-sm", teamParchment(char.team).text)}>{char.name}</span>
                   {selectedCharacters.has(char.id) && (
-                    <Check className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                    <Check className="h-3.5 w-3.5 shrink-0 text-[var(--parchment-ink-link)]" />
                   )}
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-[9px] md:text-[10px] uppercase opacity-60">{char.team}</span>
-                  <span className="text-[8px] md:text-[9px] uppercase opacity-40">{char.edition?.toUpperCase()}</span>
+                  <span className="font-sans text-[9px] font-bold uppercase tracking-wider text-[var(--parchment-ink-muted)] md:text-[10px]">{char.team}</span>
+                  <span className="font-sans text-[8px] uppercase text-[var(--parchment-ink-faint)] md:text-[9px]">{char.edition?.toUpperCase()}</span>
                 </div>
               </button>
             ))}
@@ -464,6 +464,7 @@ export function ScriptBuilderDialog({
             size="sm" 
             onClick={handleSave} 
             disabled={!scriptName.trim() || selectedCharacters.size === 0 || saving}
+            className="bg-[var(--parchment-ink-link)] text-[var(--parchment-panel)] hover:bg-[var(--parchment-ink)]"
             data-testid="button-save-script"
           >
             {saving && <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />}

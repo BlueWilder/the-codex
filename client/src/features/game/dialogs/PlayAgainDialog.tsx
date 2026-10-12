@@ -12,9 +12,9 @@ export function PlayAgainDialog({
 }) {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
+      <AlertDialogContent className="parchment-scope rounded-[14px] border-[var(--parchment-border)] bg-[var(--parchment-panel)]">
         <AlertDialogHeader>
-          <AlertDialogTitle>Start a new game with the same players?</AlertDialogTitle>
+          <AlertDialogTitle className="font-display text-2xl font-semibold text-[var(--parchment-ink)]">Start a new game with the same players?</AlertDialogTitle>
           <AlertDialogDescription asChild>
             <div className="space-y-3">
               <p>This will reset:</p>

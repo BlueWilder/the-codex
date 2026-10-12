@@ -56,9 +56,9 @@ export function FriendsPicker({ open, onOpenChange, initialIds, onConfirm }: Fri
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md border-[#3d2f57] bg-background">
+      <DialogContent className="max-w-md parchment-scope rounded-[14px] border-[var(--parchment-border)] bg-[var(--parchment-panel)]">
         <DialogHeader>
-          <DialogTitle className="font-display text-[#c79fe6] flex items-center gap-2">
+          <DialogTitle className="flex items-center gap-2 font-display text-2xl font-semibold text-[var(--parchment-ink)]">
             <Users className="w-5 h-5" />
             Add from Friends
           </DialogTitle>
@@ -74,7 +74,7 @@ export function FriendsPicker({ open, onOpenChange, initialIds, onConfirm }: Fri
             </p>
           ) : friends.length === 0 ? (
             <div className="py-8 text-center" data-testid="text-friends-picker-empty">
-              <Users className="w-12 h-12 mx-auto mb-3 opacity-30 text-[#c79fe6]" />
+              <Users className="mx-auto mb-3 h-12 w-12 text-[var(--parchment-ink-faint)] opacity-60" />
               <p className="text-sm text-muted-foreground">
                 No friends yet. Add some in Manage Friends on the home page.
               </p>
@@ -92,8 +92,8 @@ export function FriendsPicker({ open, onOpenChange, initialIds, onConfirm }: Fri
                   className={cn(
                     "w-full flex items-center gap-2 rounded-lg border px-3 py-2 text-left transition-colors duration-150 disabled:opacity-40 disabled:pointer-events-none",
                     picked
-                      ? "border-[#c79fe6]/60 bg-[#c79fe6]/15"
-                      : "border-[#3d2f57]/60 bg-[#c79fe6]/5 hover:bg-[#c79fe6]/10",
+                      ? "border-[var(--parchment-ink-link)] bg-[var(--parchment-control)] text-[var(--parchment-ink)]"
+                      : "border-[var(--parchment-border)] bg-[var(--parchment-raised)] text-[var(--parchment-ink)] hover:bg-[var(--parchment-control)]",
                     FOCUS_RING
                   )}
                   data-testid={`friend-pick-${friend.id}`}
@@ -102,7 +102,7 @@ export function FriendsPicker({ open, onOpenChange, initialIds, onConfirm }: Fri
                     {friend.name}
                   </span>
                   {picked && (
-                    <span className="flex items-center gap-1 text-xs text-[#c79fe6]">
+                    <span className="game-label flex items-center gap-1 text-[var(--parchment-ink-link)]">
                       Seat {pickIndex + 1}
                       <Check className="w-4 h-4" />
                     </span>
@@ -116,7 +116,7 @@ export function FriendsPicker({ open, onOpenChange, initialIds, onConfirm }: Fri
         <Button
           onClick={handleConfirm}
           disabled={isLoading}
-          className="bg-[#c79fe6]/20 text-[#c79fe6] border border-[#3d2f57] hover:bg-[#c79fe6]/30 transition-colors duration-150"
+          className="bg-[var(--parchment-ink-link)] text-[var(--parchment-panel)] border border-[var(--parchment-ink-link)] hover:bg-[var(--parchment-ink)] transition-colors duration-150"
           data-testid="button-confirm-friends"
         >
           {pickedIds.length > 0

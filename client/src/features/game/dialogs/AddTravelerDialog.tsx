@@ -48,9 +48,9 @@ export function AddTravelerDialog({
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="max-w-sm">
+      <DialogContent className="max-w-sm parchment-scope rounded-[14px] border-[var(--parchment-border)] bg-[var(--parchment-panel)]">
         <DialogHeader>
-          <DialogTitle className="text-amber-500 font-display">Add Traveler</DialogTitle>
+          <DialogTitle className="font-display text-2xl font-semibold text-[var(--parchment-ink)]">Add Traveler</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <div>
@@ -83,13 +83,13 @@ export function AddTravelerDialog({
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
                     "w-full text-left px-2 py-1.5 rounded-md text-sm flex items-center gap-2",
                     selectedClaim === char.id 
-                      ? "bg-purple-900/40 border border-purple-700" 
+                      ? "border border-[var(--parchment-ink-link)] bg-[var(--parchment-control)] text-[var(--parchment-ink)]" 
                       : "hover-elevate"
                   )}
                   data-testid={`button-claim-${char.id}`}
                 >
                   {char.name}
-                  {selectedClaim === char.id && <Check className="w-3.5 h-3.5 ml-auto text-purple-400" />}
+                  {selectedClaim === char.id && <Check className="ml-auto h-3.5 w-3.5 text-[var(--parchment-ink-link)]" />}
                 </button>
               ))}
               {travelerCharacters.length === 0 && (

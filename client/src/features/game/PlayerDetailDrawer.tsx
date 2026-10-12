@@ -422,9 +422,9 @@ export function PlayerDetailDrawer({
 
       {/* Remove Player Confirmation */}
       <AlertDialog open={showRemoveConfirm} onOpenChange={setShowRemoveConfirm}>
-        <AlertDialogContent>
+        <AlertDialogContent className="parchment-scope rounded-[14px] border-[var(--parchment-border)] bg-[var(--parchment-panel)]">
           <AlertDialogHeader>
-            <AlertDialogTitle>Remove Player?</AlertDialogTitle>
+            <AlertDialogTitle className="font-display text-2xl font-semibold text-[var(--parchment-ink)]">Remove Player?</AlertDialogTitle>
             <AlertDialogDescription>
               Remove "{player?.name}" from the game? This will delete all their notes, claims, and history.
             </AlertDialogDescription>

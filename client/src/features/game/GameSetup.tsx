@@ -11,10 +11,12 @@ import { ChevronRight, Play, Plus, ChevronUp, ChevronDown, Loader2, BookOpen, Pe
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
-import { teamBadge } from "@/lib/team-style";
+import { teamParchment } from "@/lib/team-style";
 import { type GameScriptRef } from "@/features/game/types";
+
+/** Character Breakdown pill on parchment; team colors come from teamParchment. */
+const PILL = "border font-sans text-sm font-semibold px-3 py-1";
 
 export function SetupWizard({ onStart }: { onStart: (count: number, names: string[], script?: GameScriptRef | null) => void }) {
   const [playerCount, setPlayerCount] = useState(8);
@@ -115,40 +117,40 @@ export function SetupWizard({ onStart }: { onStart: (count: number, names: strin
 
   return (
     <div className="max-w-4xl mx-auto py-8">
-      <h1 className="text-3xl md:text-4xl font-display text-amber-500 mb-8 text-center">New Game</h1>
+      <h1 className="mb-6 text-center font-display text-3xl text-[var(--shell-gold)] md:text-4xl">New Game</h1>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-        <Card className="p-4 flex flex-col" data-testid="card-script">
-          <div className="text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-2">Script</div>
+        <div className="game-panel flex flex-col p-3.5" data-testid="card-script">
+          <div className="game-label mb-2 text-[var(--parchment-townsfolk)]">Script</div>
           <button
             onClick={() => setScriptDrawerOpen(true)}
             className="w-full flex-1 text-left flex items-center gap-3 rounded-lg hover-elevate -m-1 p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
             data-testid="button-script-selector"
           >
             {selectedScript ? (
-              <Scroll className="w-5 h-5 text-amber-500/70 shrink-0" />
+              <Scroll className="h-5 w-5 shrink-0 text-[var(--parchment-ink-link)]" />
             ) : (
-              <BookOpen className="w-5 h-5 text-amber-400 shrink-0" />
+              <BookOpen className="h-5 w-5 shrink-0 text-[var(--parchment-ink-link)]" />
             )}
             <div className="flex-1 min-w-0">
               {selectedScript ? (
                 <>
-                  <div className="font-medium truncate">{selectedScript.name}</div>
-                  <div className="text-sm text-muted-foreground">{countScriptCharacters(selectedScript)} characters</div>
+                  <div className="truncate font-display text-lg font-semibold text-[var(--parchment-ink)]">{selectedScript.name}</div>
+                  <div className="font-serif text-sm text-[var(--parchment-ink-muted)]">{countScriptCharacters(selectedScript)} characters</div>
                 </>
               ) : (
                 <>
-                  <div className="font-medium text-amber-100">Select a script</div>
-                  <div className="text-sm text-muted-foreground">Tap to choose, or start with all characters</div>
+                  <div className="font-display text-lg font-semibold text-[var(--parchment-ink)]">Select a script</div>
+                  <div className="font-serif text-sm text-[var(--parchment-ink-muted)]">Tap to choose, or start with all characters</div>
                 </>
               )}
             </div>
-            <ChevronRight className="w-5 h-5 text-muted-foreground shrink-0" />
+            <ChevronRight className="h-5 w-5 shrink-0 text-[var(--parchment-ink-faint)]" />
           </button>
-        </Card>
+        </div>
 
-        <Card className="p-4 flex flex-col" data-testid="card-players">
-          <div className="text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-2">Players</div>
+        <div className="game-panel flex flex-col p-3.5" data-testid="card-players">
+          <div className="game-label mb-2 text-[var(--parchment-townsfolk)]">Players</div>
           <div className="flex flex-1 items-center justify-center gap-4">
             <Button
               size="icon"
@@ -158,7 +160,7 @@ export function SetupWizard({ onStart }: { onStart: (count: number, names: strin
             >
               <ChevronDown className="w-5 h-5" />
             </Button>
-            <div className="text-4xl md:text-5xl font-display text-amber-100 w-16 text-center" data-testid="text-player-count">
+            <div className="w-16 text-center font-display text-5xl text-[var(--parchment-ink)]" data-testid="text-player-count">
               {playerCount}
             </div>
             <Button
@@ -172,46 +174,46 @@ export function SetupWizard({ onStart }: { onStart: (count: number, names: strin
           </div>
           <button
             onClick={() => setFriendsPickerOpen(true)}
-            className="mt-2 w-full flex items-center justify-center gap-1.5 rounded-md border border-[#3d2f57] bg-[#c79fe6]/5 px-3 py-1.5 text-sm text-[#c79fe6] hover:bg-[#c79fe6]/15 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
+            className="mt-2 w-full flex items-center justify-center gap-1.5 rounded-full border border-[var(--parchment-control-border)] bg-[var(--parchment-control)] px-3 py-1.5 font-sans text-xs font-bold uppercase tracking-wider text-[var(--parchment-ink-link)] hover:bg-[var(--parchment-control-hover)] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
             data-testid="button-add-from-friends"
           >
             <Users className="w-3.5 h-3.5" />
             Add from Friends
           </button>
           {assignedNames.length > 0 && (
-            <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground" data-testid="text-assigned-friends">
+            <div className="mt-2 flex items-center gap-2 font-serif text-sm text-[var(--parchment-ink-muted)]" data-testid="text-assigned-friends">
               <span className="flex-1 truncate">
                 {assignedNames.length} added: {assignedNames.join(", ")}
               </span>
               <button
                 onClick={() => { setAssignedNames([]); setAssignedFriendIds([]); }}
-                className="shrink-0 rounded-md px-1.5 py-0.5 text-muted-foreground hover:text-red-400 hover:bg-red-500/15 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
+                className="shrink-0 rounded-md px-1.5 py-0.5 text-[var(--parchment-ink-muted)] hover:text-[var(--parchment-minion)] hover:bg-[var(--parchment-control)] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
                 data-testid="button-clear-assigned-friends"
               >
                 Clear
               </button>
             </div>
           )}
-        </Card>
+        </div>
       </div>
 
-      <div className="w-full bg-muted/30 p-6 rounded-lg text-center space-y-3 mb-4">
-        <p className="text-base font-bold text-muted-foreground uppercase tracking-wider">Character Breakdown</p>
+      <div className="game-panel mb-4 space-y-2.5 p-3.5 text-center">
+        <p className="game-label text-[var(--parchment-townsfolk)]">Character Breakdown</p>
         <div className="flex flex-wrap justify-center gap-3" data-testid="text-breakdown">
-          <Badge variant="secondary" className={cn(teamBadge('townsfolk'), 'text-sm px-3 py-1 font-sans')}>
+          <Badge variant="secondary" className={cn(PILL, teamParchment('townsfolk').tint, teamParchment('townsfolk').text, teamParchment('townsfolk').ring)}>
             {breakdown.townsfolk} Townsfolk
           </Badge>
-          <Badge variant="secondary" className={cn(teamBadge('outsider'), 'text-sm px-3 py-1 font-sans')}>
+          <Badge variant="secondary" className={cn(PILL, teamParchment('outsider').tint, teamParchment('outsider').text, teamParchment('outsider').ring)}>
             {breakdown.outsiders} Outsiders
           </Badge>
-          <Badge variant="secondary" className={cn(teamBadge('minion'), 'text-sm px-3 py-1 font-sans')}>
+          <Badge variant="secondary" className={cn(PILL, teamParchment('minion').tint, teamParchment('minion').text, teamParchment('minion').ring)}>
             {breakdown.minions} Minions
           </Badge>
-          <Badge variant="secondary" className={cn(teamBadge('demon'), 'text-sm px-3 py-1 font-sans')}>
+          <Badge variant="secondary" className={cn(PILL, teamParchment('demon').tint, teamParchment('demon').text, teamParchment('demon').ring)}>
             {breakdown.demons} Demon
           </Badge>
           {'travelers' in breakdown && breakdown.travelers > 0 && (
-            <Badge variant="secondary" className={cn(teamBadge('traveler'), 'text-sm px-3 py-1 font-sans')}>
+            <Badge variant="secondary" className={cn(PILL, teamParchment('traveler').tint, teamParchment('traveler').text, teamParchment('traveler').ring)}>
               + {breakdown.travelers} {breakdown.travelers === 1 ? 'Traveler' : 'Travelers'}
             </Badge>
           )}
@@ -221,14 +223,14 @@ export function SetupWizard({ onStart }: { onStart: (count: number, names: strin
       {selectedScript ? (
         <ScriptSheet characters={sheetCharacters} scriptName={selectedScript.name} />
       ) : (
-        <div className="py-12 text-center text-muted-foreground" data-testid="text-script-nudge">
+        <div className="game-panel py-12 text-center text-[var(--parchment-ink-muted)]" data-testid="text-script-nudge">
           <Scroll className="w-12 h-12 mx-auto mb-3 opacity-30" />
-          <p className="text-sm">Pick a script to see the full character sheet.</p>
+          <p className="font-serif text-base">Pick a script to see the full character sheet.</p>
         </div>
       )}
 
       <div className="sticky bottom-0 z-30 -mx-4 mt-6 px-4 pt-3 pb-4 flex justify-center bg-gradient-to-t from-background via-background/95 to-transparent">
-        <Button onClick={handleStartGame} size="lg" className="shadow-lg shadow-amber-900/30" data-testid="button-start-game">
+        <Button onClick={handleStartGame} size="lg" className="bg-[var(--shell-gold)] font-display text-lg text-[var(--shell-chrome)] shadow-lg shadow-black/40 hover:bg-[var(--shell-gold)] hover:brightness-110" data-testid="button-start-game">
           <Play className="w-4 h-4 mr-2" /> Start Game
         </Button>
       </div>
@@ -241,33 +243,33 @@ export function SetupWizard({ onStart }: { onStart: (count: number, names: strin
       />
 
       <Drawer open={scriptDrawerOpen} onOpenChange={setScriptDrawerOpen}>
-        <DrawerContent className="max-h-[85vh]">
-          <DrawerHeader>
-            <DrawerTitle>Select a script</DrawerTitle>
+        <DrawerContent className="parchment-scope max-h-[85vh] border-[var(--parchment-border)] bg-[var(--parchment-panel)]">
+          <DrawerHeader className="text-left">
+            <DrawerTitle className="font-display text-2xl font-semibold text-[var(--parchment-ink)]">Select a script</DrawerTitle>
           </DrawerHeader>
-          <div className="overflow-y-auto px-4 pb-6 space-y-3">
+          <div className="space-y-2 overflow-y-auto px-3.5 pb-6">
             <button
               onClick={() => handleSelectScript(null)}
               className={cn(
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
-                "w-full text-left p-4 rounded-lg border transition-colors",
+                "w-full text-left p-3 transition-colors",
                 !selectedScript
-                  ? "bg-amber-900/30 border-amber-600 ring-1 ring-amber-500/50"
-                  : "bg-card border-border hover-elevate"
+                  ? "game-card border-[1.5px] border-[var(--parchment-ink-link)] bg-[var(--parchment-control)]"
+                  : "game-card hover:bg-[var(--parchment-control)]"
               )}
               data-testid="button-no-script"
             >
               <div className="flex items-center gap-3">
-                <BookOpen className="w-5 h-5 text-muted-foreground" />
+                <BookOpen className="h-5 w-5 text-[var(--parchment-ink-link)]" />
                 <div>
-                  <div className="font-medium">All Characters</div>
-                  <div className="text-sm text-muted-foreground">No script filter - show all characters when claiming</div>
+                  <div className="font-display text-lg font-semibold leading-tight text-[var(--parchment-ink)]">All Characters</div>
+                  <div className="font-serif text-sm text-[var(--parchment-ink-muted)]">No script filter - show all characters when claiming</div>
                 </div>
               </div>
             </button>
 
             <div className="pt-2 pb-1">
-              <span className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Official Scripts</span>
+              <span className="game-label text-[var(--parchment-townsfolk)]">Official Scripts</span>
             </div>
 
             {allScripts.filter(s => s.isOfficial && !s.isCommunity).map(script => (
@@ -276,25 +278,25 @@ export function SetupWizard({ onStart }: { onStart: (count: number, names: strin
                 onClick={() => handleSelectScript(script)}
                 className={cn(
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
-                  "w-full text-left p-4 rounded-lg border transition-colors",
+                  "w-full text-left p-3 transition-colors",
                   selectedScript?.id === script.id
-                    ? "bg-amber-900/30 border-amber-600 ring-1 ring-amber-500/50"
-                    : "bg-card border-border hover-elevate"
+                    ? "game-card border-[1.5px] border-[var(--parchment-ink-link)] bg-[var(--parchment-control)]"
+                    : "game-card hover:bg-[var(--parchment-control)]"
                 )}
                 data-testid={`button-script-${script.id}`}
               >
                 <div className="flex items-center gap-3">
-                  <Scroll className="w-5 h-5 text-amber-500/70" />
+                  <Scroll className="h-5 w-5 text-[var(--parchment-ink-link)]" />
                   <div>
-                    <div className="font-medium">{script.name}</div>
-                    <div className="text-sm text-muted-foreground">{countScriptCharacters(script)} characters</div>
+                    <div className="font-display text-lg font-semibold leading-tight text-[var(--parchment-ink)]">{script.name}</div>
+                    <div className="font-serif text-sm text-[var(--parchment-ink-muted)]">{countScriptCharacters(script)} characters</div>
                   </div>
                 </div>
               </button>
             ))}
 
             <div className="pt-2 pb-1">
-              <span className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Community Scripts</span>
+              <span className="game-label text-[var(--parchment-townsfolk)]">Community Scripts</span>
             </div>
 
             {allScripts.filter(s => s.isOfficial && s.isCommunity).map(script => (
@@ -303,34 +305,34 @@ export function SetupWizard({ onStart }: { onStart: (count: number, names: strin
                 onClick={() => handleSelectScript(script)}
                 className={cn(
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
-                  "w-full text-left p-4 rounded-lg border transition-colors",
+                  "w-full text-left p-3 transition-colors",
                   selectedScript?.id === script.id
-                    ? "bg-teal-900/30 border-teal-600 ring-1 ring-teal-500/50"
-                    : "bg-card border-border hover-elevate"
+                    ? "game-card border-[1.5px] border-[var(--parchment-ink-link)] bg-[var(--parchment-control)]"
+                    : "game-card hover:bg-[var(--parchment-control)]"
                 )}
                 data-testid={`button-script-${script.id}`}
               >
                 <div className="flex items-center gap-3">
-                  <Users className="w-5 h-5 text-teal-500/70" />
+                  <Users className="h-5 w-5 text-[var(--parchment-ink-link)]" />
                   <div>
-                    <div className="font-medium">{script.name}</div>
-                    <div className="text-sm text-muted-foreground">{countScriptCharacters(script)} characters</div>
+                    <div className="font-display text-lg font-semibold leading-tight text-[var(--parchment-ink)]">{script.name}</div>
+                    <div className="font-serif text-sm text-[var(--parchment-ink-muted)]">{countScriptCharacters(script)} characters</div>
                   </div>
                 </div>
               </button>
             ))}
 
             <div className="pt-2 pb-1">
-              <span className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Custom Scripts</span>
+              <span className="game-label text-[var(--parchment-townsfolk)]">Custom Scripts</span>
             </div>
             {customScripts.map(script => (
               <div
                 key={script.id}
                 className={cn(
-                  "w-full text-left p-4 rounded-lg border transition-colors flex items-center gap-2",
+                  "w-full text-left p-3 transition-colors flex items-center gap-2",
                   selectedScript?.id === script.id
-                    ? "bg-purple-900/30 border-purple-600 ring-1 ring-purple-500/50"
-                    : "bg-card border-border"
+                    ? "game-card border-[1.5px] border-[var(--parchment-ink-link)] bg-[var(--parchment-control)]"
+                    : "game-card"
                 )}
               >
                 <button
@@ -338,10 +340,10 @@ export function SetupWizard({ onStart }: { onStart: (count: number, names: strin
                   className="flex-1 flex items-center gap-3 hover-elevate rounded-lg -m-2 p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
                   data-testid={`button-script-${script.id}`}
                 >
-                  <Scroll className="w-5 h-5 text-purple-500/70" />
+                  <Scroll className="h-5 w-5 text-[var(--parchment-ink-link)]" />
                   <div>
-                    <div className="font-medium">{script.name}</div>
-                    <div className="text-sm text-muted-foreground">{countScriptCharacters(script)} characters</div>
+                    <div className="font-display text-lg font-semibold leading-tight text-[var(--parchment-ink)]">{script.name}</div>
+                    <div className="font-serif text-sm text-[var(--parchment-ink-muted)]">{countScriptCharacters(script)} characters</div>
                   </div>
                 </button>
                 <Button
@@ -355,7 +357,7 @@ export function SetupWizard({ onStart }: { onStart: (count: number, names: strin
                   }}
                   data-testid={`button-edit-script-${script.id}`}
                 >
-                  <Pencil className="w-4 h-4 text-muted-foreground" />
+                  <Pencil className="h-4 w-4 text-[var(--parchment-ink-muted)]" />
                 </Button>
               </div>
             ))}
@@ -366,26 +368,26 @@ export function SetupWizard({ onStart }: { onStart: (count: number, names: strin
                 setScriptDrawerOpen(false);
                 setShowScriptBuilder(true);
               }}
-              className="w-full text-left p-4 rounded-lg border border-dashed border-purple-700/50 hover-elevate transition-colors flex items-center gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
+              className="w-full text-left p-3 rounded-[10px] border border-dashed border-[var(--parchment-control-border)] hover:bg-[var(--parchment-control)] transition-colors flex items-center gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
               data-testid="button-create-custom-script"
             >
-              <Plus className="w-5 h-5 text-purple-500/70" />
-              <div className="font-medium text-purple-400">Create Custom Script</div>
+              <Plus className="h-5 w-5 text-[var(--parchment-ink-link)]" />
+              <div className="font-display text-lg font-semibold text-[var(--parchment-ink-link)]">Create Custom Script</div>
             </button>
             <button
               onClick={() => scanInputRef.current?.click()}
               disabled={scanning}
-              className="w-full text-left p-4 rounded-lg border border-dashed border-amber-700/50 hover-elevate transition-colors flex items-center gap-3 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
+              className="w-full text-left p-3 rounded-[10px] border border-dashed border-[var(--parchment-control-border)] hover:bg-[var(--parchment-control)] transition-colors flex items-center gap-3 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
               data-testid="button-scan-paper-script"
             >
               {scanning ? (
-                <Loader2 className="w-5 h-5 text-amber-500/70 animate-spin" />
+                <Loader2 className="h-5 w-5 animate-spin text-[var(--parchment-ink-link)]" />
               ) : (
-                <Camera className="w-5 h-5 text-amber-500/70" />
+                <Camera className="h-5 w-5 text-[var(--parchment-ink-link)]" />
               )}
               <div>
-                <div className="font-medium text-amber-400">{scanning ? "Scanning photo..." : "Scan Paper Script"}</div>
-                <div className="text-sm text-muted-foreground">Take a photo of a printed script to build it automatically</div>
+                <div className="font-display text-lg font-semibold text-[var(--parchment-ink-link)]">{scanning ? "Scanning photo..." : "Scan Paper Script"}</div>
+                <div className="font-serif text-sm text-[var(--parchment-ink-muted)]">Take a photo of a printed script to build it automatically</div>
               </div>
             </button>
             <input
@@ -399,7 +401,7 @@ export function SetupWizard({ onStart }: { onStart: (count: number, names: strin
             />
 
             {scanning && (
-              <div className="flex items-center gap-2 pt-2 text-sm text-amber-400" data-testid="status-scanning">
+              <div className="flex items-center gap-2 pt-2 font-serif text-sm text-[var(--parchment-ink-link)]" data-testid="status-scanning">
                 <Loader2 className="w-4 h-4 animate-spin" />
                 Reading your photo… the review screen will open in a moment.
               </div>

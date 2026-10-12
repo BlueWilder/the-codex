@@ -42,9 +42,9 @@ export function AddPlayerDialog({
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="max-w-sm">
+      <DialogContent className="max-w-sm parchment-scope rounded-[14px] border-[var(--parchment-border)] bg-[var(--parchment-panel)]">
         <DialogHeader>
-          <DialogTitle className="text-amber-500 font-display">Add Player</DialogTitle>
+          <DialogTitle className="font-display text-2xl font-semibold text-[var(--parchment-ink)]">Add Player</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <div>
@@ -71,8 +71,8 @@ export function AddPlayerDialog({
               <option value="__end__">At end</option>
             </select>
           </div>
-          <p className="text-xs text-amber-600 flex items-center gap-1">
-            <span className="text-amber-500">Warning:</span> Adding players mid-game may affect balance. Consider Traveler instead.
+          <p className="flex items-center gap-1 font-serif text-sm text-[var(--parchment-ink-muted)]">
+            <span className="font-semibold text-[var(--attention)]">Warning:</span> Adding players mid-game may affect balance. Consider Traveler instead.
           </p>
           <div className="flex gap-2">
             <Button variant="ghost" className="flex-1" onClick={handleClose} data-testid="button-cancel-add-player">
