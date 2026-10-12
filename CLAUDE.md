@@ -29,14 +29,24 @@ Everything in replit.md applies. These rules cover mechanics that differ for Cla
 ### Game tracker layout
 The `/game` page lives in `client/src/features/game/`. `pages/Game.tsx` is a thin page: it reads state through `useGameTracker`, shows the loader, and renders `SetupWizard` or `GameTrackerView`.
 - `state/use-player-game.ts`: all game state and its localStorage persistence (key `clocktower_player_game`). Changing the key or the `PlayerGame` shape breaks games in progress on deploy. `hooks/use-player-game.ts` only re-exports it, for the tests.
-- `state/use-game-tracker.ts`: `usePlayerGame` plus `updatePlayerName` and `setPrimaryClaim`.
-- `types.ts`: game model types (re-exported from state) and `ClaimDescriptor`. `claims.ts`: claim display helpers shared by views and dialogs.
+- `state/use-game-tracker.ts`: `usePlayerGame` plus `updatePlayerName`.
+- `types.ts`: game model types (re-exported from state) and `ClaimDescriptor`. `claims.ts`: claim display helpers shared by views and the seat sheet (`resolveClaimDescriptor`, `latestClaimId`).
 - `GameSetup.tsx` (`SetupWizard`): script picker, player count, friends, start.
-- `GameTrackerView.tsx`: the active game shell (script header, scoreboard, tab switch, bottom nav). It owns the UI state (selected player, open pickers and dialogs, active tab) and wires the views and dialogs.
+- `GameTrackerView.tsx`: the active game shell (script header, scoreboard, tab switch, bottom nav). It owns the UI state (selected seat, open dialogs, active tab) and wires the views, the seat sheet and the dialogs.
 - `views/`: one file per bottom tab. `CircleView.tsx` (Circle tab, internal key `circle`, test id `nav-grim`; `CircleSeatingChart` with drag positioning), `ListView.tsx` (List, `SortablePlayerCard` with drag-to-reorder), `NotebookView.tsx` (Notes tab, key `log`, test id `nav-notebook`), `GameScriptView.tsx` (named to stay distinct from `components/character/ScriptView`).
-- `PlayerDetailDrawer.tsx`: the per-player claims and notes drawer.
-- `dialogs/`: one file per dialog or drawer (`AddPlayerDialog`, `AddTravelerDialog`, `CharacterPicker`, `PlayAgainDialog`, `ScriptCharacterDrawer`).
+- `SeatSheet.tsx`: the seat sheet, the one place a seat's claims, alive/dead state, menu actions and note are edited (see below). `AliveToggle.tsx`: the shared alive/dead toggle and `isSeatDead`.
+- `dialogs/`: one file per dialog or drawer (`AddPlayerDialog`, `AddTravelerDialog`, `PlayAgainDialog`, `ScriptCharacterDrawer`). `ScriptCharacterDrawer` is the Script tab's character card drawer, not a seat surface.
 - Tests import several of these from `@/pages/Game`, which re-exports them. Keep those re-exports when moving or renaming a component.
+
+### Seat sheet
+Tapping a seat anywhere (Circle medallion, List row or name) opens `SeatSheet`, a parchment bottom sheet (vaul `Drawer`). It replaced the old player detail drawer and the Set Claim / Select Characters picker; both are gone.
+- Header: name in Fraunces 26px (an unnamed seat reads "Player N"), the 44px `AliveToggle` (smiley alive, skull dead; tapping calls `toggleAlive`), and a ⋮ menu with Rename, Make Traveler and Remove Player. Traveller seats get Mark Exiled and Mark Left there instead of Make Traveler, and Remove Player on a traveller goes through `removeTraveler` so the leave is logged. No seat number in the sheet. Rename opens an inline field with the From Friends picker.
+- Claim chips: every claim the player has made, in the order made, as team-tinted pills with an x that calls `removeClaim`. Chips do nothing else when tapped.
+- Search plus the script's characters (all characters without a script, never script Travellers or Fabled, plus the generic Traveller claim) grouped by team. Tapping a card calls `addClaim` and the sheet stays open. Characters this player already claimed render at 60% opacity and are disabled.
+- The seat's note (`GamePlayer.notes`) is pinned at the bottom: a one-line field with a pencil that expands to a textarea on focus.
+- There is no primary or believed claim. Circle and List show `latestClaimId(player)` under the name in team color: the claim with the latest `claimRecords` timestamp, ties to the later position in `claims`, and the last claim for legacy saves without records. Older claims show only in the sheet. `claims[0]` has no special meaning now. Old saves load unchanged (same key, same `PlayerGame` shape).
+- Dead means `status !== 'alive'` (`isSeatDead`). Dead seats keep the skull medallion and dimming in both views; the List row's toggle is the same `AliveToggle`.
+- jsdom has no pointer capture, and vaul calls it when a pointerdown bubbles through the sheet (for example opening the ⋮ menu in a test). Tests that open the seat menu stub `Element.prototype.setPointerCapture`; see `tests/game-seat-sheet.test.tsx`.
 
 ### Game Mode visual system
 Game Mode (setup and active game), the Character Reference page, and their dialogs and sheets use "parchment sheet in a dark shell". Home is not on this system. Tokens are CSS variables in `client/src/index.css`; parchment, ink and team values come from the Script tab's `ScriptSheet`, so keep the two in step.
@@ -44,7 +54,7 @@ Game Mode (setup and active game), the Character Reference page, and their dialo
 - Parchment: `--parchment-panel` (+ `-from`/`-to` gradient), `--parchment-raised`, `--parchment-border`, `--parchment-rule`, `--parchment-control` (+ `-border`, `-hover`), ink `--parchment-ink`, `-ink-body`, `-ink-muted`, `-ink-faint`, `-ink-link`.
 - Team on parchment: `--parchment-<team>`, `-tint`, `-ring`; use `teamParchment(team)` from `lib/team-style.ts`. Dark-shell team colors stay in `teamCard`/`teamBadge`/`teamRing`.
 - Panel pattern: each tab renders one `.game-panel` (14px radius, 12px padding) on the shell; cards inside use `.game-card` (raised, 1px border, 10px radius); small caps labels use `.game-label`; header and nav use `.game-chrome`. `.game-panel` and `.parchment-scope` re-point the shadcn color variables, so semantic classes (`text-foreground`, `border-border`, `Input`) render as ink on parchment inside them. Radix portals (dialogs, popovers) render outside the panel and stay dark unless given `.parchment-scope` themselves.
-- Characters on parchment: `CharacterMedallion` (team tint, ring, token art or team glyph) plus name in Fraunces and `TeamBadge variant="label"`. The Set Claim picker, `CharacterCard` (Reference and the Script tab drawer) and the claim preview all use that header. `TeamBadge`, `NightBadges`, `JinxBadge` and `JinxList` are parchment-only now.
+- Characters on parchment: `CharacterMedallion` (team tint, ring, token art or team glyph) plus name in Fraunces. `CharacterCard` (Reference and the Script tab drawer) adds `TeamBadge variant="label"`; the seat sheet's character cards use a 36px medallion with the ability text instead. `TeamBadge`, `NightBadges`, `JinxBadge` and `JinxList` are parchment-only now.
 - Tailwind cannot apply an opacity modifier to a CSS-variable color (`border-[var(--x)]/40` silently drops the class). Use a solid token or another token instead.
 
 ### No day/night tracking

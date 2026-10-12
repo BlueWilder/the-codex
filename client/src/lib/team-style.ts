@@ -92,7 +92,7 @@ interface ParchmentTeamStyle {
   tint: string;
   /** Team ring color, as the ScriptSheet token ring. */
   ring: string;
-  /** Solid team-colored border, for the believed claim. */
+  /** Solid team-colored border, for claim chips in the seat sheet. */
   border: string;
 }
 

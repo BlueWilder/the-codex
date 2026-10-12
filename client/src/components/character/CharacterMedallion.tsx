@@ -6,7 +6,7 @@ import { getTeamGlyph } from "@/components/character/CharacterToken";
 /**
  * Parchment character medallion: team tint fill, team ring, and the
  * character's token art (or its team glyph when there is no art). Shared by
- * the Set Claim picker, character cards and drawers.
+ * the seat sheet, character cards and drawers.
  */
 export function CharacterMedallion({
   characterId,
