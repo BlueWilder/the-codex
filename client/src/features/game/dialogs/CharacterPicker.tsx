@@ -6,7 +6,8 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { teamBadge } from "@/lib/team-style";
+import { teamParchment } from "@/lib/team-style";
+import { CharacterMedallion } from "@/components/character/CharacterMedallion";
 import { TeamBadge } from "@/components/character/TeamBadge";
 import { type ClaimDescriptor } from "@/features/game/types";
 import { GENERIC_TRAVELLER_ID } from "@/features/game/claims";
@@ -120,23 +121,26 @@ export function CharacterPicker({
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && handleClose()}>
-      <DialogContent className="max-w-md p-0" onOpenAutoFocus={(e) => e.preventDefault()}>
-        <div className="flex flex-col max-h-[70vh] overflow-hidden p-6 pb-0">
-          <DialogHeader className="mb-4">
-            <DialogTitle className="font-display text-amber-500">{title ?? (singleSelect ? "Set Claim" : "Select Characters")}</DialogTitle>
+      <DialogContent
+        className="parchment-scope max-w-md gap-0 rounded-[14px] border-[var(--parchment-border)] bg-[var(--parchment-panel)] p-0"
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
+        <div className="flex max-h-[70vh] flex-col overflow-hidden px-3.5 pt-4">
+          <DialogHeader className="mb-3 text-left">
+            <DialogTitle className="font-display text-2xl font-semibold text-[var(--parchment-ink)]">{title ?? (singleSelect ? "Set Claim" : "Select Characters")}</DialogTitle>
           </DialogHeader>
-          <div className="relative mb-4 flex-shrink-0">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <div className="relative mb-3 flex-shrink-0">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--parchment-ink-faint)]" />
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search characters..."
-              className="pl-10"
+              className="rounded-[10px] bg-[var(--parchment-raised)] pl-10 font-serif text-base placeholder:text-[var(--parchment-ink-faint)]"
               data-testid="input-search-character"
             />
           </div>
-          <div className="flex-1 overflow-y-auto -mx-2 px-2">
-            <div className="space-y-1 pb-4">
+          <div className="-mx-1 flex-1 overflow-y-auto px-1">
+            <div className="space-y-2 pb-3">
               {pickerOptions.map(char => {
                 const isPrimary = singleSelect && primaryClaimId === char.id;
                 const isSelected = singleSelect ? isPrimary : selected.has(char.id);
@@ -145,11 +149,9 @@ export function CharacterPicker({
                     key={char.id}
                     onClick={() => handleSelectRow(char.id)}
                     className={cn(
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
-                      "w-full text-left p-3 rounded-lg border transition-colors flex items-center gap-3",
-                      "hover-elevate active-elevate-2",
-                      teamBadge(char.team),
-                      isSelected && "ring-2 ring-amber-500 ring-offset-1 ring-offset-background"
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                      "game-card flex w-full items-center gap-3 p-2.5 text-left transition-colors hover:bg-[var(--parchment-control)]",
+                      isSelected && cn("border-[1.5px]", teamParchment(char.team).border)
                     )}
                     title={isPrimary ? `Tap to remove ${char.name} claim` : undefined}
                     data-testid={`button-select-character-${char.id}`}
@@ -161,35 +163,43 @@ export function CharacterPicker({
                         data-testid={`checkbox-character-${char.id}`}
                       />
                     )}
-                    {isPrimary && (
-                      <Check className="w-4 h-4 text-amber-500 shrink-0" data-testid={`icon-current-claim-${char.id}`} />
-                    )}
-                    <span className="font-medium">{char.name}</span>
-                    <span className="ml-auto flex items-center gap-2">
+                    <CharacterMedallion
+                      characterId={char.id === GENERIC_TRAVELLER_ID ? undefined : char.id}
+                      team={char.team}
+                      size={40}
+                    />
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate font-display text-lg font-semibold leading-tight text-[var(--parchment-ink)]">{char.name}</span>
+                      <TeamBadge team={char.team} variant="label" />
+                    </span>
+                    <span className="flex shrink-0 items-center gap-1.5">
                       {isPrimary && (
-                        <span className="text-xs text-amber-500/80" data-testid={`text-tap-to-remove-${char.id}`}>
+                        <span className="game-label text-[var(--parchment-ink-link)]" data-testid={`text-tap-to-remove-${char.id}`}>
                           Tap to remove
                         </span>
                       )}
-                      <TeamBadge team={char.team} variant="label" />
+                      {isPrimary && (
+                        <Check className="h-4 w-4 shrink-0 text-[var(--parchment-ink-link)]" data-testid={`icon-current-claim-${char.id}`} />
+                      )}
                     </span>
                   </button>
                 );
               })}
               {pickerOptions.length === 0 && (
-                <p className="text-center text-muted-foreground py-8">No characters found</p>
+                <p className="py-8 text-center font-serif italic text-[var(--parchment-ink-muted)]">No characters found</p>
               )}
             </div>
           </div>
         </div>
         {!singleSelect && (
-          <div className="flex items-center justify-between gap-3 p-4 border-t border-border bg-card/50">
-            <span className="text-sm text-muted-foreground">
+          <div className="flex items-center justify-between gap-3 border-t border-[var(--parchment-rule)] px-3.5 py-3">
+            <span className="font-serif text-sm text-[var(--parchment-ink-muted)]">
               {selected.size > 0 ? `${selected.size} selected` : "Select characters to add"}
             </span>
             <Button 
               onClick={handleConfirm}
               disabled={selected.size === 0}
+              className="bg-[var(--parchment-ink-link)] text-[var(--parchment-panel)] hover:bg-[var(--parchment-ink)]"
               data-testid="button-confirm-add-claims"
             >
               Add {selected.size > 0 ? `${selected.size} ` : ""}Claim{selected.size !== 1 ? "s" : ""}

@@ -17,6 +17,7 @@ import { JinxList } from "@/components/character/JinxList";
 import { GENERIC_TRAVELLER_ID, resolveClaimDescriptor } from "@/features/game/claims";
 import { teamParchment } from "@/lib/team-style";
 import { characterIcon } from "@/lib/character-icons";
+import { CharacterMedallion } from "@/components/character/CharacterMedallion";
 import { type ClaimDescriptor, type GamePlayer, type PlayerStatus } from "@/features/game/types";
 import { CharacterPicker } from "@/features/game/dialogs/CharacterPicker";
 
@@ -455,17 +456,20 @@ export function PlayerDetailDrawer({
 
       {/* Character Preview Dialog */}
       <Dialog open={!!previewCharacter} onOpenChange={(open) => !open && setPreviewCharacter(null)}>
-        <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
+        <DialogContent className="parchment-scope max-h-[80vh] max-w-md overflow-y-auto rounded-[14px] border-[var(--parchment-border)] bg-[var(--parchment-panel)] p-4">
           {previewCharacter && (
             <>
-              <DialogHeader>
+              <DialogHeader className="text-left">
                 <DialogTitle className="flex items-center gap-3">
-                  <TeamBadge team={previewCharacter.team} variant="pill" />
-                  <span className="text-amber-400 font-display">{previewCharacter.name}</span>
+                  <CharacterMedallion characterId={previewCharacter.id} team={previewCharacter.team} size={48} />
+                  <span className="min-w-0">
+                    <span className="block font-display text-2xl font-semibold leading-tight text-[var(--parchment-ink)]">{previewCharacter.name}</span>
+                    <TeamBadge team={previewCharacter.team} variant="label" />
+                  </span>
                 </DialogTitle>
               </DialogHeader>
-              
-              <div className="space-y-4 mt-4">
+
+              <div className="mt-3 space-y-4">
                 {/* Night order & jinx badges */}
                 {(() => {
                   const previewJinxes = getJinxesForCharacter(previewCharacter.id);
@@ -483,26 +487,26 @@ export function PlayerDetailDrawer({
 
                 {/* Ability */}
                 <div className="space-y-2">
-                  <h4 className="text-xs uppercase tracking-wider text-muted-foreground font-bold">Ability</h4>
-                  <p className="text-sm leading-relaxed text-foreground/90 italic">"{previewCharacter.ability}"</p>
+                  <h4 className="game-label text-[var(--parchment-townsfolk)]">Ability</h4>
+                  <p className="font-serif text-[15px] italic leading-relaxed text-[var(--parchment-ink-body)]">"{previewCharacter.ability}"</p>
                 </div>
 
                 {/* Extended Summary */}
                 {previewCharacter.extendedSummary && (
                   <div className="space-y-2">
-                    <h4 className="text-xs uppercase tracking-wider text-muted-foreground font-bold">How it Works</h4>
-                    <p className="text-sm leading-relaxed text-foreground/80">{previewCharacter.extendedSummary}</p>
+                    <h4 className="game-label text-[var(--parchment-townsfolk)]">How it Works</h4>
+                    <p className="font-serif text-[15px] leading-relaxed text-[var(--parchment-ink-body)]">{previewCharacter.extendedSummary}</p>
                   </div>
                 )}
 
                 {/* Tips (first 3) */}
                 {previewCharacter.tipsAndTricks && previewCharacter.tipsAndTricks.length > 0 && (
                   <div className="space-y-2">
-                    <h4 className="text-xs uppercase tracking-wider text-muted-foreground font-bold">Tips</h4>
-                    <ul className="text-sm space-y-1 text-foreground/80">
+                    <h4 className="game-label text-[var(--parchment-townsfolk)]">Tips</h4>
+                    <ul className="space-y-1 font-serif text-[15px] text-[var(--parchment-ink-body)]">
                       {previewCharacter.tipsAndTricks.slice(0, 3).map((tip, i) => (
                         <li key={i} className="flex gap-2">
-                          <span className="text-amber-500">•</span>
+                          <span className="text-[var(--parchment-ink-faint)]">•</span>
                           <span>{tip}</span>
                         </li>
                       ))}
@@ -514,11 +518,11 @@ export function PlayerDetailDrawer({
                 <JinxList char={previewCharacter} jinxes={getJinxesForCharacter(previewCharacter.id)} />
 
                 {/* Action buttons */}
-                <div className="flex gap-2 pt-4 border-t border-border">
+                <div className="flex gap-2 border-t border-[var(--parchment-rule)] pt-4">
                   <Button
                     variant="outline"
                     size="sm"
-                    className="flex-1"
+                    className="flex-1 border-[var(--parchment-control-border)] bg-[var(--parchment-raised)] text-[var(--parchment-ink)] hover:bg-[var(--parchment-control)]"
                     onClick={() => window.open(`/reference?character=${previewCharacter.id}`, '_blank')}
                     data-testid="button-view-full-reference"
                   >

@@ -27,7 +27,7 @@ function DemonGlyph({ className }: { className?: string }) {
  * Placeholder team glyphs, matching the Script sheet set. Real per-character
  * token art swaps in via the Character.icon field once it exists.
  */
-function getTeamGlyph(team: string): React.ComponentType<{ className?: string }> {
+export function getTeamGlyph(team: string): React.ComponentType<{ className?: string }> {
   switch (team) {
     case "townsfolk": return User;
     case "outsider": return PersonStanding;

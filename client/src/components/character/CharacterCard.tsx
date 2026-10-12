@@ -2,12 +2,13 @@ import { getJinxesForCharacter, type Character } from "@/lib/game-data";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { teamCard } from "@/lib/team-style";
+import { teamParchment } from "@/lib/team-style";
+import { CharacterMedallion } from "@/components/character/CharacterMedallion";
 import { NightBadges } from "@/components/character/NightBadges";
 import { JinxBadge } from "@/components/character/JinxBadge";
 import { JinxList } from "@/components/character/JinxList";
 import { TeamBadge } from "@/components/character/TeamBadge";
-import { ChevronDown, Settings, Moon, Quote, Lightbulb, Sword, Eye, Wand2, Plus, Minus } from "lucide-react";
+import { ChevronDown, Settings, Wand2, Plus, Minus } from "lucide-react";
 
 export function CharacterCard({ char, isExpanded, onToggle }: { 
   char: Character; 
@@ -16,7 +17,8 @@ export function CharacterCard({ char, isExpanded, onToggle }: {
 }) {
   const jinxes = getJinxesForCharacter(char.id);
   
-  const getTeamColor = (team: string) => teamCard(team);
+  const team = teamParchment(char.team);
+  const label = "game-label text-[var(--parchment-townsfolk)]";
 
   return (
     <motion.div 
@@ -24,35 +26,35 @@ export function CharacterCard({ char, isExpanded, onToggle }: {
       layout
       onClick={onToggle}
       className={cn(
-        "p-4 rounded-xl border transition-colors cursor-pointer select-none",
-        getTeamColor(char.team),
-        isExpanded && "ring-1 ring-amber-500/50"
+        "game-card cursor-pointer select-none p-3 text-[var(--parchment-ink)] transition-colors",
+        isExpanded && cn("border-[1.5px]", team.border)
       )}
       data-testid={`card-character-${char.id}`}
     >
-      <div className="flex items-start justify-between mb-2">
-        <h3 className="font-fraunces text-xl font-bold tracking-normal">
-          <a href={`#${char.id}`} onClick={(e) => e.stopPropagation()} className="hover:underline decoration-current/40">
-            {char.name}
-          </a>
-        </h3>
-        <div className="flex items-center gap-2">
+      <div className="flex items-center gap-3">
+        <CharacterMedallion characterId={char.id} team={char.team} size={40} />
+        <div className="min-w-0 flex-1">
+          <h3 className="font-display text-xl font-semibold leading-tight tracking-normal">
+            <a href={`#${char.id}`} onClick={(e) => e.stopPropagation()} className="hover:underline decoration-current/40">
+              {char.name}
+            </a>
+          </h3>
           <TeamBadge team={char.team} variant="label" />
-          <motion.div
-            animate={{ rotate: isExpanded ? 180 : 0 }}
-            transition={{ duration: 0.2 }}
-          >
-            <ChevronDown className="w-4 h-4 opacity-50" />
-          </motion.div>
         </div>
+        <motion.div
+          animate={{ rotate: isExpanded ? 180 : 0 }}
+          transition={{ duration: 0.2 }}
+        >
+          <ChevronDown className="h-4 w-4 text-[var(--parchment-ink-faint)]" />
+        </motion.div>
       </div>
-      
-      <p className="text-base font-serif leading-[1.58] opacity-90 pl-3 border-l-2 border-amber-500/40">{char.ability}</p>
-      
-      <div className="mt-3 flex flex-wrap gap-2">
+
+      <p className="mt-2 font-serif text-[15px] leading-[1.5] text-[var(--parchment-ink-body)]">{char.ability}</p>
+
+      <div className="mt-2.5 flex flex-wrap gap-1.5">
         <NightBadges char={char} />
         {char.setup && (
-          <span className="text-[10px] bg-purple-900/40 px-2 py-0.5 rounded text-purple-300 border border-purple-700/30 flex items-center gap-1">
+          <span className="game-label flex items-center gap-1 rounded-full border border-[var(--parchment-control-border)] bg-[var(--parchment-control)] px-2 py-0.5 text-[var(--parchment-ink-link)]">
             <Settings className="w-3.5 h-3.5" /> Setup
           </span>
         )}
@@ -68,23 +70,21 @@ export function CharacterCard({ char, isExpanded, onToggle }: {
             transition={{ duration: 0.2, ease: "easeInOut" }}
             className="overflow-hidden"
           >
-            <div className="mt-4 pt-4 border-t border-current/20 space-y-6 md:space-y-5">
+            <div className="mt-3 space-y-4 border-t border-[var(--parchment-rule)] pt-3">
               {(char.firstNightOrder !== null || char.otherNightOrder !== null) && (
                 <div className="space-y-2">
-                  <h4 className="text-sm md:text-xs font-fraunces font-semibold uppercase tracking-wider opacity-80 flex items-center gap-1.5">
-                    <Moon className="w-4 h-4 md:w-3 md:h-3" /> Night Order
-                  </h4>
-                  <div className="flex flex-wrap gap-3 text-base md:text-sm">
+                  <h4 className={label}>Night Order</h4>
+                  <div className="flex flex-wrap gap-3 font-serif text-[15px]">
                     {char.firstNightOrder !== null && (
                       <div className="flex items-center gap-2">
-                        <span className="text-muted-foreground">First Night:</span>
-                        <span className="font-mono bg-black/30 px-2 py-0.5 rounded text-amber-300">#{char.firstNightOrder}</span>
+                        <span className="text-[var(--parchment-ink-muted)]">First Night:</span>
+                        <span className="rounded-md border border-[var(--parchment-border)] bg-[var(--parchment-panel)] px-2 py-0.5 font-display font-semibold tabular-nums text-[var(--parchment-ink)]">#{char.firstNightOrder}</span>
                       </div>
                     )}
                     {char.otherNightOrder !== null && (
                       <div className="flex items-center gap-2">
-                        <span className="text-muted-foreground">Other Nights:</span>
-                        <span className="font-mono bg-black/30 px-2 py-0.5 rounded text-amber-300">#{char.otherNightOrder}</span>
+                        <span className="text-[var(--parchment-ink-muted)]">Other Nights:</span>
+                        <span className="rounded-md border border-[var(--parchment-border)] bg-[var(--parchment-panel)] px-2 py-0.5 font-display font-semibold tabular-nums text-[var(--parchment-ink)]">#{char.otherNightOrder}</span>
                       </div>
                     )}
                   </div>
@@ -93,12 +93,12 @@ export function CharacterCard({ char, isExpanded, onToggle }: {
 
               {char.reminders.length > 0 && (
                 <div className="space-y-2">
-                  <h4 className="text-sm md:text-xs font-fraunces font-semibold uppercase tracking-wider opacity-80">Reminder Tokens</h4>
+                  <h4 className={label}>Reminder Tokens</h4>
                   <div className="flex flex-wrap gap-2">
                     {char.reminders.map((reminder, idx) => (
                       <span 
                         key={idx}
-                        className="text-sm md:text-xs bg-black/40 px-3 py-1.5 md:px-2 md:py-1 rounded-full border border-current/20"
+                        className="rounded-full border border-[var(--parchment-control-border)] bg-[var(--parchment-panel)] px-2.5 py-1 font-serif text-sm text-[var(--parchment-ink)]"
                       >
                         {reminder}
                       </span>
@@ -111,10 +111,8 @@ export function CharacterCard({ char, isExpanded, onToggle }: {
 
               {char.setup && (
                 <div className="space-y-2">
-                  <h4 className="text-sm md:text-xs font-fraunces font-semibold uppercase tracking-wider opacity-80 flex items-center gap-1.5">
-                    <Settings className="w-4 h-4 md:w-3 md:h-3 text-purple-400" /> Setup Effect
-                  </h4>
-                  <p className="text-sm md:text-xs opacity-80">
+                  <h4 className={label}>Setup Effect</h4>
+                  <p className="font-serif text-[15px] text-[var(--parchment-ink-body)]">
                     This character modifies the game setup. Check the ability for details.
                   </p>
                 </div>
@@ -123,10 +121,8 @@ export function CharacterCard({ char, isExpanded, onToggle }: {
               {/* Flavor Quote */}
               {char.flavorQuote && (
                 <div className="space-y-2">
-                  <h4 className="text-sm md:text-xs font-fraunces font-semibold uppercase tracking-wider opacity-80 flex items-center gap-1.5">
-                    <Quote className="w-4 h-4 md:w-3 md:h-3 text-amber-400" /> Flavor
-                  </h4>
-                  <p className="text-base md:text-sm font-serif italic opacity-80 pl-4 md:pl-3 border-l-2 border-amber-700/50">
+                  <h4 className={label}>Flavor</h4>
+                  <p className="border-l-2 border-[var(--parchment-control-border)] pl-3 font-serif text-[15px] italic text-[var(--parchment-ink-muted)]">
                     {char.flavorQuote}
                   </p>
                 </div>
@@ -135,10 +131,8 @@ export function CharacterCard({ char, isExpanded, onToggle }: {
               {/* Extended Summary */}
               {char.extendedSummary && (
                 <div className="space-y-2">
-                  <h4 className="text-sm md:text-xs font-fraunces font-semibold uppercase tracking-wider opacity-80 flex items-center gap-1.5">
-                    <Eye className="w-4 h-4 md:w-3 md:h-3 text-blue-400" /> How It Works
-                  </h4>
-                  <div className="text-base md:text-sm font-serif opacity-90 space-y-3 md:space-y-2 leading-relaxed">
+                  <h4 className={label}>How It Works</h4>
+                  <div className="space-y-2 font-serif text-[15px] leading-relaxed text-[var(--parchment-ink-body)]">
                     {char.extendedSummary.split('\n\n').map((paragraph, idx) => (
                       <p key={idx}>{paragraph}</p>
                     ))}
@@ -149,13 +143,11 @@ export function CharacterCard({ char, isExpanded, onToggle }: {
               {/* Tips and Tricks */}
               {char.tipsAndTricks && char.tipsAndTricks.length > 0 && (
                 <div className="space-y-2">
-                  <h4 className="text-sm md:text-xs font-fraunces font-semibold uppercase tracking-wider opacity-80 flex items-center gap-1.5">
-                    <Lightbulb className="w-4 h-4 md:w-3 md:h-3 text-yellow-400" /> Tips & Tricks
-                  </h4>
-                  <ul className="text-sm md:text-xs space-y-2.5 md:space-y-1.5 opacity-90">
+                  <h4 className={label}>Tips & Tricks</h4>
+                  <ul className="space-y-1.5 font-serif text-[15px] text-[var(--parchment-ink-body)]">
                     {char.tipsAndTricks.map((tip, idx) => (
                       <li key={idx} className="flex gap-2">
-                        <span className="text-yellow-500/70 shrink-0">-</span>
+                        <span className="shrink-0 text-[var(--parchment-ink-faint)]">-</span>
                         <span className="leading-relaxed">{tip}</span>
                       </li>
                     ))}
@@ -166,13 +158,11 @@ export function CharacterCard({ char, isExpanded, onToggle }: {
               {/* Bluffing As (for good characters to bluff) */}
               {char.bluffingAs && char.bluffingAs.length > 0 && (
                 <div className="space-y-2">
-                  <h4 className="text-sm md:text-xs font-fraunces font-semibold uppercase tracking-wider opacity-80 flex items-center gap-1.5">
-                    <Sword className="w-4 h-4 md:w-3 md:h-3 text-red-400" /> Bluffing as {char.name}
-                  </h4>
-                  <ul className="text-sm md:text-xs space-y-2.5 md:space-y-1.5 opacity-90">
+                  <h4 className={label}>Bluffing as {char.name}</h4>
+                  <ul className="space-y-1.5 font-serif text-[15px] text-[var(--parchment-ink-body)]">
                     {char.bluffingAs.map((tip, idx) => (
                       <li key={idx} className="flex gap-2">
-                        <span className="text-red-400/70 shrink-0">-</span>
+                        <span className="shrink-0 text-[var(--parchment-ink-faint)]">-</span>
                         <span className="leading-relaxed">{tip}</span>
                       </li>
                     ))}
@@ -183,13 +173,11 @@ export function CharacterCard({ char, isExpanded, onToggle }: {
               {/* Fighting The (for good characters fighting evil) */}
               {char.fightingThe && char.fightingThe.length > 0 && (
                 <div className="space-y-2">
-                  <h4 className="text-sm md:text-xs font-fraunces font-semibold uppercase tracking-wider opacity-80 flex items-center gap-1.5">
-                    <Sword className="w-4 h-4 md:w-3 md:h-3 text-green-400" /> Fighting the {char.name}
-                  </h4>
-                  <ul className="text-sm md:text-xs space-y-2.5 md:space-y-1.5 opacity-90">
+                  <h4 className={label}>Fighting the {char.name}</h4>
+                  <ul className="space-y-1.5 font-serif text-[15px] text-[var(--parchment-ink-body)]">
                     {char.fightingThe.map((tip, idx) => (
                       <li key={idx} className="flex gap-2">
-                        <span className="text-green-400/70 shrink-0">-</span>
+                        <span className="shrink-0 text-[var(--parchment-ink-faint)]">-</span>
                         <span className="leading-relaxed">{tip}</span>
                       </li>
                     ))}

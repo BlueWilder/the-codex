@@ -12,17 +12,17 @@ export function JinxList({ char, jinxes }: { char: Character; jinxes: Jinx[] }) 
 
   return (
     <div className="space-y-2">
-      <h4 className="text-sm md:text-xs font-fraunces font-semibold uppercase tracking-wider opacity-80 flex items-center gap-1.5">
-        <AlertTriangle className="w-4 h-4 md:w-3 md:h-3 text-orange-400" /> Jinxes
+      <h4 className="game-label flex items-center gap-1.5 text-[var(--parchment-townsfolk)]">
+        <AlertTriangle className="h-3.5 w-3.5 text-[var(--attention)]" /> Jinxes
       </h4>
       <div className="space-y-2">
         {jinxes.map((jinx, idx) => (
           <div 
             key={idx}
-            className="text-sm md:text-xs bg-orange-950/30 border border-orange-900/30 rounded-lg p-3 md:p-2"
+            className="rounded-[10px] border border-l-2 border-[var(--parchment-border)] border-l-[var(--attention)] bg-[var(--parchment-raised)] p-2.5 font-serif text-sm text-[var(--parchment-ink-body)]"
           >
-            <span className="font-bold text-orange-300">{getJinxedCharacterName(jinx)}:</span>
-            <span className="ml-1 opacity-90">{jinx.reason}</span>
+            <span className="font-display font-semibold text-[var(--parchment-ink)]">{getJinxedCharacterName(jinx)}:</span>
+            <span className="ml-1">{jinx.reason}</span>
           </div>
         ))}
       </div>

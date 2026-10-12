@@ -19,13 +19,13 @@ export function ScriptCharacterDrawer({
       onOpenChange={(open) => { if (!open) onClose(); }}
     >
       <DrawerContent
-        className="max-h-[85vh]"
+        className="parchment-scope max-h-[85vh] border-[var(--parchment-border)] bg-[var(--parchment-panel)]"
         data-testid={character ? `drawer-character-${character.id}` : undefined}
       >
         <DrawerHeader className="sr-only">
           <DrawerTitle>{character?.name ?? "Character"}</DrawerTitle>
         </DrawerHeader>
-        <div className="overflow-y-auto px-4 pb-8">
+        <div className="overflow-y-auto px-3.5 pb-8 pt-1">
           {character && (
             <CharacterCard char={character} isExpanded onToggle={() => {}} />
           )}
