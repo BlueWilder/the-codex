@@ -156,16 +156,18 @@ export function SortablePlayerCard({
                     onClick={(e) => { e.stopPropagation(); onRemoveClaim(char.id); }}
                     className={cn(
                       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                      "inline-flex items-center gap-1 whitespace-nowrap rounded-full border px-2 py-0.5 font-serif text-[15px] leading-tight transition-opacity hover:opacity-80",
-                      isPrimary && cn(team.tint, team.text, team.ring, "font-semibold"),
-                      isWas && "bg-transparent border-[var(--parchment-rule)] text-[var(--parchment-ink-muted)]",
-                      !isPrimary && !isWas && cn("bg-transparent", team.text, team.ring)
+                      // Typed like the Script sheet's names (Fraunces, heavy weight)
+                      // with a solid team outline, so pills read as crisply as the sheet.
+                      "inline-flex items-center gap-1 whitespace-nowrap rounded-full border px-2 py-0.5 font-display text-[15px] leading-tight transition-opacity hover:opacity-80",
+                      isPrimary && cn(team.tint, team.text, team.border, "font-semibold"),
+                      isWas && "bg-transparent border-[var(--parchment-control-border)] font-medium text-[var(--parchment-ink-muted)]",
+                      !isPrimary && !isWas && cn("bg-transparent font-semibold", team.text, team.border)
                     )}
                     title={`Remove ${char.name} claim`}
                     data-testid={`button-claim-badge-${char.id}-${player.id}`}
                   >
                     {isWas ? `was ${char.name}` : char.name}
-                    <X className="h-3 w-3 opacity-50" />
+                    <X className="h-3 w-3 opacity-60" />
                   </button>
                 </div>
               );
