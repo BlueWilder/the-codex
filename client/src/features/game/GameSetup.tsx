@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { getBreakdown } from "@/features/game/state/use-player-game";
-import { useLocalScripts, type LocalScript } from "@/hooks/use-local-scripts";
+import { useLocalScripts, getScriptByIdStatic, type LocalScript } from "@/hooks/use-local-scripts";
 import { ScriptBuilderDialog } from "@/components/ScriptBuilderDialog";
 import { FriendsPicker } from "@/components/FriendsPicker";
 import { useScriptScan } from "@/hooks/use-script-scan";
@@ -18,9 +18,20 @@ import { type GameScriptRef } from "@/features/game/types";
 /** Character Breakdown pill on parchment; team colors come from teamParchment. */
 const PILL = "border font-sans text-sm font-semibold px-3 py-1";
 
-export function SetupWizard({ onStart }: { onStart: (count: number, names: string[], script?: GameScriptRef | null) => void }) {
+export function SetupWizard({
+  onStart,
+  initialScriptId,
+}: {
+  onStart: (count: number, names: string[], script?: GameScriptRef | null) => void;
+  /** A script chosen before setup (a Home Play card). Setup opens on player count with it selected. */
+  initialScriptId?: string | null;
+}) {
   const [playerCount, setPlayerCount] = useState(8);
-  const [selectedScript, setSelectedScript] = useState<LocalScript | null>(null);
+  const [selectedScript, setSelectedScript] = useState<LocalScript | null>(
+    () => (initialScriptId ? getScriptByIdStatic(initialScriptId) : null),
+  );
+  const appliedInitialScript = useRef(false);
+  const playersCardRef = useRef<HTMLDivElement>(null);
   const [scriptDrawerOpen, setScriptDrawerOpen] = useState(false);
   const [showScriptBuilder, setShowScriptBuilder] = useState(false);
   const [editingScript, setEditingScript] = useState<LocalScript | null>(null);
@@ -40,9 +51,21 @@ export function SetupWizard({ onStart }: { onStart: (count: number, names: strin
     localStorage.removeItem("clocktower_st_session");
   }, []);
 
+  // A script handed in from Home skips the script step: select it (cloud
+  // scripts resolve once they load) and bring the player count into view.
+  useEffect(() => {
+    if (!initialScriptId || appliedInitialScript.current) return;
+    const script = getScriptById(initialScriptId);
+    if (!script) return;
+    appliedInitialScript.current = true;
+    setSelectedScript(script);
+    playersCardRef.current?.scrollIntoView?.({ block: "start" });
+  }, [initialScriptId, getScriptById]);
+
   const breakdown = getBreakdown(playerCount);
 
   const handleSelectScript = (script: LocalScript | null) => {
+    appliedInitialScript.current = true; // a manual pick wins over a late-loading handed-in script
     setSelectedScript(script);
     setScriptDrawerOpen(false);
   };
@@ -111,7 +134,7 @@ export function SetupWizard({ onStart }: { onStart: (count: number, names: strin
           </button>
         </div>
 
-        <div className="game-panel flex flex-col p-3.5" data-testid="card-players">
+        <div ref={playersCardRef} className="game-panel flex scroll-mt-20 flex-col p-3.5" data-testid="card-players">
           <div className="game-label mb-2 text-[var(--parchment-townsfolk)]">Players</div>
           <div className="flex flex-1 items-center justify-center gap-4">
             <Button

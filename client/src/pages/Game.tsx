@@ -1,3 +1,4 @@
+import { useLocation, useSearch } from "wouter";
 import { Layout } from "@/components/ui/Layout";
 import { useGameTracker } from "@/features/game/state/use-game-tracker";
 import { Loader2 } from "lucide-react";
@@ -41,6 +42,10 @@ export default function Game() {
     resetCirclePositions,
     updatePlayerName,
   } = useGameTracker();
+  const [, navigate] = useLocation();
+  // ?script=<id> (a Home Play card) opens setup with that script, even over a
+  // saved game; the saved game is only replaced when Start Game is pressed.
+  const startScriptId = new URLSearchParams(useSearch()).get("script");
 
   if (isLoading) {
     return (
@@ -54,8 +59,15 @@ export default function Game() {
 
   return (
     <Layout>
-      {!game ? (
-        <SetupWizard onStart={createGame} />
+      {!game || startScriptId ? (
+        <SetupWizard
+          key={startScriptId ?? "setup"}
+          initialScriptId={startScriptId}
+          onStart={(count, names, script) => {
+            createGame(count, names, script);
+            if (startScriptId) navigate("/game", { replace: true });
+          }}
+        />
       ) : (
         <GameTrackerView
           game={game}
