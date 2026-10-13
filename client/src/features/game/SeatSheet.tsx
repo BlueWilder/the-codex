@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { ALL_CHARACTERS } from "@/lib/game-data";
 import { useFriends } from "@/hooks/use-friends";
-import { X, Search, Pencil, MoreVertical, UserPlus, Trash2, Ban, LogOut } from "lucide-react";
+import { X, Search, Pencil, MoreVertical, UserPlus, Trash2, Ban, LogOut, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -348,6 +348,8 @@ export function SeatSheet({
                             <span className="mt-0.5 block font-serif text-[13px] leading-snug text-[var(--parchment-ink-body)]">{char.ability}</span>
                           )}
                         </span>
+                        {/* Tappable cards show a chevron (UI rule 4); claimed ones do nothing and show none. */}
+                        {!isClaimed && <ChevronRight className="h-4 w-4 shrink-0 text-[var(--parchment-ink-faint)]" data-testid={`chevron-character-${char.id}`} />}
                       </button>
                     );
                   })}
@@ -395,7 +397,6 @@ export function SeatSheet({
           <AlertDialogFooter>
             <AlertDialogCancel data-testid="button-cancel-remove">Cancel</AlertDialogCancel>
             <AlertDialogAction
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               onClick={() => {
                 onRemovePlayer?.();
                 setShowRemoveConfirm(false);

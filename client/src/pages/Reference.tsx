@@ -11,7 +11,8 @@ import { useLocalScripts, type LocalScript } from "@/hooks/use-local-scripts";
 import { ScriptBuilderDialog } from "@/components/ScriptBuilderDialog";
 import { type ScriptSort } from "@/lib/night-order";
 import { resolveCharactersForScriptFilter } from "@/lib/script-resolve";
-import { ScriptView } from "@/components/character/ScriptView";
+import { ScriptView, SortToggle, NightViewToggle, type NightView } from "@/components/character/ScriptView";
+import { PageTitle } from "@/components/PageTitle";
 
 const SCRIPTS = [
   { id: 'all', label: 'All Scripts', isCommunity: false },
@@ -29,6 +30,7 @@ export default function Reference() {
   const [teamFilter, setTeamFilter] = useState<string>("all");
   const [scriptFilter, setScriptFilter] = useState<string>("all");
   const [sortOrder, setSortOrder] = useState<ScriptSort>("team");
+  const [nightView, setNightView] = useState<NightView>("first");
   const [showScriptBuilder, setShowScriptBuilder] = useState(false);
   const [editingScript, setEditingScript] = useState<LocalScript | null>(null);
   const [copyingCommunityScript, setCopyingCommunityScript] = useState<{ name: string; characterIds: string[]; synopsis?: string } | null>(null);
@@ -63,35 +65,29 @@ export default function Reference() {
   return (
     <Layout>
       <div className="max-w-6xl mx-auto space-y-6">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[var(--shell-border)] pb-5">
-          <h1 className="text-4xl font-display text-[var(--shell-gold)]">Character Reference</h1>
-          
+        <div className="space-y-3">
+          <PageTitle>Character Reference</PageTitle>
           <div className="relative w-full md:w-64">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--shell-inactive)]" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--shell-inactive)]" />
             <input 
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search ability..."
-              className="w-full rounded-full border border-[var(--shell-border)] bg-[var(--shell-chrome)] py-2 pl-9 pr-4 font-serif text-base text-[var(--parchment-panel)] transition-colors placeholder:text-[var(--shell-inactive)] focus:border-[var(--shell-gold)] focus:outline-none"
+              className="h-11 w-full rounded-full border border-[var(--shell-border)] bg-[var(--shell-chrome)] pl-10 pr-4 font-serif text-base text-[var(--parchment-panel)] transition-colors placeholder:text-[var(--shell-inactive)] focus:border-[var(--shell-gold)] focus:outline-none"
               data-testid="input-search"
             />
           </div>
         </div>
 
         <div className="space-y-3">
-          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide items-center">
+          {/* Script filters: secondary pills, the active one primary-styled. */}
+          <div className="-mx-[var(--page-x)] flex items-center gap-2 overflow-x-auto px-[var(--page-x)] scrollbar-hide" data-testid="row-script-filters">
             {SCRIPTS.map((script) => (
-              <div key={script.id} className="flex items-center">
+              <div key={script.id} className="flex shrink-0 items-center">
                 <button
                   onClick={() => setScriptFilter(script.id)}
-                  className={cn(
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
-                    "px-4 py-1.5 text-xs font-sans font-bold uppercase tracking-wider transition-all duration-150 border whitespace-nowrap",
-                    script.isCommunity ? "rounded-l-full" : "rounded-full",
-                    scriptFilter === script.id
-                      ? "bg-[var(--shell-gold)] text-[var(--shell-chrome)] border-[var(--shell-gold)]"
-                      : "bg-transparent text-[var(--shell-inactive)] border-transparent hover:text-[var(--parchment-panel)] hover:bg-white/5"
-                  )}
+                  className="btn-secondary"
+                  data-active={scriptFilter === script.id ? "true" : undefined}
                   data-testid={`button-script-${script.id}`}
                 >
                   {script.label}
@@ -110,30 +106,26 @@ export default function Reference() {
                         setShowScriptBuilder(true);
                       }
                     }}
-                    className="px-1.5 py-1.5 rounded-r-full text-xs text-[var(--shell-inactive)] hover:text-[var(--shell-gold)] hover:bg-white/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
+                    className="btn-icon text-[var(--shell-inactive)] hover:text-[var(--shell-gold)]"
                     title="Copy & edit script"
+                    aria-label={`Copy and edit ${script.label}`}
                     data-testid={`button-copy-script-${script.id}`}
                   >
-                    <Pencil className="w-3.5 h-3.5" />
+                    <Pencil className="h-4 w-4" />
                   </button>
                 )}
               </div>
             ))}
-            
+
             {customScripts.length > 0 && (
               <>
-                <div className="w-px h-6 bg-[var(--shell-border)] mx-1" />
+                <div className="mx-1 h-6 w-px shrink-0 bg-[var(--shell-border)]" />
                 {customScripts.map((script) => (
-                  <div key={script.id} className="flex items-center">
+                  <div key={script.id} className="flex shrink-0 items-center">
                     <button
                       onClick={() => setScriptFilter(`custom:${script.id}`)}
-                      className={cn(
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
-                        "px-3 py-1.5 rounded-l-full text-xs font-sans font-bold tracking-wider transition-all duration-150 border whitespace-nowrap",
-                        scriptFilter === `custom:${script.id}`
-                          ? "bg-[var(--shell-gold)] text-[var(--shell-chrome)] border-[var(--shell-gold)]"
-                          : "bg-transparent text-[var(--shell-inactive)] border-transparent hover:text-[var(--parchment-panel)] hover:bg-white/5"
-                      )}
+                      className="btn-secondary"
+                      data-active={scriptFilter === `custom:${script.id}` ? "true" : undefined}
                       data-testid={`button-load-script-${script.id}`}
                     >
                       {script.name}
@@ -143,11 +135,12 @@ export default function Reference() {
                         setEditingScript(script);
                         setShowScriptBuilder(true);
                       }}
-                      className="px-1.5 py-1.5 text-xs text-[var(--shell-inactive)] border-y border-transparent hover:text-[var(--shell-gold)] hover:bg-white/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
+                      className="btn-icon text-[var(--shell-inactive)] hover:text-[var(--shell-gold)]"
                       title="Edit script"
+                      aria-label={`Edit ${script.name}`}
                       data-testid={`button-edit-script-${script.id}`}
                     >
-                      <Pencil className="w-3.5 h-3.5" />
+                      <Pencil className="h-4 w-4" />
                     </button>
                     <button
                       onClick={() => {
@@ -156,11 +149,12 @@ export default function Reference() {
                         }
                         deleteCustomScript(script.id);
                       }}
-                      className="px-1.5 py-1.5 rounded-r-full text-xs text-[var(--shell-inactive)] border-y border-r border-transparent hover:bg-red-900/30 hover:text-red-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
+                      className="btn-icon text-[var(--shell-inactive)] hover:text-[var(--shell-gold)]"
                       title="Delete script"
+                      aria-label={`Delete ${script.name}`}
                       data-testid={`button-delete-script-${script.id}`}
                     >
-                      <Trash2 className="w-3.5 h-3.5" />
+                      <Trash2 className="h-4 w-4" />
                     </button>
                   </div>
                 ))}
@@ -172,32 +166,37 @@ export default function Reference() {
                 setEditingScript(null);
                 setShowScriptBuilder(true);
               }}
-              className="px-3 py-1.5 rounded-full text-xs font-sans font-bold uppercase tracking-wider transition-all duration-150 border border-dashed border-[var(--shell-gold)] whitespace-nowrap flex items-center gap-1 text-[var(--shell-gold)] hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
+              className="btn-secondary"
               data-testid="button-create-custom-script"
             >
-              <Plus className="w-3.5 h-3.5" />
+              <Plus className="h-4 w-4" />
               New Script
             </button>
           </div>
 
-          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide items-center">
-            {['all', 'townsfolk', 'outsider', 'minion', 'demon', 'traveler', 'fabled'].map((f) => (
-              <button
-                key={f}
-                onClick={() => setTeamFilter(f)}
-                className={cn(
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
-                  "px-4 py-1.5 rounded-full text-xs font-sans font-bold uppercase tracking-wider transition-all duration-150 border",
-                  teamFilter === f
-                    ? "bg-[var(--shell-gold)] text-[var(--shell-chrome)] border-[var(--shell-gold)]"
-                    : "bg-transparent text-[var(--shell-inactive)] border-transparent hover:text-[var(--parchment-panel)] hover:bg-white/5"
-                )}
-                data-testid={`button-filter-${f}`}
-              >
-                {f}
-              </button>
-            ))}
+          {/* Team filters scroll; the By Team / By Night pair sits at the row's right end. */}
+          <div className="flex items-center gap-3">
+            <div className="-ml-[var(--page-x)] flex min-w-0 flex-1 items-center gap-2 overflow-x-auto pl-[var(--page-x)] scrollbar-hide" data-testid="row-team-filters">
+              {['all', 'townsfolk', 'outsider', 'minion', 'demon', 'traveler', 'fabled'].map((f) => (
+                <button
+                  key={f}
+                  onClick={() => setTeamFilter(f)}
+                  className="btn-secondary capitalize"
+                  data-active={teamFilter === f ? "true" : undefined}
+                  data-testid={`button-filter-${f}`}
+                >
+                  {f}
+                </button>
+              ))}
+            </div>
+            <SortToggle value={sortOrder} onChange={setSortOrder} />
           </div>
+
+          {sortOrder === "night" && (
+            <div className="flex justify-end">
+              <NightViewToggle value={nightView} onChange={setNightView} />
+            </div>
+          )}
         </div>
 
         <ScriptBuilderDialog
@@ -238,6 +237,9 @@ export default function Reference() {
           characters={filtered}
           sortOrder={sortOrder}
           onSortChange={setSortOrder}
+          nightView={nightView}
+          onNightViewChange={setNightView}
+          showToolbar={false}
         />
       </div>
     </Layout>

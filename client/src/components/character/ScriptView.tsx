@@ -2,7 +2,6 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { LayoutList, Clock, Sunrise, Moon } from "lucide-react";
 import { type Character } from "@/lib/game-data";
-import { cn } from "@/lib/utils";
 import { CharacterCard } from "@/components/character/CharacterCard";
 import { sortCharacters, getFirstNightChars, getOtherNightChars, type ScriptSort } from "@/lib/night-order";
 
@@ -23,12 +22,60 @@ const SORT_OPTIONS: { value: ScriptSort; label: string; icon: typeof LayoutList;
   { value: "night", label: "By Night", icon: Clock, testId: "button-sort-night" },
 ];
 
-type NightView = "first" | "other";
+export type NightView = "first" | "other";
 
 const NIGHT_VIEW_OPTIONS: { value: NightView; label: string; icon: typeof LayoutList; testId: string }[] = [
   { value: "first", label: "First Night", icon: Sunrise, testId: "button-night-first" },
   { value: "other", label: "Other Nights", icon: Moon, testId: "button-night-other" },
 ];
+
+/**
+ * By Team / By Night as a secondary pill pair (UI rule 5). Icons only on a
+ * phone; the active pill takes the primary look.
+ */
+export function SortToggle({ value, onChange }: { value: ScriptSort; onChange: (next: ScriptSort) => void }) {
+  return (
+    <div className="flex shrink-0 gap-2" role="group" aria-label="Sort characters">
+      {SORT_OPTIONS.map(({ value: option, label, icon: Icon, testId }) => (
+        <button
+          key={option}
+          type="button"
+          onClick={() => onChange(option)}
+          className="btn-secondary px-3"
+          data-active={value === option ? "true" : undefined}
+          aria-label={`Sort ${label}`}
+          title={`Sort ${label}`}
+          data-testid={testId}
+        >
+          <Icon className="h-4 w-4" />
+          <span className="hidden sm:inline">{label}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/** First Night / Other Nights as a secondary pill pair, shown in By Night mode. */
+export function NightViewToggle({ value, onChange }: { value: NightView; onChange: (next: NightView) => void }) {
+  return (
+    <div className="flex shrink-0 gap-2" role="group" aria-label="Night">
+      {NIGHT_VIEW_OPTIONS.map(({ value: option, label, icon: Icon, testId }) => (
+        <button
+          key={option}
+          type="button"
+          onClick={() => onChange(option)}
+          className="btn-secondary px-3"
+          data-active={value === option ? "true" : undefined}
+          title={label}
+          data-testid={testId}
+        >
+          <Icon className="h-4 w-4" />
+          {label}
+        </button>
+      ))}
+    </div>
+  );
+}
 
 export function ScriptView({
   characters,
@@ -37,8 +84,11 @@ export function ScriptView({
   defaultSortOrder = "team",
   expandedId: controlledExpandedId,
   onToggle: controlledOnToggle,
+  nightView: controlledNightView,
+  onNightViewChange,
+  showToolbar = true,
   className,
-  toolbarClassName = "sticky top-16 md:top-24 z-10 -mx-1 mb-4 flex flex-wrap justify-end gap-2 bg-background/80 backdrop-blur-sm px-1 py-2",
+  toolbarClassName = "mb-3 flex flex-wrap justify-end gap-3",
   emptyMessage = "No souls found matching your inquiry.",
 }: {
   characters: Character[];
@@ -47,13 +97,20 @@ export function ScriptView({
   defaultSortOrder?: ScriptSort;
   expandedId?: string | null;
   onToggle?: (charId: string) => void;
+  /** Controlled First / Other Nights choice (Reference puts the toggles in its filter row). */
+  nightView?: NightView;
+  onNightViewChange?: (next: NightView) => void;
+  /** Render the sort and night toggles above the cards (on unless the caller renders them). */
+  showToolbar?: boolean;
   className?: string;
   toolbarClassName?: string;
   emptyMessage?: string;
 }) {
   const [internalExpandedId, setInternalExpandedId] = useState<string | null>(null);
   const [internalSortOrder, setInternalSortOrder] = useState<ScriptSort>(defaultSortOrder);
-  const [nightView, setNightView] = useState<NightView>("first");
+  const [internalNightView, setInternalNightView] = useState<NightView>("first");
+  const nightView = onNightViewChange ? controlledNightView ?? "first" : internalNightView;
+  const setNightView = onNightViewChange ?? setInternalNightView;
 
   const isControlled = controlledOnToggle !== undefined;
   const expandedId = isControlled ? controlledExpandedId ?? null : internalExpandedId;
@@ -86,53 +143,15 @@ export function ScriptView({
 
   return (
     <div className={className}>
-      <div className={toolbarClassName}>
-        {sortOrder === "night" && (
-          <div className="inline-flex items-center gap-1 rounded-full border border-[var(--shell-border)] bg-[var(--shell-chrome)] p-1">
-            {NIGHT_VIEW_OPTIONS.map(({ value, label, icon: Icon, testId }) => (
-              <button
-                key={value}
-                onClick={() => setNightView(value)}
-                className={cn(
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
-                  "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-sans font-bold tracking-wider transition-all duration-150 whitespace-nowrap",
-                  nightView === value
-                    ? "bg-[var(--shell-gold)] text-[var(--shell-chrome)]"
-                    : "bg-transparent text-[var(--shell-inactive)] hover:text-[var(--parchment-panel)] hover:bg-white/5",
-                )}
-                title={label}
-                data-testid={testId}
-              >
-                <Icon className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">{label}</span>
-              </button>
-            ))}
-          </div>
-        )}
-        <div className="inline-flex items-center gap-1 rounded-full border border-[var(--shell-border)] bg-[var(--shell-chrome)] p-1">
-          {SORT_OPTIONS.map(({ value, label, icon: Icon, testId }) => (
-            <button
-              key={value}
-              onClick={() => handleSortChange(value)}
-              className={cn(
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
-                "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold tracking-wider transition-all duration-150 whitespace-nowrap",
-                sortOrder === value
-                  ? "bg-[var(--shell-gold)] text-[var(--shell-chrome)]"
-                  : "bg-transparent text-[var(--shell-inactive)] hover:text-[var(--parchment-panel)] hover:bg-white/5",
-              )}
-              title={`Sort ${label}`}
-              data-testid={testId}
-            >
-              <Icon className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">{label}</span>
-            </button>
-          ))}
+      {showToolbar && (
+        <div className={toolbarClassName}>
+          {sortOrder === "night" && <NightViewToggle value={nightView} onChange={setNightView} />}
+          <SortToggle value={sortOrder} onChange={handleSortChange} />
         </div>
-      </div>
+      )}
 
       {/* One parchment panel holds every card (Game Mode panel pattern). */}
-      <motion.div layout className="game-panel grid grid-cols-1 gap-2.5 md:grid-cols-2 lg:grid-cols-3">
+      <motion.div layout className="game-panel grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
         {sorted.map((char) => (
           <CharacterCard
             key={char.id}
