@@ -12,7 +12,7 @@ export function JinxList({ char, jinxes }: { char: Character; jinxes: Jinx[] }) 
 
   return (
     <div className="space-y-2">
-      <h4 className="game-label flex items-center gap-1.5 text-[var(--parchment-townsfolk)]">
+      <h4 className="section-label flex items-center gap-1.5">
         <AlertTriangle className="h-3.5 w-3.5 text-[var(--attention)]" /> Jinxes
       </h4>
       <div className="space-y-2">

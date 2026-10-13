@@ -146,7 +146,6 @@ export function SortablePlayerCard({
           isDead={isDead}
           playerName={player.name}
           onToggle={onToggleAlive}
-          size={36}
           data-testid={`button-toggle-dead-${player.id}`}
         />
       </div>
@@ -188,11 +187,11 @@ export function ListView({
 
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-      <div className="flex justify-end">
+      <div className="mb-3 flex justify-end">
         <button
           type="button"
           onClick={onReversePlayers}
-          className="game-label flex items-center gap-1 rounded-md px-1.5 py-1 text-[var(--parchment-ink-muted)] hover:text-[var(--parchment-ink)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="btn-secondary"
           data-testid="button-reverse-order"
         >
           <ArrowDownUp className="w-3.5 h-3.5" />

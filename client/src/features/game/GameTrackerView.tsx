@@ -176,7 +176,7 @@ export function GameTrackerView({
         <div className="flex items-center gap-1">
           <Link
             href="/"
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[var(--shell-inactive)] transition-colors hover:text-[var(--shell-gold)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="btn-icon text-[var(--shell-inactive)] hover:text-[var(--shell-gold)]"
             aria-label="Back to home"
             data-testid="button-back-home"
           >
@@ -279,12 +279,12 @@ export function GameTrackerView({
           <DropdownMenu onOpenChange={(open) => { if (!open) setConfirmEnd(false); }}>
             <DropdownMenuTrigger asChild>
               <Button
-                variant="ghost"
-                size="icon"
-                className="shrink-0 text-[var(--shell-inactive)] hover:text-[var(--shell-gold)]"
+                variant="round"
+                className="text-[var(--shell-inactive)] hover:text-[var(--shell-gold)]"
+                aria-label="Game menu"
                 data-testid="button-overflow-menu"
               >
-                <MoreVertical className="w-5 h-5" />
+                <MoreVertical />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent

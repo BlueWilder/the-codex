@@ -1,4 +1,4 @@
-import { Pencil, Plus, Scroll } from "lucide-react";
+import { ChevronRight, Pencil, Plus, Scroll } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { countScriptCharacters } from "@/lib/script-resolve";
@@ -28,7 +28,7 @@ export function CustomScriptList({
         <div
           key={script.id}
           className={cn(
-            "w-full text-left p-3 transition-colors flex items-center gap-2",
+            "relative",
             selectedId === script.id
               ? "game-card border-[1.5px] border-[var(--parchment-ink-link)] bg-[var(--parchment-control)]"
               : "game-card"
@@ -36,37 +36,41 @@ export function CustomScriptList({
         >
           <button
             onClick={() => onSelect(script)}
-            className="flex-1 flex items-center gap-3 hover-elevate rounded-lg -m-2 p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
+            className="flex w-full items-center gap-3 rounded-[10px] p-3 text-left transition-colors hover:bg-[var(--parchment-control)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             data-testid={`button-script-${script.id}`}
           >
-            <Scroll className="h-5 w-5 text-[var(--parchment-ink-link)]" />
-            <div>
-              <div className="font-display text-lg font-semibold leading-tight text-[var(--parchment-ink)]">{script.name}</div>
+            <Scroll className="h-5 w-5 shrink-0 text-[var(--parchment-ink-link)]" />
+            <div className="min-w-0 flex-1">
+              <div className="truncate font-display text-lg font-semibold leading-tight text-[var(--parchment-ink)]">{script.name}</div>
               <div className="font-serif text-sm text-[var(--parchment-ink-muted)]">{countScriptCharacters(script)} characters</div>
             </div>
+            {/* Room for the edit button, which sits over the card beside the chevron. */}
+            <span className="w-11 shrink-0" aria-hidden="true" />
+            <ChevronRight className="h-4 w-4 shrink-0 text-[var(--parchment-ink-faint)]" />
           </button>
           <Button
-            variant="ghost"
-            size="icon"
+            variant="round"
             onClick={(e) => {
               e.stopPropagation();
               onEdit(script);
             }}
+            className="absolute right-10 top-1/2 -translate-y-1/2 text-[var(--parchment-ink-muted)]"
             aria-label={`Edit ${script.name}`}
             data-testid={`button-edit-script-${script.id}`}
           >
-            <Pencil className="h-4 w-4 text-[var(--parchment-ink-muted)]" />
+            <Pencil />
           </Button>
         </div>
       ))}
-      <button
+      <Button
+        variant="pill"
         onClick={onCreate}
-        className="w-full text-left p-3 rounded-[10px] border border-dashed border-[var(--parchment-control-border)] hover:bg-[var(--parchment-control)] transition-colors flex items-center gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
+        className="w-full"
         data-testid="button-create-custom-script"
       >
-        <Plus className="h-5 w-5 text-[var(--parchment-ink-link)]" />
-        <div className="font-display text-lg font-semibold text-[var(--parchment-ink-link)]">Create Custom Script</div>
-      </button>
+        <Plus />
+        Create Custom Script
+      </Button>
     </>
   );
 }

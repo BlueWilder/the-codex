@@ -67,7 +67,7 @@ export function FriendsPicker({ open, onOpenChange, initialIds, onConfirm }: Fri
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-1.5 max-h-72 overflow-y-auto pr-1">
+        <div className="space-y-3 max-h-72 overflow-y-auto pr-1">
           {isLoading ? (
             <p className="text-sm text-muted-foreground py-6 text-center" data-testid="text-friends-picker-loading">
               Loading...
@@ -76,7 +76,7 @@ export function FriendsPicker({ open, onOpenChange, initialIds, onConfirm }: Fri
             <div className="py-8 text-center" data-testid="text-friends-picker-empty">
               <Users className="mx-auto mb-3 h-12 w-12 text-[var(--parchment-ink-faint)] opacity-60" />
               <p className="text-sm text-muted-foreground">
-                No friends yet. Add some in Manage Friends on the home page.
+                No friends yet. Add some from Manage Friends in the ⋮ menu on the home page.
               </p>
             </div>
           ) : (
@@ -114,9 +114,9 @@ export function FriendsPicker({ open, onOpenChange, initialIds, onConfirm }: Fri
         </div>
 
         <Button
+          variant="primary"
           onClick={handleConfirm}
           disabled={isLoading}
-          className="bg-[var(--parchment-ink-link)] text-[var(--parchment-panel)] border border-[var(--parchment-ink-link)] hover:bg-[var(--parchment-ink)] transition-colors duration-150"
           data-testid="button-confirm-friends"
         >
           {pickedIds.length > 0

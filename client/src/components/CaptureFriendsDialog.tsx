@@ -8,10 +8,6 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Users, Check } from "lucide-react";
-import { cn } from "@/lib/utils";
-
-const FOCUS_RING =
-  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background";
 
 interface CaptureFriendsDialogProps {
   open: boolean;
@@ -49,7 +45,7 @@ export function CaptureFriendsDialog({ open, names, onSave, onSkip }: CaptureFri
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex flex-wrap gap-2 py-1">
+        <div className="flex flex-wrap gap-3 py-1">
           {names.map((name) => {
             const picked = selected.includes(name);
             return (
@@ -57,25 +53,20 @@ export function CaptureFriendsDialog({ open, names, onSave, onSkip }: CaptureFri
                 key={name}
                 onClick={() => toggle(name)}
                 aria-pressed={picked}
-                className={cn(
-                  "flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-serif transition-colors duration-150",
-                  picked
-                    ? "border-[var(--parchment-ink-link)] bg-[var(--parchment-control)] text-[var(--parchment-ink)]"
-                    : "border-[var(--parchment-border)] bg-[var(--parchment-raised)] text-[var(--parchment-ink)] hover:bg-[var(--parchment-control)] text-[var(--parchment-ink-muted)]",
-                  FOCUS_RING
-                )}
+                className="btn-secondary"
+                data-active={picked ? "true" : undefined}
                 data-testid={`capture-chip-${name}`}
               >
                 {name}
-                {picked && <Check className="h-3.5 w-3.5 text-[var(--parchment-ink-link)]" />}
+                {picked && <Check className="h-4 w-4" />}
               </button>
             );
           })}
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex gap-3">
           <Button
-            variant="ghost"
+            variant="pill"
             className="flex-1"
             onClick={onSkip}
             data-testid="button-capture-skip"
@@ -83,7 +74,8 @@ export function CaptureFriendsDialog({ open, names, onSave, onSkip }: CaptureFri
             Not now
           </Button>
           <Button
-            className="flex-1 bg-[var(--parchment-ink-link)] text-[var(--parchment-panel)] border border-[var(--parchment-ink-link)] hover:bg-[var(--parchment-ink)] transition-colors duration-150"
+            variant="primary"
+            className="flex-1"
             onClick={() => onSave(selected)}
             data-testid="button-capture-save"
           >

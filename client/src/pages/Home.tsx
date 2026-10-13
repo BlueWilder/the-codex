@@ -1,8 +1,9 @@
 import { useMemo, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { motion } from "framer-motion";
-import { Camera, ChevronRight, Library, Loader2, Upload } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { Layout } from "@/components/ui/Layout";
+import { PageTitle } from "@/components/PageTitle";
 import { ScriptBuilderDialog } from "@/components/ScriptBuilderDialog";
 import { CustomScriptList } from "@/components/CustomScriptList";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
@@ -88,13 +89,11 @@ export default function Home() {
           initial={{ opacity: 0, scale: 0.97 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.6 }}
-          className="mb-6 pt-2 text-center"
+          className="mb-6"
           data-testid="section-brand"
         >
-          <h1 className="bg-gradient-to-b from-amber-400 to-amber-700 bg-clip-text font-display text-[44px] font-bold leading-tight text-transparent drop-shadow-sm">
-            Codex
-          </h1>
-          <p className="mx-auto mt-1 max-w-[300px] font-serif text-base italic text-[var(--shell-inactive)]" data-testid="text-home-quote">
+          <PageTitle>Codex</PageTitle>
+          <p className="mt-1 max-w-[300px] font-serif text-base italic text-[var(--shell-inactive)]" data-testid="text-home-quote">
             "Do not dare to hope, for the demon devours hope before all else."
           </p>
         </motion.div>
@@ -102,10 +101,10 @@ export default function Home() {
         {/* Resume: only with a saved game */}
         {game && (
           <section className="mb-6" data-testid="section-resume">
-            <h2 className="mb-2 font-display text-[30px] leading-tight text-[var(--shell-gold)]">Resume</h2>
+            <h2 className="section-label mb-3">Resume</h2>
             <Link
               href="/game"
-              className="game-panel flex items-center gap-3 p-3.5 transition-[filter] hover:brightness-[1.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="game-panel flex items-center gap-3 transition-[filter] hover:brightness-[1.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               data-testid="card-resume"
             >
               <span className="min-w-0 flex-1">
@@ -123,11 +122,11 @@ export default function Home() {
 
         {/* Play */}
         <section data-testid="section-play">
-          <div className="mb-2 flex items-baseline justify-between gap-3">
-            <h2 className="font-display text-[30px] leading-tight text-[var(--shell-gold)]">Play</h2>
-            <span className="font-serif text-base italic text-[var(--shell-inactive)]">pick a script</span>
+          <div className="mb-3 flex items-baseline justify-between gap-3">
+            <h2 className="section-label">Play</h2>
+            <span className="font-serif text-sm italic text-[var(--shell-inactive)]">pick a script</span>
           </div>
-          <div className="game-panel space-y-2" data-testid="panel-play">
+          <div className="game-panel space-y-3" data-testid="panel-play">
             {visibleScripts.map(script => (
               <button
                 key={script.id}
@@ -149,7 +148,7 @@ export default function Home() {
               <button
                 type="button"
                 onClick={() => setShowAllScripts(true)}
-                className="w-full rounded-md py-2 text-center font-sans text-xs font-bold uppercase tracking-wider text-[var(--parchment-ink-link)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="btn-secondary w-full"
                 data-testid="button-all-scripts"
               >
                 All {playScripts.length} scripts
@@ -157,25 +156,33 @@ export default function Home() {
             )}
           </div>
 
-          {/* Script tools */}
-          <div className="mt-3 grid grid-cols-3 gap-2">
-            {([
-              { key: "scan", label: scan.scanning ? "Scanning" : "Scan", icon: scan.scanning ? Loader2 : Camera, onClick: scan.openPicker, testId: "button-home-scan" },
-              { key: "import", label: "Import", icon: Upload, onClick: () => setBuilder({ kind: "import" }), testId: "button-home-import" },
-              { key: "mine", label: "My scripts", icon: Library, onClick: () => setMyScriptsOpen(true), testId: "button-home-my-scripts" },
-            ] as const).map(({ key, label, icon: Icon, onClick, testId }) => (
-              <button
-                key={key}
-                type="button"
-                onClick={onClick}
-                disabled={key === "scan" && scan.scanning}
-                className="game-chrome flex h-[72px] flex-col items-center justify-center gap-1.5 rounded-[14px] border text-[var(--shell-gold)] transition-colors hover:brightness-125 disabled:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                data-testid={testId}
-              >
-                <Icon className={key === "scan" && scan.scanning ? "h-5 w-5 animate-spin" : "h-5 w-5"} />
-                <span className="font-sans text-xs font-semibold">{label}</span>
-              </button>
-            ))}
+          {/* Script tools: three secondary pills */}
+          <div className="mt-3 grid grid-cols-3 gap-3">
+            <button
+              type="button"
+              onClick={scan.openPicker}
+              disabled={scan.scanning}
+              className="btn-secondary w-full px-2"
+              data-testid="button-home-scan"
+            >
+              {scan.scanning ? "Scanning…" : "Scan"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setBuilder({ kind: "import" })}
+              className="btn-secondary w-full px-2"
+              data-testid="button-home-import"
+            >
+              Import
+            </button>
+            <button
+              type="button"
+              onClick={() => setMyScriptsOpen(true)}
+              className="btn-secondary w-full px-2"
+              data-testid="button-home-my-scripts"
+            >
+              My scripts
+            </button>
           </div>
           <input
             ref={scan.inputRef}
@@ -189,7 +196,7 @@ export default function Home() {
         </section>
 
         {/* Footer */}
-        <footer className="mt-10 space-y-3 border-t border-[var(--shell-border)] pt-6 text-center" data-testid="footer-home">
+        <footer className="mt-6 space-y-3 border-t border-[var(--shell-border)] pt-6 text-center" data-testid="footer-home">
           <p className="text-xs text-muted-foreground">
             Created by{" "}
             <a
@@ -264,10 +271,10 @@ export default function Home() {
       {/* My scripts: the custom script list, tap to play, pencil to edit */}
       <Drawer open={myScriptsOpen} onOpenChange={setMyScriptsOpen}>
         <DrawerContent className="parchment-scope max-h-[85vh] border-[var(--parchment-border)] bg-[var(--parchment-panel)]" data-testid="drawer-my-scripts">
-          <DrawerHeader className="text-left">
+          <DrawerHeader className="px-4 text-left">
             <DrawerTitle className="font-display text-2xl font-semibold text-[var(--parchment-ink)]">My scripts</DrawerTitle>
           </DrawerHeader>
-          <div className="space-y-2 overflow-y-auto px-3.5 pb-6">
+          <div className="space-y-3 overflow-y-auto px-4 pb-6">
             {customScripts.length === 0 && (
               <p className="pb-1 font-serif text-base italic text-[var(--parchment-ink-muted)]" data-testid="text-no-custom-scripts">
                 No custom scripts yet.

@@ -251,29 +251,24 @@ export function ScriptSheet({
   return (
     <div
       className={cn(
-        "rounded-xl border border-[#d8c9a3] bg-[#f4ecd8] bg-gradient-to-b from-[#f7f0df] to-[#efe4c8] p-5 md:p-6 shadow-inner",
+        "parchment-scope rounded-[14px] border border-[#d8c9a3] bg-[#f4ecd8] bg-gradient-to-b from-[#f7f0df] to-[#efe4c8] p-4 shadow-inner",
         className,
       )}
       data-testid="script-sheet"
     >
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-4 border-b border-[#d8c9a3] pb-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4 border-b border-[#d8c9a3] pb-4">
         <h3 className="font-display text-xl text-[#2a2016]">{scriptName ?? "Script"}</h3>
-        <div className="inline-flex items-center gap-1 rounded-full border border-[#cbb98e] bg-[#e8dcbe] p-1">
+        <div className="flex gap-3">
           {SORT_OPTIONS.map(({ value, label, icon: Icon, testId }) => (
             <button
               key={value}
               onClick={() => handleSort(value)}
-              className={cn(
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
-                "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold tracking-wider transition-all duration-150 whitespace-nowrap",
-                sortOrder === value
-                  ? "bg-[#7a5c2e] text-[#f4ecd8]"
-                  : "bg-transparent text-[#6b5836] hover:bg-[#dccfa9]"
-              )}
+              className="btn-secondary"
+              data-active={sortOrder === value ? "true" : undefined}
               title={`Sort ${label}`}
               data-testid={testId}
             >
-              <Icon className="w-3.5 h-3.5" />
+              <Icon className="h-4 w-4" />
               <span>{label}</span>
             </button>
           ))}
@@ -281,38 +276,30 @@ export function ScriptSheet({
       </div>
 
       {sortOrder === "night" && (
-        <div className="flex justify-end mb-4">
-          <div className="inline-flex items-center gap-1 rounded-full border border-[#cbb98e] bg-[#e8dcbe] p-0.5">
-            {([
-              { value: "first" as NightView, label: "First Night", testId: "script-sheet-night-first" },
-              { value: "other" as NightView, label: "Other Nights", testId: "script-sheet-night-other" },
-            ]).map(({ value, label, testId }) => (
-              <button
-                key={value}
-                onClick={() => setNightView(value)}
-                className={cn(
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
-                  "px-2.5 py-1 rounded-full text-[11px] font-bold tracking-wider transition-all duration-150 whitespace-nowrap",
-                  nightView === value
-                    ? "bg-[#7a5c2e] text-[#f4ecd8]"
-                    : "bg-transparent text-[#6b5836] hover:bg-[#dccfa9]"
-                )}
-                data-testid={testId}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
+        <div className="flex justify-end gap-3 mb-4">
+          {([
+            { value: "first" as NightView, label: "First Night", testId: "script-sheet-night-first" },
+            { value: "other" as NightView, label: "Other Nights", testId: "script-sheet-night-other" },
+          ]).map(({ value, label, testId }) => (
+            <button
+              key={value}
+              onClick={() => setNightView(value)}
+              className="btn-secondary"
+              data-active={nightView === value ? "true" : undefined}
+              data-testid={testId}
+            >
+              {label}
+            </button>
+          ))}
         </div>
       )}
 
       {sortOrder === "team" ? (
-        <div className="space-y-5">
+        <div className="space-y-6">
           {sections.map(({ team, chars }) => {
-            const sheet = teamSheet(team);
             return (
               <section key={team} data-testid={`script-sheet-section-${team}`}>
-                <h4 className={cn("font-display font-bold tracking-wider uppercase text-sm mb-1", sheet.text)}>
+                <h4 className="section-label mb-2">
                   {TEAM_LABEL[team] ?? team} ({chars.length})
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-0.5">
@@ -349,7 +336,7 @@ export function ScriptSheet({
           className="mt-6 pt-4 border-t border-[#d8c9a3]"
           data-testid="script-sheet-jinxes"
         >
-          <h4 className="font-display font-bold tracking-wider uppercase text-sm mb-2 text-[#7a5c2e]">
+          <h4 className="section-label mb-3">
             Jinxes
           </h4>
           <div className="space-y-3">

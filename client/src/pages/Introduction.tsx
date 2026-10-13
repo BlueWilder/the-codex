@@ -12,15 +12,15 @@ import {
   Shield,
   Eye,
   Target,
-  ArrowLeft,
   BookOpen,
   Gamepad2,
   Play,
-  ChevronDown
+  ChevronDown,
+  ChevronRight
 } from "lucide-react";
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { PageTitle } from "@/components/PageTitle";
 import cccBadge from "@/assets/ccc-parchment.png";
 import {
   Accordion,
@@ -48,7 +48,7 @@ function VideoSection() {
       <Card className="bg-stone-900/60 border-amber-900/30 overflow-hidden">
         <button
           onClick={() => setShowVideo(!showVideo)}
-          className="w-full flex items-center justify-between px-6 py-4 hover:bg-white/5 transition-colors"
+          className="w-full flex items-center justify-between p-4 hover:bg-white/5 transition-colors"
           data-testid="button-toggle-video"
         >
           <div className="flex items-center gap-3">
@@ -61,7 +61,7 @@ function VideoSection() {
           )} />
         </button>
         {showVideo && (
-          <div className="px-6 pb-6">
+          <div className="px-4 pb-4">
             <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
               <iframe
                 className="absolute inset-0 w-full h-full rounded-lg"
@@ -82,30 +82,15 @@ function VideoSection() {
 export default function Introduction() {
   return (
     <Layout>
-      <div className="max-w-4xl mx-auto pb-16">
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="mb-6"
-        >
-          <Link href="/">
-            <Button variant="ghost" size="sm" className="text-amber-400 hover:text-amber-300" data-testid="button-back-home">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Home
-            </Button>
-          </Link>
-        </motion.div>
-
+      <div className="max-w-4xl mx-auto pb-6">
         <motion.div 
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-12"
+          className="mb-6"
         >
-          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-b from-amber-400 to-amber-700 bg-clip-text text-transparent font-display mb-4">
-            Welcome to Ravenswood Bluff
-          </h1>
-          <p className="text-xl text-amber-100/70 font-serif italic max-w-2xl mx-auto">
+          <PageTitle>Welcome to Ravenswood Bluff</PageTitle>
+          <p className="mt-1 font-serif text-base italic text-[var(--shell-inactive)]">
             A demon is killing villagers. Find them before it's too late.
           </p>
         </motion.div>
@@ -113,14 +98,14 @@ export default function Introduction() {
         <motion.section 
           {...fadeInUp}
           transition={{ delay: 0.1 }}
-          className="mb-12"
+          className="mb-6"
         >
-          <Card className="bg-card/80 border-amber-900/30 p-6 md:p-8">
-            <div className="flex items-center gap-3 mb-4">
+          <Card className="bg-card/80 border-amber-900/30 p-4">
+            <div className="flex items-center gap-3 mb-3">
               <div className="w-10 h-10 rounded-full bg-amber-900/30 flex items-center justify-center">
                 <Users className="w-5 h-5 text-amber-400" />
               </div>
-              <h2 className="text-2xl font-bold text-amber-500 font-display">The Setup</h2>
+              <h2 className="section-label">The Setup</h2>
             </div>
             <p className="text-foreground/90 font-serif text-lg leading-relaxed">
               Two teams, hidden roles. The <span className="text-blue-400 font-semibold">Good team</span> (most players) 
@@ -133,23 +118,23 @@ export default function Introduction() {
         <motion.section 
           {...fadeInUp}
           transition={{ delay: 0.2 }}
-          className="mb-12"
+          className="mb-6"
         >
-          <Card className="bg-card/80 border-amber-900/30 p-6 md:p-8">
-            <div className="flex items-center gap-3 mb-6">
+          <Card className="bg-card/80 border-amber-900/30 p-4">
+            <div className="flex items-center gap-3 mb-3">
               <div className="w-10 h-10 rounded-full bg-purple-900/30 flex items-center justify-center">
                 <Gamepad2 className="w-5 h-5 text-purple-400" />
               </div>
-              <h2 className="text-2xl font-bold text-amber-500 font-display">How It Plays</h2>
+              <h2 className="section-label">How It Plays</h2>
             </div>
             
-            <div className="space-y-6">
+            <div className="space-y-4">
               <div className="flex gap-4">
                 <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-indigo-900/30 flex items-center justify-center">
                   <Moon className="w-6 h-6 text-indigo-400" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-indigo-300 mb-1">Night</h3>
+                  <h3 className="font-semibold text-foreground mb-1">Night</h3>
                   <p className="text-foreground/80 font-serif">
                     Close your eyes. The Storyteller privately wakes up players to activate their abilities. 
                     Demon kills, Minions disrupt, Good info roles learn clues.
@@ -175,7 +160,7 @@ export default function Introduction() {
                   <Scale className="w-6 h-6 text-red-400" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-red-300 mb-1">Execution</h3>
+                  <h3 className="font-semibold text-foreground mb-1">Execution</h3>
                   <p className="text-foreground/80 font-serif">
                     Nominate someone, vote, and if they get majority they're executed. 
                     The town can execute one player per day, or choose to skip if unsure.
@@ -183,7 +168,7 @@ export default function Introduction() {
                 </div>
               </div>
 
-              <p className="text-center text-amber-100/60 font-serif italic pt-2">
+              <p className="text-amber-100/60 font-serif italic">
                 Repeat until someone wins.
               </p>
             </div>
@@ -193,19 +178,19 @@ export default function Introduction() {
         <motion.section 
           {...fadeInUp}
           transition={{ delay: 0.3 }}
-          className="mb-12"
+          className="mb-6"
         >
-          <Card className="bg-card/80 border-amber-900/30 p-6 md:p-8">
-            <div className="flex items-center gap-3 mb-6">
+          <Card className="bg-card/80 border-amber-900/30 p-4">
+            <div className="flex items-center gap-3 mb-3">
               <div className="w-10 h-10 rounded-full bg-emerald-900/30 flex items-center justify-center">
                 <AlertTriangle className="w-5 h-5 text-emerald-400" />
               </div>
-              <h2 className="text-2xl font-bold text-amber-500 font-display">What Makes This Different</h2>
+              <h2 className="section-label">What Makes This Different</h2>
             </div>
             
-            <div className="grid md:grid-cols-3 gap-6">
-              <div className="text-center p-4 rounded-lg bg-background/50">
-                <div className="w-12 h-12 rounded-full bg-yellow-900/30 flex items-center justify-center mx-auto mb-3">
+            <div className="grid md:grid-cols-3 gap-3">
+              <div className="p-4 rounded-lg bg-background/50">
+                <div className="w-12 h-12 rounded-full bg-yellow-900/30 flex items-center justify-center mb-3">
                   <AlertTriangle className="w-6 h-6 text-yellow-400" />
                 </div>
                 <h3 className="font-semibold text-yellow-300 mb-2">Information can be wrong</h3>
@@ -215,11 +200,11 @@ export default function Introduction() {
                 </p>
               </div>
 
-              <div className="text-center p-4 rounded-lg bg-background/50">
-                <div className="w-12 h-12 rounded-full bg-blue-900/30 flex items-center justify-center mx-auto mb-3">
+              <div className="p-4 rounded-lg bg-background/50">
+                <div className="w-12 h-12 rounded-full bg-blue-900/30 flex items-center justify-center mb-3">
                   <Skull className="w-6 h-6 text-blue-400" />
                 </div>
-                <h3 className="font-semibold text-blue-300 mb-2">Dead players keep playing</h3>
+                <h3 className="font-semibold text-foreground mb-2">Dead players keep playing</h3>
                 <p className="text-foreground/70 text-sm font-serif">
                   Dying is not the end. You still play as a ghost and try to help your team win 
                   by collecting and sharing information. Plus you get one final vote to use anytime 
@@ -227,8 +212,8 @@ export default function Introduction() {
                 </p>
               </div>
 
-              <div className="text-center p-4 rounded-lg bg-background/50">
-                <div className="w-12 h-12 rounded-full bg-purple-900/30 flex items-center justify-center mx-auto mb-3">
+              <div className="p-4 rounded-lg bg-background/50">
+                <div className="w-12 h-12 rounded-full bg-purple-900/30 flex items-center justify-center mb-3">
                   <MessageCircle className="w-6 h-6 text-purple-400" />
                 </div>
                 <h3 className="font-semibold text-purple-300 mb-2">The Storyteller plays too</h3>
@@ -244,9 +229,9 @@ export default function Introduction() {
         <motion.section 
           {...fadeInUp}
           transition={{ delay: 0.4 }}
-          className="mb-12"
+          className="mb-6"
         >
-          <h2 className="text-2xl font-bold text-amber-500 font-display text-center mb-6">Your Role</h2>
+          <h2 className="section-label mb-3">Your Role</h2>
           
           <Accordion type="single" collapsible className="space-y-3">
             <AccordionItem value="townsfolk" className="border-amber-900/30 bg-card/60 rounded-lg px-4">
@@ -318,11 +303,11 @@ export default function Introduction() {
         <motion.section 
           {...fadeInUp}
           transition={{ delay: 0.5 }}
-          className="mb-12"
+          className="mb-6"
         >
-          <h2 className="text-2xl font-bold text-amber-500 font-display text-center mb-6">Quick Tips</h2>
+          <h2 className="section-label mb-3">Quick Tips</h2>
           
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid md:grid-cols-2 gap-3">
             <Card className="bg-blue-950/30 border-blue-900/30 p-6">
               <h3 className="font-semibold text-blue-300 mb-4 flex items-center gap-2">
                 <Shield className="w-5 h-5" />
@@ -378,11 +363,11 @@ export default function Introduction() {
         <motion.section 
           {...fadeInUp}
           transition={{ delay: 0.6 }}
-          className="mb-12"
+          className="mb-6"
         >
-          <Card className="bg-gradient-to-br from-amber-950/40 to-amber-900/20 border-amber-700/30 p-6 md:p-8 text-center">
-            <h2 className="text-2xl font-bold text-amber-400 font-display mb-4">First Game Mindset</h2>
-            <p className="text-foreground/90 font-serif text-lg leading-relaxed max-w-2xl mx-auto mb-4">
+          <Card className="bg-gradient-to-br from-amber-950/40 to-amber-900/20 border-amber-700/30 p-4">
+            <h2 className="section-label mb-3">First Game Mindset</h2>
+            <p className="text-foreground/90 font-serif text-lg leading-relaxed mb-4">
               Don't try to play optimally. Talk to people, pay attention to claims, and enjoy the mystery.
             </p>
             <p className="text-amber-100/60 font-serif italic">
@@ -395,9 +380,9 @@ export default function Introduction() {
         <motion.section 
           {...fadeInUp}
           transition={{ delay: 0.7 }}
-          className="text-center"
+          className="mb-3"
         >
-          <p className="text-lg text-amber-100/70 mb-6 font-serif">Still Not Sure?</p>
+          <h2 className="section-label">Still Not Sure?</h2>
         </motion.section>
 
         <VideoSection />
@@ -405,20 +390,26 @@ export default function Introduction() {
         <motion.section
           {...fadeInUp}
           transition={{ delay: 0.9 }}
-          className="mt-12 grid gap-4 sm:grid-cols-2"
+          className="mt-6 grid gap-3 sm:grid-cols-2"
         >
           <Link href="/reference" data-testid="link-cta-reference">
-            <div className="group bg-card hover:bg-card/80 border border-amber-900/30 hover:border-amber-600/50 p-6 rounded-xl transition-all duration-300 shadow-lg hover:shadow-amber-900/20 group-hover:-translate-y-1 text-center h-full">
-              <BookOpen className="w-8 h-8 text-blue-400 mx-auto mb-3" />
-              <h2 className="text-lg font-bold text-amber-400 font-display mb-1">Browse the Character Reference</h2>
-              <p className="text-sm text-muted-foreground">Abilities, tips, strategies, and jinx interactions for every character across all official scripts.</p>
+            <div className="flex h-full items-center gap-3 rounded-xl border border-amber-900/30 bg-card p-4 transition-colors hover:border-amber-600/50 hover:bg-card/80">
+              <BookOpen className="h-6 w-6 shrink-0 text-amber-400" />
+              <div className="min-w-0 flex-1">
+                <h2 className="font-display text-lg font-bold text-amber-400">Browse the Character Reference</h2>
+                <p className="text-sm text-muted-foreground">Abilities, tips, strategies, and jinx interactions for every character across all official scripts.</p>
+              </div>
+              <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground" />
             </div>
           </Link>
           <Link href="/game" data-testid="link-cta-game">
-            <div className="group bg-card hover:bg-card/80 border border-amber-900/30 hover:border-amber-600/50 p-6 rounded-xl transition-all duration-300 shadow-lg hover:shadow-amber-900/20 group-hover:-translate-y-1 text-center h-full">
-              <Gamepad2 className="w-8 h-8 text-purple-400 mx-auto mb-3" />
-              <h2 className="text-lg font-bold text-amber-400 font-display mb-1">Open the Game Tracker</h2>
-              <p className="text-sm text-muted-foreground">Track players, record claims and notes, and manage nominations during your game.</p>
+            <div className="flex h-full items-center gap-3 rounded-xl border border-amber-900/30 bg-card p-4 transition-colors hover:border-amber-600/50 hover:bg-card/80">
+              <Gamepad2 className="h-6 w-6 shrink-0 text-purple-400" />
+              <div className="min-w-0 flex-1">
+                <h2 className="font-display text-lg font-bold text-amber-400">Open the Game Tracker</h2>
+                <p className="text-sm text-muted-foreground">Track players, record claims and notes, and manage nominations during your game.</p>
+              </div>
+              <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground" />
             </div>
           </Link>
         </motion.section>
@@ -426,7 +417,7 @@ export default function Introduction() {
         <motion.div
           {...fadeInUp}
           transition={{ delay: 1 }}
-          className="mt-12 flex flex-col items-center gap-2 text-center"
+          className="mt-6 flex flex-col items-center gap-3 border-t border-[var(--shell-border)] pt-6 text-center"
         >
           <a
             href="https://botc.app"

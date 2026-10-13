@@ -241,8 +241,8 @@ export function ScriptBuilderDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col p-4 md:p-6 parchment-scope rounded-[14px] border-[var(--parchment-border)] bg-[var(--parchment-panel)]">
-        <DialogHeader className="pb-2">
+      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col p-4 parchment-scope rounded-[14px] border-[var(--parchment-border)] bg-[var(--parchment-panel)]">
+        <DialogHeader className="pb-2 pr-10 text-left">
           <DialogTitle className="font-display text-2xl font-semibold text-[var(--parchment-ink)]">
             {title}
           </DialogTitle>
@@ -250,7 +250,7 @@ export function ScriptBuilderDialog({
 
         <div className="space-y-3">
           <div>
-            <label className="text-sm text-muted-foreground mb-1 block">Script Name</label>
+            <label className="section-label mb-2 block">Script Name</label>
             <Input
               value={scriptName}
               onChange={(e) => setScriptName(e.target.value)}
@@ -261,8 +261,8 @@ export function ScriptBuilderDialog({
           </div>
 
           <div>
-            <div className="flex items-center justify-between mb-1">
-              <label className="text-sm text-muted-foreground">Synopsis (optional)</label>
+            <div className="flex items-center justify-between mb-2">
+              <label className="section-label">Synopsis (optional)</label>
               <span className="text-[10px] text-muted-foreground/60">{synopsis.length} chars</span>
             </div>
             <textarea
@@ -286,33 +286,29 @@ export function ScriptBuilderDialog({
               {importMessage.type === 'warning' && <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" />}
               {importMessage.type === 'error' && <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" />}
               <span className="flex-1">{importMessage.text}</span>
-              <button onClick={() => setImportMessage(null)} className="shrink-0 opacity-60 hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background">
-                <X className="w-3.5 h-3.5" />
+              <button onClick={() => setImportMessage(null)} className="btn-icon -my-2.5 -mr-2" aria-label="Dismiss message">
+                <X className="h-4 w-4" />
               </button>
             </div>
           )}
 
           <div>
             {!showImport ? (
-              <div className="flex flex-wrap items-center gap-2">
+              <div className="flex flex-wrap items-center gap-3">
                 <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-7 text-xs gap-1.5"
+                  variant="pill"
                   onClick={() => { setShowImport(true); setImportMessage(null); }}
                   data-testid="button-import-json"
                 >
-                  <Upload className="w-3.5 h-3.5" /> Import JSON
+                  <Upload /> Import JSON
                 </Button>
                 <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-7 text-xs gap-1.5"
+                  variant="pill"
                   disabled={scanning}
                   onClick={() => scanInputRef.current?.click()}
                   data-testid="button-scan-photo"
                 >
-                  {scanning ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Camera className="w-3.5 h-3.5" />}
+                  {scanning ? <Loader2 className="animate-spin" /> : <Camera />}
                   {scanning ? "Scanning..." : "Scan Photo"}
                 </Button>
                 <input
@@ -326,11 +322,11 @@ export function ScriptBuilderDialog({
                 />
               </div>
             ) : (
-              <div className="game-card p-3 space-y-2">
+              <div className="game-card p-3 space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="game-label text-[var(--parchment-ink-link)]">Import from BOTC Script Tool</span>
-                  <button onClick={() => { setShowImport(false); setImportJson(""); }} className="text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background">
-                    <X className="w-3.5 h-3.5" />
+                  <span className="section-label">Import from BOTC Script Tool</span>
+                  <button onClick={() => { setShowImport(false); setImportJson(""); }} className="btn-icon -my-2 -mr-2 text-muted-foreground" aria-label="Close import">
+                    <X className="h-4 w-4" />
                   </button>
                 </div>
                 <textarea
@@ -340,19 +336,18 @@ export function ScriptBuilderDialog({
                   className="w-full h-20 px-3 py-2 rounded-md border border-input bg-background text-xs font-mono resize-none focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background placeholder:text-muted-foreground"
                   data-testid="input-import-json"
                 />
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-3">
                   <Button
-                    size="sm"
-                    className="h-7 text-xs gap-1"
+                    variant="pill"
                     onClick={() => processImportJson(importJson)}
                     disabled={!importJson.trim()}
                     data-testid="button-import-confirm"
                   >
-                    <FileText className="w-3.5 h-3.5" /> Import
+                    <FileText /> Import
                   </Button>
                   <label className="cursor-pointer">
-                    <Button variant="outline" size="sm" className="h-7 text-xs gap-1 pointer-events-none" asChild>
-                      <span><Upload className="w-3.5 h-3.5" /> Upload .json</span>
+                    <Button variant="pill" className="pointer-events-none" asChild>
+                      <span><Upload /> Upload .json</span>
                     </Button>
                     <input
                       ref={fileInputRef}
@@ -364,9 +359,7 @@ export function ScriptBuilderDialog({
                     />
                   </label>
                   <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 text-xs"
+                    variant="pill"
                     onClick={() => { setShowImport(false); setImportJson(""); }}
                     data-testid="button-import-cancel"
                   >
@@ -391,18 +384,13 @@ export function ScriptBuilderDialog({
           </div>
         </div>
         
-        <div className="flex flex-wrap items-center gap-1 md:gap-2 pt-2">
+        <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pt-2 scrollbar-hide">
           {['all', 'townsfolk', 'outsider', 'minion', 'demon', 'traveler', 'fabled'].map((f) => (
             <button
               key={f}
               onClick={() => setTeamFilter(f)}
-              className={cn(
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
-                "px-2 py-0.5 md:px-3 md:py-1 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-wider transition-all duration-150 border",
-                teamFilter === f
-                  ? "bg-[var(--parchment-ink-link)] text-[var(--parchment-panel)] border-[var(--parchment-ink-link)]"
-                  : "bg-transparent text-[var(--parchment-ink-muted)] border-transparent hover:bg-[var(--parchment-control)]"
-              )}
+              className="btn-secondary capitalize"
+              data-active={teamFilter === f ? "true" : undefined}
               data-testid={`builder-filter-${f}`}
             >
               {f}
@@ -410,21 +398,21 @@ export function ScriptBuilderDialog({
           ))}
         </div>
 
-        <div className="flex items-center gap-2">
-          <div className="relative flex-1 max-w-xs">
-            <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+        <div className="flex items-center gap-3">
+          <div className="relative min-w-0 flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search characters..."
-              className="pl-8 h-8"
+              className="pl-9 h-11"
               data-testid="input-search-builder"
             />
           </div>
-          <Button variant="outline" size="sm" className="h-8 text-xs px-2" onClick={handleSelectAll} data-testid="button-select-all">
+          <Button variant="pill" className="px-3" onClick={handleSelectAll} data-testid="button-select-all">
             Select All
           </Button>
-          <Button variant="outline" size="sm" className="h-8 text-xs px-2" onClick={handleClearAll} data-testid="button-clear-all">
+          <Button variant="pill" className="px-3" onClick={handleClearAll} data-testid="button-clear-all">
             Clear
           </Button>
         </div>
@@ -459,18 +447,17 @@ export function ScriptBuilderDialog({
           </div>
         </div>
 
-        <DialogFooter className="pt-2 gap-2">
-          <Button variant="outline" size="sm" onClick={() => onOpenChange(false)} disabled={saving} data-testid="button-cancel-builder">
+        <DialogFooter className="pt-2 gap-3">
+          <Button variant="pill" onClick={() => onOpenChange(false)} disabled={saving} data-testid="button-cancel-builder">
             Cancel
           </Button>
           <Button 
-            size="sm" 
+            variant="primary"
             onClick={handleSave} 
             disabled={!scriptName.trim() || selectedCharacters.size === 0 || saving}
-            className="bg-[var(--parchment-ink-link)] text-[var(--parchment-panel)] hover:bg-[var(--parchment-ink)]"
             data-testid="button-save-script"
           >
-            {saving && <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />}
+            {saving && <Loader2 className="animate-spin" />}
             {saving ? "Saving..." : editMode ? "Update Script" : "Save Script"}
           </Button>
         </DialogFooter>

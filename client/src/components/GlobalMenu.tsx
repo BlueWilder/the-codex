@@ -56,9 +56,8 @@ export function GlobalMenu() {
       >
         <DropdownMenuTrigger asChild>
           <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 md:h-10 md:w-10 rounded-lg text-muted-foreground hover:text-amber-200 hover:bg-white/5"
+            variant="round"
+            className="text-muted-foreground hover:text-amber-200"
             aria-label="More options"
             data-testid="button-global-menu"
           >
@@ -75,7 +74,7 @@ export function GlobalMenu() {
             Friends
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuLabel className="text-xs font-sans text-muted-foreground">
+          <DropdownMenuLabel className="section-label">
             Quick add friend
           </DropdownMenuLabel>
           <div
@@ -86,7 +85,7 @@ export function GlobalMenu() {
               if (e.key !== "Escape") e.stopPropagation();
             }}
           >
-            <div className="flex gap-1.5">
+            <div className="flex items-center gap-1.5">
               <Input
                 value={quickName}
                 onChange={(e) => {
@@ -97,14 +96,14 @@ export function GlobalMenu() {
                   if (e.key === "Enter") handleQuickAdd();
                 }}
                 placeholder="Friend's name"
-                className="h-8 border-[#3d2f57] focus-visible:ring-[#c79fe6]/50"
+                className="h-11 border-[#3d2f57] focus-visible:ring-[#c79fe6]/50"
                 data-testid="input-quick-add-friend"
               />
               <Button
+                variant="round"
                 onClick={handleQuickAdd}
                 disabled={!quickName.trim()}
-                size="sm"
-                className="h-8 shrink-0 bg-[#c79fe6]/20 text-[#c79fe6] border border-[#3d2f57] hover:bg-[#c79fe6]/30"
+                className="text-[#c79fe6]"
                 aria-label="Add friend"
                 data-testid="button-quick-add-friend"
               >

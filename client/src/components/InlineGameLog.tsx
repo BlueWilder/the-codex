@@ -1,4 +1,3 @@
-import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -218,12 +217,7 @@ export function InlineGameLog({
     <Card className="p-4">
       {/* Game Notes Section - At the top */}
       <div className="mb-4 pb-4 border-b border-border">
-        <div className="flex items-center gap-2 mb-3">
-          <FileText className="w-4 h-4 text-muted-foreground" />
-          <span className="text-sm font-display text-muted-foreground">
-            Notes
-          </span>
-        </div>
+        <h3 className="section-label mb-3">Notes</h3>
         <Textarea
           value={game.gameNotes || ''}
           onChange={(e) => onUpdateGameNotes(e.target.value)}
@@ -233,20 +227,18 @@ export function InlineGameLog({
         />
       </div>
       
-      <div className="flex flex-wrap gap-1 mb-4">
+      <div className="-mx-4 mb-4 flex gap-3 overflow-x-auto px-4 scrollbar-hide">
         {filterButtons.map(fb => (
-          <Badge
+          <button
             key={fb.type}
-            variant={filter === fb.type ? "default" : "outline"}
-            className={cn(
-              "cursor-pointer text-xs",
-              filter === fb.type && "bg-amber-900/50 text-amber-100 border-amber-600"
-            )}
+            type="button"
+            className="btn-secondary"
+            data-active={filter === fb.type ? "true" : undefined}
             onClick={() => setFilter(fb.type)}
             data-testid={`filter-${fb.type}`}
           >
             {fb.label}
-          </Badge>
+          </button>
         ))}
       </div>
       
@@ -293,17 +285,16 @@ export function InlineGameLog({
                 }
               }}
               placeholder="Add a note..."
-              className="h-8 text-sm bg-muted/30 border-border"
+              className="h-11 text-base bg-muted/30 border-border"
               data-testid="input-notebook-note"
             />
             <Button
-              size="sm"
-              variant="outline"
-              className="h-8 px-2 shrink-0"
+              variant="round"
               onClick={handleAddNote}
+              aria-label="Add note"
               data-testid="button-add-notebook-note"
             >
-              <Plus className="w-4 h-4" />
+              <Plus />
             </Button>
           </div>
         
@@ -369,13 +360,13 @@ function NoteRow({
         {text}
       </div>
       <Button
-        size="sm"
-        variant="ghost"
-        className="h-5 w-5 p-0 shrink-0 opacity-50 hover:opacity-100"
+        variant="round"
+        className="-my-2.5 text-muted-foreground"
         onClick={() => onRemove(id)}
+        aria-label="Remove note"
         data-testid={`button-remove-notebook-note-${id}`}
       >
-        <X className="w-3 h-3" />
+        <X />
       </Button>
     </div>
   );

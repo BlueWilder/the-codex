@@ -11,8 +11,6 @@ import { Button } from "@/components/ui/button";
 import { Users, Pencil, X, Check, Plus } from "lucide-react";
 import { useFriends, friendErrorMessage } from "@/hooks/use-friends";
 
-const FOCUS_RING =
-  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background";
 
 interface FriendsManagerProps {
   open: boolean;
@@ -86,7 +84,7 @@ export function FriendsManager({ open, onOpenChange }: FriendsManagerProps) {
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex gap-2">
+        <div className="flex gap-3">
           <Input
             value={newName}
             onChange={(e) => {
@@ -95,16 +93,16 @@ export function FriendsManager({ open, onOpenChange }: FriendsManagerProps) {
             }}
             onKeyDown={(e) => e.key === "Enter" && handleAdd()}
             placeholder="Friend's name"
-            className="border-[#3d2f57] focus-visible:ring-[#c79fe6]/50"
+            className="h-12 border-[#3d2f57] focus-visible:ring-[#c79fe6]/50"
             data-testid="input-friend-name"
           />
           <Button
+            variant="primary"
             onClick={handleAdd}
             disabled={!newName.trim()}
-            className="bg-[#c79fe6]/20 text-[#c79fe6] border border-[#3d2f57] hover:bg-[#c79fe6]/30 transition-colors duration-150"
             data-testid="button-add-friend"
           >
-            <Plus className="w-4 h-4 mr-1" />
+            <Plus />
             Add
           </Button>
         </div>
@@ -119,7 +117,7 @@ export function FriendsManager({ open, onOpenChange }: FriendsManagerProps) {
           </p>
         )}
 
-        <div className="space-y-1.5 max-h-72 overflow-y-auto pr-1">
+        <div className="space-y-3 max-h-72 overflow-y-auto pr-1">
           {isLoading ? (
             <p className="text-sm text-muted-foreground py-6 text-center" data-testid="text-friends-loading">
               Loading...
@@ -135,7 +133,7 @@ export function FriendsManager({ open, onOpenChange }: FriendsManagerProps) {
             friends.map((friend) => (
               <div
                 key={friend.id}
-                className="rounded-lg border border-[#3d2f57]/60 bg-[#c79fe6]/5 px-3 py-2 transition-colors duration-150"
+                className="rounded-lg border border-[#3d2f57]/60 bg-[#c79fe6]/5 py-0.5 pl-3 pr-0.5 transition-colors duration-150"
                 data-testid={`friend-row-${friend.id}`}
               >
                 <div className="flex items-center gap-2">
@@ -149,12 +147,12 @@ export function FriendsManager({ open, onOpenChange }: FriendsManagerProps) {
                       }}
                       onKeyDown={(e) => e.key === "Enter" && commitRename()}
                       autoFocus
-                      className="h-8 border-[#3d2f57] focus-visible:ring-[#c79fe6]/50"
+                      className="h-11 border-[#3d2f57] focus-visible:ring-[#c79fe6]/50"
                       data-testid={`input-rename-friend-${friend.id}`}
                     />
                     <button
                       onClick={commitRename}
-                      className={`p-1.5 rounded-md text-[#c79fe6] hover:bg-[#c79fe6]/15 transition-colors duration-150 ${FOCUS_RING}`}
+                      className="btn-icon text-[#c79fe6]"
                       aria-label="Save name"
                       data-testid={`button-save-rename-friend-${friend.id}`}
                     >
@@ -168,7 +166,7 @@ export function FriendsManager({ open, onOpenChange }: FriendsManagerProps) {
                     </span>
                     <button
                       onClick={() => startRename(friend.id, friend.name)}
-                      className={`p-1.5 rounded-md text-muted-foreground hover:text-[#c79fe6] hover:bg-[#c79fe6]/15 transition-colors duration-150 ${FOCUS_RING}`}
+                      className="btn-icon text-muted-foreground hover:text-[#c79fe6]"
                       aria-label={`Rename ${friend.name}`}
                       data-testid={`button-rename-friend-${friend.id}`}
                     >
@@ -176,7 +174,7 @@ export function FriendsManager({ open, onOpenChange }: FriendsManagerProps) {
                     </button>
                     <button
                       onClick={() => removeFriend(friend.id)}
-                      className={`p-1.5 rounded-md text-muted-foreground hover:text-red-400 hover:bg-red-500/15 transition-colors duration-150 ${FOCUS_RING}`}
+                      className="btn-icon text-muted-foreground"
                       aria-label={`Remove ${friend.name}`}
                       data-testid={`button-remove-friend-${friend.id}`}
                     >

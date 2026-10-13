@@ -298,7 +298,7 @@ export function CircleSeatingChart({
       {hasCustomPositions && (
         <button
           onClick={onResetCirclePositions}
-          className="mb-2 flex items-center gap-1.5 rounded-full border border-[var(--parchment-control-border)] bg-[var(--parchment-control)] px-3 py-1 font-sans text-xs font-bold uppercase tracking-wider text-[var(--parchment-ink-link)] transition-colors hover:bg-[var(--parchment-control-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
+          className="btn-secondary mb-3"
           data-testid="reset-circle-layout"
         >
           <RotateCcw className="w-3.5 h-3.5" />

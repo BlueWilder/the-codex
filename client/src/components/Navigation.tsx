@@ -24,21 +24,21 @@ export function Navigation() {
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-md border-b border-border">
-      <div className="container mx-auto px-4">
+      <div className="container mx-auto px-[var(--page-x)]">
         <div className="flex items-center justify-between h-14 md:h-20">
           <Link href="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity" data-testid="link-logo-home">
             <img src={logoImage} alt="Codex" className="w-6 h-6 md:w-8 md:h-8" />
             <span className="font-display text-lg md:text-2xl text-amber-500 tracking-wider">Codex</span>
           </Link>
 
-          <div className="flex items-center space-x-2 md:space-x-6">
+          <div className="flex items-center gap-1 md:gap-6">
             {navItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
                 aria-label={item.label}
                 className={cn(
-                  "flex items-center md:space-x-2 px-2.5 md:px-3 py-2 rounded-lg transition-all duration-150",
+                  "btn-icon md:w-auto md:gap-2 md:px-3",
                   location === item.href
                     ? "text-amber-500 bg-amber-950/30 shadow-[0_0_10px_rgba(245,158,11,0.1)]"
                     : "text-muted-foreground hover:text-amber-200 hover:bg-white/5"
@@ -56,9 +56,8 @@ export function Navigation() {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="rounded-full h-8 w-8 md:h-10 md:w-10"
+                      variant="round"
+                      aria-label="Account"
                       data-testid="button-user-menu"
                     >
                       {user.profileImageUrl ? (
@@ -85,12 +84,12 @@ export function Navigation() {
                   </DropdownMenuContent>
                 </DropdownMenu>
               ) : (
-                <a href="/api/login" data-testid="button-login">
-                  <Button variant="outline" size="sm" className="gap-1.5 font-sans text-amber-500 border-amber-900/50 hover:bg-amber-950/30">
-                    <LogIn className="h-4 w-4" />
+                <Button asChild variant="pill" className="px-3 text-amber-500">
+                  <a href="/api/login" aria-label="Sign in" data-testid="button-login">
+                    <LogIn />
                     <span className="hidden sm:inline">Sign in</span>
-                  </Button>
-                </a>
+                  </a>
+                </Button>
               )
             )}
           </div>

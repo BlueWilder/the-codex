@@ -48,7 +48,7 @@ export function AddPlayerDialog({
         </DialogHeader>
         <div className="space-y-4">
           <div>
-            <label className="text-sm text-muted-foreground mb-1 block">Player Name</label>
+            <label className="section-label mb-2 block">Player Name</label>
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -57,11 +57,11 @@ export function AddPlayerDialog({
             />
           </div>
           <div>
-            <label className="text-sm text-muted-foreground mb-1 block">Insert After</label>
+            <label className="section-label mb-2 block">Insert After</label>
             <select
               value={insertAfter}
               onChange={(e) => setInsertAfter(e.target.value)}
-              className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm"
+              className="w-full h-11 rounded-md border border-input bg-background px-3 py-1 text-base shadow-sm"
               data-testid="select-insert-position"
             >
               <option value="__beginning__">At beginning</option>
@@ -74,12 +74,12 @@ export function AddPlayerDialog({
           <p className="flex items-center gap-1 font-serif text-sm text-[var(--parchment-ink-muted)]">
             <span className="font-semibold text-[var(--attention)]">Warning:</span> Adding players mid-game may affect balance. Consider Traveler instead.
           </p>
-          <div className="flex gap-2">
-            <Button variant="ghost" className="flex-1" onClick={handleClose} data-testid="button-cancel-add-player">
+          <div className="flex gap-3">
+            <Button variant="pill" className="flex-1" onClick={handleClose} data-testid="button-cancel-add-player">
               Cancel
             </Button>
-            <Button className="flex-1" onClick={handleAdd} disabled={!name.trim()} data-testid="button-confirm-add-player">
-              <Plus className="w-4 h-4 mr-2" />
+            <Button variant="primary" className="flex-1" onClick={handleAdd} disabled={!name.trim()} data-testid="button-confirm-add-player">
+              <Plus />
               Add Player
             </Button>
           </div>

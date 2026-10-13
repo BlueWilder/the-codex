@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { ALL_CHARACTERS } from "@/lib/game-data";
 import { useFriends } from "@/hooks/use-friends";
-import { X, Search, Pencil, MoreVertical, UserPlus, Trash2, Ban, LogOut, Users } from "lucide-react";
+import { X, Search, Pencil, MoreVertical, UserPlus, Trash2, Ban, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -175,7 +175,7 @@ export function SeatSheet({
                 <DropdownMenuTrigger asChild>
                   <button
                     type="button"
-                    className="flex h-11 w-9 shrink-0 items-center justify-center rounded-full text-[var(--parchment-ink-muted)] transition-colors hover:bg-[var(--parchment-control)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="btn-icon text-[var(--parchment-ink-muted)]"
                     aria-label={`Seat options for ${displayName}`}
                     data-testid="button-seat-menu"
                   >
@@ -240,11 +240,8 @@ export function SeatSheet({
 
             {isEditingName && friends.length > 0 && (
               <div className="mt-3" data-testid="section-from-friends">
-                <div className="mb-1.5 flex items-center gap-1.5">
-                  <Users className="h-3.5 w-3.5 text-[var(--parchment-ink-link)]" />
-                  <span className="game-label text-[var(--parchment-ink-link)]">From Friends</span>
-                </div>
-                <div className="flex flex-wrap gap-1.5">
+                <h3 className="section-label mb-3">From Friends</h3>
+                <div className="flex flex-wrap gap-3">
                   {friends.map((friend) => {
                     const seated = takenSeatNames.has(friend.name.trim().toLowerCase());
                     return (
@@ -255,13 +252,7 @@ export function SeatSheet({
                         onMouseDown={(e) => e.preventDefault()}
                         onPointerDown={(e) => e.preventDefault()}
                         onClick={() => setEditedName(friend.name)}
-                        className={cn(
-                          "rounded-md border px-2.5 py-1 font-serif text-sm transition-colors duration-150",
-                          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                          seated
-                            ? "cursor-not-allowed border-[var(--parchment-rule)] bg-transparent text-[var(--parchment-ink-faint)]"
-                            : "border-[var(--parchment-control-border)] bg-[var(--parchment-raised)] text-[var(--parchment-ink)] hover:bg-[var(--parchment-control)]"
-                        )}
+                        className="btn-secondary"
                         data-testid={`button-assign-friend-${friend.id}`}
                       >
                         {friend.name}
@@ -326,9 +317,9 @@ export function SeatSheet({
           {/* The script's characters, by team */}
           <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-3" data-testid="list-seat-characters">
             {groups.map((group) => (
-              <section key={group.team} className="mb-4" data-testid={`section-team-${group.team}`}>
-                <h3 className={cn("game-label mb-1.5", teamParchment(group.team).text)}>{group.label}</h3>
-                <div className="space-y-1.5">
+              <section key={group.team} className="mb-6" data-testid={`section-team-${group.team}`}>
+                <h3 className="section-label mb-3">{group.label}</h3>
+                <div className="space-y-3">
                   {group.characters.map((char) => {
                     const isClaimed = claimed.has(char.id);
                     return (

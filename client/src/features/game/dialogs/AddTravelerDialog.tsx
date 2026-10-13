@@ -54,7 +54,7 @@ export function AddTravelerDialog({
         </DialogHeader>
         <div className="space-y-4">
           <div>
-            <label className="text-sm text-muted-foreground mb-1 block">Traveler Name</label>
+            <label className="section-label mb-2 block">Traveler Name</label>
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -63,7 +63,7 @@ export function AddTravelerDialog({
             />
           </div>
           <div>
-            <label className="text-sm text-muted-foreground mb-1 block">Character Claim (optional)</label>
+            <label className="section-label mb-2 block">Character Claim (optional)</label>
             <div className="relative mb-2">
               <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
@@ -97,12 +97,12 @@ export function AddTravelerDialog({
               )}
             </div>
           </div>
-          <div className="flex gap-2">
-            <Button variant="ghost" className="flex-1" onClick={handleClose}>
+          <div className="flex gap-3">
+            <Button variant="pill" className="flex-1" onClick={handleClose} data-testid="button-cancel-add-traveler">
               Cancel
             </Button>
-            <Button className="flex-1" onClick={handleAdd} disabled={!name.trim()} data-testid="button-confirm-add-traveler">
-              <Plus className="w-4 h-4 mr-2" />
+            <Button variant="primary" className="flex-1" onClick={handleAdd} disabled={!name.trim()} data-testid="button-confirm-add-traveler">
+              <Plus />
               Add Traveler
             </Button>
           </div>

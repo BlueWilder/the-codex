@@ -5,9 +5,10 @@ import { ScriptBuilderDialog } from "@/components/ScriptBuilderDialog";
 import { FriendsPicker } from "@/components/FriendsPicker";
 import { useScriptScan } from "@/hooks/use-script-scan";
 import { CustomScriptList } from "@/components/CustomScriptList";
+import { PageTitle } from "@/components/PageTitle";
 import { resolveScriptCharacters, countScriptCharacters } from "@/lib/script-resolve";
 import { ScriptSheet } from "@/components/character/ScriptSheet";
-import { ChevronRight, Play, ChevronUp, ChevronDown, Loader2, BookOpen, Users, Scroll, Camera } from "lucide-react";
+import { ChevronRight, Play, Minus, Plus, Loader2, BookOpen, Users, Scroll, Camera } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -101,12 +102,12 @@ export function SetupWizard({
     : [];
 
   return (
-    <div className="max-w-4xl mx-auto py-8">
-      <h1 className="mb-6 text-center font-display text-3xl text-[var(--shell-gold)] md:text-4xl">New Game</h1>
+    <div>
+      <PageTitle className="mb-6">New Game</PageTitle>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-        <div className="game-panel flex flex-col p-3.5" data-testid="card-script">
-          <div className="game-label mb-2 text-[var(--parchment-townsfolk)]">Script</div>
+        <div className="game-panel flex flex-col" data-testid="card-script">
+          <div className="section-label mb-3">Script</div>
           <button
             onClick={() => setScriptDrawerOpen(true)}
             className="w-full flex-1 text-left flex items-center gap-3 rounded-lg hover-elevate -m-1 p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
@@ -134,45 +135,51 @@ export function SetupWizard({
           </button>
         </div>
 
-        <div ref={playersCardRef} className="game-panel flex scroll-mt-20 flex-col p-3.5" data-testid="card-players">
-          <div className="game-label mb-2 text-[var(--parchment-townsfolk)]">Players</div>
-          <div className="flex flex-1 items-center justify-center gap-4">
-            <Button
-              size="icon"
-              variant="outline"
+        <div ref={playersCardRef} className="game-panel flex scroll-mt-20 flex-col" data-testid="card-players">
+          <div className="section-label mb-3">Players</div>
+          {/* One secondary pill: minus at the left end, the count centered, plus at the right end. */}
+          <div className="btn-secondary w-full justify-between px-0.5 hover:!bg-transparent" role="group" aria-label="Player count" data-testid="stepper-players">
+            <button
+              type="button"
               onClick={() => setPlayerCount(Math.max(5, playerCount - 1))}
+              disabled={playerCount <= 5}
+              className="btn-icon h-10 w-10"
+              aria-label="Fewer players"
               data-testid="button-decrease-players"
             >
-              <ChevronDown className="w-5 h-5" />
-            </Button>
-            <div className="w-16 text-center font-display text-5xl text-[var(--parchment-ink)]" data-testid="text-player-count">
+              <Minus className="h-5 w-5" />
+            </button>
+            <span className="font-display text-2xl leading-none text-[var(--parchment-ink)]" data-testid="text-player-count">
               {playerCount}
-            </div>
-            <Button
-              size="icon"
-              variant="outline"
+            </span>
+            <button
+              type="button"
               onClick={() => setPlayerCount(Math.min(20, playerCount + 1))}
+              disabled={playerCount >= 20}
+              className="btn-icon h-10 w-10"
+              aria-label="More players"
               data-testid="button-increase-players"
             >
-              <ChevronUp className="w-5 h-5" />
-            </Button>
+              <Plus className="h-5 w-5" />
+            </button>
           </div>
-          <button
+          <Button
+            variant="pill"
             onClick={() => setFriendsPickerOpen(true)}
-            className="mt-2 w-full flex items-center justify-center gap-1.5 rounded-full border border-[var(--parchment-control-border)] bg-[var(--parchment-control)] px-3 py-1.5 font-sans text-xs font-bold uppercase tracking-wider text-[var(--parchment-ink-link)] hover:bg-[var(--parchment-control-hover)] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
+            className="mt-3 w-full"
             data-testid="button-add-from-friends"
           >
-            <Users className="w-3.5 h-3.5" />
+            <Users />
             Add from Friends
-          </button>
+          </Button>
           {assignedNames.length > 0 && (
-            <div className="mt-2 flex items-center gap-2 font-serif text-sm text-[var(--parchment-ink-muted)]" data-testid="text-assigned-friends">
+            <div className="mt-3 flex items-center gap-3 font-serif text-sm text-[var(--parchment-ink-muted)]" data-testid="text-assigned-friends">
               <span className="flex-1 truncate">
                 {assignedNames.length} added: {assignedNames.join(", ")}
               </span>
               <button
                 onClick={() => { setAssignedNames([]); setAssignedFriendIds([]); }}
-                className="shrink-0 rounded-md px-1.5 py-0.5 text-[var(--parchment-ink-muted)] hover:text-[var(--parchment-minion)] hover:bg-[var(--parchment-control)] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
+                className="btn-secondary"
                 data-testid="button-clear-assigned-friends"
               >
                 Clear
@@ -182,9 +189,9 @@ export function SetupWizard({
         </div>
       </div>
 
-      <div className="game-panel mb-4 space-y-2.5 p-3.5 text-center">
-        <p className="game-label text-[var(--parchment-townsfolk)]">Character Breakdown</p>
-        <div className="flex flex-wrap justify-center gap-3" data-testid="text-breakdown">
+      <div className="game-panel mb-4 space-y-3">
+        <p className="section-label">Character Breakdown</p>
+        <div className="flex flex-wrap gap-3" data-testid="text-breakdown">
           <Badge variant="secondary" className={cn(PILL, teamParchment('townsfolk').tint, teamParchment('townsfolk').text, teamParchment('townsfolk').ring)}>
             {breakdown.townsfolk} Townsfolk
           </Badge>
@@ -215,8 +222,8 @@ export function SetupWizard({
       )}
 
       <div className="sticky bottom-0 z-30 -mx-5 mt-6 px-5 pt-3 pb-4 flex justify-center bg-gradient-to-t from-background via-background/95 to-transparent">
-        <Button onClick={handleStartGame} size="lg" className="bg-[var(--shell-gold)] font-display text-lg text-[var(--shell-chrome)] shadow-lg shadow-black/40 hover:bg-[var(--shell-gold)] hover:brightness-110" data-testid="button-start-game">
-          <Play className="w-4 h-4 mr-2" /> Start Game
+        <Button variant="primary" onClick={handleStartGame} className="shadow-lg shadow-black/40" data-testid="button-start-game">
+          <Play /> Start Game
         </Button>
       </div>
 
@@ -229,10 +236,10 @@ export function SetupWizard({
 
       <Drawer open={scriptDrawerOpen} onOpenChange={setScriptDrawerOpen}>
         <DrawerContent className="parchment-scope max-h-[85vh] border-[var(--parchment-border)] bg-[var(--parchment-panel)]">
-          <DrawerHeader className="text-left">
+          <DrawerHeader className="px-4 text-left">
             <DrawerTitle className="font-display text-2xl font-semibold text-[var(--parchment-ink)]">Select a script</DrawerTitle>
           </DrawerHeader>
-          <div className="space-y-2 overflow-y-auto px-3.5 pb-6">
+          <div className="space-y-3 overflow-y-auto px-4 pb-6">
             <button
               onClick={() => handleSelectScript(null)}
               className={cn(
@@ -245,17 +252,16 @@ export function SetupWizard({
               data-testid="button-no-script"
             >
               <div className="flex items-center gap-3">
-                <BookOpen className="h-5 w-5 text-[var(--parchment-ink-link)]" />
-                <div>
+                <BookOpen className="h-5 w-5 shrink-0 text-[var(--parchment-ink-link)]" />
+                <div className="min-w-0 flex-1">
                   <div className="font-display text-lg font-semibold leading-tight text-[var(--parchment-ink)]">All Characters</div>
-                  <div className="font-serif text-sm text-[var(--parchment-ink-muted)]">No script filter - show all characters when claiming</div>
+                  <div className="font-serif text-sm text-[var(--parchment-ink-muted)]">No script filter, show all characters when claiming</div>
                 </div>
+                <ChevronRight className="h-4 w-4 shrink-0 text-[var(--parchment-ink-faint)]" />
               </div>
             </button>
 
-            <div className="pt-2 pb-1">
-              <span className="game-label text-[var(--parchment-townsfolk)]">Official Scripts</span>
-            </div>
+            <h3 className="section-label pt-3">Official Scripts</h3>
 
             {allScripts.filter(s => s.isOfficial && !s.isCommunity).map(script => (
               <button
@@ -271,18 +277,17 @@ export function SetupWizard({
                 data-testid={`button-script-${script.id}`}
               >
                 <div className="flex items-center gap-3">
-                  <Scroll className="h-5 w-5 text-[var(--parchment-ink-link)]" />
-                  <div>
+                  <Scroll className="h-5 w-5 shrink-0 text-[var(--parchment-ink-link)]" />
+                  <div className="min-w-0 flex-1">
                     <div className="font-display text-lg font-semibold leading-tight text-[var(--parchment-ink)]">{script.name}</div>
                     <div className="font-serif text-sm text-[var(--parchment-ink-muted)]">{countScriptCharacters(script)} characters</div>
                   </div>
+                  <ChevronRight className="h-4 w-4 shrink-0 text-[var(--parchment-ink-faint)]" />
                 </div>
               </button>
             ))}
 
-            <div className="pt-2 pb-1">
-              <span className="game-label text-[var(--parchment-townsfolk)]">Community Scripts</span>
-            </div>
+            <h3 className="section-label pt-3">Community Scripts</h3>
 
             {allScripts.filter(s => s.isOfficial && s.isCommunity).map(script => (
               <button
@@ -298,18 +303,17 @@ export function SetupWizard({
                 data-testid={`button-script-${script.id}`}
               >
                 <div className="flex items-center gap-3">
-                  <Users className="h-5 w-5 text-[var(--parchment-ink-link)]" />
-                  <div>
+                  <Users className="h-5 w-5 shrink-0 text-[var(--parchment-ink-link)]" />
+                  <div className="min-w-0 flex-1">
                     <div className="font-display text-lg font-semibold leading-tight text-[var(--parchment-ink)]">{script.name}</div>
                     <div className="font-serif text-sm text-[var(--parchment-ink-muted)]">{countScriptCharacters(script)} characters</div>
                   </div>
+                  <ChevronRight className="h-4 w-4 shrink-0 text-[var(--parchment-ink-faint)]" />
                 </div>
               </button>
             ))}
 
-            <div className="pt-2 pb-1">
-              <span className="game-label text-[var(--parchment-townsfolk)]">Custom Scripts</span>
-            </div>
+            <h3 className="section-label pt-3">Custom Scripts</h3>
             <CustomScriptList
               scripts={customScripts}
               selectedId={selectedScript?.id}
@@ -329,18 +333,11 @@ export function SetupWizard({
             <button
               onClick={openScanPicker}
               disabled={scanning}
-              className="w-full text-left p-3 rounded-[10px] border border-dashed border-[var(--parchment-control-border)] hover:bg-[var(--parchment-control)] transition-colors flex items-center gap-3 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
+              className="btn-secondary w-full"
               data-testid="button-scan-paper-script"
             >
-              {scanning ? (
-                <Loader2 className="h-5 w-5 animate-spin text-[var(--parchment-ink-link)]" />
-              ) : (
-                <Camera className="h-5 w-5 text-[var(--parchment-ink-link)]" />
-              )}
-              <div>
-                <div className="font-display text-lg font-semibold text-[var(--parchment-ink-link)]">{scanning ? "Scanning photo..." : "Scan Paper Script"}</div>
-                <div className="font-serif text-sm text-[var(--parchment-ink-muted)]">Take a photo of a printed script to build it automatically</div>
-              </div>
+              {scanning ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}
+              {scanning ? "Scanning photo..." : "Scan Paper Script"}
             </button>
             <input
               ref={scanInputRef}

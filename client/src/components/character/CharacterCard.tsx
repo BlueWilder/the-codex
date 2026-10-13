@@ -18,7 +18,7 @@ export function CharacterCard({ char, isExpanded, onToggle }: {
   const jinxes = getJinxesForCharacter(char.id);
   
   const team = teamParchment(char.team);
-  const label = "game-label text-[var(--parchment-townsfolk)]";
+  const label = "section-label";
 
   return (
     <motion.div 
