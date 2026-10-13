@@ -67,6 +67,12 @@
   --shell-inactive: #8c8070;        /* inactive nav items */
   --attention: #e8800d;
 
+  /* Spacing (UI rule 8). Tailwind equivalents: px-5, p-4, gap-3, gap-6. */
+  --page-x: 20px;                   /* page side padding */
+  --panel-pad: 16px;                /* parchment panel padding */
+  --card-gap: 12px;                 /* between cards */
+  --section-gap: 24px;              /* between sections */
+
   /* Parchment surfaces (ScriptSheet) */
   --parchment-panel: #f4ecd8;
   --parchment-panel-from: #f7f0df;  /* panel gradient, top */
@@ -181,14 +187,14 @@
     border-color: var(--shell-border);
   }
 
-  /* One parchment panel per game tab: 14px radius, 12px padding. */
+  /* One parchment panel per game tab: 14px radius, 16px padding (UI rule 8). */
   .game-panel {
     @apply parchment-scope;
     border-radius: 14px;
     border: 1px solid var(--parchment-border);
     background-color: var(--parchment-panel);
     background-image: linear-gradient(to bottom, var(--parchment-panel-from), var(--parchment-panel-to));
-    padding: 12px;
+    padding: var(--panel-pad);
   }
 
   /* Raised card inside a panel: 1px border, 10px radius. */
@@ -198,7 +204,116 @@
     background-color: var(--parchment-raised);
   }
 
-  /* Small caps label (Plus Jakarta Sans). */
+  /*
+   * UI rules (CLAUDE.md "UI rules"). One title, one label, three buttons.
+   * Parchment surfaces are .parchment-scope or .game-panel; .game-panel only
+   * copies parchment-scope's declarations, so selectors name both.
+   */
+
+  /* Rule 1: page title. Fraunces 28px gold, left, one line. */
+  .page-title {
+    font-family: var(--font-display);
+    font-size: 28px;
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--shell-gold);
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Rule 2: section label. Gold on the shell, ink-muted on parchment. */
+  .section-label {
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--shell-gold);
+  }
+  :is(.parchment-scope, .game-panel) .section-label,
+  .section-label:is(.parchment-scope) {
+    color: var(--parchment-ink-muted);
+  }
+
+  /* Rule 3: buttons. Primary (gold, one per screen), secondary (outline), icon. */
+  .btn-primary,
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border-radius: 9999px;
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: background-color 150ms, filter 150ms, color 150ms;
+  }
+  .btn-primary {
+    height: 48px;
+    padding: 0 24px;
+    background-color: var(--shell-gold);
+    color: var(--shell-chrome);
+  }
+  .btn-primary:hover:not(:disabled) {
+    filter: brightness(1.08);
+  }
+  .btn-secondary {
+    height: 44px;
+    padding: 0 16px;
+    border: 1.5px solid currentColor;
+    background-color: transparent;
+    /* The surface's text color: parchment on the shell, ink on parchment. */
+    color: hsl(var(--foreground));
+  }
+  .btn-secondary:hover:not(:disabled) {
+    background-color: hsl(var(--foreground) / 0.08);
+  }
+  /* The active choice in a filter or toggle group takes the primary look. */
+  .btn-secondary[data-active="true"] {
+    background-color: var(--shell-gold);
+    border-color: var(--shell-gold);
+    color: var(--shell-chrome);
+  }
+  .btn-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    border-radius: 9999px;
+    background-color: transparent;
+    color: inherit;
+    transition: background-color 150ms;
+  }
+  .btn-icon:hover:not(:disabled) {
+    background-color: hsl(var(--foreground) / 0.08);
+  }
+  :is(.btn-primary, .btn-secondary, .btn-icon):disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  :is(.btn-primary, .btn-secondary, .btn-icon):focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px hsl(var(--ring));
+  }
+
+  /* Horizontal chip rows scroll without a visible track (rule 5). */
+  .scrollbar-hide {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Small caps tag (team badges, night badges). Not a section label. */
   .game-label {
     font-family: var(--font-sans);
     font-size: 11px;

@@ -172,7 +172,7 @@ export function GameTrackerView({
   return (
     <div className="space-y-4">
       {/* Header: back, script name and seat summary, game menu */}
-      <header className="game-chrome -mx-4 -mt-4 border-b px-2 py-2" data-testid="header-game">
+      <header className="game-chrome -mx-5 -mt-5 border-b px-2 py-2" data-testid="header-game">
         <div className="flex items-center gap-1">
           <Link
             href="/"
@@ -398,7 +398,7 @@ export function GameTrackerView({
 
       {/* Bottom navigation: thumb-reachable view switcher */}
       <nav
-        className="game-chrome sticky bottom-0 z-40 -mx-4 grid grid-cols-4 gap-1 border-t px-2 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]"
+        className="game-chrome sticky bottom-0 z-40 -mx-5 -mb-5 grid grid-cols-4 gap-1 border-t px-2 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]"
         data-testid="nav-tracker"
       >
         {([

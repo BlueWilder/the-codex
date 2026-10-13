@@ -214,7 +214,7 @@ export function SetupWizard({
         </div>
       )}
 
-      <div className="sticky bottom-0 z-30 -mx-4 mt-6 px-4 pt-3 pb-4 flex justify-center bg-gradient-to-t from-background via-background/95 to-transparent">
+      <div className="sticky bottom-0 z-30 -mx-5 mt-6 px-5 pt-3 pb-4 flex justify-center bg-gradient-to-t from-background via-background/95 to-transparent">
         <Button onClick={handleStartGame} size="lg" className="bg-[var(--shell-gold)] font-display text-lg text-[var(--shell-chrome)] shadow-lg shadow-black/40 hover:bg-[var(--shell-gold)] hover:brightness-110" data-testid="button-start-game">
           <Play className="w-4 h-4 mr-2" /> Start Game
         </Button>

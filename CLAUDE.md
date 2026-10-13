@@ -26,6 +26,21 @@ Everything in replit.md applies. These rules cover mechanics that differ for Cla
 - The legacy games and scripts API (`/api/games`, `/api/scripts`, the `shared/routes.ts` contract, and the `use-games` / `use-scripts` hooks) was removed. It had no auth or ownership checks and nothing used it. The `games` and `scripts` tables and their schema in `shared/schema.ts` remain for now. Startup seeding of the official scripts still writes to `scripts` through `storage.getScripts` / `storage.createScript`. Do not drop or alter these tables without asking.
 - Some replit.md text still mentions removed code (`pages/GameSetup.tsx`, and `shared/routes.ts` as the API contract). That code no longer exists. replit.md's "GameSetup.tsx is an older, unrouted page, do not edit it" rule refers to the deleted `pages/GameSetup.tsx`, not to `features/game/GameSetup.tsx`, which is the live setup screen.
 
+### UI rules
+The app is phone-only (375px is the reference width); do no wide-screen work. These rules hold on every screen (Home, Reference, Introduction, Setup, Game Mode) and in every dialog and sheet. The classes live in `client/src/index.css`.
+1. Page titles: `.page-title`. Fraunces 28px gold, left-aligned, one line (ellipsis if it would wrap), inside the 20px page padding. Every page has one; Game Mode's active game uses the script name in its game header instead.
+2. Section labels: `.section-label`. Plus Jakarta Sans 12px, uppercase, 0.12em tracking; gold on the dark shell, ink-muted on parchment (the class picks the color from the surface). Blue, red and green are team colors only and are never used for labels. `.game-label` is for small tags and badges (team badge, night badges), not section labels.
+3. Buttons, three kinds only:
+   - Primary `.btn-primary`: gold fill, dark text, pill, 48px, Plus Jakarta Sans 14px semibold. At most one per screen (Start Game, Done, Save, a dialog's confirm).
+   - Secondary `.btn-secondary`: 1.5px outline in the surface's text color, transparent, pill, 44px, same type. Everything else, including filter chips and toggles. The active chip in a group sets `data-active="true"` and takes the primary look at 44px.
+   - Icon `.btn-icon`: 44px circle, no fill. ⋮, close, back, alive/dead.
+   No other button styles: no dark tiles, no dashed rows, no red destructive fills.
+4. Cards: a tappable list card shows a chevron at its right edge. A card that expands in place shows a chevron that rotates 180° when open. Cards that do nothing on tap show no chevron.
+5. Reference: no dark toolbar. The By Team / By Night pair sits at the right end of the team filter row; script and team filters are secondary pills with the active one primary-styled; chip rows scroll sideways with no visible track (`.scrollbar-hide`).
+6. Game Mode (setup and the active game) hides the app header (`<Layout hideHeader>`). The game header (back, script name, ⋮) is the only chrome; its ⋮ menu links to Character Reference.
+7. Browser tab titles: "The Codex" on Home, "<Page> · The Codex" elsewhere, in `client/index.html`, `server/seo.ts` and `usePageTitle` (client-side navigation).
+8. Spacing, one set of values with no per-screen exceptions: 20px page side padding (`--page-x`, `px-5`), 16px parchment panel padding (`--panel-pad`, `p-4`), 12px between cards (`--card-gap`, `gap-3` / `space-y-3`), 24px between sections (`--section-gap`, `gap-6` / `space-y-6` / `mb-6`).
+
 ### Home page
 `pages/Home.tsx` (`/`) is on the Game Mode visual system: dark shell, parchment panels. Top to bottom:
 - Brand block: "Codex" in Fraunces 44px with the amber gradient, then the quote in Crimson Text italic. Keep the quote text exactly as it is.
@@ -64,7 +79,7 @@ Game Mode (setup and active game), Home, the Character Reference page, and their
 - Shell: `--shell-chrome`, `--shell-border`, `--shell-gold` (titles, active nav), `--shell-inactive`, `--attention`. Page background stays `--background` + the body glow.
 - Parchment: `--parchment-panel` (+ `-from`/`-to` gradient), `--parchment-raised`, `--parchment-border`, `--parchment-rule`, `--parchment-control` (+ `-border`, `-hover`), ink `--parchment-ink`, `-ink-body`, `-ink-muted`, `-ink-faint`, `-ink-link`.
 - Team on parchment: `--parchment-<team>`, `-tint`, `-ring`; use `teamParchment(team)` from `lib/team-style.ts`. Dark-shell team colors stay in `teamCard`/`teamBadge`/`teamRing`.
-- Panel pattern: each tab renders one `.game-panel` (14px radius, 12px padding) on the shell; cards inside use `.game-card` (raised, 1px border, 10px radius); small caps labels use `.game-label`; header and nav use `.game-chrome`. `.game-panel` and `.parchment-scope` re-point the shadcn color variables, so semantic classes (`text-foreground`, `border-border`, `Input`) render as ink on parchment inside them. Radix portals (dialogs, popovers) render outside the panel and stay dark unless given `.parchment-scope` themselves.
+- Panel pattern: each tab renders one `.game-panel` (14px radius, 16px padding) on the shell; cards inside use `.game-card` (raised, 1px border, 10px radius); section labels use `.section-label` and small tags `.game-label`; header and nav use `.game-chrome`. `.game-panel` and `.parchment-scope` re-point the shadcn color variables, so semantic classes (`text-foreground`, `border-border`, `Input`) render as ink on parchment inside them. Radix portals (dialogs, popovers) render outside the panel and stay dark unless given `.parchment-scope` themselves.
 - Characters on parchment: `CharacterMedallion` (team tint, ring, token art or team glyph) plus name in Fraunces. `CharacterCard` (Reference and the Script tab drawer) adds `TeamBadge variant="label"`; the seat sheet's character cards use a 36px medallion with the ability text instead. `TeamBadge`, `NightBadges`, `JinxBadge` and `JinxList` are parchment-only now.
 - Tailwind cannot apply an opacity modifier to a CSS-variable color (`border-[var(--x)]/40` silently drops the class). Use a solid token or another token instead.
 
