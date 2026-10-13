@@ -1,4 +1,5 @@
 import { Layout } from "@/components/ui/Layout";
+import { usePageTitle } from "@/hooks/use-page-title";
 import { motion } from "framer-motion";
 import { Link } from "wouter";
 import { 
@@ -80,6 +81,7 @@ function VideoSection() {
 }
 
 export default function Introduction() {
+  usePageTitle("How to Play");
   return (
     <Layout>
       <div className="max-w-4xl mx-auto pb-6">

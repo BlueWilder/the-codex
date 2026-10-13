@@ -25,7 +25,7 @@ export function ScriptCharacterDrawer({
         <DrawerHeader className="sr-only">
           <DrawerTitle>{character?.name ?? "Character"}</DrawerTitle>
         </DrawerHeader>
-        <div className="overflow-y-auto px-3.5 pb-8 pt-1">
+        <div className="overflow-y-auto px-4 pb-8 pt-1">
           {character && (
             <CharacterCard char={character} isExpanded onToggle={() => {}} />
           )}

@@ -1,8 +1,10 @@
 import { Link } from "wouter";
+import { usePageTitle } from "@/hooks/use-page-title";
 import { Layout } from "@/components/ui/Layout";
 import { PageTitle } from "@/components/PageTitle";
 
 export default function NotFound() {
+  usePageTitle("Page Not Found");
   return (
     <Layout>
       <div className="space-y-6">

@@ -1,4 +1,5 @@
 import { useLocation, useSearch } from "wouter";
+import { usePageTitle } from "@/hooks/use-page-title";
 import { Layout } from "@/components/ui/Layout";
 import { useGameTracker } from "@/features/game/state/use-game-tracker";
 import { Loader2 } from "lucide-react";
@@ -14,6 +15,7 @@ export { SeatSheet } from "@/features/game/SeatSheet";
 export { GameTrackerView } from "@/features/game/GameTrackerView";
 
 export default function Game() {
+  usePageTitle("Game Mode");
   const {
     game,
     isLoading,

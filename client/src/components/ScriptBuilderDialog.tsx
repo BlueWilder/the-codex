@@ -384,7 +384,7 @@ export function ScriptBuilderDialog({
           </div>
         </div>
         
-        <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pt-2 scrollbar-hide">
+        <div className="-mx-4 flex shrink-0 gap-3 overflow-x-auto px-4 pt-2 scrollbar-hide">
           {['all', 'townsfolk', 'outsider', 'minion', 'demon', 'traveler', 'fabled'].map((f) => (
             <button
               key={f}
@@ -398,7 +398,7 @@ export function ScriptBuilderDialog({
           ))}
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex shrink-0 items-center gap-3">
           <div className="relative min-w-0 flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input

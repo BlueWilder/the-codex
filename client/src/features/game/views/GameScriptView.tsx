@@ -24,7 +24,7 @@ export function GameScriptView({
         characters={characters}
         scriptName={scriptName}
         onCharacterSelect={onCharacterSelect}
-        className="rounded-[14px] p-3 md:p-3.5 shadow-none"
+        className="shadow-none"
       />
     ) : (
       <div className="game-panel" data-testid="panel-script">

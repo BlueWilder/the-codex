@@ -1,4 +1,5 @@
 import { Layout } from "@/components/ui/Layout";
+import { usePageTitle } from "@/hooks/use-page-title";
 import { ALL_CHARACTERS, OFFICIAL_SCRIPTS, type Character } from "@/lib/game-data";
 import { useState, useMemo } from "react";
 import { Search, Moon, Plus, Check, Trash2, Pencil } from "lucide-react";
@@ -26,6 +27,7 @@ const SCRIPTS = [
 
 
 export default function Reference() {
+  usePageTitle("Character Reference");
   const [search, setSearch] = useState("");
   const [teamFilter, setTeamFilter] = useState<string>("all");
   const [scriptFilter, setScriptFilter] = useState<string>("all");

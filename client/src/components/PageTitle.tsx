@@ -26,9 +26,13 @@ export function PageTitle({
     const fit = () => {
       el.style.fontSize = `${MAX_PX}px`;
       const available = el.clientWidth;
-      const needed = el.scrollWidth;
-      if (available > 0 && needed > available) {
-        const px = Math.max(MIN_PX, Math.floor((MAX_PX * available) / needed));
+      if (available <= 0 || el.scrollWidth <= available) return;
+      // Start from a proportional guess, then step down until it fits:
+      // glyph widths do not scale exactly with font size.
+      let px = Math.max(MIN_PX, Math.floor((MAX_PX * available) / el.scrollWidth));
+      el.style.fontSize = `${px}px`;
+      while (px > MIN_PX && el.scrollWidth > el.clientWidth) {
+        px -= 1;
         el.style.fontSize = `${px}px`;
       }
     };

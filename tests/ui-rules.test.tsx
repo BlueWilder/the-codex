@@ -155,3 +155,20 @@ describe("UI rule 6: Game Mode hides the app header", () => {
     expect(screen.getByTestId("link-logo-home")).toBeTruthy();
   });
 });
+
+describe("UI rule 7: browser tab titles", () => {
+  it("reads The Codex on Home and <Page> · The Codex elsewhere", () => {
+    const home = withClient(<Home />);
+    expect(document.title).toBe("The Codex");
+    home.unmount();
+    withClient(<Reference />);
+    expect(document.title).toBe("Character Reference · The Codex");
+  });
+
+  it("names Game Mode in the tab", async () => {
+    window.history.replaceState(null, "", "/game");
+    withClient(<Game />);
+    await screen.findByTestId("header-setup");
+    expect(document.title).toBe("Game Mode · The Codex");
+  });
+});

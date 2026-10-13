@@ -1,4 +1,3 @@
-import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -214,7 +213,7 @@ export function InlineGameLog({
   ];
   
   return (
-    <Card className="p-4">
+    <div>
       {/* Game Notes Section - At the top */}
       <div className="mb-4 pb-4 border-b border-border">
         <h3 className="section-label mb-3">Notes</h3>
@@ -315,7 +314,7 @@ export function InlineGameLog({
           </div>
         )}
       </div>
-    </Card>
+    </div>
   );
 }
 

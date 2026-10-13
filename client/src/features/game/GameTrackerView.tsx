@@ -171,7 +171,9 @@ export function GameTrackerView({
   const aliveCount = alivePlayers.length;
 
   return (
-    <div className="space-y-6">
+    // Fills the screen (less Layout's 20px top and bottom padding, which the
+    // bars bleed into) so the bottom nav sits at the bottom on short tabs.
+    <div className="flex min-h-[calc(100dvh-40px)] flex-col gap-6">
       {/* The game header: the only chrome in Game Mode (UI rule 6). */}
       <header className="game-chrome sticky top-0 z-40 -mx-5 -mt-5 border-b px-2 py-2" data-testid="header-game">
         <div className="flex items-center gap-1">
@@ -372,7 +374,7 @@ export function GameTrackerView({
       )}
       
       {activeTab === 'circle' && (
-        <div className="game-panel px-0" data-testid="panel-circle">
+        <div className="game-panel" data-testid="panel-circle">
           <CircleSeatingChart
             players={game.players}
             centerLabel={resolvedScript?.name}
@@ -406,7 +408,7 @@ export function GameTrackerView({
 
       {/* Bottom navigation: thumb-reachable view switcher */}
       <nav
-        className="game-chrome sticky bottom-0 z-40 -mx-5 -mb-5 grid grid-cols-4 gap-1 border-t px-2 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]"
+        className="game-chrome sticky bottom-0 z-40 -mx-5 -mb-5 mt-auto grid grid-cols-4 gap-1 border-t px-2 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]"
         data-testid="nav-tracker"
       >
         {([

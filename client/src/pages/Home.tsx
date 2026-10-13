@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { usePageTitle } from "@/hooks/use-page-title";
 import { Link, useLocation } from "wouter";
 import { motion } from "framer-motion";
 import { ChevronRight } from "lucide-react";
@@ -40,6 +41,7 @@ type BuilderMode =
 const EMPTY_SET = new Set<string>();
 
 export default function Home() {
+  usePageTitle();
   const [, navigate] = useLocation();
   const { game } = usePlayerGame();
   const { allScripts, customScripts, getScriptById, addCustomScriptAsync, updateCustomScript } = useLocalScripts();

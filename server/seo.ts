@@ -10,7 +10,7 @@ interface RouteMeta {
 
 const ROUTE_META: Record<string, RouteMeta> = {
   "/": {
-    title: "The Codex (Claude Code test)",
+    title: "The Codex",
     description:
       "The Codex is your complete Blood on the Clocktower companion app. Browse characters, abilities, scripts, and strategies for Trouble Brewing, Bad Moon Rising, and Sects & Violets.",
     ogType: "website",
@@ -41,7 +41,7 @@ const ROUTE_META: Record<string, RouteMeta> = {
     `,
   },
   "/reference": {
-    title: "Character Reference | The Codex – Blood on the Clocktower",
+    title: "Character Reference · The Codex",
     description:
       "Browse every Blood on the Clocktower character by script and team. Includes abilities, night order, tips, bluffing strategies, jinx interactions, and Storyteller guidance for Trouble Brewing, Bad Moon Rising, Sects & Violets, and experimental characters.",
     ogType: "website",
@@ -81,7 +81,7 @@ const ROUTE_META: Record<string, RouteMeta> = {
     `,
   },
   "/introduction": {
-    title: "How to Play Blood on the Clocktower | The Codex",
+    title: "How to Play · The Codex",
     description:
       "New to Blood on the Clocktower? This beginner's guide explains how the game works: the two teams, night and day phases, what makes it different from other hidden-role games, and tips to get started.",
     ogType: "article",
@@ -120,7 +120,7 @@ const ROUTE_META: Record<string, RouteMeta> = {
     `,
   },
   "/game": {
-    title: "Player Tracker | The Codex – Blood on the Clocktower",
+    title: "Game Mode · The Codex",
     description:
       "Track players, claims, nominations, and votes during a Blood on the Clocktower game. A note-taking companion tool for both players and Storytellers.",
     ogType: "website",
