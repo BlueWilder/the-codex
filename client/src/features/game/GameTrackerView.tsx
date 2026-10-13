@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { usePlayerGame } from "@/features/game/state/use-player-game";
 import { getCharacterById } from "@/lib/game-data";
 import { useLocalScripts, type LocalScript } from "@/hooks/use-local-scripts";
@@ -75,6 +75,7 @@ export function GameTrackerView({
   onResetCirclePositions: () => void;
 }) {
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
+  const [, navigate] = useLocation();
   const [confirmEnd, setConfirmEnd] = useState(false);
   const [showPlayAgainConfirm, setShowPlayAgainConfirm] = useState(false);
   const [showAddTravelerDialog, setShowAddTravelerDialog] = useState(false);
@@ -170,9 +171,9 @@ export function GameTrackerView({
   const aliveCount = alivePlayers.length;
 
   return (
-    <div className="space-y-4">
-      {/* Header: back, script name and seat summary, game menu */}
-      <header className="game-chrome -mx-5 -mt-5 border-b px-2 py-2" data-testid="header-game">
+    <div className="space-y-6">
+      {/* The game header: the only chrome in Game Mode (UI rule 6). */}
+      <header className="game-chrome sticky top-0 z-40 -mx-5 -mt-5 border-b px-2 py-2" data-testid="header-game">
         <div className="flex items-center gap-1">
           <Link
             href="/"
@@ -332,6 +333,13 @@ export function GameTrackerView({
                   >
                     <RotateCcw className="w-4 h-4 mr-2" />
                     Play Again
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onSelect={() => navigate("/reference")}
+                    data-testid="button-character-reference-menu"
+                  >
+                    <BookOpen className="w-4 h-4 mr-2" />
+                    Character reference
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem 

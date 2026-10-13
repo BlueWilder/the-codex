@@ -49,7 +49,7 @@ export default function Game() {
 
   if (isLoading) {
     return (
-      <Layout>
+      <Layout hideHeader>
         <div className="flex items-center justify-center py-20">
           <Loader2 className="w-8 h-8 animate-spin text-amber-500" />
         </div>
@@ -58,7 +58,7 @@ export default function Game() {
   }
 
   return (
-    <Layout>
+    <Layout hideHeader>
       {!game || startScriptId ? (
         <SetupWizard
           key={startScriptId ?? "setup"}

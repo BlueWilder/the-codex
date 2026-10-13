@@ -8,7 +8,8 @@ import { CustomScriptList } from "@/components/CustomScriptList";
 import { PageTitle } from "@/components/PageTitle";
 import { resolveScriptCharacters, countScriptCharacters } from "@/lib/script-resolve";
 import { ScriptSheet } from "@/components/character/ScriptSheet";
-import { ChevronRight, Play, Minus, Plus, Loader2, BookOpen, Users, Scroll, Camera } from "lucide-react";
+import { ArrowLeft, ChevronRight, Play, Minus, Plus, Loader2, BookOpen, Users, Scroll, Camera } from "lucide-react";
+import { Link } from "wouter";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -103,6 +104,17 @@ export function SetupWizard({
 
   return (
     <div>
+      {/* Game Mode hides the app header; this slim game header is setup's only chrome (UI rule 6). */}
+      <header className="game-chrome sticky top-0 z-40 -mx-5 -mt-5 mb-6 border-b px-2 py-2" data-testid="header-setup">
+        <Link
+          href="/"
+          className="btn-icon text-[var(--shell-inactive)] hover:text-[var(--shell-gold)]"
+          aria-label="Back to home"
+          data-testid="button-back-home"
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </Link>
+      </header>
       <PageTitle className="mb-6">New Game</PageTitle>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">

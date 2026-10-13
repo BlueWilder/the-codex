@@ -4,7 +4,7 @@ import { cleanup, fireEvent, render, screen, within } from "@testing-library/rea
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Reference from "@/pages/Reference";
 import Home from "@/pages/Home";
-import { SeatSheet } from "@/pages/Game";
+import Game, { SeatSheet } from "@/pages/Game";
 import type { GamePlayer } from "@/hooks/use-player-game";
 
 function withClient(ui: React.ReactElement) {
@@ -107,5 +107,51 @@ describe("UI rules 2 and 3 on Home", () => {
     for (const id of ["button-home-scan", "button-home-import", "button-home-my-scripts"]) {
       expect(screen.getByTestId(id).className).toContain("btn-secondary");
     }
+  });
+});
+
+describe("UI rule 6: Game Mode hides the app header", () => {
+  function seedGame() {
+    localStorage.setItem(
+      "clocktower_player_game",
+      JSON.stringify({
+        id: "g",
+        createdAt: new Date().toISOString(),
+        playerCount: 5,
+        breakdown: { townsfolk: 3, outsiders: 0, minions: 1, demons: 1 },
+        currentDay: 1,
+        phase: "night",
+        players: ["A", "B", "C", "D", "E"].map((name, i) => ({
+          id: `player-${i}`, name, isAlive: true, status: "alive", notes: "", claims: [],
+        })),
+        script: { id: "tb" },
+      }),
+    );
+  }
+
+  it("setup shows only its game header with a back arrow", async () => {
+    window.history.replaceState(null, "", "/game");
+    withClient(<Game />);
+    expect(await screen.findByTestId("header-setup")).toBeTruthy();
+    expect(screen.getByTestId("button-back-home").getAttribute("href")).toBe("/");
+    expect(screen.queryByTestId("link-logo-home")).toBeNull();
+    expect(screen.queryByTestId("button-global-menu")).toBeNull();
+  });
+
+  it("the active game shows only its game header, whose menu links to Character reference", async () => {
+    seedGame();
+    window.history.replaceState(null, "", "/game");
+    withClient(<Game />);
+    expect(await screen.findByTestId("header-game")).toBeTruthy();
+    expect(screen.queryByTestId("link-logo-home")).toBeNull();
+    expect(screen.queryByTestId("button-global-menu")).toBeNull();
+    fireEvent.pointerDown(screen.getByTestId("button-overflow-menu"), { button: 0, ctrlKey: false, pointerType: "mouse" });
+    fireEvent.click(await screen.findByTestId("button-character-reference-menu"));
+    expect(window.location.pathname).toBe("/reference");
+  });
+
+  it("other pages keep the app header", () => {
+    withClient(<Reference />);
+    expect(screen.getByTestId("link-logo-home")).toBeTruthy();
   });
 });
