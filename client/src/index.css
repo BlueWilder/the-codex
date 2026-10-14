@@ -165,6 +165,8 @@
     --foreground: 30 31% 13%;       /* ink */
     --card: 42 68% 95%;
     --card-foreground: 30 31% 13%;
+    --popover: 42 68% 95%;          /* raised */
+    --popover-foreground: 30 31% 13%;
     --muted: 43 48% 83%;            /* control */
     --muted-foreground: 38 33% 32%; /* ink-muted */
     --accent: 43 48% 83%;

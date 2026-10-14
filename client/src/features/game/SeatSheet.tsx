@@ -184,7 +184,6 @@ export function SeatSheet({
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
                   align="end"
-                  className="parchment-scope border-[var(--parchment-border)] bg-[var(--parchment-raised)]"
                   // Keep focus off the trigger on close, so the rename field keeps it.
                   onCloseAutoFocus={(e) => e.preventDefault()}
                 >
@@ -226,7 +225,7 @@ export function SeatSheet({
                       <DropdownMenuItem
                         disabled={!canRemovePlayer}
                         onSelect={() => setShowRemoveConfirm(true)}
-                        className="text-[var(--parchment-minion)] focus:text-[var(--parchment-minion)]"
+                        className="text-[var(--parchment-minion)] focus:text-[var(--parchment-minion)] [&_svg]:text-[var(--parchment-minion)]"
                         data-testid="button-remove-player"
                       >
                         <Trash2 className="mr-2 h-4 w-4" />
