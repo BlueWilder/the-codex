@@ -208,6 +208,51 @@ describe("Circle seat medallions", () => {
   });
 });
 
+describe("Circle death shroud", () => {
+  it("drapes the shroud over every dead seat and no living one", () => {
+    renderChart([
+      makePlayer({ id: "p1", name: "Alice", claims: ["imp"] }),
+      makePlayer({ id: "p2", name: "Bob", status: "dead", claims: ["empath"] }),
+      makePlayer({ id: "p3", name: "Cara", status: "dead", claims: [] }),
+      makePlayer({ id: "p4", name: "Dan", status: "exiled", isTraveler: true, claims: [] }),
+    ]);
+    expect(screen.queryByTestId("overlay-shroud-p1")).toBeNull();
+    for (const id of ["p2", "p3", "p4"]) {
+      const shroud = screen.getByTestId(`overlay-shroud-${id}`);
+      expect(shroud.tagName.toLowerCase()).toBe("svg");
+    }
+    // No skull on the Circle; that stays on the List toggle.
+    expect(document.querySelector(".lucide-skull")).toBeNull();
+  });
+
+  it("dims the medallion to 45%, strikes the name in ink-muted and keeps the claim icon", () => {
+    renderChart([makePlayer({ id: "p2", name: "Bob", status: "dead", claims: ["empath"] })]);
+    const icon = screen.getByTestId("icon-seat-claim-p2");
+    expect(icon.parentElement?.className).toContain("opacity-[0.45]");
+    const name = screen.getByTestId("text-seat-name-p2");
+    expect(name.className).toContain("line-through");
+    expect(name.className).toContain("text-[var(--parchment-ink-muted)]");
+    expect(screen.getByTestId("text-seat-number-p2").getAttribute("data-variant")).toBe("badge");
+  });
+
+  it("moves a dead empty seat's number to the badge, since the shroud covers the center", () => {
+    renderChart([makePlayer({ id: "p3", name: "Cara", status: "dead", claims: [] })]);
+    expect(screen.getByTestId("text-seat-number-p3").getAttribute("data-variant")).toBe("badge");
+  });
+
+  it("scales the shroud with the medallion size", () => {
+    const seats = (n: number, deadIndex: number) =>
+      Array.from({ length: n }, (_, i) =>
+        makePlayer({ id: `s${i}`, name: `S${i}`, status: i === deadIndex ? "dead" : "alive", claims: [] }),
+      );
+    const { unmount } = renderChart(seats(8, 0));
+    expect(screen.getByTestId("overlay-shroud-s0").getAttribute("width")).toBe(String(72 * 0.6));
+    unmount();
+    renderChart(seats(13, 0));
+    expect(screen.getByTestId("overlay-shroud-s0").getAttribute("width")).toBe(String(52 * 0.6));
+  });
+});
+
 describe("death-label helpers", () => {
   const records: DeathRecord[] = [
     { playerId: "a", day: 1, type: "night", phase: "night" },

@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from "react";
-import { RotateCcw, Skull } from "lucide-react";
+import { RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DndContext, PointerSensor, TouchSensor, useSensor, useSensors, DragEndEvent, DragStartEvent, useDraggable } from "@dnd-kit/core";
 import { teamParchment } from "@/lib/team-style";
 import { type GamePlayer } from "@/features/game/types";
 import { resolveClaimDescriptor, latestClaimId } from "@/features/game/claims";
 import { isSeatDead } from "@/features/game/AliveToggle";
+import { DeathShroud } from "@/features/game/DeathShroud";
 import { characterIcon } from "@/lib/character-icons";
 import { getTeamGlyph } from "@/components/character/CharacterToken";
 
@@ -13,7 +14,7 @@ import { getTeamGlyph } from "@/components/character/CharacterToken";
  * Seat medallion plus the name under it. States: claimed (the newest claim's
  * token art on its team tint, 3px team ring, seat number in a badge at the
  * lower right), no claim (raised fill, dashed ring, number centered), dead
- * (medallion at 45% under a skull, number in the badge, name struck
+ * (medallion at 45% under the death shroud, number in the badge, name struck
  * through in ink-muted). The name is Fraunces 14px at every medallion size.
  */
 function CircleNodeContent({
@@ -93,13 +94,10 @@ function CircleNodeContent({
         )}
       </div>
 
+      {/* Shroud and badge sit above neighboring medallions, which overlap on
+          crowded rings, and below the names (z-20). */}
       {isDead && (
-        <span
-          className="absolute inset-0 z-10 flex items-center justify-center text-[var(--parchment-ink)]"
-          data-testid={`overlay-shroud-${player.id}`}
-        >
-          <Skull style={{ width: numberPx, height: numberPx }} aria-label="Dead" />
-        </span>
+        <DeathShroud size={nodeSize} className="z-10" data-testid={`overlay-shroud-${player.id}`} />
       )}
 
       {numberInBadge && (
