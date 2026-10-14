@@ -133,7 +133,6 @@ function CircleNodeContent({
 
 export function CircleSeatingChart({
   players,
-  centerLabel,
   onSelectPlayer,
   onReorderPlayers,
   onSetCirclePosition,
@@ -141,8 +140,6 @@ export function CircleSeatingChart({
   onResetCirclePositions,
 }: {
   players: GamePlayer[];
-  /** Shown in the middle of the ring (the script name); nothing when absent. */
-  centerLabel?: string;
   onSelectPlayer: (playerId: string) => void;
   onReorderPlayers: (activeId: string, overId: string) => void;
   onSetCirclePosition: (playerId: string, x: number, y: number) => void;
@@ -192,6 +189,8 @@ export function CircleSeatingChart({
   }, []);
 
   const playerCount = players.length;
+  const deadCount = players.filter(isSeatDead).length;
+  const aliveCount = playerCount - deadCount;
   const centerX = dimensions.width / 2;
   const centerY = dimensions.height / 2;
   // Seat medallion: 72px up to 8 seats, 60px for 9 to 12, 52px for 13 and up.
@@ -217,6 +216,51 @@ export function CircleSeatingChart({
     const min = halfLabel - seatX;
     const max = dimensions.width - halfLabel - seatX;
     return Math.round(Math.max(min, Math.min(max, shift)));
+  };
+
+  // The alive / dead tally sits in a clear gap within its own width: the
+  // seats and names that overlap that column are stacked up, and the gap
+  // that fits the tally nearest the ring's center wins (the tallest gap when
+  // none fits). With few seats the upper names reach into the middle, so the
+  // tally usually sits a little below center.
+  const tallyWidth = 116;
+  const tallyHeight = 82;
+  const getTallyCenterY = () => {
+    const left = centerX - tallyWidth / 2;
+    const right = centerX + tallyWidth / 2;
+    const blocked: { t: number; b: number }[] = [];
+    players.forEach((player, index) => {
+      const pos = getPlayerPosition(player, index);
+      const labelX = pos.x + nodeSize / 2 + getLabelShiftX(player, index);
+      // Fraunces 14px runs about 8px a character; the label truncates at its width.
+      const halfName = Math.min(nodeSize + 18, player.name.length * 8 + 4) / 2;
+      const boxes = [
+        { l: pos.x, r: pos.x + nodeSize, t: pos.y, b: pos.y + nodeSize },
+        { l: labelX - halfName, r: labelX + halfName, t: pos.y + nodeSize + 3, b: pos.y + nodeSize + 21 },
+      ];
+      for (const box of boxes) {
+        // 4px of air above and below each one.
+        if (box.r > left && box.l < right) blocked.push({ t: box.t - 4, b: box.b + 4 });
+      }
+    });
+    blocked.sort((x, y) => x.t - y.t);
+    const gaps: { t: number; b: number }[] = [];
+    let cursor = 0;
+    for (const box of blocked) {
+      if (box.t > cursor) gaps.push({ t: cursor, b: box.t });
+      cursor = Math.max(cursor, box.b);
+    }
+    if (cursor < dimensions.height) gaps.push({ t: cursor, b: dimensions.height });
+    const place = (gap: { t: number; b: number }) =>
+      Math.max(gap.t + tallyHeight / 2, Math.min(gap.b - tallyHeight / 2, centerY));
+    const fitting = gaps.filter(g => g.b - g.t >= tallyHeight);
+    if (fitting.length > 0) {
+      return fitting
+        .map(place)
+        .reduce((best, y) => (Math.abs(y - centerY) < Math.abs(best - centerY) ? y : best));
+    }
+    const tallest = gaps.reduce((best, g) => (g.b - g.t > best.b - best.t ? g : best), { t: centerY, b: centerY });
+    return (tallest.t + tallest.b) / 2;
   };
 
   const getDefaultPosition = (index: number) => {
@@ -332,13 +376,25 @@ export function CircleSeatingChart({
           >
             <div
               className="pointer-events-none absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center text-center"
-              style={{ left: centerX, top: centerY }}
+              style={{ left: centerX, top: getTallyCenterY(), width: tallyWidth }}
               data-testid="circle-center"
             >
-              {centerLabel && (
-                <span className="max-w-[60%] font-display text-xl leading-tight text-[var(--parchment-ink)]">{centerLabel}</span>
-              )}
-              <span className="font-serif text-sm italic text-[var(--parchment-ink-muted)]">hold a seat to move it</span>
+              <div className="flex items-stretch">
+                <div className="flex w-[58px] flex-col items-center">
+                  <span className="font-display text-[44px] leading-none tabular-nums text-[var(--parchment-ink)]" data-testid="text-tally-alive">
+                    {aliveCount}
+                  </span>
+                  <span className="section-label mt-0.5">Alive</span>
+                </div>
+                <div className="w-px bg-[var(--parchment-rule)]" aria-hidden="true" />
+                <div className="flex w-[58px] flex-col items-center">
+                  <span className="font-display text-[44px] leading-none tabular-nums text-[var(--parchment-ink-muted)]" data-testid="text-tally-dead">
+                    {deadCount}
+                  </span>
+                  <span className="section-label mt-0.5">Dead</span>
+                </div>
+              </div>
+              <span className="mt-1 whitespace-nowrap font-serif text-[12px] italic leading-tight text-[var(--parchment-ink-muted)]">hold a seat to move it</span>
             </div>
             {players.map((player, index) => {
               const pos = getPlayerPosition(player, index);

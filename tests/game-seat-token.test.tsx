@@ -253,6 +253,57 @@ describe("Circle death shroud", () => {
   });
 });
 
+describe("Circle center tally", () => {
+  it("shows the alive and dead counts side by side with labels and the hint", () => {
+    renderChart([
+      makePlayer({ id: "p1", name: "Alice", claims: [] }),
+      makePlayer({ id: "p2", name: "Bob", status: "dead", claims: [] }),
+      makePlayer({ id: "p3", name: "Cara", claims: [] }),
+      makePlayer({ id: "p4", name: "Dan", status: "dead", claims: [] }),
+      makePlayer({ id: "p5", name: "Eve", status: "left", isTraveler: true, claims: [] }),
+      makePlayer({ id: "p6", name: "Fin", claims: [] }),
+    ]);
+    const center = screen.getByTestId("circle-center");
+    const alive = screen.getByTestId("text-tally-alive");
+    const dead = screen.getByTestId("text-tally-dead");
+    expect(alive.textContent).toBe("3");
+    expect(dead.textContent).toBe("3");
+    expect(alive.className).toContain("text-[44px]");
+    expect(alive.className).toContain("text-[var(--parchment-ink)]");
+    expect(dead.className).toContain("text-[var(--parchment-ink-muted)]");
+    const labels = center.querySelectorAll(".section-label");
+    expect(Array.from(labels).map(l => l.textContent)).toEqual(["Alive", "Dead"]);
+    expect(within(center).getByText("hold a seat to move it").className).toContain("text-[12px]");
+  });
+
+  it("no longer shows the script name in the center", () => {
+    renderChart([makePlayer({ id: "p1", name: "Alice", claims: [] })]);
+    expect(within(screen.getByTestId("circle-center")).queryByText("Trouble Brewing")).toBeNull();
+  });
+
+  it("updates the counts when a seat dies", () => {
+    const players = [
+      makePlayer({ id: "p1", name: "Alice", claims: [] }),
+      makePlayer({ id: "p2", name: "Bob", claims: [] }),
+    ];
+    const { rerender } = renderChart(players);
+    expect(screen.getByTestId("text-tally-alive").textContent).toBe("2");
+    expect(screen.getByTestId("text-tally-dead").textContent).toBe("0");
+    rerender(
+      <CircleSeatingChart
+        players={[players[0], { ...players[1], status: "dead" }]}
+        onSelectPlayer={noop}
+        onReorderPlayers={noop}
+        onSetCirclePosition={noop}
+        onSetMultipleCirclePositions={noop}
+        onResetCirclePositions={noop}
+      />,
+    );
+    expect(screen.getByTestId("text-tally-alive").textContent).toBe("1");
+    expect(screen.getByTestId("text-tally-dead").textContent).toBe("1");
+  });
+});
+
 describe("death-label helpers", () => {
   const records: DeathRecord[] = [
     { playerId: "a", day: 1, type: "night", phase: "night" },

@@ -82,6 +82,24 @@ describe("GameTrackerView bottom navigation", () => {
     expect(screen.queryByTestId("tab-log")).toBeNull();
   });
 
+  it("keeps the header to back, script name and menu, with the tally in the Circle center", () => {
+    renderTracker(
+      makeGame({
+        players: [
+          { id: "p1", name: "Alice", isAlive: true, status: "alive", notes: "", claims: [] },
+          { id: "p2", name: "Bob", isAlive: false, status: "dead", notes: "", claims: [] },
+        ],
+      }),
+    );
+    const header = screen.getByTestId("header-game");
+    expect(screen.queryByTestId("text-seat-summary")).toBeNull();
+    expect(header.textContent).not.toMatch(/seats|alive/i);
+    expect(header.textContent).toContain("Trouble Brewing");
+    fireEvent.click(screen.getByTestId("nav-grim"));
+    expect(screen.getByTestId("text-tally-alive").textContent).toBe("1");
+    expect(screen.getByTestId("text-tally-dead").textContent).toBe("1");
+  });
+
   it("switches to the Script tab and renders the resolved script sheet", () => {
     renderTracker(makeGame());
     fireEvent.click(screen.getByTestId("nav-script"));

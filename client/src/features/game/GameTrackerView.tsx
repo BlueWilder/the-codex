@@ -167,8 +167,6 @@ export function GameTrackerView({
   }, [resolvedScript?.id]);
 
   const selectedPlayer = game.players.find(p => p.id === selectedPlayerId) || null;
-  const alivePlayers = game.players.filter(p => p.status === 'alive');
-  const aliveCount = alivePlayers.length;
 
   return (
     // Fills the screen (less Layout's 20px top and bottom padding, which the
@@ -273,9 +271,6 @@ export function GameTrackerView({
                 </div>
               </PopoverContent>
             </Popover>
-            <span className="game-label mt-0.5 text-[var(--shell-inactive)]" data-testid="text-seat-summary">
-              {game.players.length} seats · {aliveCount} alive
-            </span>
           </div>
 
           {/* Game menu */}
@@ -377,7 +372,6 @@ export function GameTrackerView({
         <div className="game-panel" data-testid="panel-circle">
           <CircleSeatingChart
             players={game.players}
-            centerLabel={resolvedScript?.name}
             onSelectPlayer={(playerId) => setSelectedPlayerId(playerId)}
             onReorderPlayers={onReorderPlayers}
             onSetCirclePosition={onSetCirclePosition}
