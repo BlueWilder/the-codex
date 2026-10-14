@@ -1,5 +1,5 @@
 import { usePlayerGame } from "@/features/game/state/use-player-game";
-import { FileText, GripVertical, Skull, ArrowDownUp } from "lucide-react";
+import { FileText, GripVertical, ArrowDownUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, TouchSensor, useSensor, useSensors, DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, sortableKeyboardCoordinates, useSortable, rectSortingStrategy } from "@dnd-kit/sortable";
@@ -45,6 +45,7 @@ export function SortablePlayerCard({
 
   const isActive = player.status === 'alive';
   const isDead = isSeatDead(player);
+  const displayName = player.name.trim() || `Player ${seatNumber}`;
 
   return (
     <div
@@ -52,7 +53,7 @@ export function SortablePlayerCard({
       style={style}
       onClick={onSelect}
       className={cn(
-        "flex cursor-pointer items-center gap-2 py-2.5",
+        "flex cursor-pointer items-center gap-3 py-2.5",
         isDead && "opacity-[0.55]",
         isDragging && "relative z-50 rounded-[10px] bg-[var(--parchment-raised)] shadow-lg"
       )}
@@ -63,41 +64,10 @@ export function SortablePlayerCard({
         {...listeners}
         onClick={(e) => e.stopPropagation()}
         className="-ml-1 flex h-9 w-6 shrink-0 touch-none cursor-grab items-center justify-center rounded-md text-[var(--parchment-ink-faint)] hover:text-[var(--parchment-ink)] active:cursor-grabbing focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        aria-label={`Drag ${player.name} to reorder`}
+        aria-label={`Drag ${displayName} to reorder`}
         data-testid={`button-drag-${player.id}`}
       >
         <GripVertical className="w-4 h-4" />
-      </button>
-
-      <button
-        onClick={(e) => { e.stopPropagation(); onSelect(); }}
-        className="relative shrink-0 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
-        title={`View ${player.name}`}
-        data-testid={`button-token-${player.id}`}
-      >
-        <span
-          className={cn(
-            "flex h-10 w-10 items-center justify-center rounded-full",
-            isDead
-              ? "border-2 border-[var(--parchment-ink)] bg-[var(--parchment-raised)] text-[var(--parchment-ink)]"
-              : "bg-[var(--parchment-ink)] text-[var(--parchment-panel)]"
-          )}
-          data-team={latestChar?.team}
-          data-testid={`token-list-${player.id}`}
-        >
-          {isDead ? (
-            <span data-testid={`overlay-shroud-${player.id}`}>
-              <Skull className="h-5 w-5" aria-label="Dead" />
-            </span>
-          ) : (
-            <span
-              className="font-display text-lg leading-none tabular-nums"
-              data-testid={`text-seat-number-${player.id}`}
-            >
-              {seatNumber}
-            </span>
-          )}
-        </span>
       </button>
 
       <div className="min-w-0 flex-1">
@@ -111,12 +81,12 @@ export function SortablePlayerCard({
             onClick={(e) => { e.stopPropagation(); onSelect(); }}
             className={cn(
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-              "min-w-0 truncate text-left font-display text-lg leading-tight text-[var(--parchment-ink)] hover:underline",
+              "min-w-0 truncate text-left font-display text-[18px] leading-tight text-[var(--parchment-ink)] hover:underline",
               !isActive && "line-through"
             )}
             data-testid={`button-player-name-${player.id}`}
           >
-            {player.name}
+            {displayName}
           </button>
         </div>
 
@@ -144,7 +114,7 @@ export function SortablePlayerCard({
         {hasNotes && <FileText className="h-4 w-4 text-[var(--parchment-ink-faint)]" aria-label="Has notes" />}
         <AliveToggle
           isDead={isDead}
-          playerName={player.name}
+          playerName={displayName}
           onToggle={onToggleAlive}
           data-testid={`button-toggle-dead-${player.id}`}
         />

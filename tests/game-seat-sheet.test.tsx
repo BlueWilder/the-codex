@@ -328,9 +328,10 @@ describe("Seat sheet with live game state", () => {
     fireEvent.keyDown(sheet, { key: "Escape" });
     await waitFor(() => expect(screen.queryByTestId("sheet-seat-player-1")).toBeNull());
 
-    // List: newest claim in team color, dead treatment, shared toggle on skull.
+    // List: newest claim in team color, dimmed row, shared toggle on skull, no skull medallion.
     expect(screen.getByTestId("text-claim-player-1").textContent).toBe("Chef");
-    expect(screen.getByTestId("overlay-shroud-player-1")).toBeTruthy();
+    expect(screen.queryByTestId("overlay-shroud-player-1")).toBeNull();
+    expect(screen.getByTestId("card-player-player-1").className).toContain("opacity-[0.55]");
     expect(screen.getByTestId("button-toggle-dead-player-1").getAttribute("data-state")).toBe("dead");
 
     // Circle: same claim under the name, dead seat shows the skull.

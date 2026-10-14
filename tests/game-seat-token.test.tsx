@@ -227,12 +227,16 @@ function renderRow(
 }
 
 describe("List row states", () => {
-  it("shows the seat number, the claim's team, and the claim in team color for a single claim", () => {
+  it("shows the name with no seat medallion, and the claim in team color for a single claim", () => {
     renderRow(makePlayer({ id: "p1", name: "Alice", claims: ["imp"] }), { seatNumber: 4 });
-    expect(screen.getByTestId("text-seat-number-p1").textContent).toBe("4");
-    const token = screen.getByTestId("token-list-p1");
-    expect(token.getAttribute("data-team")).toBe("demon");
+    expect(screen.queryByTestId("text-seat-number-p1")).toBeNull();
+    expect(screen.queryByTestId("token-list-p1")).toBeNull();
+    const name = screen.getByTestId("button-player-name-p1");
+    expect(name.textContent).toBe("Alice");
+    expect(name.className).toContain("font-display");
+    expect(name.className).toContain("text-[18px]");
     const claim = screen.getByTestId("text-claim-p1");
+    expect(claim.getAttribute("data-team")).toBe("demon");
     expect(claim.textContent).toBe("Imp");
     expect(claim.className).toContain("text-[var(--parchment-demon)]");
     expect(screen.queryByTestId("text-no-claim-p1")).toBeNull();
@@ -251,16 +255,21 @@ describe("List row states", () => {
       }),
     );
     expect(screen.getByTestId("text-claim-p2").textContent).toBe("Poisoner");
-    expect(screen.getByTestId("token-list-p2").getAttribute("data-team")).toBe("minion");
+    expect(screen.getByTestId("text-claim-p2").getAttribute("data-team")).toBe("minion");
     expect(screen.queryByText("Imp")).toBeNull();
     expect(screen.queryByText(/^was /)).toBeNull();
     expect(screen.queryByTestId("text-primary-claim-p2")).toBeNull();
     expect(screen.queryByTestId("button-set-primary-poisoner")).toBeNull();
   });
 
+  it("names an unnamed seat Player N", () => {
+    renderRow(makePlayer({ id: "p7", name: "  ", claims: [] }), { seatNumber: 3 });
+    expect(screen.getByTestId("button-player-name-p7").textContent).toBe("Player 3");
+  });
+
   it("shows a no-claim hint for an empty seat", () => {
     renderRow(makePlayer({ id: "p3", name: "Cara", claims: [] }));
-    expect(screen.getByTestId("token-list-p3")).not.toBeNull();
+    expect(screen.queryByTestId("token-list-p3")).toBeNull();
     expect(screen.getByTestId("text-no-claim-p3")).not.toBeNull();
     expect(screen.queryAllByTestId(/^chip-candidate-p3-/)).toHaveLength(0);
     // Claims are added in the seat sheet, not from the row.
@@ -279,11 +288,13 @@ describe("List row states", () => {
     expect(dead.querySelector(".lucide-skull")).not.toBeNull();
   });
 
-  it("greys a dead seat with a shroud and no phase stamp", () => {
+  it("greys a dead seat with the skull in its toggle, no skull medallion and no phase stamp", () => {
     renderRow(makePlayer({ id: "p4", name: "Dan", status: "dead", claims: ["imp"] }), {
       deathRecords: [{ playerId: "p4", day: 2, type: "night", phase: "night" }],
     });
-    expect(screen.getByTestId("overlay-shroud-p4")).not.toBeNull();
+    expect(screen.queryByTestId("overlay-shroud-p4")).toBeNull();
+    expect(screen.getByTestId("card-player-p4").className).toContain("opacity-[0.55]");
+    expect(screen.getByTestId("button-toggle-dead-p4").querySelector(".lucide-skull")).not.toBeNull();
     expect(screen.queryByTestId("text-seat-death-p4")).toBeNull();
   });
 });
@@ -399,7 +410,9 @@ describe("List row resurrection", () => {
         { playerId: "p2", day: 2, type: "execution", phase: "day" },
       ],
     });
-    expect(screen.getByTestId("overlay-shroud-p2")).not.toBeNull();
+    expect(screen.queryByTestId("overlay-shroud-p2")).toBeNull();
+    expect(screen.getByTestId("card-player-p2").className).toContain("opacity-[0.55]");
+    expect(screen.getByTestId("button-toggle-dead-p2").getAttribute("data-state")).toBe("dead");
     expect(screen.queryByTestId("text-seat-death-p2")).toBeNull();
   });
 });
