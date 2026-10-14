@@ -89,10 +89,13 @@ describe("CharacterToken", () => {
 });
 
 describe("Circle seat states", () => {
-  it("shows the claim's team and name for a single claim", () => {
+  it("shows the claim's icon on its team medallion for a single claim", () => {
     renderChart([makePlayer({ id: "p1", name: "Alice", claims: ["imp"] })]);
     const seat = screen.getByTestId("token-seat-p1");
-    expect(within(seat).getByTestId("text-seat-role-p1").textContent).toContain("Imp");
+    const icon = within(seat).getByTestId("icon-seat-claim-p1");
+    expect(icon.getAttribute("data-character")).toBe("imp");
+    expect(icon.getAttribute("src")).toBe("/characters/tb/imp_e.webp");
+    expect(icon.getAttribute("alt")).toBe("Imp");
     expect(seat.querySelector("[data-team='demon']")).not.toBeNull();
     expect(screen.queryByTestId("badge-candidates-p1")).toBeNull();
   });
@@ -111,7 +114,7 @@ describe("Circle seat states", () => {
       }),
     ]);
     const seat = screen.getByTestId("token-seat-p2");
-    expect(within(seat).getByTestId("text-seat-role-p2").textContent).toBe("Poisoner");
+    expect(within(seat).getByTestId("icon-seat-claim-p2").getAttribute("data-character")).toBe("poisoner");
     expect(seat.querySelector("[data-team='minion']")).not.toBeNull();
     // Older claims are not listed on the seat; the sheet holds them.
     expect(screen.queryByTestId("badge-candidates-p2")).toBeNull();
@@ -121,7 +124,7 @@ describe("Circle seat states", () => {
 
   it("falls back to the last claim in a legacy save without claim records", () => {
     renderChart([makePlayer({ id: "p6", name: "Fay", claims: ["imp", "poisoner", "baron"] })]);
-    expect(screen.getByTestId("text-seat-role-p6").textContent).toBe("Baron");
+    expect(screen.getByTestId("icon-seat-claim-p6").getAttribute("data-character")).toBe("baron");
   });
 
   it("opens the seat sheet when the seat token is tapped", () => {
@@ -136,10 +139,15 @@ describe("Circle seat states", () => {
     expect(screen.queryByTestId("button-seat-more-p5")).toBeNull();
   });
 
-  it("shows a no-claim placeholder for an empty seat", () => {
+  it("shows an empty seat as a dashed ring with the number centered and no icon", () => {
     renderChart([makePlayer({ id: "p3", name: "Cara", claims: [] })]);
-    expect(screen.getByTestId("text-seat-noclaim-p3")).not.toBeNull();
-    expect(screen.queryByTestId("text-seat-role-p3")).toBeNull();
+    const number = screen.getByTestId("text-seat-number-p3");
+    expect(number.getAttribute("data-variant")).toBe("center");
+    expect(number.textContent).toBe("1");
+    expect(number.parentElement?.className).toContain("border-dashed");
+    expect(screen.queryByTestId("icon-seat-claim-p3")).toBeNull();
+    // No "no claim" text under the seat: the name is the only label.
+    expect(screen.queryByText("no claim")).toBeNull();
   });
 
   it("shows a dead seat with no death phase stamp", () => {
@@ -161,6 +169,42 @@ describe("Circle seat states", () => {
     );
     // Day/night is no longer tracked or shown, so there is no stamp.
     expect(screen.queryByTestId("text-seat-death-p5")).toBeNull();
+  });
+});
+
+describe("Circle seat medallions", () => {
+  it("moves the seat number to a badge at the lower right once the seat has a claim", () => {
+    renderChart([
+      makePlayer({ id: "p1", name: "Alice", claims: [] }),
+      makePlayer({ id: "p2", name: "Bob", claims: ["empath"] }),
+    ]);
+    const badge = screen.getByTestId("text-seat-number-p2");
+    expect(badge.getAttribute("data-variant")).toBe("badge");
+    expect(badge.textContent).toBe("2");
+    expect(badge.className).toContain("bg-[var(--parchment-ink)]");
+    expect(badge.className).toContain("text-[var(--parchment-panel)]");
+    expect(badge.className).toContain("border-2");
+    expect(badge.style.width).toBe("22px");
+    expect(badge.style.height).toBe("22px");
+    // The claimed medallion has no centered number.
+    expect(screen.getAllByTestId("text-seat-number-p2")).toHaveLength(1);
+  });
+
+  it("labels each seat with the name only, in Fraunces 14px", () => {
+    renderChart([makePlayer({ id: "p1", name: "Alice", claims: ["imp"] })]);
+    const name = screen.getByTestId("text-seat-name-p1");
+    expect(name.textContent).toBe("Alice");
+    expect(name.className).toContain("font-display");
+    expect(name.className).toContain("text-[14px]");
+    expect(screen.queryByTestId("text-seat-role-p1")).toBeNull();
+    expect(within(screen.getByTestId("token-seat-p1")).queryByText("Imp")).toBeNull();
+  });
+
+  it("falls back to the team glyph when the claim has no token art", () => {
+    renderChart([makePlayer({ id: "p1", name: "Alice", claims: ["generic-traveller"] })]);
+    const icon = screen.getByTestId("icon-seat-claim-p1");
+    expect(icon.getAttribute("data-character")).toBe("generic-traveller");
+    expect(icon.querySelector("svg")).not.toBeNull();
   });
 });
 

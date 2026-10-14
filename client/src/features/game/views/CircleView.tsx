@@ -6,12 +6,15 @@ import { teamParchment } from "@/lib/team-style";
 import { type GamePlayer } from "@/features/game/types";
 import { resolveClaimDescriptor, latestClaimId } from "@/features/game/claims";
 import { isSeatDead } from "@/features/game/AliveToggle";
+import { characterIcon } from "@/lib/character-icons";
+import { getTeamGlyph } from "@/components/character/CharacterToken";
 
 /**
- * Seat medallion plus the name and newest claim under it. States:
- * claimed (team tint, 3px team ring), no claim (raised fill, dashed ring,
- * muted number), dead (raised fill, ink ring, skull, whole seat at 50%,
- * name struck through). Font sizes scale with the medallion size.
+ * Seat medallion plus the name under it. States: claimed (the newest claim's
+ * token art on its team tint, 3px team ring, seat number in a badge at the
+ * lower right), no claim (raised fill, dashed ring, number centered), dead
+ * (medallion at 45% under a skull, number in the badge, name struck
+ * through in ink-muted). The name is Fraunces 14px at every medallion size.
  */
 function CircleNodeContent({
   player,
@@ -28,16 +31,15 @@ function CircleNodeContent({
   const latestId = latestClaimId(player);
   const latestChar = latestId ? resolveClaimDescriptor(latestId) : null;
   const isDead = isSeatDead(player);
-  const isActive = player.status === 'alive';
   const team = latestChar ? teamParchment(latestChar.team) : null;
+  const icon = latestChar ? characterIcon(latestChar.id) : undefined;
+  const Glyph = latestChar ? getTeamGlyph(latestChar.team) : null;
+  // The number moves to the badge once the center holds art or the shroud.
+  const numberInBadge = !!latestChar || isDead;
 
-  // 72px medallion: 26px number, 15px name, 12px claim. Smaller rings scale down.
-  const scale = nodeSize / 72;
-  const numberPx = Math.round(26 * scale);
-  const namePx = Math.max(12, Math.round(15 * scale));
-  const claimPx = Math.max(10, Math.round(12 * scale));
+  // 72px medallion: 26px centered number. Smaller rings scale down.
+  const numberPx = Math.round(26 * (nodeSize / 72));
   const labelWidth = nodeSize + 18;
-
 
   return (
     <div
@@ -47,71 +49,85 @@ function CircleNodeContent({
     >
       <div
         className={cn(
-          "flex h-full w-full items-center justify-center rounded-full border-[3px]",
-          // Dead seats dim the medallion and the name block separately (not a
-          // shared wrapper) so the name can still layer above other seats.
-          isDead && "opacity-50",
-          isDead
-            ? "border-[var(--parchment-ink)] bg-[var(--parchment-raised)]"
-            : team
-              ? cn(team.tint, team.ring)
-              : "border-dashed border-[var(--parchment-control-border)] bg-[var(--parchment-raised)]",
+          "flex h-full w-full items-center justify-center overflow-hidden rounded-full border-[3px]",
+          isDead && "opacity-[0.45]",
+          team
+            ? cn(team.tint, team.ring)
+            : "border-dashed border-[var(--parchment-control-border)] bg-[var(--parchment-raised)]",
         )}
         data-team={latestChar?.team}
       >
-        {isDead ? (
-          <span
-            className="flex items-center justify-center text-[var(--parchment-ink)]"
-            data-testid={`overlay-shroud-${player.id}`}
-          >
-            <Skull style={{ width: numberPx, height: numberPx }} aria-label="Dead" />
-          </span>
+        {latestChar ? (
+          icon ? (
+            <img
+              src={icon}
+              alt={latestChar.name}
+              className="h-full w-full rounded-full object-cover"
+              draggable={false}
+              data-testid={`icon-seat-claim-${player.id}`}
+              data-character={latestChar.id}
+            />
+          ) : (
+            Glyph && (
+              <span
+                className="flex h-full w-full items-center justify-center"
+                aria-label={latestChar.name}
+                data-testid={`icon-seat-claim-${player.id}`}
+                data-character={latestChar.id}
+              >
+                <Glyph className={cn("h-1/2 w-1/2", team?.text)} />
+              </span>
+            )
+          )
         ) : (
-          <span
-            className={cn(
-              "font-display leading-none tabular-nums",
-              team ? "text-[var(--parchment-ink)]" : "text-[var(--parchment-ink-faint)]",
-            )}
-            style={{ fontSize: numberPx }}
-          >
-            {seatNumber}
-          </span>
+          !isDead && (
+            <span
+              className="font-display leading-none tabular-nums text-[var(--parchment-ink-faint)]"
+              style={{ fontSize: numberPx }}
+              data-testid={`text-seat-number-${player.id}`}
+              data-variant="center"
+            >
+              {seatNumber}
+            </span>
+          )
         )}
       </div>
 
+      {isDead && (
+        <span
+          className="absolute inset-0 z-10 flex items-center justify-center text-[var(--parchment-ink)]"
+          data-testid={`overlay-shroud-${player.id}`}
+        >
+          <Skull style={{ width: numberPx, height: numberPx }} aria-label="Dead" />
+        </span>
+      )}
+
+      {numberInBadge && (
+        <span
+          className="absolute z-10 flex items-center justify-center rounded-full border-2 border-[var(--parchment-panel)] bg-[var(--parchment-ink)] font-sans text-[11px] font-semibold leading-none tabular-nums text-[var(--parchment-panel)]"
+          style={{ width: 22, height: 22, right: -4, bottom: -2 }}
+          data-testid={`text-seat-number-${player.id}`}
+          data-variant="badge"
+        >
+          {seatNumber}
+        </span>
+      )}
+
       <div
-        className={cn(
-          "pointer-events-none absolute left-1/2 z-20 flex -translate-x-1/2 flex-col items-center text-center [text-shadow:0_0_2px_var(--parchment-panel),0_0_4px_var(--parchment-panel)]",
-          isDead && "opacity-50",
-        )}
+        className="pointer-events-none absolute left-1/2 z-20 flex -translate-x-1/2 flex-col items-center text-center [text-shadow:0_0_2px_var(--parchment-panel),0_0_4px_var(--parchment-panel)]"
         style={{ top: nodeSize + 3, width: labelWidth, marginLeft: labelShiftX }}
       >
         <span
           className={cn(
-            "max-w-full truncate font-display leading-tight text-[var(--parchment-ink)]",
-            !isActive && "line-through",
+            "max-w-full truncate font-display text-[14px] leading-tight",
+            isDead
+              ? "text-[var(--parchment-ink-muted)] line-through"
+              : "text-[var(--parchment-ink)]",
           )}
-          style={{ fontSize: namePx }}
+          data-testid={`text-seat-name-${player.id}`}
         >
           {player.name}
         </span>
-        {latestChar ? (
-          <span
-            className={cn("max-w-full truncate font-serif leading-tight", team?.text)}
-            style={{ fontSize: claimPx }}
-            data-testid={`text-seat-role-${player.id}`}
-          >
-            {latestChar.name}
-          </span>
-        ) : (
-          <span
-            className="font-serif italic leading-tight text-[var(--parchment-ink-faint)]"
-            style={{ fontSize: claimPx }}
-            data-testid={`text-seat-noclaim-${player.id}`}
-          >
-            no claim
-          </span>
-        )}
       </div>
     </div>
   );
@@ -184,8 +200,8 @@ export function CircleSeatingChart({
   const nodeSize = playerCount <= 8 ? 72 : playerCount <= 12 ? 60 : 52;
   // Left and right seats sit 6px inside the panel edge.
   const radius = Math.min(centerX, centerY) - nodeSize / 2 - 6;
-  // Room under the bottom seat for its name, claim and chips.
-  const labelRoom = 52;
+  // Room under the bottom seat for its name.
+  const labelRoom = 28;
 
   // Names sit under each medallion. On side seats they would run into the
   // next seat down, so they shift sideways in proportion to how far the seat

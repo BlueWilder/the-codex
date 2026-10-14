@@ -334,9 +334,9 @@ describe("Seat sheet with live game state", () => {
     expect(screen.getByTestId("card-player-player-1").className).toContain("opacity-[0.55]");
     expect(screen.getByTestId("button-toggle-dead-player-1").getAttribute("data-state")).toBe("dead");
 
-    // Circle: same claim under the name, dead seat shows the skull.
+    // Circle: the same claim's icon in the medallion, dead seat under the shroud.
     fireEvent.click(screen.getByTestId("nav-grim"));
-    expect((await screen.findByTestId("text-seat-role-player-1")).textContent).toBe("Chef");
+    expect((await screen.findByTestId("icon-seat-claim-player-1")).getAttribute("data-character")).toBe("chef");
     expect(screen.getByTestId("overlay-shroud-player-1")).toBeTruthy();
 
     // Tapping the circle seat opens the same sheet.
